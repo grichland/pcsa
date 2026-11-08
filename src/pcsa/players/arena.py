@@ -130,7 +130,9 @@ async def _run(a: ArenaPlayer, b: ArenaPlayer, battles: int) -> MatchResult:
     for logger, h in handlers:
         logger.addHandler(h)
     try:
-        await a.battle_against(b, n_battles=battles)
+        for k in range(battles):  # the challenger sits p1: A in even battles, B in odd ones
+            first, second = (a, b) if k % 2 == 0 else (b, a)
+            await first.battle_against(second, n_battles=1)
     except Exception as error:  # partial results still count
         errors.append(f"battle_against: {type(error).__name__}: {error}")
     for logger, h in handlers:
@@ -150,7 +152,7 @@ async def _run(a: ArenaPlayer, b: ArenaPlayer, battles: int) -> MatchResult:
 
 
 def run_match(a: ArenaPlayer, b: ArenaPlayer, battles: int) -> MatchResult:
-    """A challenges B `battles` times, one at a time."""
+    """`battles` battles one at a time, the challenger (p1) alternating from A, so each pair swaps the seats."""
     return asyncio.run(_run(a, b, battles))
 
 

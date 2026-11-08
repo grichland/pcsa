@@ -57,6 +57,8 @@ def build_parser() -> argparse.ArgumentParser:
         "--noisy", action="store_true", help="teams use any catalog build, not only each species' top one"
     )
     play.add_argument("--port", type=int, default=None)
+    play.add_argument("--a-team-style", default=None, help="deal side A teams fitting this style (e.g. weather)")
+    play.add_argument("--b-team-style", default=None, help="deal side B teams fitting this style")
 
     train_parser(commands)
     live.add_parsers(commands, _config_args)
@@ -94,7 +96,17 @@ def _sim(args: argparse.Namespace) -> int:
     from pcsa.run.sim_command import play_command
 
     config = _load(args)
-    outcome = play_command(config, args.a, args.b, args.battles, args.seed, noisy=args.noisy, port=args.port)
+    outcome = play_command(
+        config,
+        args.a,
+        args.b,
+        args.battles,
+        args.seed,
+        noisy=args.noisy,
+        port=args.port,
+        a_team_style=args.a_team_style,
+        b_team_style=args.b_team_style,
+    )
     for line in outcome.lines:
         print(line)
     return outcome.code

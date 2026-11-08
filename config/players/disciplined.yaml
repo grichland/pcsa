@@ -1,0 +1,8 @@
+# Thresholds of the disciplined player (sim only: `pcsa sim play --a disciplined ...`).
+# Damage shares come from pcsa.players.threat on the sets pcsa.players.opponent assumes for their side.
+# "Share of its HP" is of the member's current HP; "share of max HP" is of its full HP.
+denier_switch_in_max: 0.25  # vs a boosted foe: a switch-in must take less than this share of its HP (and KO it)
+threat_threshold: 0.4       # their best hit, as a share of our max HP, that makes our active threatened
+switch_in_max: 0.25         # a voluntary switch-in must take less than this share of its HP...
+switch_in_threatens: 0.3    # ...and hit them for at least this share of their max HP
+recover_below: 0.6          # a recovery move only below this HP fraction (research R5)

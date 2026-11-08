@@ -1,0 +1,6 @@
+# Thresholds of the weather-style player (sim only: `pcsa sim play --a style_weather ...`, dealt a six that fits
+# the weather style of config/players/styles.yaml). disciplined's and free_turn's thresholds come from their own
+# files. Damage shares are pcsa.players.threat's on the assumed sets.
+pivot_max_hit: 0.5         # weather:to_abuser only to an abuser that takes less than this share of its HP
+boosted_move_slack: 0.10   # a weather move (STAB in the weather, Solar Beam, Thunder...) within this share of the
+                           # best expected hit is used instead

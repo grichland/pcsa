@@ -1,0 +1,65 @@
+# Team styles: the roles a style player's six must fill so it can bring a working three and lead the right one.
+# Read by pcsa.players.styles (the live players' preview) and pcsa.sim.teams (simulator teams for style_* kinds).
+#
+# Each role has `min` (members it needs among the three brought) and optionally a test, a mapping whose
+# conditions must all hold for one member (names spelled as in the game):
+#   any_ability: [...]          its ability, or its Mega form's when it holds that form's stone
+#   any_move: [...]             it knows one of these moves
+#   priority_move: true         it knows an attacking move with positive priority...
+#   priority_move: {except: [...]}   ...the listed moves not counting
+#   base_bulk_min: N            base HP + Def + SpD at least N (its Mega form's when that is bulkier)
+#   min_attacking_moves: N      at least N physical or special moves
+#   not_item: [...]             it does not hold one of these items (a Choice holder cannot lead with Stealth Rock)
+#   weather: setter | abuser    sets / profits from the team's weather, one of `weathers` below
+#   any_of: [test, ...]         at least one of these tests holds
+# A role without a test takes any member. A brought member fills one role only.
+# `lead` names the role whose member leads; species in `back` never lead (the next brought member does).
+
+weathers:
+  # setters: abilities that set it; an abuser has one of `abilities` or `moves`, or an attacking move of a
+  # type in `stab` that is also one of its own types.
+  sun:
+    setters: [Drought]
+    abilities: [Chlorophyll, Solar Power]
+    moves: [Solar Beam, Solar Blade, Weather Ball]
+    stab: [Fire]
+  rain:
+    setters: [Drizzle]
+    abilities: [Swift Swim]
+    moves: [Hurricane, Thunder, Weather Ball]
+    stab: [Water]
+  sand:
+    setters: [Sand Stream]
+    abilities: [Sand Rush, Sand Force]
+    moves: [Weather Ball]
+    stab: [Rock, Ground, Steel]
+  snow:
+    setters: [Snow Warning]
+    abilities: [Slush Rush]
+    moves: [Blizzard, Aurora Veil, Weather Ball]
+    stab: [Ice]
+
+styles:
+  weather:
+    roles:
+      setter: {min: 1, weather: setter}
+      abuser: {min: 2, weather: abuser}
+    lead: setter
+    back: [Politoed]   # Drizzle on a slow, frail switch-in: it comes in later and an abuser leads
+
+  setup_sweeper:
+    roles:
+      sweeper:
+        min: 1
+        any_move: [Swords Dance, Dragon Dance, Nasty Plot, Quiver Dance, Shell Smash, Bulk Up, Calm Mind]
+        any_of:
+          - priority_move: {except: [Fake Out, First Impression]}   # one-turn openers do not help a boosted mon
+          - base_bulk_min: 270   # bulky enough to set up under fire (Gyarados 274, Kingambit 305; Volcarona 255)
+      supporter: {min: 2}
+    lead: supporter   # the sweeper comes in once a supporter has made room
+
+  hazard_lead:
+    roles:
+      setter: {min: 1, any_move: [Stealth Rock], not_item: [Choice Scarf, Choice Band, Choice Specs]}
+      attacker: {min: 2, min_attacking_moves: 2}
+    lead: setter

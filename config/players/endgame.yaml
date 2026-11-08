@@ -1,0 +1,3 @@
+# The endgame player (sim only: `pcsa sim play --a endgame ...`): disciplined (config/players/disciplined.yaml)
+# until both sides are down to `max_members`, then the 1v1 chain (pcsa.players.chain) picks stay / switch / send.
+max_members: 2  # members left on each side (theirs: 3 brought minus fainted) at which the chain takes over

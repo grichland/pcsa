@@ -6,7 +6,7 @@ import argparse
 from collections.abc import Callable
 from pathlib import Path
 
-from pcsa.players.factory import KINDS
+from pcsa.players.factory import LIVE_KINDS
 
 COMMANDS = ("run", "nav")
 
@@ -19,7 +19,9 @@ def add_parsers(commands, config_args: Callable[[argparse.ArgumentParser], None]
 
     run = commands.add_parser("run", help="live evaluation: play Ranked Singles battles on the phone")
     config_args(run)
-    run.add_argument("--player", choices=KINDS, default=None, help="player kind (default: agent.yaml policy.kind)")
+    run.add_argument(
+        "--player", choices=LIVE_KINDS, default=None, help="player kind (default: agent.yaml policy.kind)"
+    )
     run.add_argument("--battles", type=int, default=None, help="decided battles before the run finishes")
     run.add_argument("--max-total", type=int, default=None, help="bound on battles started, forfeits included")
     run.add_argument("--seed", type=int, default=None)
