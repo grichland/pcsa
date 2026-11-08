@@ -6,9 +6,9 @@ param(
 # Launch the Ranked Singles agent with the settings below.
 # Usage (from any folder):  powershell -ExecutionPolicy Bypass -File <repo>\scripts\run_agent.ps1 [-Battles 25 -MaxBattlesTotal 30]
 # Before starting: phone on USB with debugging on, the game open on the Ranked Singles lobby ("Begin Matchmaking").
-# Player settings live in config\players\<player>.yaml; controller timings in config\agent.yaml.
+# Player settings live in config\players\ (heuristic.yaml, best_matchup.yaml, mixed.yaml); controller timings in config\agent.yaml.
 # ============================== SETTINGS (edit these) ==============================
-$Player     = "custom_heuristic"  # random | simple_heuristic | custom_heuristic | max_damage | mixed
+$Player     = "custom_heuristic"  # random | simple_heuristic | custom_heuristic | max_damage | best_matchup_max_damage | mixed
 $Seed       = $null               # $null = new random seed; a number makes choices and taps reproducible
 $RunName    = "run"               # run folder prefix under output\runs\
 $Config     = "config/agent.yaml" # controller settings; player files are named inside it
@@ -25,7 +25,7 @@ Set-Location $Repo
 # Leftovers from a run that ended abruptly: a phone agent or a dashboard started from THIS repo would still hold
 # pcsa.exe (so the environment cannot be synced) and port 8765 (so the dashboard cannot start). Training runs
 # (pcsa train ...) are left alone.
-$repoPattern = [regex]::Escape($Repo)
+$repoPattern = [regex]::Escape($Repo + '\')  # the trailing separator leaves out sibling folders such as pcsa-public
 $agentPattern = 'pcsa\.exe"? (run|watch)\b|pcsa\.cli"? (run|watch)\b'
 $all = Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -and $_.CommandLine -match $repoPattern -and $_.ProcessId -ne $PID }
 $leftovers = @($all | Where-Object { $_.CommandLine -match $agentPattern })
@@ -41,7 +41,7 @@ if ($leftovers.Count -gt 0) { Start-Sleep -Seconds 2 }
 $Pcsa = Join-Path $Repo ".venv\Scripts\pcsa.exe"
 $Uv = Get-Command uv -ErrorAction SilentlyContinue
 if ($Uv) {
-    & $Uv.Source sync --inexact --extra train --quiet   # keeps torch and other installed extras (cached wheels)
+    & $Uv.Source sync --inexact --quiet   # keeps torch and other installed extras; live play needs none
     if ($LASTEXITCODE -ne 0) { Write-Host "uv sync failed; continuing with the existing environment" }
 }
 if (-not (Test-Path -LiteralPath $Pcsa)) { throw "pcsa.exe not found at $Pcsa. Run: winget install astral-sh.uv; uv run pcsa setup" }
@@ -64,7 +64,8 @@ if ((& $Adb shell dumpsys window windows | Select-String "WakeLockScreenLayout")
 $arguments = @("run", "--config", $Config, "--player", $Player, "--battles", $Battles, "--max-total", $MaxBattlesTotal, "--name", $RunName)
 foreach ($setting in $Overrides) { $arguments += @("--set", $setting) }
 if ($null -ne $Seed) { $arguments += @("--seed", $Seed) }
-if ($Resume) { $arguments += @("--resume", (Resolve-Path $Resume).Path) }
+$resumeDir = if ($Resume) { (Resolve-Path $Resume).Path.TrimEnd('\') } else { $null }
+if ($resumeDir) { $arguments += @("--resume", $resumeDir) }
 
 if ($Mirror) {
     # Phone mirror: `pcsa setup` installs the pinned scrcpy release into .tools\scrcpy\ (scrcpy.exe next to its
@@ -93,14 +94,20 @@ if ($Mirror) {
 
 $started = Get-Date
 if ($Watch) {
-    # A second window waits for this run's folder to appear, then opens the dashboard on it. If port 8765 is
-    # still held by something outside this repo, the dashboard takes the next free port.
+    # A second window waits for this run's folder to appear (a resumed run's folder already exists), then opens
+    # the dashboard on it. If port 8765 is still held by something outside this repo, the dashboard takes the
+    # next free port.
     $port = 8765
     while (Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue) { $port++ }
     if ($port -ne 8765) { Write-Host "Port 8765 is busy; the dashboard will use port $port" }
     $runsDir = Join-Path $Repo "output\runs"
+    $wanted = "`$_.CreationTime -gt [datetime]'$($started.ToString('o'))'"
+    if ($resumeDir) {
+        $runsDir = Split-Path -Parent $resumeDir
+        $wanted = "`$_.FullName -eq '$($resumeDir.Replace("'", "''"))'"
+    }
     $script = "while (`$true) { `$d = Get-ChildItem -LiteralPath '$runsDir' -Directory -ErrorAction SilentlyContinue | " +
-              "Where-Object { `$_.CreationTime -gt [datetime]'$($started.ToString('o'))' -and (Test-Path (Join-Path `$_.FullName 'events.jsonl')) } | " +
+              "Where-Object { $wanted -and (Test-Path (Join-Path `$_.FullName 'events.jsonl')) } | " +
               "Sort-Object CreationTime | Select-Object -Last 1; if (`$d) { & '$Pcsa' watch --port $port --run `"`$(`$d.FullName)`"; break }; Start-Sleep 2 }"
     Start-Process -FilePath "powershell.exe" -ArgumentList @("-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", $script) `
         -WorkingDirectory $Repo -WindowStyle Minimized | Out-Null

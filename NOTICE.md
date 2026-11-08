@@ -1,14 +1,15 @@
 # Notices
 
-This project's own code, its trained networks and its documentation are under the MIT License (`LICENSE`).
+This project's own code, its trained network and its documentation are under the MIT License (`LICENSE`).
 It builds on the work below.
 
 ## Included in this repository
 
 | What | Where | Source and license |
 |---|---|---|
-| Species, learnsets, battle text, rules and vocabulary tables | `assets/game/` | Generated from [Pokémon Showdown](https://github.com/smogon/pokemon-showdown) at the commit pinned in `tools.lock.json`. MIT License, Copyright (c) 2011-2026 Guangcong Luo and other contributors. |
-| Usage-ranked opponent builds | `assets/sets/top_builds.json` | Built from the Pokémon Champions ranked-usage statistics published by [championsbattledata.com](https://championsbattledata.com). Thanks to its maintainers for collecting and sharing the data. |
+| Species, learnsets, battle text, fallback PP rules, item/move/ability name tables | `assets/game/` | Generated from [Pokémon Showdown](https://github.com/smogon/pokemon-showdown) at the commit pinned in `tools.lock.json` (name tables via poke-env's gen 9 data). MIT License, Copyright (c) 2011-2026 Guangcong Luo and other contributors. |
+| Champions item effects, move PP and learnable moves (`vocab.json`: Champions items, `champions_moves`) | `assets/game/vocab.json` | From the Pokémon Champions battle data published by [championsbattledata.com](https://championsbattledata.com). |
+| The simulator's team catalog (usage-ranked builds per species) | `assets/sets/top_builds.json` | Built from the Pokémon Champions ranked-usage statistics published by [championsbattledata.com](https://championsbattledata.com). Thanks to its maintainers for collecting and sharing the data. |
 | Sprite network weights and reference vectors | `assets/sprites/` | Trained by this project (`pcsa train sprites`, `docs/sprites.md`). No sprite images are distributed. |
 
 ## Downloaded by `pcsa setup`, not redistributed
@@ -24,7 +25,8 @@ It builds on the work below.
 ## Python dependencies
 
 Installed from PyPI under their own licenses, among them [poke-env](https://github.com/hsahovic/poke-env)
-(MIT), numpy, OpenCV, pydantic, PyYAML, onnxruntime and, for training the sprite network, PyTorch.
+(MIT), [RapidOCR](https://github.com/RapidAI/RapidOCR) (Apache-2.0), numpy, OpenCV, pydantic, PyYAML,
+onnxruntime and, for training the sprite network, PyTorch.
 
 ## Trademarks
 

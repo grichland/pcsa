@@ -3,9 +3,9 @@
     uv run python scripts/build_top_builds.py <ranked_builds.json> [--keep 8]
 
 Every build is keyed by the species the game shows on team preview (the base species for Mega builds,
-holding its stone). A Mega build that names the Mega ability gets the base species' standard ability
-and is tagged `assumed_ability`. Builds are deduplicated and the `keep` highest-scoring ones per
-species are written, with the species' ladder usage count for team sampling.
+holding its stone). A Mega build that names the Mega ability gets the base species' standard ability.
+Builds are deduplicated and the `keep` highest-scoring ones per species are written, with the species'
+ladder usage count for team sampling.
 """
 
 from __future__ import annotations
@@ -35,7 +35,6 @@ def as_preview_species(build: dict, dex: dict[str, dict]) -> dict:
     out = {**build, "species": base["name"]}
     if to_id_str(build["ability"]) not in native:
         out["ability"] = base["abilities"]["0"]
-        out["assumed_ability"] = True
     return out
 
 
@@ -50,18 +49,14 @@ def identity(build: dict) -> tuple:
 
 
 def compact(build: dict) -> dict:
-    out = {
+    return {
         "item": build["item"],
         "ability": build["ability"],
         "nature": build["nature"],
         "points": {s: build["sp"][s] for s in STATS},
         "moves": list(build["moves"]),
         "score": round(build["log10_score"], 3),
-        "sources": sorted({s["site"] for s in build["sources"]}),
     }
-    if build.get("assumed_ability"):
-        out["assumed_ability"] = True
-    return out
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -80,9 +75,7 @@ def main(argv: list[str] | None = None) -> int:
         key = identity(build)
         kept = bucket["builds"].get(key)
         if kept is None or build["log10_score"] > kept["log10_score"]:
-            bucket["builds"][key] = {**build, "sources": build["sources"] + (kept["sources"] if kept else [])}
-        else:
-            kept["sources"] = kept["sources"] + build["sources"]
+            bucket["builds"][key] = build
     species = {}
     for name in sorted(per_species):
         builds = sorted(per_species[name]["builds"].values(), key=lambda b: -b["log10_score"])[: args.keep]

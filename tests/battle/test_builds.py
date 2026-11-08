@@ -17,7 +17,6 @@ CATALOG = {
                     "points": {"hp": 2, "atk": 32, "def": 0, "spa": 0, "spd": 0, "spe": 32},
                     "moves": ["Earthquake", "Outrage", "Rock Tomb", "Stealth Rock"],
                     "score": -2.3,
-                    "sources": ["GameWith"],
                 },
                 {
                     "item": "Focus Sash",
@@ -26,7 +25,6 @@ CATALOG = {
                     "points": {"hp": 2, "atk": 32, "def": 0, "spa": 0, "spd": 0, "spe": 32},
                     "moves": ["Earthquake", "Scale Shot", "Rock Tomb", "Swords Dance"],
                     "score": -2.9,
-                    "sources": ["op.gg"],
                 },
             ],
         }

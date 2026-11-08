@@ -1,5 +1,5 @@
 """ADB transport for observation: screenshots, shell queries and device facts. Every call retries and
-reconnects on failure. Device input (taps, drags) is not part of the public package.
+reconnects on failure. Device input (taps, drags) lives in pcsa.live.
 
 No recognition here. A failure that survives the configured attempts raises `Transient`, which the
 session turns into a bounded wait and the supervisor into a restart; it never ends the run.

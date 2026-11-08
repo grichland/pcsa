@@ -58,6 +58,7 @@ class ScriptedDevice:
         self.taps: list[tuple[int, str | None]] = []  # (step index, region name or None)
         self.rejected: list[tuple[int, int, int]] = []
         self.failed_captures = 0
+        self.party_focus: int | None = None  # the party row tapped on this step: the Switch In button sits under it
 
     @property
     def step(self) -> Step:
@@ -69,6 +70,7 @@ class ScriptedDevice:
 
     def _advance(self) -> None:
         self.index += 1
+        self.party_focus = None
         self.entered_at = self.clock.now()
 
     def _maybe_timeout(self) -> None:
@@ -79,9 +81,12 @@ class ScriptedDevice:
     def region_at(self, x: int, y: int) -> str | None:
         """Which configured region (name, or name+index for lists) contains a device pixel.
 
-        Regions of different screens overlap; the one the current screen allows wins."""
+        Regions of different screens overlap; the one the current screen allows wins. On the party
+        screens the Switch In button under the tapped row covers the listed rows, so it is checked first."""
         from pcsa.live.taps import ALLOWED
 
+        if self._on_switch_in(x, y):
+            return "switch_in"
         hits = []
         for name, value in self.screen.regions.items():
             regions = value if isinstance(value, list) else [value]
@@ -97,12 +102,17 @@ class ScriptedDevice:
         preferred = [label for name, label in hits if name in allowed]
         return (preferred or [label for _, label in hits] or [None])[0]
 
-    def _relative_hit(self, name: str, x: int, y: int) -> bool:
-        """A relative region (the Switch In button) placed against every party row centre."""
+    def _on_switch_in(self, x: int, y: int) -> bool:
+        if self.step.screen not in (Screen.FORCED, Screen.PARTY) or self.party_focus is None:
+            return False
+        return self._relative_hit("switch_in", x, y, (self.party_focus,))
+
+    def _relative_hit(self, name: str, x: int, y: int, only: tuple[int, ...] | None = None) -> bool:
+        """A relative region (the Switch In button) placed against every party row centre, or the `only` rows."""
         rows = self.screen.regions.get("party_rows")
         if not isinstance(rows, list):
             return False
-        for i in range(len(rows)):
+        for i in only if only is not None else range(len(rows)):
             centre = self.screen.resolve("party_rows", self.viewport, i).center
             origin = (centre[0] / self.viewport.w, centre[1] / self.viewport.h)
             if self.screen.resolve_relative(name, self.viewport, origin).contains(x, y):
@@ -138,10 +148,15 @@ class ScriptedDevice:
         if not matched:
             self.rejected.append((self.index, x, y))
             return Transport("tap", (x, y), 0.02)
+        self._note_party_focus(matched[0])
         advance_on = step.accept if step.advance_on is None else step.advance_on
         if any(n in advance_on or n.rstrip("0123456789") in advance_on for n in matched):
             self._advance()
         return Transport("tap", (x, y), 0.02)
+
+    def _note_party_focus(self, name: str) -> None:
+        if self.step.screen in (Screen.FORCED, Screen.PARTY) and name.startswith("party_rows"):
+            self.party_focus = int(name.removeprefix("party_rows"))
 
     def drag(self, x: int, y1: int, y2: int, steps: int = 8, hold_s: float = 0.35) -> Transport:
         return Transport("drag", (x, y1, y2), 0.1)

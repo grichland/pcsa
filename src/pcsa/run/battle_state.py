@@ -16,7 +16,6 @@ PIVOT_MOVES = frozenset(
 )
 NAME_SIMILARITY = 0.7
 ROSTER_SIZE = 6
-PICKS = 3
 
 
 def same_name(a: str | None, b: str | None) -> bool:

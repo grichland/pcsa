@@ -2,6 +2,7 @@
 
 Kinds: random; simple_heuristic (the heuristic with poke-env's default numbers); custom_heuristic (the
 heuristic with config/players/heuristic.yaml); max_damage (the highest-scoring attack, nothing else);
+best_matchup_max_damage (max_damage plus a switch out of a really bad matchup, config/players/best_matchup.yaml);
 mixed (a weighted pool of the others, one drawn per game).
 """
 
@@ -10,11 +11,12 @@ from __future__ import annotations
 from pcsa.common.config import Config
 from pcsa.common.errors import ConfigError
 from pcsa.players.base import Player
+from pcsa.players.best_matchup import BestMatchupMaxDamagePlayer, SwitchParams
 from pcsa.players.heuristic import HeuristicParams, HeuristicPlayer
 from pcsa.players.max_damage import MaxDamagePlayer
 from pcsa.players.random_player import RandomPlayer
 
-KINDS = ("random", "simple_heuristic", "custom_heuristic", "max_damage", "mixed")
+KINDS = ("random", "simple_heuristic", "custom_heuristic", "max_damage", "best_matchup_max_damage", "mixed")
 
 
 def build_player(config: Config, kind: str | None) -> Player:
@@ -24,13 +26,21 @@ def build_player(config: Config, kind: str | None) -> Player:
     if kind == "simple_heuristic":
         return HeuristicPlayer(HeuristicParams(), name=kind)
     if kind == "custom_heuristic":
-        path = config.directory / config.agent.policy.heuristic
-        return HeuristicPlayer(HeuristicParams.load(path) if path.is_file() else HeuristicParams(), name=kind)
+        return HeuristicPlayer(_heuristic_params(config), name=kind)
     if kind == "max_damage":
         return MaxDamagePlayer()
+    if kind == "best_matchup_max_damage":
+        path = config.directory / config.agent.policy.best_matchup
+        switch = SwitchParams.load(path) if path.is_file() else SwitchParams()
+        return BestMatchupMaxDamagePlayer(_heuristic_params(config), switch)
     if kind == "mixed":
-        from pcsa.players.mixed import MixedPolicyPlayer
+        from pcsa.players.mixed import MixedPlayer
 
         path = config.directory / config.agent.policy.mixed
-        return MixedPolicyPlayer.build(path, lambda k: build_player(config, k))
+        return MixedPlayer.build(path, lambda k: build_player(config, k))
     raise ConfigError(f"unknown player kind {kind!r} (one of {', '.join(KINDS)})")
+
+
+def _heuristic_params(config: Config) -> HeuristicParams:
+    path = config.directory / config.agent.policy.heuristic
+    return HeuristicParams.load(path) if path.is_file() else HeuristicParams()

@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
+from typing import Any
 
 from poke_env.teambuilder import TeambuilderPokemon
 
@@ -20,7 +21,6 @@ class OwnMember:
     species: str  # Showdown species, form resolved
     ability: str | None
     item: str | None
-    item_known: bool
     moves: tuple[str | None, ...]  # by slot, None where unread
     stats: dict[str, int] | None
     points: dict[str, int] | None
@@ -35,7 +35,6 @@ class OwnMember:
                 "species",
                 "ability",
                 "item",
-                "item_known",
                 "moves",
                 "stats",
                 "points",
@@ -100,6 +99,11 @@ def export_text(team: list[TeambuilderPokemon]) -> str:
 
 
 def team_from_record(record: dict) -> Team:
-    """Inverse of Team.record(); tolerates records written before item_known was saved."""
-    members = tuple(OwnMember(**{"item_known": True, **m, "moves": tuple(m["moves"])}) for m in record["members"])
-    return Team(record["name"], members)
+    """Inverse of Team.record(); keys OwnMember no longer has (older records) are ignored."""
+    known = {f.name for f in fields(OwnMember)}
+    members = []
+    for m in record["members"]:
+        kept: dict[str, Any] = {k: v for k, v in m.items() if k in known}
+        kept["moves"] = tuple(m["moves"])
+        members.append(OwnMember(**kept))
+    return Team(record["name"], tuple(members))

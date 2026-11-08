@@ -62,7 +62,6 @@ class Decider:
             degrade,
             self.rng,
             battle if degrade in (Degrade.FULL, Degrade.TRACKED) else None,
-            b.names,
         )
         try:
             chosen = self.player.choose_action(view, deadline)
@@ -73,7 +72,7 @@ class Decider:
             log.exception("player_failed", battle=b.index, degrade=str(degrade))
             reason = f"{reason}; player failed: {type(error).__name__}"
             degrade = Degrade.SCREEN if degrade in (Degrade.FULL, Degrade.TRACKED) else degrade
-            fallback_view = DecisionView(tuple(legal), screen, degrade, self.rng, None, b.names)
+            fallback_view = DecisionView(tuple(legal), screen, degrade, self.rng, None)
             chosen = self.fallback.choose_action(fallback_view, deadline)
             notes = {"fallback": "heuristic after player failure"}
         b.degrade_counts[str(degrade)] = b.degrade_counts.get(str(degrade), 0) + 1

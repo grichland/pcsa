@@ -298,12 +298,11 @@ def _last_move(t: Translator) -> list[str] | None:
 
 def _miss(t: Translator, row: RawRow, e: Event) -> None:
     """The game's only miss text is "<target> avoided the attack!": the attacker is the latest mover. Without
-    this turn's move row (the start of the turn was not captured) the row stays informational."""
+    this turn's move row (the start of the turn was not captured) the row writes nothing."""
     if (member := _need(t, row, e)) is None or e.side is None:
         return
     move = _last_move(t)
     if move is None or move[2].startswith(e.side):
-        t.out.informational += 1
         return
     t.apply(f"|-miss|{move[2]}|{t.ident(e.side, member)}")
 
@@ -312,7 +311,6 @@ def _hitcount(t: Translator, row: RawRow, e: Event) -> None:
     """The hit count row ("The Pokémon was hit N times!") names no one: the latest move's target took the hits."""
     move = _last_move(t)
     if move is None or len(move) < 5 or not move[4]:
-        t.out.informational += 1
         return
     t.apply(f"|-hitcount|{move[4]}|{e.data['count']}")
 
@@ -320,7 +318,6 @@ def _hitcount(t: Translator, row: RawRow, e: Event) -> None:
 def _prepare(t: Translator, row: RawRow, e: Event) -> None:
     member = t.member(e.side, e.name) if e.side else None
     if member is None or e.side is None:
-        t.out.informational += 1
         return
     ident = t.ident(e.side, member)
     move = next((line.split("|")[3] for line in reversed(t.out.lines) if line.startswith(f"|move|{ident}|")), None)
@@ -386,7 +383,5 @@ def dispatch(t: Translator, row: RawRow, e: Event) -> None:
         t.previous_event = previous if e.kind == "confusion_damage" else e
         handler(t, row, e)
         t.previous_event = e
-    elif e.kind in INFORMATIONAL_KINDS:
-        t.out.informational += 1
-    else:
+    elif e.kind not in INFORMATIONAL_KINDS:
         t.unmapped(row, e.data.get("reason", e.kind))

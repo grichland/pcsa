@@ -65,7 +65,7 @@ def champions_moves() -> dict[str, dict]:
 
 
 def base_data(move_id: str) -> dict:
-    """Public base move data: the Champions table where it has the move, else poke-env with Champions PP."""
+    """Base move data: the Champions table where it has the move, else poke-env with Champions PP."""
     champ = champions_moves().get(move_id)
     if champ:
         return dict(champ)

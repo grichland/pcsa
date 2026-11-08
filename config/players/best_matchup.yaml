@@ -1,0 +1,11 @@
+# Switch thresholds of the best_matchup_max_damage player (--player best_matchup_max_damage; else max_damage).
+# Matchup scores are the heuristic's, with the weights in heuristic.yaml.
+switch_below: -2.0     # switch out when the active's matchup is below this...
+switch_in_above: 1.0   # ...and the best bench member's matchup is above this
+# Chosen 2026-11-08 by sim (200 battles each vs max_damage, seed 1, top / noisy builds; 95% Wilson intervals):
+#   -0.49/0.78 (heuristic.yaml's)  54.0% [47.1, 60.8] / 49.0% [42.2, 55.9]   0.27 switches per battle
+#   -1.0/0.5                       50.5% [43.6, 57.4] / 49.0% [42.2, 55.9]   0.19
+#   -1.5/0.5                       49.5% [42.6, 56.4] / 51.5% [44.6, 58.3]   0.13
+#   -2.0/1.0 (chosen)              51.5% [44.6, 58.3] / 50.0% [43.1, 56.9]   0.07
+#   -3.0/1.0                       49.0% [42.2, 55.9] / 52.5% [45.6, 59.3]   0.04
+# All within noise of 50%: the switch neither helps nor hurts measurably; -2.0/1.0 keeps it rare.

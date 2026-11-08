@@ -10,13 +10,12 @@ showed it, and the config key or code branch that handles it. Add here; do not s
 | The move timer's first digit is sometimes dropped by OCR ("5" for "15") | live runs, Oct 2026 | `MIN_NEW_TURN_MOVE_TIME` guard before trusting a short timer |
 | OCR splits a button label into words ("Continue" / "Battling") | run 20261025-214430 | labels are joined inside each button region before matching |
 | The Rank-Up Reward popup slides in; its Close control is offered only once settled | probe1-20261023-223223 frame 00019 | rank-up rule requires the Close box inside its region |
-| A forced replacement screen after a pivot move (U-turn, Volt Switch) looks like a faint replacement | live runs, Oct 2026 | forced handler checks the last log row for a pivot move |
+| A forced replacement screen after a pivot move (U-turn, Volt Switch) looks like a faint replacement | live runs, Oct 2026 | the forced handler checks whether our last action this turn was a pivot move (`PIVOT_MOVES`, `live/turn.py`) |
 | "8/8" PP is read as "18" or "/8" | run 131901 frame 00032 | PP re-read with the line recognizer when the first read fails |
 | Screencap returns a buffer whose length does not match its header | run 20261029-201042 | device retry + reconnect |
 | "Communication was interrupted" returns the game to the title screen mid-battle | run 20261029-193300 | comm_error -> title -> lobby edge; pending battle resumed or finalized |
 | Before the first switch, poke-env keys the opponent team by species id ("taurospaldeablaze"), not "p2: Tauros" | run 20261101-193426 (team preview tracking failed) | `state.build` counts only "side: name" keys as sent out |
-| A saved team record did not include `item_known`, so a session restart could not restore the team | run 20261101-193426 | `teams.team_from_record` fills the default for old records; `record()` now saves it |
-| poke-env takes the first `\|player\|` line it sees as our side when neither name is ours, so a mirrored p2 channel replays with the roles swapped | sim arena, 2 Nov 2026 | `rollout.as_p1` renames the player lines to me/opponent and puts p1 first |
+| poke-env takes the first `\|player\|` line it sees as our side when neither name is ours, so a mirrored p2 channel replays with the roles swapped | sim arena, 2 Nov 2026 | `mirror.as_p1` renames the player lines to me/opponent and puts p1 first |
 | The Showdown server logs a `better-sqlite3` bindings CRASH at startup (`npm ci --ignore-scripts` skips the native build); battles are unaffected | sim arena, 2 Nov 2026 | ignored; the server's private-message store is never used |
 | An opponent forfeit during the move peek: the forfeit message shows only to the peek and the next poll is already the post-battle options screen, so the battle closed as `unknown` | run 20261103-151749 battle 1 | `TurnPipeline.peek` records `opponent_forfeit` when it sees the message |
 | The battle log never shows a critical hit: no "critical hit" row in 10,724 OCR'd rows of 222 recorded battles, and the Turn 9 frame of the Play Rough that fainted Gholdengo has none | run 20261102-104355 battle 8 (visit10-0) | not readable: the protocol carries no `-crit` (defect 1a below) |
@@ -39,7 +38,7 @@ Update this table whenever a defect is found or fixed.
 | 1a | Critical hits never written | the game's log panel has no critical-hit line: none in 10,724 OCR'd rows, none in the Turn 9 frame of `20261102-104355-run/battle-8` (Play Rough faints Gholdengo from more HP than a non-critical hit can take) | not readable from the log; a turn with a critical hit shows more damage than its move can deal |
 | 1b | Misses never written | the game logs a miss only as "X avoided the attack!"; the row was read and counted but not written | fixed 4 Nov 2026: `\|-miss\|attacker\|target` |
 | 2 | Whole lines missed | both examples are misses (1b), not dropped lines: `20261102-160125-run/battle-1` turn 4 "The opposing Glaceon avoided the attack!", `20261102-104355-run/battle-7` turn 15 "Charizard avoided the attack!" | fixed with 1b |
-| 3 | Wrong HP percentage read | not a misread: the frame and the row both say Volcarona 25% -> 75%. The estimated build holds a Sitrus Berry, which would have been eaten at 25% (then Morning Sun reaches 100%); the log proves Volcarona has none (it fell to 25% on turn 1 and ate nothing) | a build-estimate defect, not the reader's: the estimate (`builds.facts_for`) does not rule out an item that should have visibly acted (a berry below its threshold, Leftovers, Life Orb's recoil, Focus Sash, Air Balloon). Open |
+| 3 | Wrong HP percentage read | not a misread: the frame and the row both say Volcarona 25% -> 75%. The build estimate of the time held a Sitrus Berry, which would have been eaten at 25% (then Morning Sun reaches 100%); the log proves Volcarona has none (it fell to 25% on turn 1 and ate nothing) | not a reader defect: the estimate was wrong, the log right. Live play no longer estimates hidden builds, so nothing assumes an item the log has not shown |
 | 4 | Our own Mega Evolution only as a form change after our move | the climb toward the turn's start ran out of budget; the last capture, the only one showing our Mega rows (and Drought, the sun), was never confirmed by a second capture and was discarded, and a MOVE TIME warning over one capture had discarded the one before it | fixed 4 Nov 2026: the last capture is kept and merged when its rows join the others; a Mega seen only in a row sprite is written as `-item`/`detailschange`/`-mega` before our move. Recordings from before the fix still carry the late form change |
 | 5 | Protect/Detect activation and multi-hit counts never written | rows read, not written | multi-hit counts written (`-hitcount`); Protect's `-activate` deliberately not (see the table above) |
 | 6 | Own-team stats: Rotom's Attack implied by its logged damage (76) differs from the team export (63); Charizard's max HP mismatch | | Rotom open; Charizard: see "Charizard: max HP mismatch" below |
@@ -62,11 +61,12 @@ ability. `translate_events._ability` falls back to the all-abilities match (floo
 A locked phone screen (black with "Fully charged") classifies as `transition: black frame`; the session restarted
 after 150 s and kept seeing black. Harmless when the operator ended the session; a wake-on-black check is still open.
 
-## A run that ends abruptly leaves its dashboard and engine behind (2 Nov 2026)
-Closing the launcher window kills `pcsa run` but not the `pcsa watch` window (it keeps port 8765) nor the
-engine's node process, and anything from the repo still running holds `pcsa.exe`, which makes `uv run` fail
-with "Access is denied". `scripts/run_agent.ps1` now stops leftover `pcsa run` / `pcsa watch` processes from this repo, launches the venv's `pcsa.exe` directly, and moves the
-dashboard to the next free port if 8765 is still taken by something else.
+## A run that ends abruptly leaves its dashboard behind (2 Nov 2026)
+Closing the launcher window kills `pcsa run` but not the `pcsa watch` window (it keeps port 8765), and
+anything from the repo still running holds `pcsa.exe`, which makes `uv run` fail with "Access is denied".
+`scripts/run_agent.ps1` now stops leftover `pcsa run` / `pcsa watch` processes from this repo, launches the
+venv's `pcsa.exe` directly, and moves the dashboard to the next free port if 8765 is still taken by something
+else.
 
 ## "Charizard: max HP mismatch" fallback (run 20261102-175202)
 The summary screen's stat-point boxes were not read for one member, so its export carried no spread and gave
@@ -84,11 +84,6 @@ After Hydreigon (Choice Scarf) used Dark Pulse, the move list the players saw st
 the player chose Draco Meteor, the tap could not take, the turn was retried and the game sent Dark Pulse.
 `battle/state.choice_lock` now reads our member's last move since it was sent out from the protocol and marks
 every other move disabled while a Choice item is held (the sheet's item when the tracked item is unknown).
-
-## Team preview on the phone carried no battle evidence (2 Nov 2026)
-The preview view carried no protocol, request or export, so a player that needs them could not read the
-position and silently fell back to the heuristic's matchup table. The handler now builds that evidence from
-the preview battle it already constructs; the `decision` event of kind `team` records which player chose.
 
 ## A disconnect mid-battle stalled the run or restarted the session (2 Nov 2026)
 When the game lost its connection during a battle, the phone showed "Communication was interrupted", a

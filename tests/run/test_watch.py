@@ -43,7 +43,7 @@ RECORD = {
             ]
         },
     },
-    "notes": {"policy": "max_damage"},
+    "notes": {"member": "max_damage"},
 }
 
 
@@ -73,7 +73,7 @@ def test_rows_of_parses_both_sides() -> None:
 
 def test_state_fills_the_battle_panels_from_the_record(tmp_path: Path) -> None:
     state = RunReader(write_run(tmp_path)).state()
-    assert state["policy"] == "mixed" and state["turn"] == 4
+    assert state["player"] == "mixed" and state["turn"] == 4
     assert state["decision"]["order"] == "/choose move earthquake" and state["decision"]["kind"] == "action"
     assert [m["name"] for m in state["moves"]] == ["Earthquake", "Scale Shot"]
     assert state["moves"][1]["disabled"] is True and state["moves"][0]["pp"] == [10, 12]

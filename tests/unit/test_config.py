@@ -12,7 +12,6 @@ REPO = Path(__file__).resolve().parents[2]
 def test_repo_config_loads(config: Config) -> None:
     assert config.agent.timing.max_turn_s == 40.0
     assert config.agent.policy.kind == "custom_heuristic"
-    assert config.screen.reference_size == (2340, 1080)
 
 
 def test_every_screen_timeout_names_a_real_screen(config: Config) -> None:

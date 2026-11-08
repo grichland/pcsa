@@ -12,8 +12,8 @@ setup_requires_full_hp: false  # ...only at full HP (and in a favourable matchup
 stab: 1.54
 exact_own_stats: true      # use our real stats (Stats page) in damage estimates
 mega: first                # first | matchup | last | never
-# Tuned 2026-10-25 by self-play in the simulator:
-# vs the code defaults (HeuristicParams: 0.1/0.4/-2.0/0.0, hazards 2, setup at full HP only, stab 1.5)
-# 52.2% [50.1, 54.4] over 2000 mirrored pool battles, re-verified 52.3% [50.8, 53.8] over 4000 fresh ones
-# (95% Wilson intervals);
-# vs RandomPlayer 93.3% (was 91.8%), vs poke-env SimpleHeuristicsPlayer 72.8% (was 70.3%), 1000 each.
+# Historical tuning record, 2026-10-25 (simulator self-play with the code and player pool of that date):
+# vs the code defaults (HeuristicParams: 0.1/0.4/-2.0/0.0, hazards 2, setup at full HP only, stab 1.5;
+# today's simple_heuristic) 52.2% [50.1, 54.4] over 2000 mirrored pool battles, re-verified 52.3% [50.8, 53.8]
+# over 4000 fresh ones (95% Wilson intervals);
+# vs a random player 93.3% (was 91.8%), vs poke-env's own SimpleHeuristicsPlayer 72.8% (was 70.3%), 1000 each.

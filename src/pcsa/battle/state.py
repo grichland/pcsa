@@ -269,7 +269,7 @@ def normalize_fainted_request(battle) -> None:
 
 
 def replay(protocol: list[str], request: dict | None, tag: str = "replay") -> Battle:
-    """The Battle a saved decision describes: its protocol lines, then its request."""
+    """A p1 Battle rebuilt from protocol lines, then a request (a p2 seat mirrored into p1's view)."""
     battle = ChampionsBattle(tag, USERNAME, LOGGER, 9)
     battle.player_role = "p1"
     ended_fields: set[str] = set()

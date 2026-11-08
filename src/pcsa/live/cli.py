@@ -1,4 +1,4 @@
-"""`pcsa run` and `pcsa nav`: the live-play commands, registered by `pcsa.cli` only when this package exists."""
+"""`pcsa run` and `pcsa nav`: the live-play commands, registered by `pcsa.cli`."""
 
 from __future__ import annotations
 

@@ -19,7 +19,7 @@ from pcsa.common.errors import ConfigError
 from pcsa.players.base import DecisionView, LegalAction, Player, TeamPreviewView
 
 
-class MixedPolicyPlayer:
+class MixedPlayer:
     name = "mixed"
 
     def __init__(
@@ -36,7 +36,7 @@ class MixedPolicyPlayer:
         self._turn = -1
 
     @classmethod
-    def build(cls, path: Path, build_member: Callable[[str], Player], seed: int | None = None) -> MixedPolicyPlayer:
+    def build(cls, path: Path, build_member: Callable[[str], Player], seed: int | None = None) -> MixedPlayer:
         """From a yaml file: `members: [{kind, weight}, ...]`, `per_decision`, `seed`."""
         data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
         unknown = set(data) - {"members", "per_decision", "seed"}
@@ -58,7 +58,7 @@ class MixedPolicyPlayer:
         }
 
     def notes(self) -> dict:
-        return {"policy": self.current.name, **self.current.notes()}
+        return {"member": self.current.name, **self.current.notes()}
 
     def draw(self) -> Player:
         """A member by weight; it becomes the current player."""

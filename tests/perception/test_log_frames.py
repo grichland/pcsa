@@ -2,13 +2,15 @@
 
 The climb toward Turn 1's start ran out of budget: the MOVE TIME warning covered one capture and the last
 capture, the only one showing our Mega Evolution, Drought and the sun, was never compared with a second one.
-`views.json` caches what the panel reader read from each frame (`-m ocr` re-reads them). The frames are game
-captures and stay out of git; the tests that need their pixels skip in a checkout without them.
+`views.json` caches what the panel reader read from each frame (`-m ocr` re-reads them), with the trainer names
+anonymised. The frames are game captures and stay out of git; the tests that need their pixels skip in a checkout
+without them.
 """
 
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import cv2
@@ -37,6 +39,19 @@ SETTLED_ROWS = [
     "HP Lost: Charizard’s HP: 185 → 174",
 ]
 BUDGET_S = 60.0
+PREFIX = r"(?:[A-Z][A-Za-z ]*: )?"
+TRAINER_ROWS = (  # rows that embed a trainer name: (before)(name)(after)
+    re.compile(r"^(.* is reacting to )(.*?)([’']s Omni Ring!)$"),
+    re.compile(rf"^({PREFIX})(.*?)( sent out .+)$"),
+    re.compile(rf"^({PREFIX})(.*?)( withdrew .+)$"),
+)
+
+
+def anonymous(text: str) -> str:
+    """The row with any trainer name it embeds replaced, so real and anonymised names compare equal."""
+    for pattern in TRAINER_ROWS:
+        text = pattern.sub(lambda m: f"{m[1]}<trainer>{m[3]}", text)
+    return text
 
 
 def image(name: str) -> np.ndarray:
@@ -82,4 +97,14 @@ def test_the_panel_reader_reads_the_cached_rows(name: str, config) -> None:
     from pcsa.phone.ocr import RapidOcrReader
 
     view = read_view(image(name), RapidOcrReader(config.agent.ocr), name, sprites=False)
-    assert [r.text for r in view.rows] == [r.text for r in cached_view(name).rows]
+    assert [anonymous(r.text) for r in view.rows] == [anonymous(r.text) for r in cached_view(name).rows]
+
+
+def test_trainer_names_compare_equal_whatever_the_name() -> None:
+    ring = "Charizard’s Charizardite Y is reacting to {}’s Omni Ring!"
+    assert anonymous(ring.format("Trainer")) == anonymous(ring.format("Somebody Else"))
+    plain = "Venusaur's Venusaurite is reacting to Ann's Omni Ring!"
+    assert anonymous(plain) == "Venusaur's Venusaurite is reacting to <trainer>'s Omni Ring!"
+    assert anonymous("Opponent sent out Snorlax!") == anonymous("Rival sent out Snorlax!")
+    assert anonymous("Switch: Opponent withdrew Snorlax!") == "Switch: <trainer> withdrew Snorlax!"
+    assert anonymous("Move: Charizard used Weather Ball!") == "Move: Charizard used Weather Ball!"

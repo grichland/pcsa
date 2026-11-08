@@ -47,7 +47,6 @@ class DecisionView:
     degrade: Degrade
     rng: random.Random
     battle: Battle | None = None
-    picks: tuple[str | None, ...] = ()  # our selected members' names, slot order
 
 
 @dataclass(frozen=True)

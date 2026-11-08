@@ -8,9 +8,7 @@ from pcsa.common.types import MoveInfo
 from tests.battle.conftest import PRELUDE
 
 MOVES = ("Dark Pulse", "Draco Meteor", "Flamethrower", "Focus Blast")
-TEAM = Team(
-    None, (OwnMember(0, "Hydreigon", "Hydreigon", "Levitate", "Choice Scarf", True, MOVES, None, None, "Timid"),)
-)
+TEAM = Team(None, (OwnMember(0, "Hydreigon", "Hydreigon", "Levitate", "Choice Scarf", MOVES, None, None, "Timid"),))
 START = [
     *PRELUDE,
     "|switch|p1a: Hydreigon|Hydreigon, L50|169/169",

@@ -138,7 +138,7 @@ function renderStatus(state) {
   text("top-battle", state.battle?.index);
   text("top-turn", state.turn);
   text("top-screen", state.screen);
-  text("top-policy", state.policy);
+  text("top-player", state.player);
   const r = state.session_record || {};
   const extra = (r.draws ? ` ${r.draws}D` : "") + (r.forfeits ? ` ${r.forfeits}F` : "");
   text("session-record", `${r.wins || 0}W ${r.losses || 0}L${extra}`);

@@ -1,7 +1,6 @@
 # Where things are on the screen, as fractions of the game viewport (0..1). The device profile
 # (config/devices/<model>.yaml, written by `pcsa calibrate`) says where the viewport sits in the frame.
 # Values were measured on a 2340 x 1080 frame; a region of {x: 0.5, w: 0.1} spans 1170..1404 px there.
-reference_size: [2340, 1080]
 
 regions:
   # Lobby and menus

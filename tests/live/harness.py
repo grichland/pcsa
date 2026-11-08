@@ -21,6 +21,15 @@ from pcsa.players.heuristic import HeuristicPlayer
 from pcsa.run.battle_state import BattleRecord, RunState
 from pcsa.run.recorder import Recorder
 
+STAT_KEYS = ("hp", "atk", "def", "spa", "spd", "spe")
+STATS = {  # level-50 values
+    "Garchomp": (183, 182, 115, 100, 106, 169),
+    "Primarina": (155, 94, 94, 178, 136, 80),
+    "Corviknight": (205, 107, 125, 63, 105, 87),
+    "Gholdengo": (162, 72, 115, 185, 111, 104),
+    "Mimikyu": (130, 142, 100, 63, 125, 148),
+    "Archaludon": (165, 125, 150, 177, 85, 90),
+}
 TEAM = {
     "name": "Team 1",
     "members": [
@@ -30,13 +39,12 @@ TEAM = {
             "species": n,
             "ability": None,
             "item": None,
-            "item_known": True,
             "moves": (None,) * 4,
-            "stats": None,
+            "stats": dict(zip(STAT_KEYS, values, strict=True)),
             "points": None,
             "nature": None,
         }
-        for i, n in enumerate(("Garchomp", "Primarina", "Corviknight", "Gholdengo", "Mimikyu", "Archaludon"))
+        for i, (n, values) in enumerate(STATS.items())
     ],
 }
 ROSTER = tuple(m["name"] for m in TEAM["members"])

@@ -56,7 +56,7 @@ def _complete(values: dict) -> dict | None:
 
 def _points(m: RosterMember, stats: dict | None) -> tuple[dict | None, str | None]:
     """The read stat points and nature; when the points were not read but the stats were, the points that
-    reproduce those exact stats (the engine needs them: a spread-less export gets the wrong max HP)."""
+    reproduce those exact stats (a spread-less export gets the wrong max HP)."""
     read = _complete(m.stats.points) if m.stats else None
     nature = m.stats.nature if m.stats else None
     if read is not None or stats is None:
@@ -82,7 +82,6 @@ def from_sheet(sheet: TeamSheet) -> Team:
                 species=resolve_species(m),
                 ability=m.ability.value if m.ability.status == "known" else None,
                 item=m.item.value if m.item.status == "known" else None,
-                item_known=m.item.status != "unknown",
                 moves=tuple(move.value if move.status == "known" else None for move in m.moves),
                 stats=complete,
                 points=points,

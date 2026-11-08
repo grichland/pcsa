@@ -3,7 +3,7 @@
 - no file over MAX_FILE_LINES, no function over MAX_FUNCTION_LINES
 - `Path(...).parents` only in common/paths.py (every other module asks paths.py)
 - `time.*` only in common/clock.py (so tests control time)
-- `print` only in cli.py, train_cli.py and common/setup.py (their job is console output)
+- `print` only in cli.py and common/setup.py (their job is console output)
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ from pcsa.common import paths
 MAX_FILE_LINES = 400
 MAX_FUNCTION_LINES = 60
 SRC = paths.repo_root() / "src" / "pcsa"
-PRINT_ALLOWED = {"cli.py", "train_cli.py", "setup.py"}
+PRINT_ALLOWED = {"cli.py", "setup.py"}
 
 
 def source_files() -> list[Path]:

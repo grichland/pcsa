@@ -20,7 +20,7 @@ from poke_env.teambuilder import Teambuilder
 
 from pcsa.battle.state import replay
 from pcsa.common.clock import Clock, Deadline, SystemClock
-from pcsa.players import rollout
+from pcsa.players import mirror
 from pcsa.players.base import DecisionView, Degrade, Player, ScreenFacts, TeamPreviewView
 
 _names = itertools.count(1)
@@ -86,19 +86,13 @@ class ArenaPlayer(PokeEnvPlayer):
         return "/team " + "".join(str(i + 1) for i in picks)
 
     def choose_move(self, battle) -> BattleOrder:
-        packet = {
-            "side": battle.player_role,
-            "protocol": ["|".join(p) for p in battle._replay_data],
-            "request": battle.last_request,
-        }
-        lines, request = rollout.as_p1(packet)
+        protocol = ["|".join(p) for p in battle._replay_data]
+        lines, request = mirror.as_p1(battle.player_role, protocol, battle.last_request)
         seen = battle if battle.player_role == "p1" else replay(lines, request, battle.battle_tag)
-        legal = rollout.legal_actions(seen)
+        legal = mirror.legal_actions(seen)
         if not legal:
             return self.choose_random_move(battle)
-        roster = [key.split(": ", 1)[1] for key in battle.team]
-        picks = tuple(self.picks.get(battle.battle_tag, roster[:3]))
-        view = DecisionView(legal, ScreenFacts(), Degrade.FULL, self.rng, seen, picks)  # type: ignore[arg-type]
+        view = DecisionView(legal, ScreenFacts(), Degrade.FULL, self.rng, seen)  # type: ignore[arg-type]
         chosen = self.inner.choose_action(view, Deadline.after(self.clock, self.decision_s))
         notes = self.inner.notes()
         if notes:

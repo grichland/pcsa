@@ -37,7 +37,6 @@ IMPORTANT = {
 DISPLAY, DISPLAY_META = "display.jpg", "display.json"
 STALE_S = 35
 TIMELINE = 40
-DECISIONS = 12
 
 
 def latest_run() -> Path | None:
@@ -80,7 +79,6 @@ class _Scan:
 
     def __init__(self) -> None:
         self.timeline: deque = deque(maxlen=TIMELINE)
-        self.decisions: deque = deque(maxlen=DECISIONS)
         self.latest_obs: dict = {}
         self.latest_moves: dict = {}
         self.battles: dict[int, dict] = {}
@@ -94,8 +92,6 @@ class _Scan:
             self.latest_obs = event
             if (event.get("fields") or {}).get("moves"):
                 self.latest_moves = event
-        elif kind == "decision":
-            self.decisions.append(event)
         elif kind == "battle_start":
             self.battles[event["battle"]] = {"index": event["battle"], "outcome": None, "roster": event.get("roster")}
         elif kind == "battle_end":
@@ -146,9 +142,8 @@ class RunReader:
         age = self._age(events_path)
         last = scan.last
         stopped = last.get("event") == "run_end"
-        battles, decisions, latest_obs, latest_moves, record, timeline = (
+        battles, latest_obs, latest_moves, record, timeline = (
             scan.battles,
-            scan.decisions,
             scan.latest_obs,
             scan.latest_moves,
             scan.record,
@@ -161,26 +156,19 @@ class RunReader:
             "status": "STOPPED" if stopped else "LIVE" if age <= STALE_S else "STALE",
             "run_name": self.run.name,
             "age_s": age,
-            "policy": manifest.get("player"),
-            "live_stream": False,
+            "player": manifest.get("player"),
             "screen": latest_obs.get("screen"),
-            "screen_reason": latest_obs.get("reason"),
             "turn": None,
             "frame_id": frame_id,
             "frame_path": frame_path,
             "display_fps": (_read_json(self.run / DISPLAY_META) or {}).get("fps"),
-            "frame_type": "image/jpeg",
             "battle": current,
             "session_record": record,
             "active": {"name": None, "hp": None},
             "opponent": {"name": None, "preview": []},
             "moves": (latest_moves.get("fields") or {}).get("moves") or [],
             "decision": None,
-            "decisions": list(decisions),
             "team": [],
-            "battle_count": len(battles),
-            "completed_battles": sum(1 for b in battles.values() if b.get("outcome")),
-            "summary": _read_json(self.run / "summary.json"),
             "battle_state": {
                 "battle": str(current["index"]) if current else "pending",
                 "screen": str(latest_obs.get("screen")),

@@ -95,7 +95,8 @@ class HeuristicPlayer:
         b = active.boosts
         if b["def"] <= p.drop_threshold or b["spd"] <= p.drop_threshold:
             return True
-        attack = "atk" if (active.stats or {}).get("atk", 0) >= (active.stats or {}).get("spa", 0) else "spa"
+        stats = active.stats or {}
+        attack = "atk" if (stats.get("atk") or 0) >= (stats.get("spa") or 0) else "spa"  # an unread stat counts as 0
         return b[attack] <= p.drop_threshold or self.matchup(active, opponent, battle) < p.switch_threshold
 
     def want_mega(self, battle, own_left: int) -> bool:

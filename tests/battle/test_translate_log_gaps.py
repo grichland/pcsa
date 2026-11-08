@@ -1,5 +1,5 @@
-"""Rows the engine check found unwritten: misses, multi-hit counts, and our Mega Evolution when its rows were
-not captured. The texts are the OCR'd rows of the recorded battles named in each test."""
+"""Log rows that name no attacker or target on their own: misses, multi-hit counts, and our Mega Evolution when
+its rows were not captured. The texts are the OCR'd rows of the recorded battles named in each test."""
 
 from pcsa.battle.log_rows import RawRow, split_category
 from pcsa.battle.moves import observed_form
@@ -52,12 +52,10 @@ def test_a_missed_leech_seed_seeds_no_one() -> None:
     assert not t.battle.active_pokemon.effects
 
 
-def test_a_miss_without_its_move_row_stays_informational() -> None:
+def test_a_miss_without_its_move_row_writes_nothing() -> None:
     t = translator_for(("Charizard", "Charizard", 153), [("Venusaur", "Venusaur")], turn=2)
-    before = t.out.informational
     feed(t, ["Charizard avoided the attack!"])
     assert t.out.unmapped == []
-    assert t.out.informational == before + 1
     assert not any(line.startswith("|-miss|") for line in t.out.lines)
 
 

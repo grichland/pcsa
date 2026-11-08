@@ -2,7 +2,7 @@
 
 The Battle is the only state. A recognized row sprite decides species and form before the text
 event is applied; preview sprites and names are the fallback. Rows that map to nothing are listed
-as unmapped; informational rows (effectiveness, Protect blocking a move) are counted.
+as unmapped; informational rows (effectiveness, Protect blocking a move) write nothing.
 """
 
 from __future__ import annotations
@@ -77,7 +77,6 @@ class Member:
 class Translation:
     lines: list[str] = field(default_factory=list)
     unmapped: list[dict] = field(default_factory=list)
-    informational: int = 0
     warnings: list[str] = field(default_factory=list)
     revealed_abilities: dict[str, str] = field(default_factory=dict)
     inferred: list[dict] = field(default_factory=list)

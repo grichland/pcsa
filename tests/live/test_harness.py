@@ -17,6 +17,11 @@ MOVES = tuple(
     MoveInfo(i, n, (10, 10)) for i, n in enumerate(("Earthquake", "Dragon Claw", "Swords Dance", "Protect"))
 )
 BOX = {"name": "x", "center": (1400, 300), "box": (1300, 280, 1500, 320)}
+PARTY = (
+    PartyMember(0, "Garchomp", (0, 180), fainted=True),
+    PartyMember(1, "Primarina", (170, 170)),
+    PartyMember(2, "Corviknight", (200, 200)),
+)
 TEAM_FIELDS = {"roster": ROSTER, "markers": {}, "timer": "0:45", "selected_count": 0}
 
 
@@ -66,6 +71,42 @@ def end_of_battle(outcome: str = "win") -> list[Step]:
     ]
 
 
+def events(recorder) -> list[dict]:
+    lines = (recorder.dir / "events.jsonl").read_text(encoding="utf-8").splitlines()
+    return [json.loads(line) for line in lines]
+
+
+def assert_played_cleanly(recorder) -> None:
+    """The player never raised, and every action was chosen on the full tracked battle."""
+    failures = [e for e in events(recorder) if e["event"] == "player_failed"]
+    assert failures == [], failures[0].get("traceback")
+    actions = [
+        json.loads(p.read_text(encoding="utf-8"))
+        for p in sorted(recorder.dir.glob("battle-*/decisions/*-action.json"))
+    ]
+    assert actions and {a["degrade"] for a in actions} == {"full"}, [a["degrade"] for a in actions]
+
+
+def forced_steps(party: tuple[PartyMember, ...]) -> list[Step]:
+    """One turn, a faint, the forced replacement screen, then a loss."""
+    return (
+        lobby_to_team_select()
+        + one_turn(1, TURN1)
+        + [
+            Step(
+                Screen.FORCED,
+                {"party": party, "focused_row": None, "no_back": True},
+                accept=("party_rows", "switch_in"),
+                advance_on=("switch_in",),
+                log_rows=TURN2 + ("Fainted: Garchomp fainted!",),
+                log_turn=2,
+            ),
+            Step(Screen.WAIT, {}, after_s=3),
+        ]
+        + end_of_battle("loss")
+    )
+
+
 TURN1 = ("Go! Garchomp!", "Opponent sent out Snorlax!")
 TURN2 = (
     "Move: Garchomp used Earthquake!",
@@ -85,39 +126,29 @@ def test_one_battle_start_to_finish(config: Config, tmp_path: Path) -> None:
     assert battle["outcome"] == "win" and len(battle["turns"]) == 2
     decisions = sorted((recorder.dir / "battle-1" / "decisions").glob("*.json"))
     assert [p.name for p in decisions] == ["0000-action.json", "0001-action.json"]
-    first = json.loads(decisions[0].read_text(encoding="utf-8"))
-    assert first["degrade"] in ("full", "tracked", "screen")
+    assert_played_cleanly(recorder)
     assert (recorder.dir / "battle-1" / "battle_log.txt").is_file()
     assert state.rank_history[-1]["rating"] == 1210.0
 
 
 def test_forced_replacement_after_a_faint(config: Config, tmp_path: Path) -> None:
-    party = (
-        PartyMember(0, "Garchomp", (0, 180), fainted=True),
-        PartyMember(1, "Primarina", (170, 170)),
-        PartyMember(2, "Corviknight", (200, 200)),
-    )
-    faint_rows = TURN2 + ("Fainted: Garchomp fainted!",)
-    steps = (
-        lobby_to_team_select()
-        + one_turn(1, TURN1)
-        + [
-            Step(
-                Screen.FORCED,
-                {"party": party, "focused_row": None, "no_back": True},
-                accept=("party_rows", "switch_in"),
-                advance_on=("switch_in",),
-                log_rows=faint_rows,
-                log_turn=2,
-            ),
-            Step(Screen.WAIT, {}, after_s=3),
-        ]
-        + end_of_battle("loss")
-    )
-    state, device, recorder = run_script(config, steps, tmp_path)
+    state, device, recorder = run_script(config, forced_steps(PARTY), tmp_path)
     assert state.outcomes == ["loss"] and device.rejected == []
     forced = json.loads((recorder.dir / "battle-1" / "decisions" / "0001-forced.json").read_text(encoding="utf-8"))
     assert forced["choice"] in ("switch1", "switch2")
+    assert_played_cleanly(recorder)
+
+
+def test_forced_replacement_into_the_first_bench_row(config: Config, tmp_path: Path) -> None:
+    """Row 1's Switch In button covers row 2: the tap must count as Switch In, not as a row."""
+    party = (PARTY[0], PARTY[1], PartyMember(2, "Corviknight", (0, 200), fainted=True))
+    steps = forced_steps(party)
+    state, device, recorder = run_script(config, steps, tmp_path)
+    assert state.outcomes == ["loss"] and device.rejected == [], device.rejected
+    forced = json.loads((recorder.dir / "battle-1" / "decisions" / "0001-forced.json").read_text(encoding="utf-8"))
+    assert forced["choice"] == "switch1"
+    forced_step = next(i for i, step in enumerate(steps) if step.screen is Screen.FORCED)
+    assert [name for i, name in device.taps if i == forced_step] == ["party_rows1", "party_rows1", "switch_in"]
 
 
 def test_forfeit_seen_only_by_the_move_peek_is_recorded(config: Config, tmp_path: Path) -> None:
@@ -217,11 +248,7 @@ def test_every_decision_precedes_its_deadline(config: Config, tmp_path: Path) ->
     battle = json.loads((recorder.dir / "battle-1" / "battle.json").read_text(encoding="utf-8"))
     for turn in battle["turns"]:
         assert turn["first_capture_to_last_tap_s"] <= config.agent.timing.max_turn_s
-
-
-def events(recorder) -> list[dict]:
-    lines = (recorder.dir / "events.jsonl").read_text(encoding="utf-8").splitlines()
-    return [json.loads(line) for line in lines]
+    assert_played_cleanly(recorder)
 
 
 def test_disconnect_mid_battle_is_tapped_through_and_the_battle_continues(config: Config, tmp_path: Path) -> None:

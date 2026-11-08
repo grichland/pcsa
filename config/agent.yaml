@@ -16,7 +16,6 @@ run:
   battles: 10             # battles with a decided outcome before the run finishes
   max_battles_total: 12   # bound on battles started, including opponent forfeits
   count_forfeits: false
-  seed: null              # null: derived from the clock and recorded
   max_restarts_per_hour: 20
 
 timing:
@@ -100,7 +99,7 @@ record:
   display_fps: 1
 
 policy:
-  kind: custom_heuristic  # random | simple_heuristic | custom_heuristic | max_damage | mixed
+  kind: custom_heuristic  # random | simple_heuristic | custom_heuristic | max_damage | best_matchup_max_damage | mixed
   heuristic: players/heuristic.yaml      # the custom heuristic's tuned parameters
   mixed: players/mixed.yaml
 

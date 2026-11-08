@@ -19,7 +19,7 @@ class Engine:
     format: str
 
     @classmethod
-    def locate(cls, fmt: str | None = None) -> Engine:
+    def locate(cls, fmt: str) -> Engine:
         """The installed engine, or a ConfigError naming the setup command."""
         lock = load_lock()
         node = paths.tool(lock["node"]["into"]) / "node.exe"
@@ -30,7 +30,7 @@ class Engine:
         commit = marker.read_text(encoding="utf-8").strip()
         if commit != lock["showdown"]["commit"]:
             raise ConfigError(f"Showdown build {commit[:10]} is not the pinned {lock['showdown']['commit'][:10]}")
-        return cls(node, showdown, fmt or lock["showdown"]["format"])
+        return cls(node, showdown, fmt)
 
     def script(self, name: str) -> Path:
         return JS_DIR / name

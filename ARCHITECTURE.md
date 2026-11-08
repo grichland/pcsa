@@ -10,25 +10,24 @@ common  <-  battle  <-  phone | sim  <-  players  <-  run  <-  live  <-  cli
 | Package | Question it answers |
 |---|---|
 | `common` | paths, config schema, clock, logging, errors, shared types |
-| `battle` | what is going on in the fight: game data, team text, log rows to protocol, battle state, build estimates |
+| `battle` | what is going on in the fight: game data, team text, log rows to protocol, battle state, the usage-ranked set catalog the simulator's teams come from |
 | `phone` | reading the device: adb screenshots, screens, OCR, sprites, the log panel, team sheets, calibration |
 | `sim` | the Showdown engine: the local server and the team validator `pcsa sim play` runs on |
-| `players` | how it decides: five kinds (random, the two heuristics, max_damage, the mixed pool) |
+| `players` | how it decides: six kinds (random, the two heuristics, max_damage, best_matchup_max_damage, the mixed pool) |
 | `run` | run records and their read-only views: battle bookkeeping, the recorder, `pcsa watch`, `pcsa sim play` |
-| `live` | live play on the phone: device input, taps, navigation, session, turn pipeline, handlers, supervisor, `pcsa run` (private: not in the public repository) |
+| `live` | live play on the phone: device input, taps, navigation, session, turn pipeline, handlers, supervisor, `pcsa run` |
 | `sprite_training` | the sprite network's trainer, `pcsa train sprites` (needs the `train` extra; nothing at runtime imports it) |
 
 The direction is enforced by `import-linter` (`.importlinter`) in CI. `phone` never imports `battle` state
 construction; `battle` never imports `phone`; that boundary is what makes the loop testable without a phone.
-No package imports `live`: `cli` loads it only when it is present, so the public repository, which leaves
-it out, is complete without it.
+No package imports `live` except `cli`.
 
 ## Rules enforced by tooling
 
 - Every timeout, retry count and screen region lives in `config/`. Unknown keys are rejected. Measured pixel
   thresholds stay named constants next to the vision code that uses them (`phone/screens.py`, `fields.py`, ...).
-- `time.*` only in `common/clock.py`; `Path(...).parents` only in `common/paths.py`; `print` only in `cli.py`,
-  `train_cli.py` and `common/setup.py`. Files stay under 400 lines and functions under 60
+- `time.*` only in `common/clock.py`; `Path(...).parents` only in `common/paths.py`; `print` only in `cli.py` and
+  `common/setup.py`. Files stay under 400 lines and functions under 60
   (tests/unit/test_code_limits.py).
 - No side channels: a caller reads returned values or declared protocol methods, never attributes set on the
   callee afterwards. No attribute injection after construction.

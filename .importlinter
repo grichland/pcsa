@@ -27,17 +27,3 @@ source_modules =
 forbidden_modules =
     pcsa.sprite_training
 allow_indirect_imports = False
-
-[importlinter:contract:live-is-private]
-name = Nothing public imports the private live-play package (only pcsa.cli loads it, when present)
-type = forbidden
-source_modules =
-    pcsa.common
-    pcsa.battle
-    pcsa.phone
-    pcsa.sim
-    pcsa.players
-    pcsa.run
-    pcsa.sprite_training
-forbidden_modules =
-    pcsa.live

@@ -1,4 +1,4 @@
-"""One side's engine channel as p1 sees it (mirrored for p2), and poke-env's valid orders as LegalActions."""
+"""A p2 seat's protocol and request mirrored into the p1 view our Battle expects, and a request's legal actions."""
 
 from __future__ import annotations
 
@@ -44,10 +44,9 @@ def _player_lines(lines: list[str]) -> list[str]:
     return out
 
 
-def as_p1(packet: dict) -> tuple[list[str], dict]:
-    """A side's channel as p1 sees it (p2's lines and request are mirrored)."""
-    lines, request = packet["protocol"], packet["request"]
-    if packet["side"] == "p2":
+def as_p1(side: str | None, lines: list[str], request: dict) -> tuple[list[str], dict]:
+    """A seat's protocol lines and request as p1 sees them (p2's are mirrored)."""
+    if side == "p2":
         return _player_lines(mirror_protocol(lines)), mirror_request(request)
     return _player_lines(list(lines)), request
 

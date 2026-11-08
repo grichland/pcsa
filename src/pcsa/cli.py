@@ -3,18 +3,17 @@
 pcsa setup [--with sim] [--with train] [--check]   install or check tools, output folder, device
 pcsa doctor                                         same checks, no installs
 pcsa observe / calibrate / scout / watch / sim play / train ...
-pcsa run / nav                                      live play: only with the private pcsa.live package
+pcsa run / nav                                      live play on the phone
 """
 
 from __future__ import annotations
 
 import argparse
-import importlib
-import importlib.util
 import sys
 
 from pcsa import __version__
 from pcsa.common.errors import ConfigError
+from pcsa.live import cli as live
 from pcsa.players.factory import KINDS
 from pcsa.train_cli import train, train_parser
 
@@ -65,15 +64,8 @@ def build_parser() -> argparse.ArgumentParser:
     play.add_argument("--port", type=int, default=None)
 
     train_parser(commands)
-    live = _live()
-    if live is not None:
-        live.add_parsers(commands, _config_args)
+    live.add_parsers(commands, _config_args)
     return parser
-
-
-def _live():
-    """The private live-play package (`pcsa run`, `pcsa nav`), or None in the public distribution."""
-    return importlib.import_module("pcsa.live.cli") if importlib.util.find_spec("pcsa.live") else None
 
 
 def _load(args: argparse.Namespace):
@@ -98,8 +90,7 @@ def dispatch(args: argparse.Namespace) -> int:
         if args.command == "calibrate":
             return commands.calibrate_command(config)
         return scout.scout_command(config, args.interval)
-    live = _live()
-    if live is not None and args.command in live.COMMANDS:
+    if args.command in live.COMMANDS:
         return live.dispatch(args, _load(args))
     if args.command == "watch":
         from pathlib import Path

@@ -254,7 +254,10 @@ def _print_footer(groups: set[str], problems: int) -> None:
     if problems:
         print(f"\n{problems} problem(s) to fix before using the phone or the simulator")
         return
-    print("\nready: pcsa observe, pcsa sim play")
+    ready = ["pcsa observe", "pcsa run"]
+    ready += ["pcsa sim play"] if "sim" in groups else []
+    ready += ["pcsa train"] if "train" in groups else []
+    print(f"\nready: {', '.join(ready)}")
     for group in OPTIONAL_GROUPS:
         if group not in groups:
             what = "Node + Showdown (for pcsa sim play)" if group == "sim" else "torch (for pcsa train)"

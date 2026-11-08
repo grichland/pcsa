@@ -45,7 +45,6 @@ class RunConfig(Strict):
     battles: int = 10
     max_battles_total: int = 12
     count_forfeits: bool = False
-    seed: int | None = None
     max_restarts_per_hour: int = 20
 
 
@@ -105,8 +104,11 @@ class DegradeConfig(Strict):
 
 
 class PolicyConfig(Strict):
-    kind: Literal["random", "simple_heuristic", "custom_heuristic", "max_damage", "mixed"] = "custom_heuristic"
+    kind: Literal[
+        "random", "simple_heuristic", "custom_heuristic", "max_damage", "best_matchup_max_damage", "mixed"
+    ] = "custom_heuristic"
     heuristic: str = "players/heuristic.yaml"  # the custom heuristic's parameters
+    best_matchup: str = "players/best_matchup.yaml"  # best_matchup_max_damage's switch thresholds
     mixed: str = "players/mixed.yaml"
 
 
@@ -194,7 +196,6 @@ class Rect(Strict):
 
 
 class ScreenConfig(Strict):
-    reference_size: tuple[int, int] = (2340, 1080)
     regions: dict[str, Region | list[Region]]
     forbidden: list[Circle] = Field(default_factory=list)
 

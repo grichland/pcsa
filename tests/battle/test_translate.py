@@ -80,7 +80,7 @@ def test_send_out_of_a_pokemon_the_preview_missed_adds_it(garchomp_vs_snorlax) -
 
 def _team(*names: str) -> Team:
     return Team(
-        None, tuple(OwnMember(i, n, n, None, None, True, (None,) * 4, None, None, None) for i, n in enumerate(names))
+        None, tuple(OwnMember(i, n, n, None, None, (None,) * 4, None, None, None) for i, n in enumerate(names))
     )
 
 
@@ -320,8 +320,5 @@ def test_team_record_round_trips_through_json() -> None:
     team = _team("Raichu", "Primarina", "Gholdengo")
     again = team_from_record(json.loads(json.dumps(team.record())))
     assert again == team
-    legacy = {
-        "name": "T",
-        "members": [{k: v for k, v in m.items() if k != "item_known"} for m in team.record()["members"]],
-    }
-    assert all(m.item_known for m in team_from_record(legacy).members)
+    legacy = {"name": team.name, "members": [{**m, "item_known": True} for m in team.record()["members"]]}
+    assert team_from_record(legacy) == team
