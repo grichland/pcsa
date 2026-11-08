@@ -34,7 +34,7 @@ def _observed_form(battle, mon) -> str:
         (key for team in (battle.team, battle.opponent_team) for key, member in team.items() if member is mon), None
     )
     form = mon.species
-    if ident is None:
+    if ident is None or ": " not in ident:  # team preview keys the opponent's members by bare species
         return form
     side, name = ident.split(": ", 1)
     for parts in battle._replay_data:

@@ -20,6 +20,7 @@ Notes: {"rule": "sweeper:shield|sweeper:enter|sweeper:hold"}; at preview {"style
 
 from __future__ import annotations
 
+import copy
 from dataclasses import asdict, dataclass, fields, replace
 from pathlib import Path
 from typing import Any
@@ -105,7 +106,8 @@ class StyleSetupSweeperPlayer(FreeTurnPlayer):
             self._notes["style"] = "no fit"
             return picks
         sweeper = fit.roles["sweeper"][0]
-        foes = list(battle.teampreview_opponent_team)
+        # detached copies: at preview poke-env keys opponent_team by bare species, which form lookups cannot split
+        foes = [copy.copy(f) for f in battle.teampreview_opponent_team]
         checks = {base(f): why for f in foes if (why := self._check(battle, team[sweeper], f))}
         targets = [f for f in foes if base(f) in checks] or foes
         score = {i: sum(self._hit(battle, team[i], t)[0] for t in targets) for i in range(len(team)) if i != sweeper}

@@ -240,3 +240,11 @@ def test_factory_builds_it_with_the_config_thresholds(config: Config, fake) -> N
     assert built.params()["sweeper"]["sweeper_free_hit_max"] == 0.55 and built.params()["free_hit_max"] == 0.4
     assert "style_setup_sweeper" in SIM_KINDS and "style_setup_sweeper" in KINDS
     assert "style_setup_sweeper" not in LIVE_KINDS
+
+
+def test_the_preview_plan_runs_on_the_real_estimates() -> None:
+    """At preview poke-env keys opponent_team by bare species; the real form lookup must not see those keys."""
+    picks, notes = pick(StyleSetupSweeperPlayer())
+    assert (
+        set(picks) <= set(SIX) and len(picks) == 3 and picks[-1] == "Golisopod" and notes["style"] == "setup_sweeper"
+    )
