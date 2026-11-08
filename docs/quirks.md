@@ -61,12 +61,10 @@ ability. `translate_events._ability` falls back to the all-abilities match (floo
 A locked phone screen (black with "Fully charged") classifies as `transition: black frame`; the session restarted
 after 150 s and kept seeing black. Harmless when the operator ended the session; a wake-on-black check is still open.
 
-## A run that ends abruptly leaves its dashboard behind (2 Nov 2026)
-Closing the launcher window kills `pcsa run` but not the `pcsa watch` window (it keeps port 8765), and
-anything from the repo still running holds `pcsa.exe`, which makes `uv run` fail with "Access is denied".
-`scripts/run_agent.ps1` now stops leftover `pcsa run` / `pcsa watch` processes from this repo, launches the
-venv's `pcsa.exe` directly, and moves the dashboard to the next free port if 8765 is still taken by something
-else.
+## A run that ends abruptly leaves `pcsa.exe` held (2 Nov 2026)
+A `pcsa run` from the repo that is still running holds `pcsa.exe`, which makes `uv run` fail with "Access is
+denied". `scripts/run_agent.ps1` now stops leftover `pcsa run` processes from this repo and launches the venv's
+`pcsa.exe` directly.
 
 ## "Charizard: max HP mismatch" fallback (run 20261102-175202)
 The summary screen's stat-point boxes were not read for one member, so its export carried no spread and gave

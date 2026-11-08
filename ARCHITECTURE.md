@@ -14,7 +14,7 @@ common  <-  battle  <-  phone | sim  <-  players  <-  run  <-  live  <-  cli
 | `phone` | reading the device: adb screenshots, screens, OCR, sprites, the log panel, team sheets, calibration |
 | `sim` | the Showdown engine: the local server and the team validator `pcsa sim play` runs on |
 | `players` | how it decides: six kinds (random, the two heuristics, max_damage, best_matchup_max_damage, the mixed pool) |
-| `run` | run records and their read-only views: battle bookkeeping, the recorder, `pcsa watch`, `pcsa sim play` |
+| `run` | run records: battle bookkeeping, the recorder, `pcsa sim play` |
 | `live` | live play on the phone: device input, taps, navigation, session, turn pipeline, handlers, supervisor, `pcsa run` |
 | `sprite_training` | the sprite network's trainer, `pcsa train sprites` (needs the `train` extra; nothing at runtime imports it) |
 
@@ -53,7 +53,7 @@ error is a node in the navigation graph like any other. Only a safety violation 
 
 Everything the package writes lives under `output/` (`common/paths.py`): `runs/<timestamp>-<name>/` with
 `manifest.json`, `events.jsonl`, `state.json`, `summary.json`, frames and per-battle folders; `observe/`,
-`nav/` and `scout/` sessions; `sim/` results; `sprite_net/` from the sprite network's trainer. `output/latest` points at the newest run.
+`nav/` and `scout/` sessions; `sim/` results; `sprite_net/` from the sprite network's trainer.
 
 ## Device independence
 

@@ -93,11 +93,6 @@ degrade:
   emergency_reserve_s: 1.0
   peek_attempts: 2
 
-record:
-  # pcsa watch shows the newest frame the loop already captured, saved at most this often (display.jpg).
-  # It never takes a screencap of its own; 0 keeps only the per-observation frames/ archive.
-  display_fps: 1
-
 policy:
   kind: custom_heuristic  # random | simple_heuristic | custom_heuristic | max_damage | best_matchup_max_damage | mixed
   heuristic: players/heuristic.yaml      # the custom heuristic's tuned parameters

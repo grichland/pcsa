@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
 import cv2
-import numpy as np
 
 from pcsa.common import log, paths
 from pcsa.common.clock import Clock, Deadline, SystemClock
@@ -33,14 +31,11 @@ class Phone[D: AdbDevice]:
     clock: Clock
     frames: int = 0
     save_dir: Path | None = None
-    display: Callable[[np.ndarray], None] | None = None  # takes a reference to each observed frame (pcsa watch)
 
     def observe(self, tag: str = "poll") -> tuple[Observation, Frame]:
         frame = self.device.capture()
         self.frames += 1
         frame_id = f"{self.frames:05d}-{tag}"
-        if self.display is not None:
-            self.display(frame.image)
         obs = self.perception.observe(frame.image, frame_id)
         if self.save_dir is not None:
             path = self.save_dir / f"{frame_id}-{obs.screen}.jpg"

@@ -10,7 +10,6 @@ from pcsa.common.config import Config, load_config
 from pcsa.common.types import MoveInfo, PartyMember, Screen
 from pcsa.live.fake import Step
 from pcsa.phone.ocr import TextBox
-from pcsa.run.watch import RunReader
 from tests.live.harness import ROSTER, run_script
 
 MOVES = tuple(
@@ -173,7 +172,8 @@ def test_forfeit_seen_only_by_the_move_peek_is_recorded(config: Config, tmp_path
     assert state.outcomes == ["opponent_forfeit", "win"] and state.completed == 1 and state.played == 2
     battle = json.loads((recorder.dir / "battle-1" / "battle.json").read_text(encoding="utf-8"))
     assert battle["outcome"] == "opponent_forfeit" and battle["outcome_source"] == "forfeit message"
-    assert RunReader(recorder.dir).state()["session_record"] == {"wins": 1, "losses": 0, "draws": 0, "forfeits": 1}
+    ends = [e["outcome"] for e in events(recorder) if e["event"] == "battle_end"]
+    assert ends == ["opponent_forfeit", "win"]
 
 
 def test_comm_error_mid_battle_returns_to_lobby_and_plays_on(config: Config, tmp_path: Path) -> None:

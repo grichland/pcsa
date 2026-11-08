@@ -80,18 +80,17 @@ uv run pcsa scout                    # record a manual walk through the game and
 
 ```
 uv run pcsa run --player custom_heuristic --battles 10
-uv run pcsa watch                    # read-only view of the latest run
 uv run pcsa nav --to lobby           # walk the menus to the lobby
 ```
 
 `--player` takes a player kind (default: `policy.kind` in `config/agent.yaml`, `custom_heuristic`).
 
 For longer evaluation sessions, `scripts\run_agent.ps1` holds the settings (player, seed, run name,
-overrides) at the top of the file, stops any agent or dashboard left over from a run that ended abruptly,
-syncs the environment, checks the phone, starts the run and opens the dashboard on it. With `$Mirror = $true`
-(the default) it also opens a phone mirror window through
-[scrcpy](https://github.com/Genymobile/scrcpy), which `pcsa setup` installs into `.tools\scrcpy\` (a `scrcpy`
-on PATH works as a fallback); when it is missing the script prints a warning and runs without the mirror:
+overrides) at the top of the file, stops any agent left over from a run that ended abruptly, syncs the
+environment, checks the phone and starts the run. With `$Mirror = $true` (the default) it also opens a phone
+mirror window through [scrcpy](https://github.com/Genymobile/scrcpy), which `pcsa setup` installs into
+`.tools\scrcpy\` (a `scrcpy` on PATH works as a fallback); when it is missing the script prints a warning and runs
+without the mirror:
 
 ```
 powershell -ExecutionPolicy Bypass -File scripts\run_agent.ps1 -Battles 25 -MaxBattlesTotal 30

@@ -124,11 +124,6 @@ class OcrConfig(Strict):
     min_confidence: float = 0.80
 
 
-class RecordConfig(Strict):
-    # pcsa watch frame rate, from frames the loop already captured (never a capture of its own); 0: off
-    display_fps: float = Field(default=1.0, ge=0.0, le=10.0)
-
-
 class AgentConfig(Strict):
     screen_config: str = "screen.yaml"
     device: DeviceConfig = DeviceConfig()
@@ -141,7 +136,6 @@ class AgentConfig(Strict):
     policy: PolicyConfig = PolicyConfig()
     sim: SimConfig = SimConfig()
     ocr: OcrConfig = OcrConfig()
-    record: RecordConfig = RecordConfig()
 
 
 # Screen ----------------------------------------------------------------------------------------

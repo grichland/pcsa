@@ -14,7 +14,6 @@ from pcsa.live.session import Session
 from pcsa.live.supervisor import supervise
 from pcsa.players.factory import build_player
 from pcsa.run.battle_state import RunState
-from pcsa.run.display import DisplayFrames
 from pcsa.run.recorder import Recorder, manifest
 
 
@@ -67,9 +66,6 @@ def run_command(
         seed=state.seed,
     )
     phone.save_dir = recorder.dir / "frames"
-    fps = config.agent.record.display_fps
-    display = DisplayFrames(recorder.dir, fps, clock) if fps > 0 else None
-    phone.display = display.offer if display is not None else None
 
     def build(s: RunState) -> Session:
         return Session(config, phone, player, recorder, s, clock)
@@ -91,8 +87,6 @@ def run_command(
         }
         recorder.write_json("summary.json", summary)
         recorder.close()
-        if display is not None:
-            display.close()
     summary["ending"] = ending
     recorder.write_json("summary.json", summary)
     log.event("run_end", **summary)
