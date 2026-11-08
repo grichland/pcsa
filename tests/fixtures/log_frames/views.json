@@ -1,0 +1,575 @@
+{
+ "mega-bottom.jpg": {
+  "turn": 1,
+  "scroll": 1.0,
+  "thumb": [
+   645,
+   958
+  ],
+  "at_top": false,
+  "at_bottom": true,
+  "has_scrollbar": true,
+  "rows": [
+   {
+    "text": "HP Lost: Venusaur’s HP: 100% → 42%",
+    "bounds": [
+     123,
+     235
+    ],
+    "segments": [
+     {
+      "role": "category",
+      "text": "HP Lost",
+      "confidence": 0.9977,
+      "crop": [
+       666,
+       153,
+       756,
+       184
+      ],
+      "possibly_clipped": false
+     },
+     {
+      "role": "message",
+      "text": "Venusaur's HP:",
+      "confidence": 0.9996,
+      "crop": [
+       905,
+       133,
+       1074,
+       163
+      ],
+      "possibly_clipped": false
+     },
+     {
+      "role": "message",
+      "text": "100% → 42%",
+      "confidence": 0.9701,
+      "crop": [
+       907,
+       173,
+       1062,
+       204
+      ],
+      "possibly_clipped": false
+     }
+    ]
+   },
+   {
+    "text": "It’s super effective!",
+    "bounds": [
+     245,
+     379
+    ],
+    "segments": [
+     {
+      "role": "message",
+      "text": "It's super effective!",
+      "confidence": 0.9471,
+      "crop": [
+       906,
+       297,
+       1118,
+       328
+      ],
+      "possibly_clipped": false
+     }
+    ]
+   },
+   {
+    "text": "Move: The opposing Venusaur used Toxic!",
+    "bounds": [
+     389,
+     523
+    ],
+    "segments": [
+     {
+      "role": "category",
+      "text": "Move",
+      "confidence": 0.9999,
+      "crop": [
+       676,
+       442,
+       744,
+       472
+      ],
+      "possibly_clipped": false
+     },
+     {
+      "role": "message",
+      "text": "The opposing Venusaur used Toxic!",
+      "confidence": 0.993,
+      "crop": [
+       905,
+       441,
+       1295,
+       480
+      ],
+      "possibly_clipped": false
+     }
+    ]
+   },
+   {
+    "text": "Charizard was badly poisoned!",
+    "bounds": [
+     533,
+     667
+    ],
+    "segments": [
+     {
+      "role": "message",
+      "text": "Charizard was badly poisoned!",
+      "confidence": 0.9882,
+      "crop": [
+       905,
+       584,
+       1245,
+       623
+      ],
+      "possibly_clipped": false
+     }
+    ]
+   },
+   {
+    "text": "Charizard was hurt by its poisoning!",
+    "bounds": [
+     677,
+     811
+    ],
+    "segments": [
+     {
+      "role": "message",
+      "text": "Charizard was hurt by its poisoning!",
+      "confidence": 0.9886,
+      "crop": [
+       905,
+       729,
+       1299,
+       768
+      ],
+      "possibly_clipped": false
+     }
+    ]
+   },
+   {
+    "text": "HP Lost: Charizard’s HP: 185 → 174",
+    "bounds": [
+     821,
+     974
+    ],
+    "segments": [
+     {
+      "role": "category",
+      "text": "HP Lost",
+      "confidence": 0.9993,
+      "crop": [
+       665,
+       873,
+       756,
+       904
+      ],
+      "possibly_clipped": false
+     },
+     {
+      "role": "message",
+      "text": "Charizard's HP:",
+      "confidence": 0.973,
+      "crop": [
+       905,
+       853,
+       1079,
+       883
+      ],
+      "possibly_clipped": false
+     },
+     {
+      "role": "message",
+      "text": "185 → 174",
+      "confidence": 0.9809,
+      "crop": [
+       907,
+       893,
+       1038,
+       924
+      ],
+      "possibly_clipped": false
+     }
+    ]
+   }
+  ]
+ },
+ "mega-middle.jpg": {
+  "turn": 1,
+  "scroll": 0.62549,
+  "thumb": [
+   453,
+   767
+  ],
+  "at_top": false,
+  "at_bottom": false,
+  "has_scrollbar": true,
+  "rows": [
+   {
+    "text": "The opposing Venusaur’s Venusaurite is reacting to Opponent’s Omni Ring!",
+    "bounds": [
+     171,
+     305
+    ],
+    "segments": [
+     {
+      "role": "message",
+      "text": "The opposing Venusaur's Venusaurite is reacting to Opponent's Omni Ring!",
+      "confidence": 0.9885,
+      "crop": [
+       905,
+       224,
+       1717,
+       263
+      ],
+      "possibly_clipped": false
+     }
+    ]
+   },
+   {
+    "text": "Mega Evolution: The opposing Venusaur has Mega Evolved into Mega Venusaur!",
+    "bounds": [
+     315,
+     449
+    ],
+    "segments": [
+     {
+      "role": "category",
+      "text": "Mega Evolution",
+      "confidence": 0.9996,
+      "crop": [
+       621,
+       368,
+       798,
+       408
+      ],
+      "possibly_clipped": false
+     },
+     {
+      "role": "message",
+      "text": "The opposing Venusaur has Mega Evolved into Mega Venusaur!",
+      "confidence": 0.9928,
+      "crop": [
+       905,
+       367,
+       1606,
+       407
+      ],
+      "possibly_clipped": false
+     }
+    ]
+   },
+   {
+    "text": "Move: Charizard used Weather Ball!",
+    "bounds": [
+     459,
+     593
+    ],
+    "segments": [
+     {
+      "role": "category",
+      "text": "Move",
+      "confidence": 0.9999,
+      "crop": [
+       676,
+       513,
+       744,
+       543
+      ],
+      "possibly_clipped": false
+     },
+     {
+      "role": "message",
+      "text": "Charizard used Weather Ball!",
+      "confidence": 0.9753,
+      "crop": [
+       905,
+       511,
+       1228,
+       542
+      ],
+      "possibly_clipped": false
+     }
+    ]
+   },
+   {
+    "text": "HP Lost: Venusaur’s HP: 100% → 42%",
+    "bounds": [
+     603,
+     737
+    ],
+    "segments": [
+     {
+      "role": "category",
+      "text": "HP Lost",
+      "confidence": 0.9993,
+      "crop": [
+       666,
+       656,
+       756,
+       687
+      ],
+      "possibly_clipped": false
+     },
+     {
+      "role": "message",
+      "text": "Venusaur's HP:",
+      "confidence": 0.9985,
+      "crop": [
+       905,
+       636,
+       1074,
+       666
+      ],
+      "possibly_clipped": false
+     },
+     {
+      "role": "message",
+      "text": "100% → 42%",
+      "confidence": 0.9618,
+      "crop": [
+       907,
+       676,
+       1062,
+       707
+      ],
+      "possibly_clipped": false
+     }
+    ]
+   },
+   {
+    "text": "It’s super effective!",
+    "bounds": [
+     747,
+     881
+    ],
+    "segments": [
+     {
+      "role": "message",
+      "text": "It's super effective!",
+      "confidence": 0.9891,
+      "crop": [
+       906,
+       800,
+       1118,
+       830
+      ],
+      "possibly_clipped": false
+     }
+    ]
+   },
+   {
+    "text": "Move: The annosina Vonucaur urod Tovidl",
+    "bounds": [
+     891,
+     974
+    ],
+    "segments": [
+     {
+      "role": "category",
+      "text": "Move",
+      "confidence": 0.7544,
+      "crop": [
+       678,
+       945,
+       742,
+       963
+      ],
+      "possibly_clipped": false
+     },
+     {
+      "role": "message",
+      "text": "The annosina Vonucaur urod Tovidl",
+      "confidence": 0.8123,
+      "crop": [
+       905,
+       944,
+       1295,
+       963
+      ],
+      "possibly_clipped": false
+     }
+    ]
+   }
+  ]
+ },
+ "mega-top.jpg": {
+  "turn": 1,
+  "scroll": 0.192157,
+  "thumb": [
+   232,
+   546
+  ],
+  "at_top": false,
+  "at_bottom": false,
+  "has_scrollbar": true,
+  "rows": [
+   {
+    "text": "Charizard’s Charizardite Y is reacting to Trainer’s Omni Ring!",
+    "bounds": [
+     174,
+     308
+    ],
+    "segments": [
+     {
+      "role": "message",
+      "text": "Charizard's Charizardite Y is reacting to Trainer's Omni Ring!",
+      "confidence": 0.9926,
+      "crop": [
+       905,
+       226,
+       1574,
+       265
+      ],
+      "possibly_clipped": false
+     }
+    ]
+   },
+   {
+    "text": "Mega Evolution: Charizard has Mega Evolved into Mega Charizard!",
+    "bounds": [
+     318,
+     452
+    ],
+    "segments": [
+     {
+      "role": "category",
+      "text": "Mega Evolution",
+      "confidence": 0.9998,
+      "crop": [
+       621,
+       371,
+       798,
+       410
+      ],
+      "possibly_clipped": false
+     },
+     {
+      "role": "message",
+      "text": "Charizard has Mega Evolved into Mega Charizard!",
+      "confidence": 0.992,
+      "crop": [
+       905,
+       370,
+       1459,
+       409
+      ],
+      "possibly_clipped": false
+     }
+    ]
+   },
+   {
+    "text": "Ability: Charizard’s Drought",
+    "bounds": [
+     462,
+     596
+    ],
+    "segments": [
+     {
+      "role": "category",
+      "text": "Ability",
+      "confidence": 0.9974,
+      "crop": [
+       671,
+       514,
+       749,
+       546
+      ],
+      "possibly_clipped": false
+     },
+     {
+      "role": "message",
+      "text": "Charizard's",
+      "confidence": 0.9999,
+      "crop": [
+       905,
+       494,
+       1032,
+       525
+      ],
+      "possibly_clipped": false
+     },
+     {
+      "role": "message",
+      "text": "Drought",
+      "confidence": 1.0,
+      "crop": [
+       906,
+       535,
+       1000,
+       574
+      ],
+      "possibly_clipped": false
+     }
+    ]
+   },
+   {
+    "text": "The sunlight turned harsh!",
+    "bounds": [
+     606,
+     740
+    ],
+    "segments": [
+     {
+      "role": "message",
+      "text": "The sunlight turned harsh!",
+      "confidence": 0.9974,
+      "crop": [
+       905,
+       658,
+       1192,
+       691
+      ],
+      "possibly_clipped": false
+     }
+    ]
+   },
+   {
+    "text": "The opposing Venusaur’s Venusaurite is reacting to Opponent’s Omni Ring!",
+    "bounds": [
+     750,
+     884
+    ],
+    "segments": [
+     {
+      "role": "message",
+      "text": "The opposing Venusaur's Venusaurite is reacting to Opponent's Omni Ring!",
+      "confidence": 0.9927,
+      "crop": [
+       905,
+       802,
+       1717,
+       841
+      ],
+      "possibly_clipped": false
+     }
+    ]
+   },
+   {
+    "text": "Th. .--..in- V.-...-...L-. AA.-- E...I...d:-i. AA.-- W.-......-",
+    "bounds": [
+     894,
+     974
+    ],
+    "segments": [
+     {
+      "role": "message",
+      "text": "Th. .--..in- V.-...-...L-. AA.-- E...I...d:-i. AA.-- W.-......-",
+      "confidence": 0.6761,
+      "crop": [
+       905,
+       946,
+       1605,
+       963
+      ],
+      "possibly_clipped": false
+     }
+    ]
+   }
+  ]
+ }
+}

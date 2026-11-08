@@ -1,0 +1,43 @@
+[importlinter]
+root_package = pcsa
+
+[importlinter:contract:layers]
+name = Layered packages: common <- battle <- phone | sim <- players <- run <- live <- cli
+type = layers
+layers =
+    pcsa.cli
+    pcsa.live
+    pcsa.run
+    pcsa.players
+    pcsa.phone | pcsa.sim
+    pcsa.battle
+    pcsa.common
+
+[importlinter:contract:sprite-training-is-a-leaf]
+name = Nothing at runtime imports the sprite trainer (only the `pcsa train` commands do: cli and train_cli)
+type = forbidden
+source_modules =
+    pcsa.common
+    pcsa.battle
+    pcsa.phone
+    pcsa.sim
+    pcsa.players
+    pcsa.run
+    pcsa.live
+forbidden_modules =
+    pcsa.sprite_training
+allow_indirect_imports = False
+
+[importlinter:contract:live-is-private]
+name = Nothing public imports the private live-play package (only pcsa.cli loads it, when present)
+type = forbidden
+source_modules =
+    pcsa.common
+    pcsa.battle
+    pcsa.phone
+    pcsa.sim
+    pcsa.players
+    pcsa.run
+    pcsa.sprite_training
+forbidden_modules =
+    pcsa.live

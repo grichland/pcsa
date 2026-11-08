@@ -1,0 +1,24 @@
+# Environment and tools (recreated by `uv sync` and `pcsa setup`)
+.venv/
+.tools/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Everything the package writes
+output/
+
+# Editors
+.vscode/
+.idea/
+
+# No game screenshots or game art in the repo. Perception tests read local screenshots when present
+# (scripts/curate_frames.py writes them) and skip without them; their cached OCR and reads stay tracked.
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.bmp

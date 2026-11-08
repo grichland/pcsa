@@ -1,0 +1,367 @@
+{
+ "action-00.jpg": {
+  "screen": "action",
+  "reason": "Fight and Pokemon",
+  "old_label": "action",
+  "agrees": true,
+  "source": "run-20261028-160158\\frames\\00196-poll-action.jpg"
+ },
+ "action-01.jpg": {
+  "screen": "action",
+  "reason": "Fight and Pokemon",
+  "old_label": "action",
+  "agrees": true,
+  "source": "run-20261027-203950\\frames\\01049-poll-action.jpg"
+ },
+ "action-02.jpg": {
+  "screen": "action",
+  "reason": "Fight and Pokemon",
+  "old_label": "action",
+  "agrees": true,
+  "source": "run-20261027-133448\\frames\\00087-poll-action.jpg"
+ },
+ "forced-00.jpg": {
+  "screen": "forced",
+  "reason": "party rows",
+  "old_label": "forced",
+  "agrees": true,
+  "source": "run-20261028-235229\\frames\\00052-poll-forced.jpg"
+ },
+ "forced-01.jpg": {
+  "screen": "forced",
+  "reason": "party rows",
+  "old_label": "forced",
+  "agrees": true,
+  "source": "run-20261027-143349\\frames\\00150-poll-forced.jpg"
+ },
+ "forced-02.jpg": {
+  "screen": "forced",
+  "reason": "party rows",
+  "old_label": "forced",
+  "agrees": true,
+  "source": "run-20261101-153807\\frames\\00302-poll-forced.jpg"
+ },
+ "forfeit_msg-00.jpg": {
+  "screen": "forfeit_msg",
+  "reason": "forfeit message",
+  "old_label": "forfeit_msg",
+  "agrees": true,
+  "source": "run-20261028-160158\\frames\\00063-poll-forfeit_msg.jpg"
+ },
+ "forfeit_msg-01.jpg": {
+  "screen": "forfeit_msg",
+  "reason": "forfeit message",
+  "old_label": "forfeit_msg",
+  "agrees": true,
+  "source": "run-20261027-011341\\frames\\00186-poll-forfeit_msg.jpg"
+ },
+ "forfeit_msg-02.jpg": {
+  "screen": "forfeit_msg",
+  "reason": "forfeit message",
+  "old_label": "forfeit_msg",
+  "agrees": true,
+  "source": "run-20261028-203924\\frames\\00103-poll-forfeit_msg.jpg"
+ },
+ "lobby-00.jpg": {
+  "screen": "lobby",
+  "reason": "Begin Matchmaking",
+  "old_label": "lobby",
+  "agrees": true,
+  "source": "run-20261025-214430\\frames\\00001-start-lobby.jpg"
+ },
+ "lobby-01.jpg": {
+  "screen": "lobby",
+  "reason": "Begin Matchmaking",
+  "old_label": "lobby",
+  "agrees": true,
+  "source": "run-20261027-170354\\frames\\00001-start-lobby.jpg"
+ },
+ "lobby-02.jpg": {
+  "screen": "lobby",
+  "reason": "Begin Matchmaking",
+  "old_label": "lobby",
+  "agrees": true,
+  "source": "run-20261028-002626\\frames\\00001-start-lobby.jpg"
+ },
+ "log-00.jpg": {
+  "screen": "log",
+  "reason": "turn header",
+  "old_label": "log",
+  "agrees": true,
+  "source": "run-20261025-213655\\battle-1\\log-frames\\visit02-6.png"
+ },
+ "log-01.jpg": {
+  "screen": "log",
+  "reason": "turn header",
+  "old_label": "log",
+  "agrees": true,
+  "source": "run-20261025-044601\\battle-11\\log-frames\\visit04-3.png"
+ },
+ "log-02.jpg": {
+  "screen": "log",
+  "reason": "turn header",
+  "old_label": "log",
+  "agrees": true,
+  "source": "run-20261025-213655\\battle-1\\log-frames\\visit02-3.png"
+ },
+ "matchmaking-00.jpg": {
+  "screen": "matchmaking",
+  "reason": "matchmaking overlay",
+  "old_label": "matchmaking",
+  "agrees": true,
+  "source": "run-20261027-232309\\frames\\00013-poll-matchmaking.jpg"
+ },
+ "matchmaking-01.jpg": {
+  "screen": "matchmaking",
+  "reason": "matchmaking overlay",
+  "old_label": "matchmaking",
+  "agrees": true,
+  "source": "run-20261030-132239\\frames\\00148-poll-matchmaking.jpg"
+ },
+ "matchmaking-02.jpg": {
+  "screen": "matchmaking",
+  "reason": "matchmaking overlay",
+  "old_label": "matchmaking",
+  "agrees": true,
+  "source": "run-20261029-153726\\frames\\00209-poll-matchmaking.jpg"
+ },
+ "moves-00.jpg": {
+  "screen": "moves",
+  "reason": "move rows with PP",
+  "old_label": "moves",
+  "agrees": true,
+  "source": "run-20261027-154625\\frames\\00001-start-moves.jpg"
+ },
+ "moves-01.jpg": {
+  "screen": "moves",
+  "reason": "move rows with PP",
+  "old_label": "moves",
+  "agrees": true,
+  "source": "run-20261027-192016\\frames\\00152-poll-moves.jpg"
+ },
+ "moves-02.jpg": {
+  "screen": "moves",
+  "reason": "move rows with PP",
+  "old_label": "moves",
+  "agrees": true,
+  "source": "run-20261027-192016\\frames\\00164-poll-moves.jpg"
+ },
+ "options-00.jpg": {
+  "screen": "options",
+  "reason": "post-battle options",
+  "old_label": "options",
+  "agrees": true,
+  "source": "run-20261027-134423\\frames\\00098-poll-options.jpg"
+ },
+ "options-01.jpg": {
+  "screen": "options",
+  "reason": "post-battle options",
+  "old_label": "options",
+  "agrees": true,
+  "source": "run-20261027-163605\\frames\\00084-poll-options.jpg"
+ },
+ "options-02.jpg": {
+  "screen": "options",
+  "reason": "post-battle options",
+  "old_label": "options",
+  "agrees": true,
+  "source": "run-20261027-005522\\frames\\00221-poll-options.jpg"
+ },
+ "party-00.jpg": {
+  "screen": "party",
+  "reason": "party rows",
+  "old_label": "party",
+  "agrees": true,
+  "source": "run-20261027-233252\\frames\\00120-poll-party.jpg"
+ },
+ "party-01.jpg": {
+  "screen": "party",
+  "reason": "party rows",
+  "old_label": "party",
+  "agrees": true,
+  "source": "run-20261027-131909\\frames\\00032-poll-party.jpg"
+ },
+ "party-02.jpg": {
+  "screen": "party",
+  "reason": "party rows",
+  "old_label": "party",
+  "agrees": true,
+  "source": "run-20261029-144542\\frames\\00207-poll-party.jpg"
+ },
+ "prep-00.jpg": {
+  "screen": "prep",
+  "reason": "Preparing / Standing By",
+  "old_label": "prep",
+  "agrees": true,
+  "source": "run-20261027-143349\\frames\\00019-poll-prep.jpg"
+ },
+ "prep-01.jpg": {
+  "screen": "prep",
+  "reason": "Preparing / Standing By",
+  "old_label": "prep",
+  "agrees": true,
+  "source": "run-20261027-224424\\frames\\00028-poll-prep.jpg"
+ },
+ "prep-02.jpg": {
+  "screen": "prep",
+  "reason": "Preparing / Standing By",
+  "old_label": "prep",
+  "agrees": true,
+  "source": "run-20261025-214430\\frames\\00139-poll-prep.jpg"
+ },
+ "rank_up-00.jpg": {
+  "screen": "rank_up",
+  "reason": "rank-up popup or cutscene",
+  "old_label": "rank_up",
+  "agrees": true,
+  "source": "run-20261027-224424\\frames\\00096-poll-rank_up.jpg"
+ },
+ "ranked_menu-00.jpg": {
+  "screen": "ranked_formats",
+  "reason": "ranked formats",
+  "old_label": "ranked_menu",
+  "agrees": true,
+  "source": "run-20261027-195854\\frames\\00001-start-ranked_menu.jpg"
+ },
+ "ranked_menu-01.jpg": {
+  "screen": "ranked_formats",
+  "reason": "ranked formats",
+  "old_label": "ranked_menu",
+  "agrees": true,
+  "source": "run-20261027-003442\\frames\\00001-start-ranked_menu.jpg"
+ },
+ "ranked_menu-02.jpg": {
+  "screen": "battle_modes",
+  "reason": "battle modes",
+  "old_label": "ranked_menu",
+  "agrees": true,
+  "source": "run-20261027-163605\\frames\\00202-poll-ranked_menu.jpg"
+ },
+ "result-00.jpg": {
+  "screen": "result",
+  "reason": "WON/LOST banner",
+  "old_label": "result",
+  "agrees": true,
+  "source": "run-20261030-115128\\frames\\00819-poll-result.jpg"
+ },
+ "result-01.jpg": {
+  "screen": "result",
+  "reason": "gold banner in one half",
+  "old_label": "result",
+  "agrees": true,
+  "source": "run-20261025-214430\\frames\\00381-poll-result.jpg"
+ },
+ "result-02.jpg": {
+  "screen": "result",
+  "reason": "WON/LOST banner",
+  "old_label": "result",
+  "agrees": true,
+  "source": "run-20261028-002626\\frames\\00101-poll-result.jpg"
+ },
+ "rewards-00.jpg": {
+  "screen": "rewards",
+  "reason": "rank and VP",
+  "old_label": "rewards",
+  "agrees": true,
+  "source": "run-20261029-112453\\frames\\00076-poll-rewards.jpg"
+ },
+ "rewards-01.jpg": {
+  "screen": "rewards",
+  "reason": "rank and VP",
+  "old_label": "rewards",
+  "agrees": true,
+  "source": "run-20261025-233704\\frames\\00083-poll-rewards.jpg"
+ },
+ "rewards-02.jpg": {
+  "screen": "rewards",
+  "reason": "rank and VP",
+  "old_label": "rewards",
+  "agrees": true,
+  "source": "run-20261029-201042\\frames\\00421-poll-rewards.jpg"
+ },
+ "team_select-00.jpg": {
+  "screen": "team_select",
+  "reason": "N/3 counter and Done",
+  "old_label": "team_select",
+  "agrees": true,
+  "source": "run-20261030-132239\\frames\\00228-poll-team_select.jpg"
+ },
+ "team_select-01.jpg": {
+  "screen": "team_select",
+  "reason": "N/3 counter and Done",
+  "old_label": "team_select",
+  "agrees": true,
+  "source": "run-20261101-130513\\frames\\00018-poll-team_select.jpg"
+ },
+ "team_select-02.jpg": {
+  "screen": "team_select",
+  "reason": "N/3 counter and Done",
+  "old_label": "team_select",
+  "agrees": true,
+  "source": "run-20261029-193300\\frames\\00017-poll-team_select.jpg"
+ },
+ "transition-00.jpg": {
+  "screen": "transition",
+  "reason": "sparse text",
+  "old_label": "transition",
+  "agrees": true,
+  "source": "run-20261028-002626\\frames\\00239-poll-transition.jpg"
+ },
+ "transition-01.jpg": {
+  "screen": "transition",
+  "reason": "sparse text",
+  "old_label": "transition",
+  "agrees": true,
+  "source": "run-20261025-233704\\frames\\00327-poll-transition.jpg"
+ },
+ "transition-02.jpg": {
+  "screen": "transition",
+  "reason": "VS intro trainer cards",
+  "old_label": "transition",
+  "agrees": true,
+  "source": "run-20261027-133448\\frames\\00036-poll-transition.jpg"
+ },
+ "unknown-00.jpg": {
+  "screen": "unknown",
+  "reason": "no rule matched",
+  "old_label": "unknown",
+  "agrees": true,
+  "source": "run-20261029-000311\\frames\\00029-poll-unknown.jpg"
+ },
+ "unknown-01.jpg": {
+  "screen": "unknown",
+  "reason": "no rule matched",
+  "old_label": "unknown",
+  "agrees": true,
+  "source": "run-20261028-160158\\frames\\00332-poll-unknown.jpg"
+ },
+ "unknown-02.jpg": {
+  "screen": "comm_error",
+  "reason": "interruption dialog",
+  "old_label": "unknown",
+  "agrees": true,
+  "source": "run-20261027-195905\\frames\\00113-poll-unknown.jpg",
+  "note": "old classifier had no interruption screen; comm_error is right"
+ },
+ "wait-00.jpg": {
+  "screen": "wait",
+  "reason": "Communicating",
+  "old_label": "wait",
+  "agrees": true,
+  "source": "run-20261027-003451\\frames\\00054-poll-wait.jpg"
+ },
+ "wait-01.jpg": {
+  "screen": "wait",
+  "reason": "battle message",
+  "old_label": "wait",
+  "agrees": true,
+  "source": "run-20261027-195905\\frames\\00074-poll-wait.jpg"
+ },
+ "wait-02.jpg": {
+  "screen": "wait",
+  "reason": "battle message",
+  "old_label": "wait",
+  "agrees": true,
+  "source": "run-20261027-133448\\frames\\00061-poll-wait.jpg"
+ }
+}

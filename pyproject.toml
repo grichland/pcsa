@@ -1,0 +1,144 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pcsa"
+version = "0.1.0"
+description = "Plays Pokémon Champions singles from a phone screen"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE", "NOTICE.md"]
+authors = [{ name = "grichland" }]
+urls = { Repository = "https://github.com/grichland/pcsa" }
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "numpy>=2.5",
+    "opencv-python-headless>=5.0",
+    "pyyaml>=6.0.3",
+    "pydantic>=2.11",
+    "poke-env>=0.16.1",
+    "rapidocr>=3.10,<4",
+    "onnxruntime>=1.31",
+]
+
+[project.optional-dependencies]
+train = ["torch>=2.14"]       # the simulator needs no Python extra: Node + Showdown come from `pcsa setup --with sim`
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-timeout>=2.3",
+    "ruff>=0.12",
+    "pyright>=1.1.400",
+    "pre-commit>=4.0",
+    "import-linter>=2.3",
+    "poethepoet>=0.36",
+]
+
+[project.scripts]
+pcsa = "pcsa.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pcsa"]
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+# Training runs on the Windows machine with the GPU; Linux (CI) only needs torch importable and typed.
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cu130", marker = "sys_platform == 'win32'" },
+    { index = "pytorch-cpu", marker = "sys_platform == 'linux'" },
+]
+
+# ---------------------------------------------------------------------------------------------------
+[tool.ruff]
+line-length = 118
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "T20", "TID", "SIM", "C90", "PLR0913", "PLR0915", "PLR2004"]
+ignore = ["SIM905"]  # word lists written as "a b c".split() are easier to read and maintain than literals
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pylint]
+max-args = 6
+max-statements = 50
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"time.monotonic".msg = "use pcsa.common.clock (Clock / Deadline) so tests can control time"
+"time.sleep".msg = "use pcsa.common.clock (Clock.sleep) so tests can control time"
+"time.time".msg = "use pcsa.common.clock"
+"time.perf_counter".msg = "use pcsa.common.clock"
+
+[tool.ruff.lint.per-file-ignores]
+"src/pcsa/common/clock.py" = ["TID251"]
+# Vision code is made of measured pixel thresholds; naming each one hides the measurement.
+"src/pcsa/phone/texts.py" = ["PLR2004"]
+"src/pcsa/phone/fields.py" = ["PLR2004"]
+"src/pcsa/phone/screens.py" = ["PLR2004"]
+"src/pcsa/phone/sprites.py" = ["PLR2004"]
+"src/pcsa/phone/team_sheet.py" = ["PLR2004"]
+"src/pcsa/phone/scout.py" = ["PLR2004", "E501"]
+# Game arithmetic and request builders: the numbers are the rules, the arguments are the request fields.
+"src/pcsa/battle/stats.py" = ["PLR2004"]
+"src/pcsa/battle/moves.py" = ["PLR2004"]
+"src/pcsa/battle/state.py" = ["PLR2004", "PLR0913"]
+"src/pcsa/battle/builds.py" = ["PLR2004", "C901"]
+"src/pcsa/players/arena.py" = ["PLR2004", "PLR0913"]
+"src/pcsa/run/sim_command.py" = ["PLR0913"]
+"src/pcsa/battle/translate_events.py" = ["PLR2004"]
+"src/pcsa/battle/adapter.py" = ["PLR2004"]
+"src/pcsa/live/log_collector.py" = ["PLR2004", "C901"]
+"src/pcsa/phone/log_merge.py" = ["PLR2004"]
+"src/pcsa/phone/log_panel.py" = ["PLR2004", "PLR0913"]
+"src/pcsa/players/tactics.py" = ["PLR2004"]
+"src/pcsa/players/heuristic.py" = ["PLR2004"]
+# Turn and decision functions take the request's fields as keyword arguments.
+"src/pcsa/live/turn.py" = ["PLR0913"]
+"src/pcsa/live/decide.py" = ["PLR0913"]
+"src/pcsa/live/orders.py" = ["PLR0913"]
+"src/pcsa/live/play.py" = ["PLR0913"]
+"src/pcsa/live/handlers.py" = ["PLR2004"]
+"src/pcsa/cli.py" = ["T20"]
+"src/pcsa/train_cli.py" = ["T20"]
+"src/pcsa/common/setup.py" = ["T20"]
+"tests/**" = ["PLR2004", "E501", "PLR0913"]
+"src/pcsa/live/log_reader.py" = ["PLR0913"]
+# Standalone helper scripts print their progress.
+"scripts/**" = ["T20"]
+
+[tool.pyright]
+pythonVersion = "3.12"
+typeCheckingMode = "basic"
+include = ["src"]
+venvPath = "."
+venv = ".venv"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+timeout = 120
+addopts = "-m 'not torch and not ocr'"
+markers = [
+    "torch: needs the train extra",
+    "ocr: runs the real OCR engine instead of cached boxes",
+]
+
+[tool.poe.tasks]
+check = ["lint", "types", "imports", "test"]
+lint = "ruff check src tests scripts"
+format = "ruff format src tests scripts"
+types = "pyright"
+imports = "lint-imports"
+test = "pytest"

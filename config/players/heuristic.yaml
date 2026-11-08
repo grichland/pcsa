@@ -1,0 +1,19 @@
+# Parameters of the custom_heuristic player (--player custom_heuristic, the default; also a mixed-player member).
+# Values not listed keep their defaults (poke-env's SimpleHeuristicsPlayer, plus the Champions fixes).
+speed_tier: 0.42           # matchup bonus for the faster base speed
+hp_fraction: 0.67          # matchup weight of each side's HP fraction
+switch_threshold: -0.49    # switch out when the active's matchup is below this...
+switch_in_min: 0.78        # ...and a bench member's matchup is above this
+drop_threshold: -3         # also switch out at this stat stage (or lower) on Def/SpD or the main attack stat
+opponent_team_size: 3      # Champions: they bring 3 (poke-env assumes 6)
+hazard_min_opponents: 3    # set entry hazards while at least this many of theirs remain
+setup_min_boost: 1         # use self-boost moves worth at least this many stages...
+setup_requires_full_hp: false  # ...only at full HP (and in a favourable matchup)
+stab: 1.54
+exact_own_stats: true      # use our real stats (Stats page) in damage estimates
+mega: first                # first | matchup | last | never
+# Tuned 2026-10-25 by self-play in the simulator:
+# vs the code defaults (HeuristicParams: 0.1/0.4/-2.0/0.0, hazards 2, setup at full HP only, stab 1.5)
+# 52.2% [50.1, 54.4] over 2000 mirrored pool battles, re-verified 52.3% [50.8, 53.8] over 4000 fresh ones
+# (95% Wilson intervals);
+# vs RandomPlayer 93.3% (was 91.8%), vs poke-env SimpleHeuristicsPlayer 72.8% (was 70.3%), 1000 each.

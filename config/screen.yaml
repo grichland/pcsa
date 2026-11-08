@@ -1,0 +1,48 @@
+# Where things are on the screen, as fractions of the game viewport (0..1). The device profile
+# (config/devices/<model>.yaml, written by `pcsa calibrate`) says where the viewport sits in the frame.
+# Values were measured on a 2340 x 1080 frame; a region of {x: 0.5, w: 0.1} spans 1170..1404 px there.
+reference_size: [2340, 1080]
+
+regions:
+  # Lobby and menus
+  begin_matchmaking: {x: 0.5556, y: 0.8380, w: 0.2564, h: 0.0528}
+  team_details_back: {x: 0.1004, y: 0.0222, w: 0.0043, h: 0.0093}
+  home_battle:       {x: 0.5684, y: 0.2778, w: 0.1111, h: 0.2037}
+  ranked_battles:    {x: 0.5470, y: 0.1991, w: 0.2222, h: 0.0648}
+  single_battle:     {x: 0.5342, y: 0.4213, w: 0.2350, h: 0.1435}   # Double Battle sits below y 0.644
+  # Team selection
+  team_rows:
+    - {x: 0.1538, y: 0.1630, w: 0.1709, h: 0.0648}
+    - {x: 0.1538, y: 0.2796, w: 0.1709, h: 0.0648}
+    - {x: 0.1538, y: 0.3963, w: 0.1709, h: 0.0648}
+    - {x: 0.1538, y: 0.5130, w: 0.1709, h: 0.0648}
+    - {x: 0.1538, y: 0.6296, w: 0.1709, h: 0.0648}
+    - {x: 0.1538, y: 0.7463, w: 0.1709, h: 0.0648}
+  team_done:         {x: 0.2393, y: 0.8611, w: 0.0598, h: 0.0352}
+  # Battle
+  fight:             {x: 0.8739, y: 0.5972, w: 0.0427, h: 0.0833}
+  pokemon:           {x: 0.8376, y: 0.7917, w: 0.0406, h: 0.0833}
+  view_log:          {x: 0.0684, y: 0.3352, w: 0.1026, h: 0.0296}
+  move_rows:
+    - {x: 0.7692, y: 0.5019, w: 0.1453, h: 0.0343}
+    - {x: 0.7692, y: 0.6213, w: 0.1453, h: 0.0343}
+    - {x: 0.7692, y: 0.7407, w: 0.1453, h: 0.0343}
+    - {x: 0.7692, y: 0.8602, w: 0.1453, h: 0.0343}
+  mega:              {x: 0.6175, y: 0.7574, w: 0.0299, h: 0.0648}
+  move_back:         {x: 0.8504, y: 0.9630, w: 0.0897, h: 0.0278}
+  log_back:          {x: 0.7308, y: 0.9278, w: 0.0855, h: 0.0259}
+  party_rows:
+    - {x: 0.1538, y: 0.2352, w: 0.1538, h: 0.0611}
+    - {x: 0.1538, y: 0.3537, w: 0.1538, h: 0.0611}
+    - {x: 0.1538, y: 0.4676, w: 0.1538, h: 0.0611}
+  switch_in:         {x: -0.0385, y: 0.0926, w: 0.1325, h: 0.0481, relative: true}   # from the row centre
+  party_back:        {x: 0.8034, y: 0.9259, w: 0.0769, h: 0.0417}
+  # After the battle
+  continue_battling: {x: 0.6667, y: 0.8935, w: 0.1410, h: 0.0509}
+  rank_up_close:     {x: 0.7009, y: 0.9259, w: 0.0812, h: 0.0259}
+  # Disconnect recovery: a blind tap at the middle of the frame (nothing forbidden is drawn there)
+  screen_centre:     {x: 0.4786, y: 0.4537, w: 0.0428, h: 0.0926}
+
+# Never tapped, whatever a handler asks for. Circles in viewport fractions (r along x).
+forbidden:
+  - {x: 0.1291, y: 0.0713, r: 0.0256}    # battle exit / forfeit icon

@@ -1,0 +1,42 @@
+{
+  "schema": "pcsa-champions-rules/1",
+  "format": "champions-ranked-singles",
+  "source_note": "Values here are format limits and compatibility rules not stored as structured facts in the vendor assets. Vendor usage tables are not treated as battle mechanics.",
+  "team_preview_size": 6,
+  "brought_size": 3,
+  "moves_per_pokemon": 4,
+  "level": 50,
+  "stat_points": {
+    "total": 66,
+    "per_stat_max": 32,
+    "iv": 31,
+    "nature_percent": [90, 100, 110]
+  },
+  "boost_range": [-6, 6],
+  "status_counter_max": 7,
+  "field_elapsed_turns_max": 8,
+  "fallback_pp_by_gen9_base_pp": {
+    "5": 8,
+    "10": 12,
+    "15": 16
+  },
+  "fallback_pp_cap": 20,
+  "compatibility_items": [
+    "Choice Band", "Choice Specs", "Assault Vest", "Eviolite", "Heavy-Duty Boots", "Booster Energy",
+    "Weakness Policy", "Clear Amulet", "Covert Cloak", "Loaded Dice", "Punching Glove", "Safety Goggles",
+    "Black Sludge", "Flame Orb", "Toxic Orb", "Sticky Barb", "Lagging Tail", "Ring Target"
+  ],
+  "known_stat_multipliers": {
+    "items": {
+      "choicescarf": {"spe": 1.5},
+      "choiceband": {"atk": 1.5},
+      "choicespecs": {"spa": 1.5},
+      "assaultvest": {"spd": 1.5}
+    },
+    "eviolite": {"def": 1.5, "spd": 1.5},
+    "abilities": {
+      "hugepower": {"atk": 2.0},
+      "purepower": {"atk": 2.0}
+    }
+  }
+}

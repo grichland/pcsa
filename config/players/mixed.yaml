@@ -1,0 +1,9 @@
+# The mixed player: one member is drawn by weight at the start of every game and plays it through.
+# Weights need not sum to one. A member is any player kind except another mixed player.
+per_decision: false        # true: draw a member for every decision instead (an experiment setting)
+seed: null                 # the draw's seed (null: unseeded)
+members:
+  - {kind: random,           weight: 0.05}
+  - {kind: simple_heuristic, weight: 0.30}
+  - {kind: custom_heuristic, weight: 0.40}
+  - {kind: max_damage,       weight: 0.25}

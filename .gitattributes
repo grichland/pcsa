@@ -1,0 +1,15 @@
+* text=auto eol=lf
+*.py text eol=lf
+*.cjs text eol=lf
+*.js text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.toml text eol=lf
+*.ps1 text eol=crlf
+*.npz binary
+*.onnx binary
+*.pt binary
+*.jpg binary
+*.png binary
+assets/game/battle_text.json -text

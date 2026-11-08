@@ -1,0 +1,115 @@
+# Agent settings. Every value here can be overridden per run with `--set section.key=value` or
+# the environment variable PCSA__section__key. Unknown keys are rejected at startup.
+screen_config: screen.yaml
+
+device:
+  serial: null            # null: the single authorized device
+  timeout_s: 15
+  stay_awake: true        # svc power stayon usb during runs; previous value restored on exit
+  retry:
+    attempts: 4           # per ADB call before the session is restarted
+    base_s: 0.5           # exponential backoff: base, 2*base, 4*base ... up to max_s
+    max_s: 8.0
+    reconnect_wait_s: 20  # adb wait-for-device bound after a reconnect
+
+run:
+  battles: 10             # battles with a decided outcome before the run finishes
+  max_battles_total: 12   # bound on battles started, including opponent forfeits
+  count_forfeits: false
+  seed: null              # null: derived from the clock and recorded
+  max_restarts_per_hour: 20
+
+timing:
+  inter_tap_s: 0.5
+  post_action_wait_s: 10.0
+  poll_interval_s: 1.0
+  fight_settle_s: 0.9
+  back_settle_s: 0.7
+  team_menu_settle_s: 0.8
+  log_open_settle_s: 1.2
+  log_swipe_settle_s: 0.6
+  max_turn_s: 40.0        # from the first action-screen capture to the last tap
+  team_budget_s: 45.0     # lineup deadline when the selection timer cannot be read
+  no_progress_s: 420      # no tap and no screen change for this long -> session restart
+  default_screen_timeout_s: 60
+  screen_timeouts:        # seconds on one screen before the session restarts
+    matchmaking: 240
+    prep: 240
+    transition: 150
+    wait: 150
+    rewards: 90
+    result: 90
+    forfeit_msg: 90
+    unknown: 45
+    lobby: 60
+    options: 60
+    team_select: 100
+    action: 120
+    forced: 90
+    party: 30
+    moves: 30
+    log: 30
+    switch_popup: 30
+    rank_up: 120
+    rating_dialog: 30
+    dialog: 30
+    comm_error: 30
+    title: 60
+    home: 60
+    battle_modes: 60
+    ranked_formats: 60
+
+log:                      # in-game battle log collection, per turn
+  captures_max: 10
+  seconds_max: 12.0       # stop scrolling after this; act on what was read
+  drag:                   # drag toward older entries; start and end drawn at random inside these ranges
+    x: [0.513, 0.684]
+    y_start: [0.231, 0.278]
+    y_end: [0.833, 0.870]
+    steps: 8
+    hold_s: 0.35
+
+taps:
+  focused_move_taps: 1    # a focused move row submits on the next tap
+  unfocused_move_taps: 2  # first tap focuses, second submits
+  focused_party_taps: 1
+  unfocused_party_taps: 2
+
+navigator:
+  unknown_wait_s: 5.0
+  unknown_max_rounds: 6
+  edge_settle_s: 1.5
+  max_taps_per_edge: 3
+  # Disconnect during a battle: while a battle is in progress and the phone shows an unknown screen, a
+  # communication error, a dialog or a long blank/loading frame, tap the screen centre (or an OCR-confirmed
+  # OK / Close / Continue / Cancel / Not now) once per round until a battle, post-battle or lobby screen returns.
+  disconnect_max_taps: 40     # rounds (taps, or skipped taps when forbidden text is under the centre) before restart
+  disconnect_max_s: 180.0     # seconds of the whole ride-out before the session restarts
+  disconnect_settle_s: 3.0    # wait after each round before observing again
+  disconnect_blank_s: 45.0    # a transition (black/loading) frame mid-battle counts as a disconnect after this long
+
+degrade:
+  tap_reserve_s: 2.5
+  decide_reserve_s: 3.0
+  emergency_reserve_s: 1.0
+  peek_attempts: 2
+
+record:
+  # pcsa watch shows the newest frame the loop already captured, saved at most this often (display.jpg).
+  # It never takes a screencap of its own; 0 keeps only the per-observation frames/ archive.
+  display_fps: 1
+
+policy:
+  kind: custom_heuristic  # random | simple_heuristic | custom_heuristic | max_damage | mixed
+  heuristic: players/heuristic.yaml      # the custom heuristic's tuned parameters
+  mixed: players/mixed.yaml
+
+sim:
+  format: gen9championsbssregmc   # the Showdown format of `pcsa sim play`
+
+ocr:
+  det_model: ch_PP-OCRv5_det_mobile.onnx
+  rec_model: en_PP-OCRv5_rec_mobile.onnx
+  det_limit_side_len: 736
+  threads: 4
+  min_confidence: 0.80
