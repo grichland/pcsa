@@ -2,7 +2,7 @@
 
 The adapter gives the wrapped player the same view the phone loop gives it: a Battle (ours as p1, mirrored
 when the server seats us as p2) and the legal orders. Teams come from a list of exports consumed one battle
-at a time.
+at a time. Each finished battle leaves a seat record in `finished` (pcsa.run.battle_log merges the two seats).
 """
 
 from __future__ import annotations
@@ -65,14 +65,19 @@ class ArenaPlayer(PokeEnvPlayer):
             max_concurrent_battles=1,
         )
         self.inner = inner
+        self.kind = name
         self.teams = teams
         self.rng = rng
         self.clock = clock or SystemClock()
         self.decision_s = decision_s
         self.picks: dict[str, list[str]] = {}
         self.notes: list[dict] = []
+        self.team_of: dict[str, str] = {}  # battle tag -> the export this seat played
+        self.finished: dict[str, dict] = {}  # battle tag -> seat record, see _battle_finished_callback
 
     def teampreview(self, battle) -> str:
+        if self.teams.history:
+            self.team_of[battle.battle_tag] = self.teams.history[-1]
         chosen = (battle.last_request or {}).get("maxChosenTeamSize")
         if chosen:
             battle._max_team_size = chosen
@@ -99,6 +104,19 @@ class ArenaPlayer(PokeEnvPlayer):
             self.notes.append({"battle": battle.battle_tag, "turn": battle.turn, **notes})
         assert chosen.order is not None
         return chosen.order
+
+    def _battle_finished_callback(self, battle) -> None:
+        """Keeps this seat's view of the finished battle; the replay data is referenced, not copied."""
+        tag = battle.battle_tag
+        team = self.team_of.get(tag) or (self.teams.history[-1] if self.teams.history else None)
+        self.finished[tag] = {
+            "role": battle.player_role,
+            "team": team,
+            "picks": self.picks.get(tag, []),
+            "won": battle.won,
+            "turns": battle.turn,
+            "replay": battle._replay_data,
+        }
 
 
 @dataclass

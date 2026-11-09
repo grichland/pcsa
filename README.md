@@ -101,6 +101,7 @@ powershell -ExecutionPolicy Bypass -File scripts\run_agent.ps1 -Battles 25 -MaxB
 | What | Where |
 |---|---|
 | Everything the agent writes (runs, frames, simulator results, sprite network training) | `output/` (override with `PCSA_OUTPUT`) |
+| Every simulator battle (both teams, picks, winner, full protocol), one JSON line each | `output/sim/<stamp>/battles.jsonl.gz` |
 | Installed tools (adb, scrcpy, OCR models, Node, Showdown) | `.tools/` (pinned in `tools.lock.json`) |
 | Settings | `config/agent.yaml`, `config/screen.yaml`, `config/devices/*.yaml`; players: `config/players/heuristic.yaml`, `best_matchup.yaml`, `mixed.yaml` |
 | Game data, the sprite network (see `docs/sprites.md`), the simulator's set catalog | `assets/` |

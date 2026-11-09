@@ -54,6 +54,7 @@ error is a node in the navigation graph like any other. Only a safety violation 
 Everything the package writes lives under `output/` (`common/paths.py`): `runs/<timestamp>-<name>/` with
 `manifest.json`, `events.jsonl`, `state.json`, `summary.json`, frames and per-battle folders; `observe/`,
 `nav/` and `scout/` sessions; `sim/` results; `sprite_net/` from the sprite network's trainer.
+`pcsa sim play` keeps every battle (teams, picks, winner, protocol) in `sim/<stamp>/battles.jsonl.gz`.
 
 ## Device independence
 

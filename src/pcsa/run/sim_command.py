@@ -2,7 +2,8 @@
 
 Each pair is two battles with the seats (p1/p2) swapped. Ordinary players also swap teams within a pair; a
 `style_*` player is always dealt a six that fits its style (config/players/styles.yaml), so teams then stay
-with their players.
+with their players. Output: results.json, notes.jsonl, battles.jsonl.gz (pcsa.run.battle_log), events.jsonl and
+server.log in output/sim/<stamp>/.
 """
 
 from __future__ import annotations
@@ -21,6 +22,7 @@ from pcsa.common.interval import wilson
 from pcsa.players import styles
 from pcsa.players.arena import ArenaPlayer, ExportTeams, close, run_match
 from pcsa.players.factory import build_player
+from pcsa.run import battle_log
 from pcsa.sim.engine import Engine
 from pcsa.sim.server import ShowdownServer
 from pcsa.sim.teams import sample_styled_team, sample_teams, validated_teams
@@ -129,7 +131,7 @@ def play_command(
     n = result.a_wins + result.b_wins
     low, high = wilson(result.a_wins, n)
     summary = _summary(result, (a_kind, b_kind), seed, noisy, sides)
-    _write_results(out_dir, summary, result.battles, teams, a.notes + b.notes)
+    _write_results(out_dir, summary, result.battles, teams, (a, b))
     lines = [
         f"{a_kind} vs {b_kind}: {result.a_wins}-{result.b_wins} over {n} decided battles "
         f"({summary['a_win_rate']:.0%} for {a_kind}, 95% interval {low:.0%}-{high:.0%}); results in {out_dir}"
@@ -172,11 +174,18 @@ def _make_out_dir(stamp: str):
     raise ConfigError(f"could not create a results folder for {stamp}")
 
 
-def _write_results(out_dir, summary: dict, battles: list, teams: list, notes: list) -> None:
+def _write_results(
+    out_dir, summary: dict, battles: list, teams: list, players: tuple[ArenaPlayer, ArenaPlayer]
+) -> None:
     (out_dir / "results.json").write_text(
         json.dumps({"summary": summary, "battles": battles, "teams": teams}, indent=1), encoding="utf-8"
     )
+    notes = [n for player in players for n in player.notes]
     (out_dir / "notes.jsonl").write_text("\n".join(json.dumps(n) for n in notes) + "\n", encoding="utf-8")
+    a, b = players
+    logged = battle_log.records(a.battles, {"a": (a.kind, a.finished), "b": (b.kind, b.finished)})
+    size = battle_log.write(out_dir / battle_log.FILE, logged)
     log.event(
-        "sim_play_end", **{k: v for k, v in summary.items() if k != "errors"}, error_count=len(summary["errors"])
+        "sim_play_end", **{k: v for k, v in summary.items() if k != "errors"}, error_count=len(summary["errors"]),
+        battle_log_records=len(logged), battle_log_bytes=size,
     )
