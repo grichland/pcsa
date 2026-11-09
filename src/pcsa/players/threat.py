@@ -14,6 +14,7 @@ from poke_env.battle import Field, Move
 from pcsa.battle.builds import Catalog
 from pcsa.battle.damage import Fighter, damage
 from pcsa.players.opponent import (
+    ESCALATING_POWER,
     Tracker,
     assumed,
     conditions,
@@ -49,12 +50,21 @@ def _range(battle, attacker, defender, fa: Fighter, fd: Fighter, move: Move) -> 
     return damage(fa, fd, move.id, conditions(battle, defender), power)
 
 
+ESCALATING_HITS = 1 + 0.9 + 0.9**2  # Triple Axel / Kick: each later hit checks 90% accuracy again
+
+
+def _hits(move: Move) -> float:
+    """Expected hits. poke-env's expected_hits is power-weighted for the escalating moves, whose mean power per hit
+    move_power already returns, so those count plain hits."""
+    return ESCALATING_HITS if move.id in ESCALATING_POWER else move.expected_hits
+
+
 def _expected(battle, attacker, defender, fa: Fighter, fd: Fighter, move: Move) -> float:
     low, high = _range(battle, attacker, defender, fa, fd, move)
     if high <= 0:
         return 0.0
     accuracy = effective_accuracy(battle, attacker, defender, move, fa.ability)
-    return (low + high) / 2 * accuracy * move.expected_hits
+    return (low + high) / 2 * accuracy * _hits(move)
 
 
 def _ko_share(battle, attacker, defender, fa: Fighter, fd: Fighter, move: Move) -> float:
@@ -62,7 +72,7 @@ def _ko_share(battle, attacker, defender, fa: Fighter, fd: Fighter, move: Move) 
     low, high = _range(battle, attacker, defender, fa, fd, move)
     if is_ours(battle, defender):
         return high * move.n_hit[1]
-    return (low + high) / 2 * move.expected_hits
+    return (low + high) / 2 * _hits(move)
 
 
 def _as_move(move) -> Move | None:

@@ -86,3 +86,13 @@ def test_priority_ko() -> None:
     b2, me2, them2 = sides("Tyranitar", moves=["flamethrower", "quickattack"])
     them2._current_hp = 1
     assert threat.priority_ko(b2, me2, them2, CATALOG) == "quickattack"
+
+
+def test_triple_axel_counts_its_escalation_once() -> None:
+    from poke_env.battle import Move
+
+    from pcsa.players.threat import ESCALATING_HITS, _hits
+
+    axel = Move("tripleaxel", gen=9)
+    assert _hits(axel) == ESCALATING_HITS < 3  # move_power already gives the mean power per hit (40)
+    assert _hits(Move("bulletseed", gen=9)) == Move("bulletseed", gen=9).expected_hits
