@@ -235,4 +235,4 @@ def test_factory_builds_it_with_the_config_thresholds(config: Config, fake) -> N
     assert isinstance(built, DisciplinedPlayer) and built.name == "disciplined"
     assert built.rules == DisciplinedParams()  # the yaml holds the defaults
     assert built.params()["recover_below"] == 0.6
-    assert "disciplined" in SIM_KINDS and "disciplined" in KINDS and "disciplined" not in LIVE_KINDS
+    assert "disciplined" in LIVE_KINDS and "disciplined" in KINDS and "disciplined" not in SIM_KINDS  # promoted 8 Nov

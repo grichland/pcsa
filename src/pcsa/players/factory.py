@@ -21,8 +21,16 @@ from pcsa.players.heuristic import HeuristicParams, HeuristicPlayer
 from pcsa.players.max_damage import MaxDamagePlayer
 from pcsa.players.random_player import RandomPlayer
 
-LIVE_KINDS = ("random", "simple_heuristic", "custom_heuristic", "max_damage", "best_matchup_max_damage", "mixed")
-SIM_KINDS = ("disciplined",)  # not offered to the phone yet
+LIVE_KINDS = (
+    "random",
+    "simple_heuristic",
+    "custom_heuristic",
+    "max_damage",
+    "best_matchup_max_damage",
+    "disciplined",
+    "mixed",
+)
+SIM_KINDS: tuple[str, ...] = ()  # not offered to the phone yet
 SIM_KINDS += ("free_turn",)
 SIM_KINDS += ("endgame",)  # disciplined plus the 1v1 chain at <= 2 members each, config/players/endgame.yaml
 SIM_KINDS += ("style_weather",)  # free_turn plus a weather trio, config/players/style_weather.yaml
