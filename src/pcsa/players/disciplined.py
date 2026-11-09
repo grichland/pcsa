@@ -6,12 +6,16 @@ At each decision the first rule that applies decides (thresholds in config/playe
    a KO now (we move first or survive), Haze/Clear Smog/Encore/Taunt/a phaze/Perish Song, a priority KO, the
    hardest hit.
 2. Mega first (R8): when Mega Evolution is offered only the Mega versions of the moves are considered.
-3. Disciplined switching (R9): switch only when threatened (their best hit >= `threat_threshold`), unable to KO,
+3. Futile attack: our best *legal* hit is under `futile_hit` of their max HP (a Choice lock into an immunity, a
+   resisted last move): switch to the bench member that hits them hardest, back-to-back or not.
+4. Bad trade: threatened, unable to KO, and our best legal hit under `trade_hit_min`: switch to the bench member
+   taking the least share of its HP if that is under `switch_in_relaxed`.
+5. Disciplined switching (R9): switch only when threatened (their best hit >= `threat_threshold`), unable to KO,
    and a bench member takes < `switch_in_max` of its HP and hits back for >= `switch_in_threatens`; the one
-   taking least comes in. best_matchup's back-to-back rule applies to every voluntary switch.
-4. Recovery (R5): below `recover_below` HP, when the healed HP survives their best hit and we cannot KO them.
-5. Phase (R11): ahead in members, no non-attacking move but the denier's; recovery is off.
-6. Otherwise max_damage's best attack.
+   taking least comes in. best_matchup's back-to-back rule applies to every voluntary switch but the futile one.
+6. Recovery (R5): below `recover_below` HP, when the healed HP survives their best hit and we cannot KO them.
+7. Phase (R11): ahead in members, no non-attacking move but the denier's; recovery is off.
+8. Otherwise max_damage's best attack.
 Damage and speed estimates are pcsa.players.threat's on the sets pcsa.players.opponent assumes.
 """
 
@@ -56,6 +60,9 @@ class DisciplinedParams:
     switch_in_max: float = 0.25  # a voluntary switch-in takes less than this share of its HP...
     switch_in_threatens: float = 0.3  # ...and hits them for at least this share of their max HP
     recover_below: float = 0.6  # recovery only below this HP fraction
+    futile_hit: float = 0.05  # our best legal hit under this share of their max HP: switch regardless
+    trade_hit_min: float = 0.15  # threatened and hitting for less than this: a bad trade, switch if...
+    switch_in_relaxed: float = 0.6  # ...a bench member takes less than this share of its HP
 
     @classmethod
     def load(cls, path: Path) -> DisciplinedParams:
@@ -166,7 +173,12 @@ class DisciplinedPlayer(BestMatchupMaxDamagePlayer):
             return None  # max_damage's pick
         if boosted(theirs) or any(is_setup(m) for m in theirs.moves.values()):
             return self._deny(battle, moves, switches)
-        chosen = self._disciplined_switch(battle, switches) or self._recover(battle, moves)
+        chosen = (
+            self._futile_switch(battle, moves, switches)
+            or self._trade_switch(battle, moves, switches)
+            or self._disciplined_switch(battle, switches)
+            or self._recover(battle, moves)
+        )
         if chosen is None:
             self._notes["rule"] = "attack"
         return chosen
@@ -224,6 +236,36 @@ class DisciplinedPlayer(BestMatchupMaxDamagePlayer):
             return False
         return move.category.name == "STATUS" or theirs.damage_multiplier(move) > 0
 
+    def _legal_hit(self, battle, moves: list[LegalAction]) -> float:
+        """Our best hit among the legal moves (a Choice lock or Encore leaves fewer than we know)."""
+        mine, theirs = battle.active_pokemon, battle.opponent_active_pokemon
+        hits = [threat.hit_fraction(battle, mine, theirs, _move(a), *self._known) for a in moves]
+        return max(hits, default=0.0)
+
+    def _futile_switch(self, battle, moves: list[LegalAction], switches: list[LegalAction]) -> LegalAction | None:
+        if not switches or self._legal_hit(battle, moves) >= self.rules.futile_hit:
+            return None
+        theirs = battle.opponent_active_pokemon
+        best = max(switches, key=lambda a: self._hit(battle, a.order.order, theirs)[0])  # type: ignore[union-attr]
+        reason = f"futile: {battle.active_pokemon.species}'s legal moves do nothing -> {best.order.order.species}"  # type: ignore[union-attr]
+        return self._take_switch(battle, best, reason, force=True)
+
+    def _trade_switch(self, battle, moves: list[LegalAction], switches: list[LegalAction]) -> LegalAction | None:
+        mine, theirs = battle.active_pokemon, battle.opponent_active_pokemon
+        if not switches or self._legal_hit(battle, moves) >= self.rules.trade_hit_min:
+            return None
+        threshold = self.rules.threat_threshold
+        if not threat.threatened(battle, mine, theirs, self.catalog, tracker=self.tracker, threshold=threshold):
+            return None
+        taken = {id(a): self._taken(battle, theirs, a.order.order) for a in switches}  # type: ignore[union-attr]
+        fits = [a for a in switches if taken[id(a)] < self.rules.switch_in_relaxed]
+        if not fits:
+            self._notes["switch_blocked"] = f"bad trade: {mine.species}, every bench member takes too much"
+            return None
+        best = min(fits, key=lambda a: taken[id(a)])
+        reason = f"bad trade: {mine.species} -> {best.order.order.species} takes {taken[id(best)]:.2f}"  # type: ignore[union-attr]
+        return self._take_switch(battle, best, reason)
+
     def _disciplined_switch(self, battle, switches: list[LegalAction]) -> LegalAction | None:
         mine, theirs = battle.active_pokemon, battle.opponent_active_pokemon
         if not switches:
@@ -247,8 +289,8 @@ class DisciplinedPlayer(BestMatchupMaxDamagePlayer):
         reason = f"threatened: {mine.species} -> {best.order.order.species} takes {taken[id(best)]:.2f}"  # type: ignore[union-attr]
         return self._take_switch(battle, best, reason)
 
-    def _take_switch(self, battle, action: LegalAction, reason: str) -> LegalAction | None:
-        blocked = self._blocked(battle)
+    def _take_switch(self, battle, action: LegalAction, reason: str, *, force: bool = False) -> LegalAction | None:
+        blocked = None if force else self._blocked(battle)
         if blocked:
             self._notes["switch_blocked"] = f"{reason}; {blocked}"
             return None

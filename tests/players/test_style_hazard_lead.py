@@ -42,6 +42,8 @@ SETS = {
 }
 ABILITIES = {"espeon": "magicbounce", "metagross": "clearbody"}
 ROCKS_UP = "|-sidestart|p2: opponent|move: Stealth Rock"
+# Garchomp's own hit when a test threatens it: at or above `trade_hit_min`, so it attacks rather than trades out
+HIT_BACK = {("garchomp", "metagross"): (0.3, "earthquake")}
 
 
 @pytest.fixture
@@ -150,7 +152,7 @@ def test_attackers_by_summed_matchup(fake) -> None:
 
 
 def test_no_fit_plays_free_turn(fake) -> None:
-    fake({("metagross", "garchomp"): (0.6, "meteormash")})
+    fake({("metagross", "garchomp"): (0.6, "meteormash"), **HIT_BACK})
     no_rocks = {name: (full, [m for m in moves if m != "stealthrock"]) for name, (full, moves) in TEAM.items()}
     me, base = StyleHazardLeadPlayer(catalog=SimpleNamespace()), FreeTurnPlayer(catalog=SimpleNamespace())  # type: ignore[arg-type]
     picks, notes = pick(me, preview({**no_rocks, **BENCH}))
@@ -234,6 +236,7 @@ PIVOT = {
     ("metagross", "garchomp"): (0.5, "meteormash"),
     ("metagross", "azumarill"): (0.3, "meteormash"),
     ("metagross", "charizard"): (0.45, "earthquake"),
+    **HIT_BACK,
 }
 
 

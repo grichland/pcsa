@@ -6,3 +6,6 @@ threat_threshold: 0.4       # their best hit, as a share of our max HP, that mak
 switch_in_max: 0.25         # a voluntary switch-in must take less than this share of its HP...
 switch_in_threatens: 0.3    # ...and hit them for at least this share of their max HP
 recover_below: 0.6          # a recovery move only below this HP fraction (research R5)
+futile_hit: 0.05            # our best legal hit under this share of their max HP (a Choice lock into an immunity): switch anyway
+trade_hit_min: 0.15         # threatened and our best legal hit under this: a bad trade, switch if...
+switch_in_relaxed: 0.6      # ...a bench member takes less than this share of its HP

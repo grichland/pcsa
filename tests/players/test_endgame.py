@@ -57,11 +57,11 @@ class FakeThreat:
         self.hits, self.fail = hits, fail
 
     def hit_fraction(self, battle, attacker, defender, move, catalog, tracker=None):
-        if self.fail:
-            raise RuntimeError("damage table broke")
         return self.hits.get((attacker.species, defender.species, move.id), 0.0)
 
     def known_moves(self, battle, mon, catalog, tracker=None):
+        if self.fail:  # only the endgame chain reads move lists, so disciplined's rules still run
+            raise RuntimeError("damage table broke")
         if any(m is mon for m in battle.team.values()):
             return list(mon.moves.values())
         return [move_object(m) for m in FOE_MOVES.get(mon.species, [])]

@@ -33,8 +33,15 @@ FOE_DOWN = ["|faint|p2a: Garchomp", "|switch|p2a: Dragonite|Dragonite, L50|100/1
 class FakeThreat:
     """`hits[(attacker, defender)] = (share of the defender's max HP, move id)`; `faster`: who outspeeds whom."""
 
-    def __init__(self, hits: dict, faster: set | None = None, priority: dict | None = None) -> None:
+    def __init__(
+        self, hits: dict, faster: set | None = None, priority: dict | None = None, move_hits: dict | None = None
+    ) -> None:
         self.hits, self.faster, self.priority = hits, faster or set(), priority or {}
+        self.move_hits = move_hits or {}  # (attacker, defender, move id) -> share, for the legal-move checks
+
+    def hit_fraction(self, battle, attacker, defender, move, catalog, tracker=None):
+        key = (attacker.species, defender.species, move.id)
+        return self.move_hits.get(key, self.best_hit(battle, attacker, defender, catalog)[0])
 
     def best_hit(self, battle, attacker, defender, catalog, tracker=None):
         return self.hits.get((attacker.species, defender.species), (0.1, None))
@@ -236,3 +243,27 @@ def test_factory_builds_it_with_the_config_thresholds(config: Config, fake) -> N
     assert built.rules == DisciplinedParams()  # the yaml holds the defaults
     assert built.params()["recover_below"] == 0.6
     assert "disciplined" in LIVE_KINDS and "disciplined" in KINDS and "disciplined" not in SIM_KINDS  # promoted 8 Nov
+
+
+# Futile attack and bad trade --------------------------------------------------------------------------------
+def test_a_choice_lock_into_a_useless_move_switches_to_the_hardest_hitter(fake) -> None:
+    fake(move_hits={("azumarill", "dragonite", "aquajet"): 0.02})
+    b = battle("Azumarill")
+    b._available_moves = [m for m in b.available_moves if m.id == "aquajet"]  # locked into Aqua Jet
+    chosen, notes = decide(player(), b)
+    assert chosen == "/choose switch Slowbro" and notes["rule"] == "switch"
+    assert notes["switch"].startswith("futile:")
+
+
+def test_a_bad_trade_switches_to_the_member_taking_least(fake) -> None:
+    # Azumarill hits for 0.1 and takes 0.6; Slowbro hits only 0.1 (no disciplined switch) but takes 0.2 (< 0.6).
+    fake({("azumarill", "dragonite"): (0.1, "playrough"), ("slowbro", "dragonite"): (0.1, "surf")})
+    chosen, notes = decide(player(), battle("Azumarill"))
+    assert chosen == "/choose switch Slowbro" and notes["rule"] == "switch"
+    assert notes["switch"].startswith("bad trade:")
+
+
+def test_a_fair_trade_keeps_attacking(fake) -> None:
+    fake({("azumarill", "dragonite"): (0.2, "playrough"), ("slowbro", "dragonite"): (0.1, "surf")})
+    chosen, notes = decide(player(), battle("Azumarill"))
+    assert chosen == "/choose move playrough" and notes["rule"] == "attack"

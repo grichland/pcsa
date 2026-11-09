@@ -50,6 +50,8 @@ HITS = {  # supporters on the checks: Charizard 0.5 + 0.4 + 0.1, Azumarill 0.1 +
 }
 CHECK_ALIVE = [("Metagross", 100)]  # Skarmory, Dragonite or Corviknight may still come
 NO_CHECK = [("Milotic", 100), ("Espeon", 100), ("Metagross", 100)]  # all three seen, none a check
+# our hits on Metagross when a test threatens us: at or above `trade_hit_min`, so no bad-trade switch
+HIT_BACK = {("charizard", "metagross"): (0.3, "flamethrower"), ("golisopod", "metagross"): (0.3, "liquidation")}
 
 
 @pytest.fixture
@@ -148,7 +150,13 @@ def test_no_fit_plays_exactly_free_turn(fake) -> None:
     me, plain = StyleSetupSweeperPlayer(catalog=SimpleNamespace()), FreeTurnPlayer(catalog=SimpleNamespace())  # type: ignore[arg-type]
     picks, notes = pick(me, no_setup)
     assert notes == {"style": "no fit"} and picks == pick(plain, no_setup)[0]
-    fake({("metagross", "charizard"): (0.6, "meteormash"), ("golisopod", "metagross"): (0.35, "liquidation")})
+    fake(
+        {
+            **HIT_BACK,
+            ("metagross", "charizard"): (0.6, "meteormash"),
+            ("golisopod", "metagross"): (0.35, "liquidation"),
+        }
+    )
     b = battle("Charizard", CHECK_ALIVE, six=no_setup)
     assert decide(me, b) == decide(plain, b)
     assert decide(me, b)[0] == "/choose switch Golisopod"  # free_turn's switch, no sweeper held back
@@ -156,7 +164,13 @@ def test_no_fit_plays_exactly_free_turn(fake) -> None:
 
 # Holding and shielding ------------------------------------------------------------------------------------
 def test_the_sweeper_is_held_back_while_a_check_lives(fake) -> None:
-    fake({("metagross", "charizard"): (0.6, "meteormash"), ("golisopod", "metagross"): (0.35, "liquidation")})
+    fake(
+        {
+            **HIT_BACK,
+            ("metagross", "charizard"): (0.6, "meteormash"),
+            ("golisopod", "metagross"): (0.35, "liquidation"),
+        }
+    )
     chosen, notes = decide(planned(), battle("Charizard", CHECK_ALIVE))
     assert chosen.startswith("/choose move") and notes["rule"] == "attack"  # disciplined alone would bring it
 
@@ -207,7 +221,9 @@ def test_the_sweeper_enters_once_no_check_lives_and_the_hit_is_small(fake) -> No
 
 
 def test_the_relaxed_setup_gate_is_the_sweepers_only(fake) -> None:
-    fake({("metagross", "golisopod"): (0.5, "meteormash"), ("metagross", "charizard"): (0.5, "meteormash")})
+    fake(
+        {**HIT_BACK, ("metagross", "golisopod"): (0.5, "meteormash"), ("metagross", "charizard"): (0.5, "meteormash")}
+    )
     chosen, notes = decide(planned(), battle("Golisopod", NO_CHECK))
     assert chosen == "/choose move swordsdance" and notes["rule"] == "free:setup"
     _, notes = decide(planned(), battle("Charizard", NO_CHECK))

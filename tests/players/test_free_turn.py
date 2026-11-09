@@ -36,6 +36,8 @@ SETS = {
 ABILITIES = {"espeon": "magicbounce", "metagross": "clearbody"}
 ME_DOWN = ["|faint|p1a: Azumarill", "|switch|p1a: {ours}|{ours}, L50|{hp}/{hp}"]
 FOE_DOWN = ["|faint|p2a: {foe}", "|switch|p2a: Dragonite|Dragonite, L50|100/100"]
+# Garchomp's own hit when a test threatens it: at or above `trade_hit_min`, so it attacks rather than trades out
+HIT_BACK = {("garchomp", "metagross"): (0.3, "earthquake")}
 
 
 @pytest.fixture
@@ -115,7 +117,7 @@ def test_a_free_turn_sets_up(fake) -> None:
 @pytest.mark.parametrize(
     ("foe", "hits", "why"),
     [
-        ("Metagross", {("metagross", "garchomp"): (0.45, "meteormash")}, "hit 0.45"),  # hits too hard
+        ("Metagross", {("metagross", "garchomp"): (0.45, "meteormash"), **HIT_BACK}, "hit 0.45"),  # hits too hard
         ("Dragonite", {}, "SE STAB outrage"),  # Dragon STAB on a Dragon
         ("Skarmory", {}, "foe has roar"),  # a phaze in the assumed set
         ("Metagross", {("garchomp", "metagross"): (1.0, "earthquake")}, "we KO"),  # just attack
@@ -135,7 +137,7 @@ def test_they_ko_us_closes_the_gate(fake) -> None:
 
 
 def test_no_note_without_a_free_move(fake) -> None:
-    fake({("metagross", "azumarill"): (0.6, "meteormash")})
+    fake({("metagross", "azumarill"): (0.6, "meteormash"), ("azumarill", "metagross"): (0.2, "playrough")})
     chosen, notes = decide(player(), battle("Azumarill"))
     assert chosen == "/choose move playrough" and notes["rule"] == "attack" and "free" not in notes
 
@@ -201,7 +203,7 @@ def test_toxic_skipped_vs_steel_and_status_once_per_foe(fake) -> None:
 
 
 def test_not_free_falls_back_to_disciplined(fake) -> None:
-    fake({("metagross", "slowbro"): (0.5, "meteormash")})
+    fake({("metagross", "slowbro"): (0.5, "meteormash"), ("slowbro", "metagross"): (0.2, "scald")})
     chosen, notes = decide(player(), battle("Slowbro", hp=0.5))
     assert chosen == "/choose move slackoff" and notes["rule"] == "recover"
 
