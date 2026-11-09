@@ -140,6 +140,9 @@ def _write_results(
     logged = battle_log.records(a.battles, {"a": (a.kind, a.finished), "b": (b.kind, b.finished)})
     size = battle_log.write(out_dir / battle_log.FILE, logged)
     log.event(
-        "sim_play_end", **{k: v for k, v in summary.items() if k != "errors"}, error_count=len(summary["errors"]),
-        battle_log_records=len(logged), battle_log_bytes=size,
+        "sim_play_end",
+        **{k: v for k, v in summary.items() if k != "errors"},
+        error_count=len(summary["errors"]),
+        battle_log_records=len(logged),
+        battle_log_bytes=size,
     )

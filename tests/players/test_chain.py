@@ -150,4 +150,6 @@ def test_free_swap_after_a_ko() -> None:
 
 
 def test_nobody_left() -> None:
-    assert chain_options([mon("a", 50, hp=0.0)], [mon("b", 50)], Matchups({}, {}), active_ours=0, active_theirs=0) == {}
+    assert (
+        chain_options([mon("a", 50, hp=0.0)], [mon("b", 50)], Matchups({}, {}), active_ours=0, active_theirs=0) == {}
+    )

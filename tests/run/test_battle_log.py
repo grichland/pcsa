@@ -11,7 +11,12 @@ from pcsa.common.errors import ConfigError
 from pcsa.run import battle_log
 from pcsa.sim.engine import Engine
 
-REPLAY = [["", "player", "p1", "a1"], ["", "turn", "1"], ["", "move", "p1a: Garchomp", "Earthquake"], ["", "win", "a1"]]
+REPLAY = [
+    ["", "player", "p1", "a1"],
+    ["", "turn", "1"],
+    ["", "move", "p1a: Garchomp", "Earthquake"],
+    ["", "win", "a1"],
+]
 
 
 def _engine() -> Engine | None:
@@ -40,7 +45,12 @@ def test_records_merge_both_seats_into_one_per_battle(tmp_path) -> None:
     rows = battle_log.records(["t1", "t2", "t3"], {"a": ("heuristic", a), "b": ("random", b)})
     assert [r["tag"] for r in rows] == ["t1", "t2"]  # t3 never finished: no record
     first, second = rows
-    assert (first["p1"], first["p2"], first["p1_team"], first["p2_team"]) == ("heuristic", "random", "TEAM A", "TEAM B")
+    assert (first["p1"], first["p2"], first["p1_team"], first["p2_team"]) == (
+        "heuristic",
+        "random",
+        "TEAM A",
+        "TEAM B",
+    )
     assert first["p1_picks"] == ["X", "Y", "Z"] and first["winner"] == "p1" and first["winner_side"] == "a"
     assert (second["index"], second["p1"], second["p1_side"], second["winner_side"]) == (1, "random", "b", "b")
     assert second["p1_picks"] is None and second["p2_picks"] == ["Q"]
