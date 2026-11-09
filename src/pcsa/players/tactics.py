@@ -60,7 +60,7 @@ def effective_accuracy(battle, attacker, defender, move, attacker_ability: str |
     weather = {getattr(v, "name", str(v)).lower() for v in getattr(battle, "weather", {})}
     if move.id in ("thunder", "hurricane") and weather & {"raindance", "primordialsea"}:
         return 1.0
-    if move.id == "blizzard" and weather & {"snow", "hail"}:
+    if move.id == "blizzard" and weather & {"snowscape", "hail"}:
         return 1.0
     accuracy = move.accuracy
     if move.id in ("thunder", "hurricane") and weather & {"sunnyday", "desolateland"}:
