@@ -1,5 +1,0 @@
-# Thresholds of the hazard-lead style player (sim only: `pcsa sim play --a style_hazard_lead ...`); its six fits
-# the hazard_lead style of config/players/styles.yaml. Free-turn and disciplined thresholds come from their own
-# files. Damage shares are pcsa.players.threat's on the assumed sets.
-rocks_max_hit: 0.75   # turn-1 Stealth Rock only while their best hit is below this share of the setter's current HP
-pivot_max_hit: 0.5    # after Rocks a threatened setter goes to a brought attacker taking less than this share of its HP

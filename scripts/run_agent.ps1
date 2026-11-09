@@ -6,9 +6,9 @@ param(
 # Launch the Ranked Singles agent with the settings below.
 # Usage (from any folder):  powershell -ExecutionPolicy Bypass -File <repo>\scripts\run_agent.ps1 [-Battles 25 -MaxBattlesTotal 30]
 # Before starting: phone on USB with debugging on, the game open on the Ranked Singles lobby ("Begin Matchmaking").
-# Player settings live in config\players\ (heuristic.yaml, best_matchup.yaml, mixed.yaml); controller timings in config\agent.yaml.
+# Player settings live in config\players\ (heuristic.yaml, best_matchup.yaml, disciplined.yaml, mixed.yaml); controller timings in config\agent.yaml.
 # ============================== SETTINGS (edit these) ==============================
-$Player     = "custom_heuristic"         # random | simple_heuristic | custom_heuristic | max_damage | best_matchup_max_damage | mixed
+$Player     = "custom_heuristic"         # random | simple_heuristic | custom_heuristic | max_damage | best_matchup_max_damage | disciplined | mixed
 $Seed       = $null               # $null = new random seed; a number makes choices and taps reproducible
 $RunName    = "run"               # run folder prefix under output\runs\
 $Config     = "config/agent.yaml" # controller settings; player files are named inside it

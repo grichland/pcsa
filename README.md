@@ -18,11 +18,14 @@ The Showdown engine doubles as the simulator the players are measured in.
    each screen.
 2. **State reconstruction** (`battle/`): the battle log is read every turn and rebuilt as a Pokémon Showdown
    protocol, so the agent holds the same battle state the Showdown engine would.
-3. **Decision** (`players/`): six player kinds: `random`, `simple_heuristic` (poke-env's numbers),
+3. **Decision** (`players/`): seven player kinds: `random`, `simple_heuristic` (poke-env's numbers),
    `custom_heuristic` (the tuned `config/players/heuristic.yaml`), `max_damage` (the strongest attack, nothing
    else), `best_matchup_max_damage` (max_damage plus a switch out of a really bad matchup,
-   `config/players/best_matchup.yaml`) and `mixed` (a weighted pool of the others, one drawn per game,
-   `config/players/mixed.yaml`).
+   `config/players/best_matchup.yaml`), `disciplined` (best_matchup plus damage-race rules for priority, Mega,
+   replacements and switching, `config/players/disciplined.yaml`) and `mixed` (a weighted pool of the others,
+   one drawn per game, `config/players/mixed.yaml`). The simulator also has `endgame` (disciplined plus a 1v1
+   chain search once both sides are down to two members, `config/players/endgame.yaml`), which is not offered
+   to the phone.
 4. **Simulator** (`sim/`): the Showdown engine as a local server, with its team validator, on which
    `pcsa sim play` plays games between the player kinds.
 5. **Action** (`live/`): taps through a fixed menu map, and the session loop that plays battles (`pcsa run`).
@@ -37,8 +40,9 @@ issue was fixed, and the known defects of the battle-log reader.
 - **One device, one game version.** Everything was built on a single phone (the profile in
   `config/devices/`). Screen layouts, the menu map and the perception rules are tuned to that setup; another
   phone needs `pcsa calibrate` and will likely need fixes, and game updates can break the screen rules.
-- **Singles only.** The opponents' hidden builds are not estimated: the players read only what the battle
-  has revealed.
+- **Singles only.** The opponents' hidden builds are not inferred from play: `disciplined` and `endgame` assume
+  each opponent runs its species' top usage build (`players/opponent.py`), corrected by what the battle has
+  revealed; the other players read only what has been revealed.
 
 **Requirements:** Windows 10/11 and an Android phone with Pokémon Champions and USB debugging on; an NVIDIA GPU
 speeds up training the sprite network. Python, adb, scrcpy, the OCR models and the battle engine are installed for you.
@@ -103,7 +107,7 @@ powershell -ExecutionPolicy Bypass -File scripts\run_agent.ps1 -Battles 25 -MaxB
 | Everything the agent writes (runs, frames, simulator results, sprite network training) | `output/` (override with `PCSA_OUTPUT`) |
 | Every simulator battle (both teams, picks, winner, full protocol), one JSON line each | `output/sim/<stamp>/battles.jsonl.gz` |
 | Installed tools (adb, scrcpy, OCR models, Node, Showdown) | `.tools/` (pinned in `tools.lock.json`) |
-| Settings | `config/agent.yaml`, `config/screen.yaml`, `config/devices/*.yaml`; players: `config/players/heuristic.yaml`, `best_matchup.yaml`, `mixed.yaml` |
+| Settings | `config/agent.yaml`, `config/screen.yaml`, `config/devices/*.yaml`; players: `config/players/heuristic.yaml`, `best_matchup.yaml`, `disciplined.yaml`, `mixed.yaml`, `endgame.yaml` |
 | Game data, the sprite network (see `docs/sprites.md`), the simulator's set catalog | `assets/` |
 
 ## Development

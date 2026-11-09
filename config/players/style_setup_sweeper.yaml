@@ -1,7 +1,0 @@
-# Thresholds of the setup-sweeper style player (sim only: `pcsa sim play --a style_setup_sweeper ...`); its six
-# must fit styles.yaml's setup_sweeper. disciplined.yaml and free_turn.yaml still apply to everything else.
-# Damage shares are pcsa.players.threat's on the assumed sets.
-shield_max_hit: 0.5          # the sweeper, threatened while a check lives, switches to a member taking < this of its HP
-entry_max_hit: 0.4           # once no check lives, the sweeper comes in by choice taking < this of its HP
-sweeper_free_hit_max: 0.55   # the sweeper's free-turn gate (free_turn's free_hit_max is 0.4)
-setup_max_stage: 2           # the sweeper stops setting up at this stage (research R3: stop at +2)

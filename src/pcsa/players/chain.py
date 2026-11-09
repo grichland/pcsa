@@ -9,12 +9,12 @@ Simplifications (cheap and deterministic on purpose):
   expected damage), or recovers by the rule in `_choose`. No status moves, setup, crits, secondary effects or
   mid-duel switches.
 - Order is priority then speed. Speed ties go to `tie_goes_to` (default "b": pessimistic for side a, which is our side
-  in `chain`). Recovery is priority 0.
+  in `chain_options`). Recovery is priority 0.
 - Every damaging hit counts as contact: the attacker loses the target's `passive_on_hit`, scaled by accuracy.
 - `residual` applies to each living combatant at end of turn; HP stays within [0, 1].
-- A duel that reaches `horizon` turns is a draw (winner None); in `chain` it ends the game as a draw.
-- `chain` is minimax over who fights whom. The opponent answers after seeing our choice (pessimistic for us), except
-  after one of their members faints, when they send the replacement first.
+- A duel that reaches `horizon` turns is a draw (winner None); in `chain_options` it ends the game as a draw.
+- `chain_options` is minimax over who fights whom. The opponent answers after seeing our choice (pessimistic for
+  us), except after one of their members faints, when they send the replacement first.
 - A voluntary switch costs one turn: the side that stays uses the action it picked against the old target (same move
   name, damage against the newcomer). Replacements after a faint come in free.
 - `can_switch_on_faint`: when this member KOs its opponent and survives, its side may also swap it for a reserve
@@ -339,21 +339,3 @@ def chain_options(
     """
     game = _Game(tuple(ours), tuple(theirs), attacks, horizon)
     return {k: _result(*choice) for k, choice in _choices(game, active_ours, active_theirs).items()}
-
-
-def chain(
-    ours: Sequence[Combatant],
-    theirs: Sequence[Combatant],
-    attacks: Matchups,
-    *,
-    active_ours: int,
-    active_theirs: int,
-    horizon: int = 30,
-) -> ChainResult:
-    """Our best line through the rest of the endgame, and whether it wins against their best replies."""
-    game = _Game(tuple(ours), tuple(theirs), attacks, horizon)
-    choices = _choices(game, active_ours, active_theirs)
-    if not choices:
-        hp = _Hp(tuple(c.hp for c in ours), tuple(c.hp for c in theirs))
-        return _result(_terminal(hp), None)
-    return _result(*max(choices.values(), key=lambda choice: choice[0].score))

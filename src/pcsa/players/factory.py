@@ -31,11 +31,7 @@ LIVE_KINDS = (
     "mixed",
 )
 SIM_KINDS: tuple[str, ...] = ()  # not offered to the phone yet
-SIM_KINDS += ("free_turn",)
 SIM_KINDS += ("endgame",)  # disciplined plus the 1v1 chain at <= 2 members each, config/players/endgame.yaml
-SIM_KINDS += ("style_weather",)  # free_turn plus a weather trio, config/players/style_weather.yaml
-SIM_KINDS += ("style_hazard_lead",)  # free_turn plus a turn-1 Rocks lead, config/players/style_hazard_lead.yaml
-SIM_KINDS += ("style_setup_sweeper",)  # free_turn plus a held-back sweeper, config/players/style_setup_sweeper.yaml
 KINDS = LIVE_KINDS + SIM_KINDS
 
 
@@ -78,32 +74,8 @@ def _disciplined(config: Config) -> Player:
     return DisciplinedPlayer(rules, _catalog(), _heuristic_params(config))
 
 
-def _free_turn(config: Config) -> Player:
-    from pcsa.players.free_turn import build
-
-    return build(config, _catalog(), _heuristic_params(config))
-
-
 def _endgame(config: Config) -> Player:
     from pcsa.players.endgame import build
-
-    return build(config, _catalog(), _heuristic_params(config))
-
-
-def _style_weather(config: Config) -> Player:
-    from pcsa.players.style_weather import build
-
-    return build(config, _catalog(), _heuristic_params(config))
-
-
-def _style_hazard_lead(config: Config) -> Player:
-    from pcsa.players.style_hazard_lead import build
-
-    return build(config, _catalog(), _heuristic_params(config))
-
-
-def _style_setup_sweeper(config: Config) -> Player:
-    from pcsa.players.style_setup_sweeper import build
 
     return build(config, _catalog(), _heuristic_params(config))
 
@@ -116,9 +88,5 @@ BUILDERS: dict[str, Callable[[Config], Player]] = {
     "best_matchup_max_damage": _best_matchup,
     "mixed": _mixed,
     "disciplined": _disciplined,
-    "free_turn": _free_turn,
     "endgame": _endgame,
-    "style_weather": _style_weather,
-    "style_hazard_lead": _style_hazard_lead,
-    "style_setup_sweeper": _style_setup_sweeper,
 }

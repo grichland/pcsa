@@ -2,16 +2,13 @@
 
 The six species are drawn by ladder usage. Each member is its species' top build, or with `noisy` any of its
 catalog builds weighted by score. Item Clause is respected while drawing; Showdown's validator has the last word.
-A style player's teams (`sample_styled_team`) start from members that fill its style's roles
-(pcsa.players.styles) and must fit it.
 """
 
 from __future__ import annotations
 
 import random
-from collections.abc import Callable, Sequence
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Protocol
 
 from poke_env.data.normalize import to_id_str
 
@@ -74,72 +71,6 @@ def sample_team(catalog: Catalog, rng: random.Random, *, noisy: bool = False) ->
     if not _fill(draft, catalog, rng, noisy):
         raise ValueError("could not draw six distinct legal members from the catalog")
     return draft.members
-
-
-# Style teams ---------------------------------------------------------------------------------------
-class RoleDraw(Protocol):
-    """One role of a style plan: `count` members whose build `accepts` (pcsa.players.styles.RoleDraw)."""
-
-    @property
-    def count(self) -> int: ...
-    @property
-    def label(self) -> str: ...
-    def accepts(self, build: Build) -> bool: ...
-
-
-class StyleRules(Protocol):
-    """pcsa.players.styles.Styles, as the sampler sees it."""
-
-    def plans(self, style: str) -> Sequence[Sequence[RoleDraw]]: ...
-    def fit(self, style: str, members: Sequence[Build]) -> object | None: ...
-
-
-def role_builds(catalog: Catalog, draw: RoleDraw) -> dict[str, list[Build]]:
-    """Species -> its catalog builds that fill the role, best first."""
-    out = {name: [b for b in catalog.builds(name) if draw.accepts(b)] for name in catalog.species()}
-    return {name: builds for name, builds in out.items() if builds}
-
-
-def role_species(catalog: Catalog, styles: StyleRules, style: str) -> dict[str, list[str]]:
-    """Role label (with the weather, for weather styles) -> the catalog species that can fill it."""
-    return {d.label: list(role_builds(catalog, d)) for plan in styles.plans(style) for d in plan}
-
-
-def _draw_role(draft: _Draft, catalog: Catalog, rng: random.Random, draw: RoleDraw, noisy: bool) -> bool:
-    pool = role_builds(catalog, draw)
-    for _ in range(draw.count):
-        names = [n for n in pool if game.base_name(to_id_str(n)) not in draft.species]
-        names = [n for n in names if _pick_build(pool[n], draft.items, rng, False) is not None]
-        if not names:
-            return False
-        name = rng.choices(names, weights=_usage(catalog, names), k=1)[0]
-        build = _pick_build(pool[name], draft.items, rng, noisy)
-        assert build is not None
-        draft.add(build)
-    return True
-
-
-def sample_styled_team(
-    catalog: Catalog, rng: random.Random, style: str, styles: StyleRules, *, noisy: bool = False
-) -> list[Build]:
-    """Six that fit `style`: its role members first (one plan, so one weather, drawn at random), then usage
-    draws, until `styles.fit` accepts; shuffled so the role members sit anywhere."""
-    plans = styles.plans(style)
-    weights = [_plan_usage(catalog, plan) for plan in plans]
-    for _ in range(MAX_ATTEMPTS):
-        draft = _Draft()
-        plan = rng.choices(plans, weights=weights, k=1)[0] if plans else ()
-        if not all(_draw_role(draft, catalog, rng, d, noisy) for d in plan) or not _fill(draft, catalog, rng, noisy):
-            continue
-        if styles.fit(style, draft.members) is not None:
-            rng.shuffle(draft.members)
-            return draft.members
-    raise ValueError(f"could not draw a six that fits the {style} style")
-
-
-def _plan_usage(catalog: Catalog, plan: Sequence[RoleDraw]) -> int:
-    """Ladder usage of the species filling the plan's first role (its setter), so weathers come up as played."""
-    return sum(_usage(catalog, list(role_builds(catalog, plan[0])))) if plan else 1
 
 
 def team_export(members: list[Build]) -> str:

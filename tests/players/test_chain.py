@@ -6,11 +6,16 @@ from dataclasses import replace
 
 import pytest
 
-from pcsa.players.chain import RECOVER, Attack, Combatant, Matchups, chain, chain_options, duel
+from pcsa.players.chain import RECOVER, Attack, ChainResult, Combatant, Matchups, chain_options, duel
 
 
 def hit(fraction: float, ko: float, *, move: str = "hit", priority: int = 0, accuracy: float = 1.0) -> Attack:
     return Attack(move, fraction, priority, accuracy, ko)
+
+
+def best_line(*args, **kwargs) -> ChainResult:
+    """The line the endgame player would take: the winning option with the best margin, else the best margin."""
+    return max(chain_options(*args, **kwargs).values(), key=lambda r: (r.wins, r.margin))
 
 
 def mon(name: str, speed: int, *attacks: Attack, hp: float = 1.0, **extra: float) -> Combatant:
@@ -68,7 +73,7 @@ def test_rocky_helmet_can_double_ko() -> None:
 def test_horizon_is_a_draw() -> None:
     result = duel(mon("a", 50, hit(0.0, 0.0)), mon("b", 60, hit(0.0, 0.0)), horizon=12)
     assert (result.winner, result.turns) == (None, 12)
-    drawn = chain([mon("a", 50)], [mon("b", 60)], Matchups({}, {}), active_ours=0, active_theirs=0, horizon=12)
+    drawn = best_line([mon("a", 50)], [mon("b", 60)], Matchups({}, {}), active_ours=0, active_theirs=0, horizon=12)
     assert not drawn.wins
     assert drawn.margin == 0
 
@@ -97,7 +102,7 @@ def test_lead_order_decides_the_chain() -> None:
     assert not options[1].wins
     assert options[1].margin == pytest.approx(-0.9)
     assert options[2].wins
-    best = chain(ours, theirs, SWEEP, active_ours=0, active_theirs=0)
+    best = best_line(ours, theirs, SWEEP, active_ours=0, active_theirs=0)
     assert (best.wins, best.order, best.first_move) == (True, (2, 1), "hit")
     assert best.margin == pytest.approx(0.8)
 
@@ -113,7 +118,7 @@ def test_opponent_picks_its_order_adversarially() -> None:
     q1_first = duel(mon("P0", 100, hit(0.6, 0.7)), mon("Q1", 150, hit(0.5, 0.6), hp=0.5))
     then_q2 = duel(mon("P0", 100, hit(0.5, 0.55), hp=q1_first.a_hp_left), mon("Q2", 50, hit(0.4, 0.45)))
     assert q1_first.winner == then_q2.winner == "a"
-    result = chain(ours, theirs, matrix, active_ours=0, active_theirs=0)
+    result = best_line(ours, theirs, matrix, active_ours=0, active_theirs=0)
     assert not result.wins
     assert result.margin == pytest.approx(-0.5)
 
@@ -129,7 +134,7 @@ def test_switching_out_of_a_lost_matchup() -> None:
     options = chain_options(ours, theirs, matrix, active_ours=0, active_theirs=0)
     assert options[0].wins and options[1].wins
     assert options[1].margin > options[0].margin
-    best = chain(ours, theirs, matrix, active_ours=0, active_theirs=0)
+    best = best_line(ours, theirs, matrix, active_ours=0, active_theirs=0)
     assert (best.order, best.first_move) == ((1,), None)
     assert best.margin == pytest.approx(1.0 + 0.7)
 
@@ -138,13 +143,11 @@ def test_free_swap_after_a_ko() -> None:
     # With swaps allowed, P1 KOs Q0 and hands Q1 to P0 instead of dying to it.
     ours = [Combatant("fainted", 0.0, 1), Combatant("P0", 1.0, 50), Combatant("P1", 1.0, 50)]
     theirs = [no_swap("Q0", 100), no_swap("Q1", 100)]
-    best = chain(ours, theirs, SWEEP, active_ours=0, active_theirs=0)
+    best = best_line(ours, theirs, SWEEP, active_ours=0, active_theirs=0)
     assert best.wins
     assert best.order == (2, 1)
     assert best.margin == pytest.approx(0.8 + 0.8)
 
 
 def test_nobody_left() -> None:
-    result = chain([mon("a", 50, hp=0.0)], [mon("b", 50)], Matchups({}, {}), active_ours=0, active_theirs=0)
-    assert (result.wins, result.order, result.first_move) == (False, (), None)
-    assert result.margin == -1.0
+    assert chain_options([mon("a", 50, hp=0.0)], [mon("b", 50)], Matchups({}, {}), active_ours=0, active_theirs=0) == {}

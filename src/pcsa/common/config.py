@@ -117,11 +117,7 @@ class PolicyConfig(Strict):
     best_matchup: str = "players/best_matchup.yaml"  # best_matchup_max_damage's switch thresholds
     mixed: str = "players/mixed.yaml"
     disciplined: str = "players/disciplined.yaml"  # the disciplined player's thresholds
-    free_turn: str = "players/free_turn.yaml"  # the free-turn player's thresholds (sim only)
     endgame: str = "players/endgame.yaml"  # the endgame player's chain trigger (sim only)
-    style_weather: str = "players/style_weather.yaml"  # the weather-style player's thresholds (sim only)
-    style_hazard_lead: str = "players/style_hazard_lead.yaml"  # the hazard-lead style player's thresholds (sim only)
-    style_setup_sweeper: str = "players/style_setup_sweeper.yaml"  # the setup-sweeper style's thresholds (sim only)
 
 
 class SimConfig(Strict):

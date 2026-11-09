@@ -1,5 +1,0 @@
-# Thresholds of the free-turn player (sim only: `pcsa sim play --a free_turn ...`); disciplined's own thresholds
-# come from config/players/disciplined.yaml. Damage shares are pcsa.players.threat's on the assumed sets.
-free_hit_max: 0.4    # a turn is free only when their best hit is below this share of our max HP (and no KO)
-setup_max_stage: 2   # no setup once a stat the move raises is at this stage (research R3: stop at +2)
-setup_min_hp: 0.5    # setup only above this HP fraction
