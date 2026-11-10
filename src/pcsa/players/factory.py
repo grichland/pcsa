@@ -4,9 +4,9 @@ Live kinds (the phone can play them): random; simple_heuristic (the heuristic wi
 custom_heuristic (the heuristic with config/players/heuristic.yaml); max_damage (the highest-scoring attack,
 nothing else); best_matchup_max_damage (max_damage plus a switch out of a really bad matchup,
 config/players/best_matchup.yaml); disciplined (max_damage plus the research rules,
-config/players/disciplined.yaml); mixed (a weighted pool of the others, one drawn per game); neural (a PPO /
-imitation checkpoint from the research runs, config/players/neural.yaml, falling back to disciplined).
-Sim-only kinds: endgame (disciplined plus the 1v1 chain, config/players/endgame.yaml).
+config/players/disciplined.yaml); mixed (a weighted pool of the others, one drawn per game); endgame
+(disciplined plus the 1v1 chain, config/players/endgame.yaml); neural (a PPO / imitation checkpoint from the
+research runs, config/players/neural.yaml, falling back to disciplined). Every kind is live (SIM_KINDS is empty).
 """
 
 from __future__ import annotations
