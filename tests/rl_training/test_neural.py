@@ -182,6 +182,7 @@ def test_synthetic_checkpoints_load_and_play(tmp_path: Path, size: str) -> None:
     assert player.choose_action(view, soon()) in view.legal
     notes = player.notes()
     assert notes["rule"] == "neural" and 0 < notes["p"] <= 0.99 and notes["ms"] >= 0
+    assert isinstance(notes["v"], float) and -2.0 < notes["v"] < 2.0  # the critic's value, kept for the dashboard
 
 
 @pytest.mark.torch
