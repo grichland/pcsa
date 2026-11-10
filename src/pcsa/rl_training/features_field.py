@@ -79,7 +79,10 @@ def _weather_rooms(f: np.ndarray, battle) -> None:
         if w in WEATHER_INDEX:
             f[16 + WEATHER_INDEX[w]] = 1.0
         f[20] = max(f[20], float(w in STRONG))
-        f[21] = _elapsed(battle, start, 8.0)
+        # pcsa deviation from research (9 Nov): capped at one turn. In the simulator Showdown's end-of-turn
+        # `|-weather|X|[upkeep]` line resets poke-env's start turn, so training only ever saw 0 or 0.125 here;
+        # the phone's battle log has no upkeep line and the value grew to 0.875 (run 20261109-205551).
+        f[21] = min(_elapsed(battle, start, 8.0), 0.125)
     for i, t in enumerate(TERRAINS):
         if t in battle.fields:
             f[22 + i] = 1.0

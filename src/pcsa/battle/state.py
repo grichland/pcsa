@@ -155,6 +155,26 @@ def choice_lock(battle: Battle, name: str, item: str | None) -> str | None:
     return None
 
 
+FIRST_TURN_MOVES = frozenset({"fakeout", "firstimpression", "matblock"})
+
+
+def acted_since_entry(battle: Battle, name: str) -> bool:
+    """Our member has taken a move action (a move line or a `cant`) since it was last sent out.
+
+    The simulator's request then disables Fake Out, First Impression and Mat Block; the game's move screen does
+    not grey them out, so the live request has to. Without this the network was offered First Impression on a
+    later turn, a choice it never had in training, and clicked it (run 20261109-205551, battle 2, turn 6)."""
+    actor = f"p1a: {name}"
+    for parts in reversed(getattr(battle, "_replay_data", [])):
+        if len(parts) < 3 or parts[2] != actor:
+            continue
+        if parts[1] in ("switch", "drag"):
+            return False
+        if parts[1] == "cant" or (parts[1] == "move" and not any("[from]" in p for p in parts[4:])):
+            return True
+    return False
+
+
 def _move_rows(team: Team, picks: list[int], battle: Battle, active: int | None, moves) -> list[dict]:
     """Move names come from the team sheet by slot; the move screen supplies PP and availability."""
     if active is None:
@@ -169,6 +189,7 @@ def _move_rows(team: Team, picks: list[int], battle: Battle, active: int | None,
     shown = active_mon.item if active_mon is not None else None
     held = shown if shown not in (None, "", GenData.UNKNOWN_ITEM) else member.item
     locked_id = choice_lock(battle, member.name, held)
+    spent = acted_since_entry(battle, member.name)  # first-turn-only moves are over, as in the simulator's request
     rows = []
     for m in moves:
         name = known[m.slot] if m.slot < len(known) and known[m.slot] else m.name
@@ -178,7 +199,7 @@ def _move_rows(team: Team, picks: list[int], battle: Battle, active: int | None,
         held = (encore_id is not None and to_id_str(name) != encore_id) or (
             locked_id is not None and to_id_str(name) != locked_id
         )
-        disabled = bool(m.disabled or pp[0] == 0 or held)
+        disabled = bool(m.disabled or pp[0] == 0 or held or (spent and to_id_str(name) in FIRST_TURN_MOVES))
         rows.append(
             {
                 "move": name,
