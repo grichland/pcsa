@@ -2,7 +2,7 @@
 
 pcsa setup [--with sim] [--with train] [--check]   install or check tools, output folder, device
 pcsa doctor                                         same checks, no installs
-pcsa observe / calibrate / scout / sim play / train ...
+pcsa observe / calibrate / scout / watch / sim play / train ...
 pcsa run / nav                                      live play on the phone
 """
 
@@ -44,6 +44,11 @@ def build_parser() -> argparse.ArgumentParser:
     scout = commands.add_parser("scout", help="record a manual walk through the game and report changes (no taps)")
     _config_args(scout)
     scout.add_argument("--interval", type=float, default=1.0)
+
+    watch = commands.add_parser("watch", help="read-only page over a run directory (default: the latest run)")
+    watch.add_argument("--run", default=None, help="run folder (default: the newest under output/runs)")
+    watch.add_argument("--port", type=int, default=8765)
+    watch.add_argument("--no-browser", action="store_true")
 
     sim = commands.add_parser("sim", help="simulator games between players (needs `pcsa setup --with sim`)")
     sim_commands = sim.add_subparsers(dest="sim_command", required=True)
@@ -87,7 +92,26 @@ def dispatch(args: argparse.Namespace) -> int:
         return scout.scout_command(config, args.interval)
     if args.command in live.COMMANDS:
         return live.dispatch(args, _load(args))
+    if args.command == "watch":
+        return _watch(args)
     return _sim(args) if args.command == "sim" else train(args)
+
+
+def _watch(args: argparse.Namespace) -> int:
+    from pathlib import Path
+
+    from pcsa.run.watch import latest_run, serve
+
+    run_dir = Path(args.run) if args.run else latest_run()
+    if run_dir is None:
+        print("no run found under output/runs", file=sys.stderr)
+        return 1
+    print(f"watching {run_dir} at http://127.0.0.1:{args.port}/ (read-only; Ctrl+C stops it)", flush=True)
+    try:
+        return serve(run_dir, "127.0.0.1", args.port, not args.no_browser)
+    except OSError as error:
+        print(f"error: cannot serve on port {args.port}: {error}", file=sys.stderr)
+        return 1
 
 
 def _sim(args: argparse.Namespace) -> int:
