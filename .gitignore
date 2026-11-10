@@ -28,6 +28,6 @@ output/
 !docs/images/demo-poster.jpg
 
 # Network checkpoints for the neural player (config/players/neural.yaml); copied from the research runs.
-# assets/models/ is the folder for them; the weights stay local (the folder itself is kept by its README).
+# assets/models/ is the folder for them (create it); the weights stay local.
 networks/
 assets/models/*.pt

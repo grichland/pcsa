@@ -136,7 +136,7 @@ default).
 any size S/M/L, read from the checkpoint). It needs torch (`uv sync --inexact --extra train`; `pcsa setup --with
 train` installs it too) and runs on the CPU. Point it at a network with one override (or set `checkpoint` in
 `config/players/neural.yaml`; relative paths are looked up in `$PCSA_NETWORKS`, then in the repo). Keep the
-checkpoints in `assets/models/` (its `.pt` files are not committed; `assets/models/README.md` lists them):
+checkpoints in `assets/models/` (create the folder; its `.pt` files are not committed):
 
 ```
 uv run pcsa sim play --a neural --b disciplined --battles 100 --set policy.neural_checkpoint=assets/models/team2-fine-tuned.pt
