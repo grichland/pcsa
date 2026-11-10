@@ -112,12 +112,15 @@ class PolicyConfig(Strict):
         "best_matchup_max_damage",
         "disciplined",
         "mixed",
+        "neural",
     ] = "custom_heuristic"
     heuristic: str = "players/heuristic.yaml"  # the custom heuristic's parameters
     best_matchup: str = "players/best_matchup.yaml"  # best_matchup_max_damage's switch thresholds
     mixed: str = "players/mixed.yaml"
     disciplined: str = "players/disciplined.yaml"  # the disciplined player's thresholds
     endgame: str = "players/endgame.yaml"  # the endgame player's chain trigger (sim only)
+    neural: str = "players/neural.yaml"  # the neural player's checkpoint, sampling and fallback
+    neural_checkpoint: str | None = None  # when set, replaces neural.yaml's checkpoint (one --set per run)
 
 
 class SimConfig(Strict):

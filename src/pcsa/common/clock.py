@@ -63,3 +63,8 @@ class Deadline:
 
     def earliest(self, other: Deadline) -> Deadline:
         return self if self.at <= other.at else other
+
+
+def precise_now() -> float:
+    """A high-resolution monotonic reading for measuring how long something took (never for deadlines)."""
+    return time.perf_counter()

@@ -1,0 +1,15 @@
+# The neural player (`--player neural`, live and sim): a PPO / imitation checkpoint from the research runs
+# (research/pcsa-rl, network code in src/pcsa/rl_training). Needs torch: `uv sync --extra train`.
+# Point a run at another network without editing this file: --set policy.neural_checkpoint=<path>
+# (or the environment variable PCSA__policy__neural_checkpoint=<path>).
+checkpoint: networks/neural.pt  # absolute, or relative to $PCSA_NETWORKS (when the file is there), else to the repo
+size: null                      # S | M | L; null: the checkpoint's own (another value is a size mismatch -> fallback)
+device: cpu
+sampling: greedy                # greedy: the most likely action; sample: training's capped (0.99) distribution
+temperature: 1.0                # of `sample`
+preview: critic                 # critic: training's softmax(value / 0.1), top-p 0.9 nucleus; greedy: the best value
+fallback: disciplined           # decides when the network cannot: no or bad checkpoint, no Battle, an error, too slow
+max_decision_s: 5.0             # a decision (or team preview) taking longer than this goes to the fallback
+reserve_s: 0.5                  # deadline time kept for the fallback
+threads: 1                      # torch CPU threads
+seed: null                      # preview and `sample` draws; null: fresh each run

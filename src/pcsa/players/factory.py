@@ -3,8 +3,10 @@
 Live kinds (the phone can play them): random; simple_heuristic (the heuristic with poke-env's default numbers);
 custom_heuristic (the heuristic with config/players/heuristic.yaml); max_damage (the highest-scoring attack,
 nothing else); best_matchup_max_damage (max_damage plus a switch out of a really bad matchup,
-config/players/best_matchup.yaml); mixed (a weighted pool of the others, one drawn per game).
-Sim-only kinds: disciplined (max_damage plus the research rules, config/players/disciplined.yaml).
+config/players/best_matchup.yaml); disciplined (max_damage plus the research rules,
+config/players/disciplined.yaml); mixed (a weighted pool of the others, one drawn per game); neural (a PPO /
+imitation checkpoint from the research runs, config/players/neural.yaml, falling back to disciplined).
+Sim-only kinds: endgame (disciplined plus the 1v1 chain, config/players/endgame.yaml).
 """
 
 from __future__ import annotations
@@ -29,6 +31,7 @@ LIVE_KINDS = (
     "best_matchup_max_damage",
     "disciplined",
     "mixed",
+    "neural",
 )
 SIM_KINDS: tuple[str, ...] = ()  # not offered to the phone yet
 SIM_KINDS += ("endgame",)  # disciplined plus the 1v1 chain at <= 2 members each, config/players/endgame.yaml
@@ -80,6 +83,12 @@ def _endgame(config: Config) -> Player:
     return build(config, _catalog(), _heuristic_params(config))
 
 
+def _neural(config: Config) -> Player:
+    from pcsa.players.neural import build
+
+    return build(config, lambda kind: build_player(config, kind))
+
+
 BUILDERS: dict[str, Callable[[Config], Player]] = {
     "random": lambda config: RandomPlayer(),
     "simple_heuristic": lambda config: HeuristicPlayer(HeuristicParams(), name="simple_heuristic"),
@@ -89,4 +98,5 @@ BUILDERS: dict[str, Callable[[Config], Player]] = {
     "mixed": _mixed,
     "disciplined": _disciplined,
     "endgame": _endgame,
+    "neural": _neural,
 }
