@@ -16,7 +16,7 @@ $Seed       = $null               # $null = new random seed; a number makes choi
 $RunName    = "run"               # run folder prefix under output\runs\
 $Config     = "config/agent.yaml" # controller settings; player files are named inside it
 $Overrides  = @()                 # one-off settings, e.g. @("timing.max_turn_s=35", "run.count_forfeits=true")
-$Watch      = $false              # $true opens the read-only dashboard (pcsa watch) on this run in a second window
+$Watch      = $true               # $true opens the read-only dashboard (pcsa watch) on this run in a second window
 $Mirror     = $true               # open a phone mirror window (scrcpy) next to the run; skipped with a warning when scrcpy is missing
 $Resume     = ""                  # an existing run folder to continue, or "" for a new run
 # ===================================================================================
