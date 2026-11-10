@@ -18,14 +18,15 @@ The Showdown engine doubles as the simulator the players are measured in.
    each screen.
 2. **State reconstruction** (`battle/`): the battle log is read every turn and rebuilt as a Pokémon Showdown
    protocol, so the agent holds the same battle state the Showdown engine would.
-3. **Decision** (`players/`): seven player kinds: `random`, `simple_heuristic` (poke-env's numbers),
+3. **Decision** (`players/`): nine player kinds, all usable live and in the simulator: `random`, `simple_heuristic` (poke-env's numbers),
    `custom_heuristic` (the tuned `config/players/heuristic.yaml`), `max_damage` (the strongest attack, nothing
    else), `best_matchup_max_damage` (max_damage plus a switch out of a really bad matchup,
    `config/players/best_matchup.yaml`), `disciplined` (best_matchup plus damage-race rules for priority, Mega,
-   replacements and switching, `config/players/disciplined.yaml`) and `mixed` (a weighted pool of the others,
-   one drawn per game, `config/players/mixed.yaml`). The simulator also has `endgame` (disciplined plus a 1v1
-   chain search once both sides are down to two members, `config/players/endgame.yaml`), which is not offered
-   to the phone.
+   replacements and switching, `config/players/disciplined.yaml`), `mixed` (a weighted pool of the others,
+   one drawn per game, `config/players/mixed.yaml`), `endgame` (disciplined plus a 1v1 chain search once both
+   sides are down to two members, `config/players/endgame.yaml`) and `neural` (a PPO / imitation network
+   trained in the research repo, `config/players/neural.yaml`, network code in `rl_training/`; see "Neural
+   player" below).
 4. **Simulator** (`sim/`): the Showdown engine as a local server, with its team validator, on which
    `pcsa sim play` plays games between the player kinds.
 5. **Action** (`live/`): taps through a fixed menu map, and the session loop that plays battles (`pcsa run`).
@@ -100,6 +101,23 @@ without the mirror:
 powershell -ExecutionPolicy Bypass -File scripts\run_agent.ps1 -Battles 25 -MaxBattlesTotal 30
 ```
 
+**Neural player.** `neural` plays a checkpoint from the research runs (`research/pcsa-rl`: `runs/<run>/ckpt/*.pt`,
+any size S/M/L, read from the checkpoint). It needs torch (`uv sync --inexact --extra train`; `pcsa setup --with
+train` installs it too) and runs on the CPU. Point it at a network with one override (or set `checkpoint` in
+`config/players/neural.yaml`; relative paths are looked up in `$PCSA_NETWORKS`, then in the repo, e.g. a copy in
+`networks/`, which git ignores):
+
+```
+uv run pcsa sim play --a neural --b disciplined --battles 100 --set policy.neural_checkpoint=C:/nets/s1-u1401.pt
+uv run pcsa run --player neural --battles 10 --set policy.neural_checkpoint=C:/nets/s1-u1401.pt
+```
+
+Live play defaults to the most likely action (`sampling: greedy`; `sample` draws from training's capped 0.99
+distribution) and training's team preview (the critic scores all 60 lead/second/third picks, softmax at 0.1,
+top-p 0.9; `preview: greedy` takes the best). Whenever the network cannot decide (no or unreadable checkpoint,
+a size mismatch, no tracked Battle, an error, slower than `max_decision_s` or the turn deadline) the
+`fallback` kind (`disciplined`) decides, and the decision's notes say why (`rule: neural:fallback`, `why`).
+
 ## Where things go
 
 | What | Where |
@@ -107,7 +125,8 @@ powershell -ExecutionPolicy Bypass -File scripts\run_agent.ps1 -Battles 25 -MaxB
 | Everything the agent writes (runs, frames, simulator results, sprite network training) | `output/` (override with `PCSA_OUTPUT`) |
 | Every simulator battle (both teams, picks, winner, full protocol), one JSON line each | `output/sim/<stamp>/battles.jsonl.gz` |
 | Installed tools (adb, scrcpy, OCR models, Node, Showdown) | `.tools/` (pinned in `tools.lock.json`) |
-| Settings | `config/agent.yaml`, `config/screen.yaml`, `config/devices/*.yaml`; players: `config/players/heuristic.yaml`, `best_matchup.yaml`, `disciplined.yaml`, `mixed.yaml`, `endgame.yaml` |
+| Settings | `config/agent.yaml`, `config/screen.yaml`, `config/devices/*.yaml`; players: `config/players/heuristic.yaml`, `best_matchup.yaml`, `disciplined.yaml`, `mixed.yaml`, `endgame.yaml`, `neural.yaml` |
+| Network checkpoints for the neural player (optional copies; any path works) | `networks/` (or `PCSA_NETWORKS`; ignored by git) |
 | Game data, the sprite network (see `docs/sprites.md`), the simulator's set catalog | `assets/` |
 
 ## Development

@@ -114,6 +114,8 @@ max-statements = 50
 "src/pcsa/common/setup.py" = ["T20"]
 "tests/**" = ["PLR2004", "E501", "PLR0913"]
 "src/pcsa/live/log_reader.py" = ["PLR0913"]
+# Network code copied from research/pcsa-rl/rl and kept diffable with it: feature layouts are numbered slots.
+"src/pcsa/rl_training/**" = ["PLR2004", "PLR0913", "E731"]
 # Standalone helper scripts print their progress.
 "scripts/**" = ["T20"]
 

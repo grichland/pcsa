@@ -27,3 +27,35 @@ source_modules =
 forbidden_modules =
     pcsa.sprite_training
 allow_indirect_imports = False
+
+[importlinter:contract:rl-training-is-a-leaf]
+name = Only the neural player imports the network code (pcsa.rl_training needs torch; nothing else may load it)
+type = forbidden
+source_modules =
+    pcsa.common
+    pcsa.battle
+    pcsa.phone
+    pcsa.sim
+    pcsa.players
+    pcsa.run
+    pcsa.live
+forbidden_modules =
+    pcsa.rl_training
+ignore_imports =
+    pcsa.players.neural -> pcsa.rl_training.*
+allow_indirect_imports = False
+
+[importlinter:contract:rl-training-imports-down]
+name = The network code uses only common, battle and the player basics (no phone, sim, run, live or factory)
+type = forbidden
+source_modules =
+    pcsa.rl_training
+forbidden_modules =
+    pcsa.cli
+    pcsa.live
+    pcsa.run
+    pcsa.phone
+    pcsa.sim
+    pcsa.sprite_training
+    pcsa.players.factory
+    pcsa.players.neural

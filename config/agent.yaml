@@ -94,9 +94,10 @@ degrade:
   peek_attempts: 2
 
 policy:
-  kind: custom_heuristic  # random | simple_heuristic | custom_heuristic | max_damage | best_matchup_max_damage | disciplined | mixed
+  kind: custom_heuristic  # random | simple_heuristic | custom_heuristic | max_damage | best_matchup_max_damage | disciplined | mixed | endgame | neural
   heuristic: players/heuristic.yaml      # the custom heuristic's tuned parameters
   mixed: players/mixed.yaml
+  neural: players/neural.yaml           # the neural player; --set policy.neural_checkpoint=<path> picks the network
 
 sim:
   format: gen9championsbssregmc   # the Showdown format of `pcsa sim play`

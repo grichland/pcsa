@@ -213,4 +213,4 @@ def test_factory_builds_it(config: Config, fake) -> None:
     built = build_player(config, "endgame")
     assert isinstance(built, EndgamePlayer) and built.name == "endgame"
     assert built.endgame == EndgameParams() and built.params()["max_members"] == 2
-    assert "endgame" in SIM_KINDS and "endgame" in KINDS and "endgame" not in LIVE_KINDS
+    assert "endgame" in LIVE_KINDS and "endgame" in KINDS and "endgame" not in SIM_KINDS  # live since 9 Nov (user)

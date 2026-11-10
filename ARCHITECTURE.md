@@ -5,6 +5,7 @@
 ```
 common  <-  battle  <-  phone | sim  <-  players  <-  run  <-  live  <-  cli
                                                      sprite_training (the sprite network's trainer; only cli imports it)
+                                                     rl_training (the neural player's network; only players.neural imports it)
 ```
 
 | Package | Question it answers |
@@ -13,10 +14,11 @@ common  <-  battle  <-  phone | sim  <-  players  <-  run  <-  live  <-  cli
 | `battle` | what is going on in the fight: game data, team text, log rows to protocol, battle state, the usage-ranked set catalog the simulator's teams come from |
 | `phone` | reading the device: adb screenshots, screens, OCR, sprites, the log panel, team sheets, calibration |
 | `sim` | the Showdown engine: the local server and the team validator `pcsa sim play` runs on |
-| `players` | how it decides: six kinds (random, the two heuristics, max_damage, best_matchup_max_damage, the mixed pool) |
+| `players` | how it decides: random, the two heuristics, max_damage, best_matchup_max_damage, disciplined, the mixed pool, neural (and the sim-only endgame) |
 | `run` | run records: battle bookkeeping, the recorder, `pcsa sim play` |
 | `live` | live play on the phone: device input, taps, navigation, session, turn pipeline, handlers, supervisor, `pcsa run` |
 | `sprite_training` | the sprite network's trainer, `pcsa train sprites` (needs the `train` extra; nothing at runtime imports it) |
+| `rl_training` | the neural player's network, inference only, copied from research/pcsa-rl/rl (each file names its source version): observations, the transformer, the 0.99 cap, team preview, the policy player. Needs torch (`train` extra); only `players.neural` imports it, lazily |
 
 The direction is enforced by `import-linter` (`.importlinter`) in CI. `phone` never imports `battle` state
 construction; `battle` never imports `phone`; that boundary is what makes the loop testable without a phone.

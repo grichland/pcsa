@@ -22,3 +22,6 @@ output/
 *.gif
 *.webp
 *.bmp
+
+# Network checkpoints for the neural player (config/players/neural.yaml); copied from the research runs
+networks/
