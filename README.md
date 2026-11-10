@@ -11,6 +11,12 @@ The Showdown engine doubles as the simulator the players are measured in.
 > players' matches and can get an account banned. Please run experiments in the simulator (`pcsa sim play`)
 > rather than on the live ladder. Credits and licenses: `NOTICE.md`.
 
+## Demo
+
+[![The agent playing a ranked battle: the dashboard with the latest decision, the phone mirror and the tracked battle](docs/images/demo-poster.jpg)](docs/media/pcsa-demo.mp4)
+
+*Click for the video (1:50): the neural player plays a ranked battle on the phone while `pcsa watch` shows each decision, its confidence, the critic's value and the tracked battle state. Trainer names and session identifiers are blurred.*
+
 ![Season M-7 singles result: Master Ball tier, rank 4, final rating 1,561](docs/images/master-ball-tier.jpg)
 
 *Season M-7, Single Battle: the account the agent played on finished in the Master Ball tier (trainer name and ID masked).*
