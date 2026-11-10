@@ -6,6 +6,7 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 .ruff_cache/
+.env
 
 # Everything the package writes
 output/
@@ -23,5 +24,7 @@ output/
 *.webp
 *.bmp
 
-# Network checkpoints for the neural player (config/players/neural.yaml); copied from the research runs
+# Network checkpoints for the neural player (config/players/neural.yaml); copied from the research runs.
+# assets/models/ is the folder for them; the weights stay local (the folder itself is kept by its README).
 networks/
+assets/models/*.pt

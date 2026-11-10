@@ -104,12 +104,12 @@ powershell -ExecutionPolicy Bypass -File scripts\run_agent.ps1 -Battles 25 -MaxB
 **Neural player.** `neural` plays a checkpoint from the research runs (`research/pcsa-rl`: `runs/<run>/ckpt/*.pt`,
 any size S/M/L, read from the checkpoint). It needs torch (`uv sync --inexact --extra train`; `pcsa setup --with
 train` installs it too) and runs on the CPU. Point it at a network with one override (or set `checkpoint` in
-`config/players/neural.yaml`; relative paths are looked up in `$PCSA_NETWORKS`, then in the repo, e.g. a copy in
-`networks/`, which git ignores):
+`config/players/neural.yaml`; relative paths are looked up in `$PCSA_NETWORKS`, then in the repo). Keep the
+checkpoints in `assets/models/` (its `.pt` files are not committed; `assets/models/README.md` lists them):
 
 ```
-uv run pcsa sim play --a neural --b disciplined --battles 100 --set policy.neural_checkpoint=C:/nets/s1-u1401.pt
-uv run pcsa run --player neural --battles 10 --set policy.neural_checkpoint=C:/nets/s1-u1401.pt
+uv run pcsa sim play --a neural --b disciplined --battles 100 --set policy.neural_checkpoint=assets/models/team2-fine-tuned.pt
+uv run pcsa run --player neural --battles 10 --set policy.neural_checkpoint=assets/models/team2-fine-tuned.pt
 ```
 
 Live play defaults to the most likely action (`sampling: greedy`; `sample` draws from training's capped 0.99
@@ -126,7 +126,7 @@ a size mismatch, no tracked Battle, an error, slower than `max_decision_s` or th
 | Every simulator battle (both teams, picks, winner, full protocol), one JSON line each | `output/sim/<stamp>/battles.jsonl.gz` |
 | Installed tools (adb, scrcpy, OCR models, Node, Showdown) | `.tools/` (pinned in `tools.lock.json`) |
 | Settings | `config/agent.yaml`, `config/screen.yaml`, `config/devices/*.yaml`; players: `config/players/heuristic.yaml`, `best_matchup.yaml`, `disciplined.yaml`, `mixed.yaml`, `endgame.yaml`, `neural.yaml` |
-| Network checkpoints for the neural player (optional copies; any path works) | `networks/` (or `PCSA_NETWORKS`; ignored by git) |
+| Network checkpoints for the neural player | `assets/models/` (`.pt` files not committed; or any path, or `PCSA_NETWORKS`) |
 | Game data, the sprite network (see `docs/sprites.md`), the simulator's set catalog | `assets/` |
 
 ## Development

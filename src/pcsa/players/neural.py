@@ -36,7 +36,7 @@ TORCH_HINT = "the neural player needs torch: run `uv sync --extra train` (or `uv
 
 @dataclass
 class NeuralParams:
-    checkpoint: str = "networks/neural.pt"  # absolute, or relative to $PCSA_NETWORKS, then to the repo
+    checkpoint: str = "assets/models/neural.pt"  # absolute, or relative to $PCSA_NETWORKS, then to the repo
     size: str | None = None  # S | M | L; None: the checkpoint's own (a different one is a size mismatch)
     device: str = "cpu"
     sampling: str = "greedy"  # greedy: the most likely action; sample: training's capped (0.99) distribution
