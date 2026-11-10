@@ -7,6 +7,11 @@ notes, whenever the network cannot: no checkpoint, an unreadable one or a size m
 no Battle (a screen-level decision), an exception, or no answer within the decision budget
 (min(max_decision_s, the deadline's remaining time - reserve_s)).
 
+Override rules (pcsa.players.neural_rules, config/players/neural_rules.yaml) may replace the network's choice in
+clear-cut spots: `rules: auto` turns on the general rules and, when our six match a team profile's roster, that
+team's own; `general`, a team name, or `none` (the network alone). An override is in the notes (`override`,
+`override_why`, `network`: the network's own choice).
+
 torch is imported only when a checkpoint is loaded; it comes with the `train` extra (`uv sync --extra train`).
 """
 
@@ -15,7 +20,7 @@ from __future__ import annotations
 import os
 import threading
 from collections.abc import Callable, Mapping
-from dataclasses import asdict, dataclass, fields
+from dataclasses import asdict, dataclass, fields, replace
 from pathlib import Path
 from typing import Any
 
@@ -25,6 +30,7 @@ from pcsa.common import log, paths
 from pcsa.common.clock import Deadline, precise_now
 from pcsa.common.config import Config
 from pcsa.common.errors import ConfigError
+from pcsa.players import neural_rules
 from pcsa.players.base import DecisionView, LegalAction, Player, TeamPreviewView
 
 NETWORKS_ENV = "PCSA_NETWORKS"  # a folder relative checkpoint paths are looked up in first
@@ -47,6 +53,8 @@ class NeuralParams:
     reserve_s: float = 0.5  # deadline time kept for the fallback
     threads: int = 1  # torch CPU threads
     seed: int | None = None  # preview and `sample` draws; None: fresh each run
+    rules: str = "none"  # override rules: auto | general | none | a team name (config/players/neural_rules.yaml)
+    rules_file: str = "players/neural_rules.yaml"  # relative to the config folder
 
     @classmethod
     def load(cls, path: Path) -> NeuralParams:
@@ -120,8 +128,12 @@ class NeuralPlayer:
         checkpoint: Path,
         *,
         loader: Callable[[NeuralParams, Path], tuple[Any, dict]] = load_policy,
+        rules: neural_rules.RulesConfig | None = None,
     ) -> None:
         self.p, self.fallback, self.checkpoint = params, fallback, checkpoint
+        self.rules_config = rules or neural_rules.RulesConfig()
+        self.rules_config.select(params.rules, ())  # a bad rules name fails at build, not mid-battle
+        self._rules_for: tuple[str | None, tuple[str, ...], neural_rules.Profile | None] = (None, (), None)
         self.policy: Any = None
         self.facts: dict = {}
         self.error: str | None = None
@@ -145,6 +157,8 @@ class NeuralPlayer:
             "checkpoint": str(self.checkpoint),
             **self.facts,
             "fallback_kind": self.fallback.name,
+            "rules_general": list(self.rules_config.general),
+            "rules_teams": {p.name: list(p.rules) for p in self.rules_config.profiles},
         }
         return out | ({"error": self.error} if self.error else {})
 
@@ -179,12 +193,65 @@ class NeuralPlayer:
         if why is None:
             proposal, why, ms = self._timed(lambda: self.policy.propose(view), deadline)
             if why is None:
+                proposal, override = self._override(view, proposal)
                 chosen = self.policy.commit(proposal)
-                self._notes = {**self.policy.notes(), "rule": "neural", "ms": ms}
+                self._notes = {**self.policy.notes(), "rule": "neural", "ms": ms, **override}
                 return chosen
         chosen = self.fallback.choose_action(view, deadline)
         self._notes = self._fallback_notes(why, self.fallback.notes())
         return chosen
+
+    def _rules(self, battle) -> tuple[tuple[str, ...], neural_rules.Profile | None]:
+        """The rules enabled for this battle, chosen once per battle from our six."""
+        tag = getattr(battle, "battle_tag", None)
+        if self._rules_for[0] != tag or tag is None:
+            species = [m.species for m in battle.team.values()]
+            self._rules_for = (tag, *self.rules_config.select(self.p.rules, species))
+        return self._rules_for[1], self._rules_for[2]
+
+    def _override(self, view: DecisionView, proposal: Any) -> tuple[Any, dict]:
+        """The proposal, or a copy with a rule's action, and the notes saying so. A rule that errors is skipped
+        (noted): the network's choice stands."""
+        if self.p.rules == "none":
+            return proposal, {}
+        try:
+            rules, profile = self._rules(view.battle)
+            if not rules:
+                return proposal, {}
+            spot = neural_rules.Spot(
+                view.battle,
+                view.legal,
+                proposal.chosen,
+                self._ranked(view, proposal),
+                self.policy.catalog,
+                self.policy.tracker,
+                profile.params if profile else self.rules_config.params,
+            )
+            out = neural_rules.apply(rules, spot)
+        except Exception as error:
+            return proposal, {"override_error": f"{type(error).__name__}: {error}"}
+        team = {"rules_team": profile.name} if profile else {}
+        if out is None:
+            return proposal, team
+        action, rule, reason = out
+        notes = {**team, "override": rule, "override_why": reason, "network": proposal.chosen.message}
+        return replace(proposal, chosen=action), notes
+
+    @staticmethod
+    def _ranked(view: DecisionView, proposal: Any) -> list[LegalAction]:
+        """The legal actions, the network's most likely first."""
+        from pcsa.rl_training import features
+
+        probs = proposal.probs[0].tolist()
+        out: list[LegalAction] = []
+        for index in sorted(range(len(probs)), key=lambda i: -probs[i]):
+            try:
+                action = features.legal_action(index, view.legal, view.battle)
+            except ValueError:
+                continue
+            if action not in out:
+                out.append(action)
+        return out
 
     def _fallback_notes(self, why: str | None, notes: dict) -> dict:
         """The fallback's own notes, its rule kept as fallback_rule, under rule neural:fallback with the reason."""
@@ -228,4 +295,9 @@ def build(config: Config, build_member: Callable[[str], Player], environ: Mappin
     params = NeuralParams.load(config.directory / policy.neural)
     if policy.neural_checkpoint:
         params.checkpoint = policy.neural_checkpoint
-    return NeuralPlayer(params, build_member(params.fallback), resolve_checkpoint(params.checkpoint, environ))
+    if policy.neural_rules:
+        params.rules = policy.neural_rules
+    rules = neural_rules.RulesConfig.load(config.directory / params.rules_file)
+    return NeuralPlayer(
+        params, build_member(params.fallback), resolve_checkpoint(params.checkpoint, environ), rules=rules
+    )

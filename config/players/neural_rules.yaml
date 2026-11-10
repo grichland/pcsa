@@ -1,0 +1,14 @@
+# Override rules over the neural player (src/pcsa/players/neural_rules.py), used when neural.yaml's `rules` is
+# `auto` (the general rules, plus a team's own when our six match its roster), `general`, a team name or `none`.
+general: [priority_ko, no_full_heal, locked_futile, yawn_switch, no_setup_into_ko, useless_status, sucker_read]
+params:
+  futile_hit: 0.05        # locked_futile: every legal move hits under this share of the foe's max HP
+  yawn_min_hp: 0.3        # yawn_switch: below this HP, falling asleep costs little: stay in
+  scarf_lock_below: 0.25  # scarf_lock: a Choice-locked hit under this share of the foe's current HP
+teams:
+  team2:  # Garchomp @ Choice Scarf, Golisopod, Mimikyu, Lucario, Kingambit, Primarina (assets/models/team2-*.pt)
+    roster: [Garchomp, Golisopod, Mimikyu, Lucario, Kingambit, Primarina]
+    rules: [scarf_lock]
+  team3:  # Charizard X, Hippowdon, Metagross, Mimikyu, Primarina, Greninja (assets/models/team3-*.pt)
+    roster: [Charizard, Hippowdon, Metagross, Mimikyu, Primarina, Greninja]
+    rules: [rocks_first]

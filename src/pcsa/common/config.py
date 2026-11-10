@@ -122,6 +122,7 @@ class PolicyConfig(Strict):
     endgame: str = "players/endgame.yaml"  # the endgame player's chain trigger (sim only)
     neural: str = "players/neural.yaml"  # the neural player's checkpoint, sampling and fallback
     neural_checkpoint: str | None = None  # when set, replaces neural.yaml's checkpoint (one --set per run)
+    neural_rules: str | None = None  # when set, replaces neural.yaml's rules (auto | general | none | a team name)
 
 
 class SimConfig(Strict):
