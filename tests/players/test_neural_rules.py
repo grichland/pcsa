@@ -102,3 +102,10 @@ def test_the_rules_leave_the_network_alone_otherwise(threat) -> None:
 def test_sucker_punch_reads_the_foes_last_action(event: str, attacked: bool) -> None:
     b = battle("Azumarill", [[event]])
     assert neural_rules.foe_attacked(b) is attacked
+
+
+def test_mega_ids_count_as_their_base_species() -> None:
+    assert neural_rules.base("charizardmegax") == "charizard" == neural_rules.base("Charizard-Mega-X")
+    assert neural_rules.base("Yanmega") == "yanmega"
+    config = RulesConfig.load(RULES_FILE)
+    assert config.match(["charizardmegax", "hippowdon", "metagrossmega", "mimikyu", "primarina", "greninja"])

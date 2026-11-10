@@ -134,6 +134,7 @@ class NeuralPlayer:
         self.rules_config = rules or neural_rules.RulesConfig()
         self.rules_config.select(params.rules, ())  # a bad rules name fails at build, not mid-battle
         self._rules_for: tuple[str | None, tuple[str, ...], neural_rules.Profile | None] = (None, (), None)
+        self._preview_rules: tuple[tuple[str, ...], neural_rules.Profile | None] | None = None
         self.policy: Any = None
         self.facts: dict = {}
         self.error: str | None = None
@@ -168,6 +169,7 @@ class NeuralPlayer:
 
     def choose_team(self, view: TeamPreviewView, deadline: Deadline) -> list[int]:
         backup = self.fallback.choose_team(view, deadline)  # also resets the fallback's per-game state
+        self._remember_rules(view)
         backup_notes = self.fallback.notes()
         why = self.error or ("no battle at preview" if view.battle is None else None)
         if why is None:
@@ -201,12 +203,29 @@ class NeuralPlayer:
         self._notes = self._fallback_notes(why, self.fallback.notes())
         return chosen
 
+    def _remember_rules(self, view: TeamPreviewView) -> None:
+        """The battle's rules, chosen at team preview from all six (after it the Battle may list only the three
+        brought): from the Battle's team, else the names on the selection screen."""
+        if self.p.rules == "none":
+            return
+        battle = view.battle
+        species = [m.species for m in battle.team.values()] if battle is not None else []
+        species = species or [name for name in view.roster if name]
+        try:
+            self._preview_rules = self.rules_config.select(self.p.rules, species)
+        except Exception as error:
+            log.warning("neural_rules_unavailable", reason=f"{type(error).__name__}: {error}")
+            self._preview_rules = None
+
     def _rules(self, battle) -> tuple[tuple[str, ...], neural_rules.Profile | None]:
-        """The rules enabled for this battle, chosen once per battle from our six."""
+        """The rules enabled for this battle: the ones chosen at its team preview, else from the Battle's team."""
         tag = getattr(battle, "battle_tag", None)
         if self._rules_for[0] != tag or tag is None:
-            species = [m.species for m in battle.team.values()]
-            self._rules_for = (tag, *self.rules_config.select(self.p.rules, species))
+            if self._preview_rules is not None:
+                chosen, self._preview_rules = self._preview_rules, None
+            else:
+                chosen = self.rules_config.select(self.p.rules, [m.species for m in battle.team.values()])
+            self._rules_for = (tag, *chosen)
         return self._rules_for[1], self._rules_for[2]
 
     def _override(self, view: DecisionView, proposal: Any) -> tuple[Any, dict]:

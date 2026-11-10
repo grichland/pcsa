@@ -30,6 +30,7 @@ import yaml
 from poke_env.battle import Effect, Move, SideCondition
 from poke_env.data.normalize import to_id_str
 
+from pcsa.battle.game import base_name
 from pcsa.common.errors import ConfigError
 from pcsa.players import threat
 from pcsa.players.base import LegalAction
@@ -132,8 +133,8 @@ class RulesConfig:
 
 
 def base(species: str) -> str:
-    """The base species id: 'Charizard-Mega-X' -> 'charizard'."""
-    return to_id_str(str(species).split("-Mega")[0])
+    """The base species id: 'Charizard-Mega-X' and 'charizardmegax' -> 'charizard'."""
+    return base_name(str(species))
 
 
 def _move(action: LegalAction) -> Move | None:

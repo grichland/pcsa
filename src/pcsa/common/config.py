@@ -268,11 +268,12 @@ def _set_path(data: dict[str, Any], dotted: str, raw: str) -> None:
 
 
 def overrides_from_environ(environ: Mapping[str, str]) -> list[str]:
-    """PCSA__section__key=value -> "section.key=value"."""
+    """PCSA__section__key=value -> "section.key=value". The key is lower-cased: Windows upper-cases environment
+    variable names (PCSA__policy__kind arrives as PCSA__POLICY__KIND) and every config key is lower case."""
     found = []
     for name, value in environ.items():
-        if name.startswith(ENV_PREFIX) and len(name) > len(ENV_PREFIX):
-            found.append(name[len(ENV_PREFIX) :].replace("__", ".") + "=" + value)
+        if name.upper().startswith(ENV_PREFIX.upper()) and len(name) > len(ENV_PREFIX):
+            found.append(name[len(ENV_PREFIX) :].replace("__", ".").lower() + "=" + value)
     return sorted(found)
 
 
