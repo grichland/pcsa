@@ -133,6 +133,10 @@ uv run pcsa sim play --a neural --b disciplined --battles 100 --set policy.neura
 uv run pcsa run --player neural --battles 10 --set policy.neural_checkpoint=assets/models/team2-fine-tuned.pt
 ```
 
+![The neural player's network: 12 Pokémon rows and the field are encoded into 13 tokens per decision, a block-causal transformer attends over the last 16 decisions, and a policy head and a value head read the current decision out](docs/images/network.svg)
+
+The network (`rl_training/model.py`) encodes each of the 12 Pokémon (318 numbers plus species, item, ability and move embeddings) and the field (126 numbers) into one token each, runs a block-causal transformer over the last 16 decisions of the battle, and reads the current decision's 13 tokens out twice: a policy over the 11 actions and a value. The checkpoints in use are size S (d 64, 4 layers, 4 heads, 1.6 M parameters); M is 5.8 M and L 10.3 M.
+
 Live play defaults to the most likely action (`sampling: greedy`; `sample` draws from training's capped 0.99
 distribution) and training's team preview (the critic scores all 60 lead/second/third picks, softmax at 0.1,
 top-p 0.9; `preview: greedy` takes the best). Whenever the network cannot decide (no or unreadable checkpoint,
