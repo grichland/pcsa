@@ -13,5 +13,6 @@ max_decision_s: 5.0             # a decision (or team preview) taking longer tha
 reserve_s: 0.5                  # deadline time kept for the fallback
 threads: 1                      # torch CPU threads
 seed: null                      # preview and `sample` draws; null: fresh each run
-rules: none                     # override rules (config/players/neural_rules.yaml): auto (general + the matching team's),
-                                # general, none, or a team name; one run: --set policy.neural_rules=auto
+# Guard rules: stop plainly wasted actions; the network's best other action is played instead ([] = the network
+# alone; one run: --set policy.neural_rules=none, or names separated by commas). See src/pcsa/players/neural_rules.py.
+rules: [no_full_heal, useless_status, locked_futile, priority_ko]

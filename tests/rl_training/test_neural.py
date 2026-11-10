@@ -250,15 +250,8 @@ def test_real_checkpoints_load(size: str) -> None:
 
 @pytest.mark.torch
 def test_override_rules_replace_a_full_hp_heal_with_the_networks_next_choice(tmp_path: Path, monkeypatch) -> None:
-    from pcsa.players import neural_rules
-
     path = synthetic_checkpoint(tmp_path, "S")
-    player = NeuralPlayer(
-        replace(NeuralParams(seed=0), rules="general"),
-        MaxDamagePlayer(),
-        path,
-        rules=neural_rules.RulesConfig.load(REPO / "config" / "players" / "neural_rules.yaml"),
-    )
+    player = NeuralPlayer(replace(NeuralParams(seed=0), rules=["no_full_heal"]), MaxDamagePlayer(), path)
     b = decision_battle("Slowbro")  # full HP, Slack Off legal
     proposal = player.policy.propose(view_of(b))
     slackoff = next(a for a in view_of(b).legal if a.message == "/choose move slackoff")
