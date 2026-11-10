@@ -113,6 +113,7 @@ class PolicyConfig(Strict):
         "disciplined",
         "mixed",
         "neural",
+        "endgame",
     ] = "custom_heuristic"
     heuristic: str = "players/heuristic.yaml"  # the custom heuristic's parameters
     best_matchup: str = "players/best_matchup.yaml"  # best_matchup_max_damage's switch thresholds

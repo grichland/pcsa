@@ -32,9 +32,9 @@ LIVE_KINDS = (
     "disciplined",
     "mixed",
     "neural",
+    "endgame",  # disciplined plus the 1v1 chain at <= 2 members each, config/players/endgame.yaml
 )
-SIM_KINDS: tuple[str, ...] = ()  # not offered to the phone yet
-SIM_KINDS += ("endgame",)  # disciplined plus the 1v1 chain at <= 2 members each, config/players/endgame.yaml
+SIM_KINDS: tuple[str, ...] = ()  # kinds not offered to the phone (none: the user wants every player usable live)
 KINDS = LIVE_KINDS + SIM_KINDS
 
 

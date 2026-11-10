@@ -7,7 +7,8 @@ param(
 # Usage (from any folder):  powershell -ExecutionPolicy Bypass -File <repo>\scripts\run_agent.ps1 [-Battles 25 -MaxBattlesTotal 30]
 # Before starting: phone on USB with debugging on, the game open on the Ranked Singles lobby ("Begin Matchmaking").
 # Player settings live in config\players\ (heuristic.yaml, best_matchup.yaml, disciplined.yaml, mixed.yaml, neural.yaml); controller timings in config\agent.yaml.
-# $Player may also be "neural" (a research network; needs torch: uv sync --inexact --extra train). Pick its network with
+# $Player may also be "endgame" (disciplined plus the 1v1 endgame search, config\players\endgame.yaml) or
+# "neural" (a research network; needs torch: uv sync --inexact --extra train). Pick its network with
 #   $Overrides = @("policy.neural_checkpoint=C:/path/to/ckpt.pt")   (else the checkpoint in config\players\neural.yaml)
 # ============================== SETTINGS (edit these) ==============================
 $Player     = "custom_heuristic"         # random | simple_heuristic | custom_heuristic | max_damage | best_matchup_max_damage | disciplined | mixed

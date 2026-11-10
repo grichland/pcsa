@@ -18,16 +18,15 @@ The Showdown engine doubles as the simulator the players are measured in.
    each screen.
 2. **State reconstruction** (`battle/`): the battle log is read every turn and rebuilt as a Pokémon Showdown
    protocol, so the agent holds the same battle state the Showdown engine would.
-3. **Decision** (`players/`): eight player kinds: `random`, `simple_heuristic` (poke-env's numbers),
+3. **Decision** (`players/`): nine player kinds, all usable live and in the simulator: `random`, `simple_heuristic` (poke-env's numbers),
    `custom_heuristic` (the tuned `config/players/heuristic.yaml`), `max_damage` (the strongest attack, nothing
    else), `best_matchup_max_damage` (max_damage plus a switch out of a really bad matchup,
    `config/players/best_matchup.yaml`), `disciplined` (best_matchup plus damage-race rules for priority, Mega,
    replacements and switching, `config/players/disciplined.yaml`), `mixed` (a weighted pool of the others,
-   one drawn per game, `config/players/mixed.yaml`) and `neural` (a PPO / imitation network trained in the
-   research repo, `config/players/neural.yaml`, network code in `rl_training/`; see "Neural player" below).
-   The simulator also has `endgame` (disciplined plus a 1v1
-   chain search once both sides are down to two members, `config/players/endgame.yaml`), which is not offered
-   to the phone.
+   one drawn per game, `config/players/mixed.yaml`), `endgame` (disciplined plus a 1v1 chain search once both
+   sides are down to two members, `config/players/endgame.yaml`) and `neural` (a PPO / imitation network
+   trained in the research repo, `config/players/neural.yaml`, network code in `rl_training/`; see "Neural
+   player" below).
 4. **Simulator** (`sim/`): the Showdown engine as a local server, with its team validator, on which
    `pcsa sim play` plays games between the player kinds.
 5. **Action** (`live/`): taps through a fixed menu map, and the session loop that plays battles (`pcsa run`).
