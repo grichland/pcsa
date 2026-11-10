@@ -23,6 +23,8 @@ output/
 *.gif
 *.webp
 *.bmp
+# The one exception: the README's screenshot of this project's own ranked result (trainer name and ID masked).
+!docs/images/master-ball-tier.jpg
 
 # Network checkpoints for the neural player (config/players/neural.yaml); copied from the research runs.
 # assets/models/ is the folder for them; the weights stay local (the folder itself is kept by its README).

@@ -11,6 +11,10 @@ The Showdown engine doubles as the simulator the players are measured in.
 > players' matches and can get an account banned. Please run experiments in the simulator (`pcsa sim play`)
 > rather than on the live ladder. Credits and licenses: `NOTICE.md`.
 
+![Season M-7 singles result: Master Ball tier, rank 4, final rating 1,561](docs/images/master-ball-tier.jpg)
+
+*Season M-7, Single Battle: the account the agent played on finished in the Master Ball tier (trainer name and ID masked).*
+
 ## What is here
 
 1. **Perception** (`phone/`): adb screenshots, OCR for text, the sprite network for Pokémon
