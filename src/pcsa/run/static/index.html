@@ -70,6 +70,7 @@
           <div class="meters" id="meters" hidden>
             <div class="meter" id="m-p" data-tip="Probability the network gave the action it chose"><span class="lab">Confidence</span><span class="val"></span><span class="track"><i class="fill"></i></span></div>
             <div class="meter is-quiet" id="m-h" data-tip="Normalised entropy of the network's choice over the legal actions: 0 = certain, 1 = undecided"><span class="lab">Entropy</span><span class="val"></span><span class="track"><i class="fill"></i></span></div>
+            <div class="meter is-value" id="m-v" hidden data-tip="The critic's value of the position: the return it expects from here, +1 for a win and −1 for a loss, plus or minus 0.1 for each faint (about −1.3 to +1.3). Above 0 it expects to win. The percentage is only a rough reading, (value + 1) / 2."><span class="lab">Value</span><span class="val"></span><span class="track"><i class="fill"></i></span></div>
           </div>
           <div class="sub-head"><span>Legal actions</span><span class="meta" id="legal-meta"></span></div>
           <div class="legal" id="legal"></div>
@@ -115,6 +116,10 @@
           <div class="run-top">
             <div class="win-number"><span id="run-number">--</span><small id="run-number-label"></small><em class="delta" id="run-delta" hidden data-tip="Rating change since the run started"></em></div>
             <div class="spark" id="spark" data-tip="Rating after each change this run; hover the line for a point"></div>
+          </div>
+          <div class="vchart" id="vchart" hidden>
+            <div class="sub-head"><span id="vchart-title">Value this battle</span></div>
+            <div class="spark is-value" id="vspark" data-tip="The critic's value at each decision of the battle shown (the team pick first): above the zero line it expects to win. Hover the line for a decision."></div>
           </div>
           <div class="strip" id="strip" aria-label="Result of each battle, oldest first"></div>
           <div class="battles" id="battles"></div>

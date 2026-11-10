@@ -114,7 +114,10 @@ action sent, the legal alternatives, the degrade level, the player's own notes a
 the battle, the battle log, the opponent's revealed sets, your team, the record and rating over the run with one
 square per battle (click one to look at that battle), warnings and disconnects, and the newest saved phone frame.
 For the neural player the decision shows the probability of the chosen action and the entropy as meters, and a
-decision the fallback player made is marked with its reason. The page only reads the run folder (it never
+decision the fallback player made is marked with its reason. It also shows the critic's value of the position
+(notes `v`: the expected return, +1 a win and −1 a loss, with a rough win chance `(v + 1) / 2`) on the decision,
+on every row of the decision list and as a line over the battle; runs recorded before decisions carried it show
+none. The page only reads the run folder (it never
 touches the phone), is picked once at start (start it again for a later run) and listens on this computer only.
 `scripts\run_agent.ps1` opens it next to a run when `$Watch = $true` is set at the top of the file (off by
 default).

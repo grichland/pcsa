@@ -124,6 +124,24 @@ function setMeter(id, value, shown) {
   meter.querySelector(".fill").style.width = `${Math.max(0, Math.min(1, value)) * 100}%`;
 }
 
+/* The critic's value: expected return, about −1.3 (a lost battle) to +1.3 (a won one); above 0 it expects to win. */
+const roughWin = (v) => `≈ ${Math.round(Math.max(0, Math.min(1, (v + 1) / 2)) * 100)}%`;
+const valueTone = (v) => (v > 0.02 ? "up" : v < -0.02 ? "down" : "");
+
+function setValueMeter(value) {
+  const meter = el("m-v");
+  if (!meter) return;
+  meter.hidden = !isNum(value);
+  if (!isNum(value)) return;
+  const v = Math.max(-1, Math.min(1, value));
+  meter.classList.toggle("is-neg", v < 0);
+  const val = meter.querySelector(".val");
+  val.replaceChildren(document.createTextNode(signed(value, 2)), node("small", "", `${roughWin(value)} win`));
+  const fill = meter.querySelector(".fill");
+  fill.style.left = `${50 + Math.min(0, v) * 50}%`;
+  fill.style.width = `${Math.abs(v) * 50}%`;
+}
+
 /* ---------------------------------------------------------------- tooltips (hover and keyboard focus) */
 const tipCard = el("tip");
 let tipTarget = null;
@@ -311,9 +329,10 @@ function renderDecision(state) {
   el("fallback").hidden = !notes?.fallback;
   el("fallback-why").textContent = notes?.why || "the network did not decide; the fallback player did";
   el("t-decision").classList.toggle("is-fallback", Boolean(notes?.fallback));
-  el("meters").hidden = !(isNum(notes?.p) || isNum(notes?.h));
+  el("meters").hidden = !(isNum(notes?.p) || isNum(notes?.h) || isNum(notes?.v));
   setMeter("m-p", notes?.p, pct(notes?.p));
   setMeter("m-h", notes?.h, fixed(notes?.h));
+  setValueMeter(notes?.v);
   const legal = decision.legal || [];
   el("legal-meta").textContent = `${legal.length} legal${decision.dropped?.length ? ` · ${decision.dropped.length} dropped` : ""}`;
   el("legal").replaceChildren(...legalChips(decision));
@@ -414,6 +433,74 @@ function drawSpark(series) {
   box.replaceChildren(readout, chart);
 }
 
+/** The value at each decision of the battle shown, the team pick first; decisions without one are left out. */
+function valueSeries(state) {
+  const series = [];
+  if (!(state.decisions || []).some((d) => isNum(d.notes?.v))) return series; // a run recorded before decisions carried a value
+  const pick = state.preview?.notes?.v;
+  if (isNum(pick)) series.push({ label: "team pick", v: pick });
+  (state.decisions || []).forEach((d) => {
+    if (isNum(d.notes?.v)) series.push({ label: `turn ${d.turn ?? "?"}${d.kind === "forced" ? " switch-in" : ""}`, v: d.notes.v });
+  });
+  return series;
+}
+
+let vspark = { key: "", width: 0, height: 0 };
+
+function drawValues(series) {
+  const box = el("vspark");
+  vspark = { key: JSON.stringify(series), width: box.clientWidth, height: box.clientHeight };
+  const w = Math.max(160, box.clientWidth);
+  const h = Math.max(50, box.clientHeight);
+  const [top, bottom, left, right] = [6, 6, 34, 8];
+  const reach = Math.max(1, ...series.map((s) => Math.abs(s.v)));
+  const x = (i) => (series.length > 1 ? left + (i * (w - left - right)) / (series.length - 1) : (left + w - right) / 2);
+  const y = (v) => top + (1 - (v + reach) / (2 * reach)) * (h - top - bottom);
+  const chart = svg("svg", { viewBox: `0 0 ${w} ${h}`, role: "img", "aria-label": "Value at each decision of this battle" });
+  [1, -1].forEach((v) => {
+    chart.append(svg("line", { class: "grid", x1: left, x2: w - right, y1: y(v), y2: y(v) }));
+    const label = svg("text", { class: "axis", x: left - 6, y: y(v) + 3, "text-anchor": "end" });
+    label.textContent = v > 0 ? "+1" : "−1";
+    chart.append(label);
+  });
+  chart.append(svg("line", { class: "zero", x1: left, x2: w - right, y1: y(0), y2: y(0) }));
+  const zero = svg("text", { class: "axis", x: left - 6, y: y(0) + 3, "text-anchor": "end" });
+  zero.textContent = "0";
+  chart.append(zero);
+  const points = series.map((s, i) => [x(i), y(s.v)]);
+  if (points.length > 1) chart.append(svg("path", { class: "line", d: points.map(([px, py], i) => `${i ? "L" : "M"}${px.toFixed(1)},${py.toFixed(1)}`).join(" ") }));
+  points.forEach(([px, py], i) => chart.append(svg("circle", { class: `pt ${valueTone(series[i].v)}`, cx: px, cy: py, r: 2.4 })));
+  const halo = svg("circle", { class: "halo", r: 7 });
+  const dot = svg("circle", { class: "dot", r: 3.6 });
+  chart.append(halo, dot);
+  const readout = node("span", "spark-read");
+  const show = (i) => {
+    const [px, py] = points[i];
+    [dot, halo].forEach((c) => { c.setAttribute("cx", px); c.setAttribute("cy", py); });
+    readout.textContent = `${series[i].label} · ${signed(series[i].v, 2)} (${roughWin(series[i].v)})`;
+  };
+  chart.addEventListener("mousemove", (event) => {
+    if (points.length < 2) return;
+    const rect = chart.getBoundingClientRect();
+    const px = ((event.clientX - rect.left) / rect.width) * w;
+    show(Math.max(0, Math.min(series.length - 1, Math.round((px - left) / ((w - left - right) / (series.length - 1))))));
+  });
+  chart.addEventListener("mouseleave", () => show(series.length - 1));
+  show(series.length - 1);
+  box.replaceChildren(readout, chart);
+}
+
+function renderValues(state) {
+  const holder = el("vchart");
+  if (!holder) return;
+  const series = valueSeries(state);
+  holder.hidden = series.length === 0;
+  if (!series.length) return;
+  el("vchart-title").textContent = `Value · battle ${state.battle?.index ?? "--"}`;
+  const box = el("vspark");
+  if (JSON.stringify(series) !== vspark.key || box.clientWidth !== vspark.width || box.clientHeight !== vspark.height) drawValues(series);
+}
+
 function pin(index) {
   pinned = index;
   poll();
@@ -462,6 +549,7 @@ function renderRun(state) {
   delta.className = `delta ${rating?.delta > 0 ? "up" : "down"}`;
   el("run-meta").textContent = [record, plural(battles.length, "battle"), state.disconnects ? plural(state.disconnects, "disconnect") : null].filter(Boolean).join(" · ");
   el("follow").hidden = pinned === null;
+  renderValues(state);
   const series = rating?.series || [];
   const box = el("spark");
   box.hidden = series.length < 2;
@@ -514,7 +602,7 @@ function miniMeter(value, shown, kind) {
   return mini;
 }
 
-function decisionRow(d, key) {
+function decisionRow(d, key, withValue) {
   const n = d.notes;
   const row = node("details", `drow${n?.fallback ? " is-fallback" : ""}`);
   row.open = openRows.has(key);
@@ -528,9 +616,15 @@ function decisionRow(d, key) {
   if (d.degrade) tags.append(degradeBadge(d.degrade));
   let meter = node("span", "mini");
   if (isNum(n?.p)) meter = tip(miniMeter(n.p, pct(n.p), "is-p"), `Confidence ${pct(n.p)}${isNum(n.h) ? `, entropy ${fixed(n.h)}` : ""}`);
-  else if (isNum(n?.v)) meter = tip(miniMeter((n.v + 1) / 2, signed(n.v, 2), "is-v"), `Critic value of the picked team: ${signed(n.v, 2)} (−1 a loss, +1 a win)${isNum(n.h) ? `; entropy ${fixed(n.h)}` : ""}`);
-  else if (n?.rule) meter = node("span", "mini is-rule", n.rule);
-  head.append(turn, what, tags, meter);
+  else if (isNum(n?.v) && !withValue) meter = tip(miniMeter((n.v + 1) / 2, signed(n.v, 2), "is-v"), `Critic value of the picked team: ${signed(n.v, 2)} (−1 a loss, +1 a win)${isNum(n.h) ? `; entropy ${fixed(n.h)}` : ""}`);
+  else if (n?.rule && !withValue) meter = node("span", "mini is-rule", n.rule);
+  head.append(turn, what, tags);
+  if (withValue) {
+    head.append(isNum(n?.v)
+      ? tip(node("span", `vnum ${valueTone(n.v)}`, signed(n.v, 2)), `Value ${signed(n.v, 2)}: the critic's expected return here (+1 a win, −1 a loss); a rough win chance of ${roughWin(n.v)}`)
+      : tip(node("span", "vnum", "–"), "No value recorded for this decision"));
+  }
+  head.append(meter);
   const body = node("div", "drow-body");
   if (n?.fallback) body.append(node("p", "callout is-warn", `Fallback: ${n.why || "the network did not decide"}`));
   (d.warnings || []).forEach((w) => body.append(node("p", "callout is-warn", w)));
@@ -540,7 +634,8 @@ function decisionRow(d, key) {
     body.append(legal);
   }
   const notes = node("div", "notes");
-  notes.append(...(isNum(n?.h) ? [fieldChip("entropy", fixed(n.h), "Normalised entropy: 0 = certain, 1 = undecided")] : []), ...noteChips(n, d.timing));
+  notes.append(...(isNum(n?.h) ? [fieldChip("entropy", fixed(n.h), "Normalised entropy: 0 = certain, 1 = undecided")] : []),
+    ...(isNum(n?.v) ? [fieldChip("value", `${signed(n.v, 2)} (${roughWin(n.v)} win)`, "The critic's expected return (+1 a win, −1 a loss) and a rough win chance")] : []), ...noteChips(n, d.timing));
   body.append(notes);
   row.append(head, body);
   return row;
@@ -551,8 +646,10 @@ function renderLists(state) {
   const preview = state.preview;
   const battle = state.battle?.index;
   if (changed("decisions", [battle, decisions, preview])) {
-    const rows = decisions.map((d, i) => decisionRow(d, `${battle}:${d.sequence ?? i}`)).reverse();
-    if (preview) rows.push(decisionRow({ kind: "team", label: (preview.names || []).join(", "), notes: preview.notes }, `${battle}:team`));
+    const withValue = decisions.some((d) => isNum(d.notes?.v)); // only battles whose decisions carry a value get the column
+    const rows = decisions.map((d, i) => decisionRow(d, `${battle}:${d.sequence ?? i}`, withValue)).reverse();
+    if (preview) rows.push(decisionRow({ kind: "team", label: (preview.names || []).join(", "), notes: preview.notes }, `${battle}:team`, withValue));
+    el("decision-list").classList.toggle("has-v", withValue);
     el("decision-list").replaceChildren(...(rows.length ? rows : [node("p", "pane-none", battle ? "No decisions in this battle yet." : "Decisions are listed once a battle starts.")]));
     el("tab-decisions").textContent = decisions.length ? `Decisions ${decisions.length}` : "Decisions";
   }
@@ -660,6 +757,6 @@ setupTheme();
 setupTips();
 setupTabs();
 el("follow").addEventListener("click", () => pin(null));
-window.addEventListener("resize", () => { spark.key = ""; });
+window.addEventListener("resize", () => { spark.key = ""; vspark.key = ""; });
 poll();
 window.setInterval(poll, 1000);

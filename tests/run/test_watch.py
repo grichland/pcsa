@@ -111,6 +111,20 @@ def test_decision_list_has_notes_timing_and_the_preview_pick(run: Path) -> None:
     assert state["foes"][0]["name"] == "Ninetales-Alola" and state["foes"][0]["ability"] == "Snow Warning"
 
 
+def test_value_is_shown_only_where_the_record_has_one(run: Path) -> None:
+    """Battle 2's records carry the critic's value (notes v); battle 1's were recorded before it existed."""
+    reader = RunReader(run)
+    latest = reader.state()
+    assert latest["decision"]["notes"]["v"] == -0.8
+    assert [r["notes"]["v"] for r in latest["decisions"]] == [-1.02, -0.8]
+    assert latest["preview"]["notes"]["v"] == -0.0496  # the team pick always had one
+    earlier = reader.state(battle=1)
+    assert [r["notes"]["v"] for r in earlier["decisions"]] == [None, None, None, None]
+    assert earlier["decision"]["notes"]["v"] is None and earlier["decision"]["notes"]["p"] == 0.9776
+    scripted = notes_view({"rule": "attack"})
+    assert scripted is not None and scripted["v"] is None and scripted["p"] is None
+
+
 def test_warnings_and_disconnects(run: Path) -> None:
     state = RunReader(run).state()
     kinds = [w["kind"] for w in state["warnings"]]

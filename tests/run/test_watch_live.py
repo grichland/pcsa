@@ -137,7 +137,8 @@ def test_server_serves_the_page_and_its_data(server: str) -> None:
     status, kind, body = get(server + "/")
     page = body.decode("utf-8")
     assert status == 200 and kind.startswith("text/html") and "PCSA Singles Agent" in page
-    for wanted in ('id="t-decision"', 'id="t-run"', 'id="decision-list"', 'id="battle-log"', 'id="warnings"'):
+    wanted_ids = ("t-decision", "t-run", "decision-list", "battle-log", "warnings", "m-p", "m-h", "m-v", "vspark")
+    for wanted in (f'id="{name}"' for name in wanted_ids):
         assert wanted in page
     for gone in ("win chance", "What will they do?", "Team preview</h2>", "heuristic", "threat"):
         assert gone not in page  # panels of the old decision network
@@ -151,6 +152,7 @@ def test_server_serves_the_page_and_its_data(server: str) -> None:
     assert status == 200 and kind.startswith("application/json")
     assert state["player"] == "neural" and state["battle"]["index"] == 2 and len(state["battles"]) == 2
     assert state["decision"]["notes"]["rule"] == "neural" and state["frame_id"].startswith("00001-poll-lobby.jpg:")
+    assert state["decision"]["notes"]["v"] == -0.8
     pinned = json.loads(get(server + "/api/state?battle=1")[2])
     assert pinned["battle"]["index"] == 1 and pinned["pinned"] == 1 and len(pinned["decisions"]) == 4
     assert json.loads(get(server + "/api/state?battle=abc")[2])["battle"]["index"] == 2  # not a number: the newest
