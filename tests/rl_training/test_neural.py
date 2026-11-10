@@ -246,3 +246,17 @@ def test_real_checkpoints_load(size: str) -> None:
     assert player.error is None and player.facts["size"] == size
     view = view_of(decision_battle("Charizard"))
     assert player.choose_action(view, soon()) in view.legal and player.notes()["rule"] == "neural"
+
+
+@pytest.mark.torch
+def test_override_rules_replace_a_full_hp_heal_with_the_networks_next_choice(tmp_path: Path, monkeypatch) -> None:
+    path = synthetic_checkpoint(tmp_path, "S")
+    player = NeuralPlayer(replace(NeuralParams(seed=0), rules=["no_full_heal"]), MaxDamagePlayer(), path)
+    b = decision_battle("Slowbro")  # full HP, Slack Off legal
+    proposal = player.policy.propose(view_of(b))
+    slackoff = next(a for a in view_of(b).legal if a.message == "/choose move slackoff")
+    monkeypatch.setattr(player.policy, "propose", lambda view: replace(proposal, chosen=slackoff))
+    chosen = player.choose_action(view_of(b), soon())
+    notes = player.notes()
+    assert chosen.message != "/choose move slackoff" and notes["override"] == "no_full_heal"
+    assert notes["network"] == "/choose move slackoff" and notes["rule"] == "neural"

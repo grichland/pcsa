@@ -147,6 +147,11 @@ top-p 0.9; `preview: greedy` takes the best). Whenever the network cannot decide
 a size mismatch, no tracked Battle, an error, slower than `max_decision_s` or the turn deadline) the
 `fallback` kind (`disciplined`) decides, and the decision's notes say why (`rule: neural:fallback`, `why`).
 
+Four guard rules (`rules` in `config/players/neural.yaml`, on by default) stop plainly wasted actions: a heal at
+full HP, a hazard already up or a status move on an already statused foe, a lock into moves that do nothing, and a
+missed sure priority KO. The network's best other action is played and the notes say so (`override`,
+`override_why`, `network`). `--set policy.neural_rules=none` plays the network alone.
+
 ## Where things go
 
 | What | Where |

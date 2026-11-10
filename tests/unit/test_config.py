@@ -64,3 +64,8 @@ def test_relative_region_needs_an_origin(config: Config) -> None:
         config.screen.resolve("switch_in", full)
     rect = config.screen.resolve_relative("switch_in", full, origin=(0.2, 0.3))
     assert rect.x1 == round((0.2 - 0.0385) * 2340)
+
+
+def test_environment_overrides_survive_windows_upper_casing_the_names() -> None:
+    environ = {"PCSA__POLICY__NEURAL_RULES": "auto", "PCSA__timing__max_turn_s": "30"}
+    assert overrides_from_environ(environ) == ["policy.neural_rules=auto", "timing.max_turn_s=30"]
