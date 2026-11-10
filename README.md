@@ -101,6 +101,24 @@ without the mirror:
 powershell -ExecutionPolicy Bypass -File scripts\run_agent.ps1 -Battles 25 -MaxBattlesTotal 30
 ```
 
+**Dashboard.** `pcsa watch` serves a read-only page about a run on `http://127.0.0.1:8765/`, while the run plays
+or after it has ended:
+
+```
+uv run pcsa watch                                             # the newest run under output\runs
+uv run pcsa watch --run output\runs\<stamp>-run --port 8770   # a given run, another port; --no-browser to not open it
+```
+
+It shows the two Pokémon on the field with their HP, the field and side conditions, the latest decision (the
+action sent, the legal alternatives, the degrade level, the player's own notes and the timing), every decision of
+the battle, the battle log, the opponent's revealed sets, your team, the record and rating over the run with one
+square per battle (click one to look at that battle), warnings and disconnects, and the newest saved phone frame.
+For the neural player the decision shows the probability of the chosen action and the entropy as meters, and a
+decision the fallback player made is marked with its reason. The page only reads the run folder (it never
+touches the phone), is picked once at start (start it again for a later run) and listens on this computer only.
+`scripts\run_agent.ps1` opens it next to a run when `$Watch = $true` is set at the top of the file (off by
+default).
+
 **Neural player.** `neural` plays a checkpoint from the research runs (`research/pcsa-rl`: `runs/<run>/ckpt/*.pt`,
 any size S/M/L, read from the checkpoint). It needs torch (`uv sync --inexact --extra train`; `pcsa setup --with
 train` installs it too) and runs on the CPU. Point it at a network with one override (or set `checkpoint` in
