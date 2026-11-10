@@ -207,7 +207,9 @@ class PolicyPlayer:
         self.game = g
         mask = torch.as_tensor(np.asarray(p.obs.mask, bool), device=p.probs.device)
         h = float(entropy.normalised_entropy(p.probs, mask[None])[0])
-        self._notes = {"rule": "rl", "p": round(float(p.probs.max()), 4), "h": round(h, 4)}
+        # v: the critic's value of this position (expected return: +1 win / -1 loss, +-0.1 per faint), for the
+        # run records and the dashboard; pcsa addition, not in the research player's notes.
+        self._notes = {"rule": "rl", "p": round(float(p.probs.max()), 4), "h": round(h, 4), "v": round(p.value, 4)}
         if p.replaces:
             self._notes["retry"] = True
         return p.chosen
