@@ -15,7 +15,7 @@ common  <-  battle  <-  phone | sim  <-  players  <-  run  <-  live  <-  cli
 | `phone` | reading the device: adb screenshots, screens, OCR, sprites, the log panel, team sheets, calibration |
 | `sim` | the Showdown engine: the local server and the team validator `pcsa sim play` runs on |
 | `players` | how it decides: random, the two heuristics, max_damage, best_matchup_max_damage, disciplined, the mixed pool, neural (and the sim-only endgame) |
-| `run` | run records: battle bookkeeping, the recorder, `pcsa sim play` |
+| `run` | run records and their read-only view: battle bookkeeping, the recorder, `pcsa sim play`, the `pcsa watch` dashboard |
 | `live` | live play on the phone: device input, taps, navigation, session, turn pipeline, handlers, supervisor, `pcsa run` |
 | `sprite_training` | the sprite network's trainer, `pcsa train sprites` (needs the `train` extra; nothing at runtime imports it) |
 | `rl_training` | the neural player's network, inference only, copied from research/pcsa-rl/rl (each file names its source version): observations, the transformer, the 0.99 cap, team preview, the policy player. Needs torch (`train` extra); only `players.neural` imports it, lazily |
@@ -57,6 +57,19 @@ Everything the package writes lives under `output/` (`common/paths.py`): `runs/<
 `manifest.json`, `events.jsonl`, `state.json`, `summary.json`, frames and per-battle folders; `observe/`,
 `nav/` and `scout/` sessions; `sim/` results; `sprite_net/` from the sprite network's trainer.
 `pcsa sim play` keeps every battle (teams, picks, winner, protocol) in `sim/<stamp>/battles.jsonl.gz`.
+
+## The dashboard (`pcsa watch`)
+
+A local page over one run folder, in `run/watch*.py` with its page in `run/static/` (plain HTML, CSS and
+JavaScript; standard-library HTTP server on 127.0.0.1; no extra dependency, no torch, no phone or adb import).
+It only reads what a run already writes: `events.jsonl` (read incrementally, up to the last complete line),
+`manifest.json`, the newest file in `frames/`, and per battle `decisions/NNNN-<kind>.json` + `.txt`,
+`battle_log.txt` (or `log.txt` while the battle is on). A file that is missing or half written leaves its panel
+empty until it lands. `watch_events.py` keeps the record, rating, battle list, warnings and timeline;
+`watch_decisions.py` the decision rows and the players' notes; `watch_battle.py` the current battle from the
+newest decision record; `watch_field.py` weather, terrain and side conditions from its protocol;
+`watch_names.py` the written names of ids, taken from the record itself. The page polls `/api/state`
+(`?battle=N` pins a battle) once a second and `/api/frame` when the frame changes.
 
 ## Device independence
 

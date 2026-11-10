@@ -1,0 +1,8 @@
+TURN 1   weather: SNOWSCAPE   fields: -
+OURS   side: -
+  kingambit      ACTIVE  HP 207/207   Dark/Steel       status -    boosts -          ability supremeoverlord item leftovers      moves kowtowcleave, ironhead, suckerpunch, lowkick
+  garchomp       bench   HP 185/185   Dragon/Ground    status -    boosts -          ability roughskin      item choicescarf    moves stoneedge, earthquake, outrage, firefang
+  mimikyu        bench   HP 132/132   Ghost/Fairy      status -    boosts -          ability disguise       item lifeorb        moves playrough, shadowsneak, woodhammer, drainpunch
+THEIRS side: -
+  ninetalesalola ACTIVE  HP 100%      Ice/Fairy        status -    boosts -          ability Snow Warning   item ?              moves ?
+  preview, not yet seen: dragalge, corviknight, tyranitar, sceptile, ceruledge

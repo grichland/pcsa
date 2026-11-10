@@ -1,0 +1,10 @@
+TURN 7   weather: RAINDANCE   fields: -
+OURS   side: -
+  kingambit      fainted HP 0/207     Dark/Steel       status FNT  boosts -          ability supremeoverlord item leftovers      moves ironhead, kowtowcleave, suckerpunch, lowkick
+  golisopodmega  fainted HP 0/182     Bug/Steel        status FNT  boosts -          ability toughclaws     item golisopite     moves firstimpression, ironhead, suckerpunch, leechlife
+  lucario        bench   HP 147/147   Fighting/Steel   status -    boosts -          ability innerfocus     item lucarionite    moves crunch, closecombat, meteormash, extremespeed
+THEIRS side: -
+  indeedee       bench   HP 100%      Psychic/Normal   status -    boosts -          ability Psychic Surge  item ?              moves ?
+  pelipper       fainted HP 0%        Water/Flying     status FNT  boosts -          ability Drizzle        item ?              moves surf
+  swampert       ACTIVE  HP 88%       Water/Ground     status -    boosts -          ability ?              item swampertite    moves earthquake, wavecrash
+  preview, not yet seen: kingambit, mimikyu, raichu

@@ -16,6 +16,7 @@ $Seed       = $null               # $null = new random seed; a number makes choi
 $RunName    = "run"               # run folder prefix under output\runs\
 $Config     = "config/agent.yaml" # controller settings; player files are named inside it
 $Overrides  = @()                 # one-off settings, e.g. @("timing.max_turn_s=35", "run.count_forfeits=true")
+$Watch      = $false              # $true opens the read-only dashboard (pcsa watch) on this run in a second window
 $Mirror     = $true               # open a phone mirror window (scrcpy) next to the run; skipped with a warning when scrcpy is missing
 $Resume     = ""                  # an existing run folder to continue, or "" for a new run
 # ===================================================================================
@@ -25,9 +26,11 @@ $Repo = Split-Path -Parent $PSScriptRoot
 Set-Location $Repo
 
 # Leftovers from a run that ended abruptly: a phone agent started from THIS repo would still hold pcsa.exe (so the
-# environment cannot be synced). Training runs (pcsa train ...) are left alone.
+# environment cannot be synced). Training runs (pcsa train ...) are left alone. With $Watch on, a dashboard left
+# over from an earlier launch is stopped too (it would keep port 8765); with it off, dashboards are left alone.
 $repoPattern = [regex]::Escape($Repo + '\')  # the trailing separator leaves out sibling folders such as pcsa-public
 $agentPattern = 'pcsa\.exe"? run\b|pcsa\.cli"? run\b'
+if ($Watch) { $agentPattern = 'pcsa\.exe"? (run|watch)\b|pcsa\.cli"? (run|watch)\b' }
 $all = Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -and $_.CommandLine -match $repoPattern -and $_.ProcessId -ne $PID }
 $leftovers = @($all | Where-Object { $_.CommandLine -match $agentPattern })
 foreach ($p in $leftovers) {
@@ -94,6 +97,25 @@ if ($Mirror) {
 }
 
 $started = Get-Date
+if ($Watch) {
+    # A second window waits for this run's folder to appear (a resumed run's folder already exists), then opens
+    # the dashboard on it. If port 8765 is still held by something else, the dashboard takes the next free port.
+    $port = 8765
+    while (Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue) { $port++ }
+    if ($port -ne 8765) { Write-Host "Port 8765 is busy; the dashboard will use port $port" }
+    $runsDir = Join-Path $Repo "output\runs"
+    $wanted = "`$_.CreationTime -gt [datetime]'$($started.ToString('o'))'"
+    if ($resumeDir) {
+        $runsDir = Split-Path -Parent $resumeDir
+        $wanted = "`$_.FullName -eq '$($resumeDir.Replace("'", "''"))'"
+    }
+    $script = "while (`$true) { `$d = Get-ChildItem -LiteralPath '$runsDir' -Directory -ErrorAction SilentlyContinue | " +
+              "Where-Object { $wanted -and (Test-Path (Join-Path `$_.FullName 'events.jsonl')) } | " +
+              "Sort-Object CreationTime | Select-Object -Last 1; if (`$d) { & '$Pcsa' watch --port $port --run `"`$(`$d.FullName)`"; break }; Start-Sleep 2 }"
+    Start-Process -FilePath "powershell.exe" -ArgumentList @("-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", $script) `
+        -WorkingDirectory $Repo -WindowStyle Minimized | Out-Null
+    Write-Host "Dashboard: http://127.0.0.1:$port/ (opens when the run folder appears)"
+}
 
 # Python logs to stderr; Windows PowerShell would treat each such line as an error.
 $ErrorActionPreference = "Continue"

@@ -1,0 +1,42 @@
+{
+  "schema": "pcsa-run-manifest/1",
+  "seed": 1126905098,
+  "player": "neural",
+  "player_params": {
+    "checkpoint": "C:\\pcsa\\assets\\models\\team2-fine-tuned.pt",
+    "size": "S",
+    "device": "cpu",
+    "sampling": "greedy",
+    "temperature": 1.0,
+    "preview": "critic",
+    "fallback": "disciplined",
+    "max_decision_s": 5.0,
+    "reserve_s": 0.5,
+    "threads": 1,
+    "seed": null,
+    "update": 50,
+    "run": "s1-phone",
+    "fallback_kind": "disciplined"
+  },
+  "config": "config/agent.yaml",
+  "source_sha256": "ed3c5a1b1ada32a358cfc3b6e4b259492e40135bc039906d9579b8d6bf87f1fc",
+  "assets": {
+    "game/battle_text.json": "ecfaa689b29d362a",
+    "game/learnsets.json": "9ef805e909ea3146",
+    "game/rules.json": "f35a5ed9ce6dde9b",
+    "game/species.json": "1bb1c5ebf7caa2ea",
+    "game/vocab.json": "65d789517bb86744",
+    "sets/top_builds.json": "c68d9a52d1578579",
+    "sprites/log_refs.npz": "a2786fec693e2598",
+    "sprites/preview_refs.npz": "eb2f623b42900e63",
+    "sprites/sprite_net.json": "02de86e53eacff98",
+    "sprites/sprite_net.npz": "ca6db1317fbe6d93"
+  },
+  "showdown_commit": "c0845f33d381402dfcb18ce324c20a94f18af075",
+  "device": {
+    "serial": "TEST",
+    "model": "test",
+    "android": "17",
+    "size": "Physical size: 1080x2340"
+  }
+}

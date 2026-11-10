@@ -1,0 +1,95 @@
+# Pokemon Champions battle log (Ranked Singles)
+# format: pcsa-battle-log/1
+battle_id: 20261109T205658-5649d46c
+battle_number: 1
+started: 2026-11-09 20:56:58
+own_team: Team 2
+own_rank_before: tier=Master Ball; rank=4; placement=unknown; rating=1572.834
+own_rank_after: unknown
+team_requested: Kingambit (roster row 5), Garchomp (roster row 1), Mimikyu (roster row 3)
+lead_observed: Kingambit
+opponents_seen: Ninetales, Ceruledge
+opponent_preview: Dragalge, Corviknight, Tyranitar, Alolan Ninetales, Sceptile, Ceruledge
+outcome: loss
+outcome_source: result screen
+seed: 1126905098
+turns_collected: 1, 2, 3, 4, 5, 6
+
+=== Turn 1 ===
+[-] < sent out Ninetales!
+[-] Go! Kingambit!
+[Ability] Ninetales’s Snow Warning
+[-] It started to snow!
+[Move] The opposing Ninetales used Aurora Veil!
+[-] Aurora Veil made the opposing side stronger against physical and special moves!
+[Move] Kingambit used Iron Head!
+[HP Lost] Ninetales’s HP: 100% → 11%
+[-] It’s extremely effective!
+# controller: chose move 2 (Iron Head)
+
+=== Turn 2 ===
+[-] withdrew Ninetales!
+[-] <h sent out Ceruledge the Rank Master!
+[Move +1 Priority] Kingambit used Sucker Punch!
+[-] But it failed!
+# controller: chose move 3 (Sucker Punch)
+
+=== Turn 3 ===
+[-] Kingambit, come back!
+[-] Go! Garchomp!
+[Move] The opposing Ceruledge used Swords Dance!
+[-] The opposing Ceruledge’s Attack rose sharply!
+# controller: chose switch to Garchomp
+
+=== Turn 4 ===
+[Move] Garchomp used Earthquake!
+[HP Lost] Ceruledge’s HP: 100% → 49%
+[-] It’s super effective!
+[Move] The opposing Ceruledge used Poltergeist!
+[-] Garchomp is about to be attacked by its Choice Scarf!
+[HP Lost] Garchomp’s HP: 185 → 0
+[Fainted] Garchomp fainted!
+[Held Item] Ceruledge’s Leftovers
+[HP Restored] Ceruledge’s HP: 49% → 55%
+[-] Go! Kingambit!
+[Ability] Kingambit’s Supreme Overlord
+[-] Kingambit gained strength from the fallen!
+# controller: chose move 2 (Earthquake)
+# controller: forced replacement: sent in Kingambit
+
+=== Turn 5 ===
+[Move +1 Priority] Kingambit used Sucker Punch!
+[HP Lost] Ceruledge’s HP: 55% → 11%
+[-] It’s super effective!
+[Move] The opposing Ceruledge used Bitter Blade!
+[HP Lost] Kingambit’s HP: 207 → 0
+[-] It’s super effective!
+[Fainted] Kingambit fainted!
+[-] The snow stopped.
+[Held Item] Ceruledge’s Leftovers
+[HP Restored] Ceruledge’s HP: 68% → 74%
+[-] Go! Mimikyu!
+# controller: chose move 3 (Sucker Punch)
+# controller: forced replacement: sent in Mimikyu
+
+=== Turn 6 ===
+[Move +1 Priority] Mimikyu used Shadow Sneak!
+[HP Lost] Ceruledge’s HP: 74% → 50%
+[-] It’s super effective!
+[Held Item] Mimikyu’s Life Orb
+[HP Lost] Mimikyu’s HP: 132 → 119
+[-] Mimikyu lost some of its HP!
+[Move +1 Priority] The opposing Ceruledge used Shadow Sneak!
+[Ability] Mimikyu’s Disguise
+[-] Mimikyu’s disguise was busted!
+[HP Lost] Mimikyu’s HP: 119 → 103
+[Held Item] Ceruledge’s Leftovers
+[HP Restored] Ceruledge’s HP: 50% → 56%
+# controller: chose move 2 (Shadow Sneak)
+
+=== Turn 7 ===
+# (no log for this turn: turn 7: the final turn is not collectable)
+# controller: chose move 2 (Shadow Sneak)
+
+=== Coverage notes ===
+# final_turn: turn 7: the final turn is not collectable

@@ -1,0 +1,100 @@
+# Pokemon Champions battle log (Ranked Singles)
+# format: pcsa-battle-log/1
+battle_id: 20261109T210354-11c45fd1
+battle_number: 2
+started: 2026-11-09 21:03:54
+own_team: Team 2
+own_rank_before: tier=Master Ball; rank=unknown; placement=unknown; rating=1555.487
+own_rank_after: unknown
+team_requested: Kingambit (roster row 5), Golisopod (roster row 2), Lucario (roster row 4)
+lead_observed: Kingambit
+opponents_seen: Indeedee, Pelipper, Swampert
+opponent_preview: Pelipper, Indeedee, Swampert, Kingambit, Mimikyu, Raichu
+outcome: loss
+outcome_source: result screen
+seed: 1126905098
+turns_collected: 1, 2, 3, 4, 5, 6, 7
+
+=== Turn 1 ===
+[-] sent out Indeedee the Sociable!
+[-] Go! Kingambit!
+[Ability] Indeedee’s Psychic Surge
+[-] The battlefield got weird!
+[-] withdrew Indeedee!
+[-] sent out Pelipper!
+[Ability] Pelipper’s Drizzle
+[-] It started to rain!
+[Move] Kingambit used Iron Head!
+[HP Lost] Pelipper’s HP: 100% → 73%
+[-] It’s not very effective..
+# controller: chose move 2 (Iron Head)
+
+=== Turn 2 ===
+[Move] The opposing Pelipper used Surf!
+[HP Lost] Kingambit’s HP: 207 → 77
+[Move] Kingambit used Kowtow Cleave!
+[HP Lost] Pelipper’s HP: 73% → 17%
+[Held Item] Kingambit’s Leftovers
+[HP Restored] Kingambit’s HP: 77 → 89
+# controller: chose move 1 (Cleave)
+
+=== Turn 3 ===
+[Move +1 Priority] Kingambit used Sucker Punch!
+[HP Lost] Pelipper’s HP: 17% → 0%
+[Fainted] The opposing Pelipper fainted!
+[Held Item] Kingambit’s Leftovers
+[HP Restored] Kingambit’s HP: 89 → 101
+[-] sent out Swampert!
+# controller: chose move 3 (Sucker Punch)
+
+=== Turn 4 ===
+[-] Kingambit, come back!
+[-] Go! Golisopod!
+[-] The opposing Swampert’s Swampertite is reacting to 's Omni Ring!
+[Mega Evolution] The opposing Swampert has Mega Evolved into Mega Swampert!
+[Move] The opposing Swampert used Earthquake!
+[HP Lost] Golisopod’s HP: 182 → 137
+[-] It’s not very effective..
+# controller: chose switch to Golisopod
+
+=== Turn 5 ===
+[-] Golisopod’s Golisopite is reacting to PCSA’s Omni Ring!
+[Mega Evolution] Golisopod has Mega Evolved into Mega Golisopod!
+[Move +2 Priority] Golisopod used First Impression!
+[-] The opposing Swampert is protected by the Psychic Terrain!
+[Move] The opposing Swampert used Earthquake!
+[HP Lost] Golisopod’s HP: 137 → 65
+[-] The weirdness disappeared from the battlefield!
+# controller: chose move 1 (First Impression) with Mega Evolution
+
+=== Turn 6 ===
+[Move] The opposing Swampert used Wave Crash!
+[HP Lost] Golisopod’s HP: 65 →0
+[Fainted] Golisopod fainted!
+[-] The opposing Swampert was damaged by the recoill
+[HP Lost] Swampert’s HP: 100% → 88%
+[-] Go! Kingambit!
+[Ability] Kingambit’s Supreme Overlord
+[-] Kingambit gained strength from the fallen!
+# controller: chose move 1 (First Impression)
+# controller: chose move 1 (First Impression)
+# controller: forced replacement: sent in Kingambit
+
+=== Turn 7 ===
+[Move +1 Priority] Kingambit used Sucker Punch!
+[HP Lost] Swampert’s HP: 88% → 45%
+[Move] The opposing Swampert used Earthquake!
+[HP Lost] Kingambit’s HP: 101 → 0
+[-] It’s super effective!
+[Fainted] Kingambit fainted!
+[-] Go! Lucario!
+# controller: chose move 3 (Sucker Punch)
+# controller: forced replacement: sent in Lucario
+
+=== Turn 8 ===
+# (no log for this turn: turn 8: the final turn is not collectable)
+# controller: chose move 2 (Close Combat)
+
+=== Coverage notes ===
+# failure: visit 7: no readable log panel
+# final_turn: turn 8: the final turn is not collectable
