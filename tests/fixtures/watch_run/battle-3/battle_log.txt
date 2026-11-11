@@ -1,0 +1,52 @@
+# Pokemon Champions battle log (Ranked Singles)
+# format: pcsa-battle-log/1
+battle_id: 20261109T211102-7be2a9c4
+battle_number: 3
+started: 2026-11-09 21:11:02
+own_team: Team 2
+own_rank_before: tier=Master Ball; rank=unknown; placement=unknown; rating=1542.007
+own_rank_after: unknown
+team_requested: Lucario (roster row 4), Garchomp (roster row 1), Mimikyu (roster row 3)
+lead_observed: Lucario
+opponents_seen: Dragonite, Tyranitar
+opponent_preview: Dragonite, Gholdengo, Rotom-Wash, Meowscarada, Tyranitar, Azumarill
+outcome: unknown
+outcome_source: unknown
+seed: 1126905098
+turns_collected: 1, 2, 3
+
+=== Turn 1 ===
+[-] sent out Dragonite!
+[-] Go! Lucario!
+[-] Lucario’s Lucarionite is reacting to PCSA’s Omni Ring!
+[Mega Evolution] Lucario has Mega Evolved into Mega Lucario!
+[Move] Lucario used Meteor Mash!
+[HP Lost] Dragonite’s HP: 100% → 38%
+[Move] The opposing Dragonite used Dragon Dance!
+[Stat Up] The opposing Dragonite’s Attack rose!
+[Stat Up] The opposing Dragonite’s Speed rose!
+# controller: chose move 3 (Meteor Mash) with Mega Evolution
+
+=== Turn 2 ===
+[Move +2 Priority] Lucario used Extreme Speed!
+[HP Lost] Dragonite’s HP: 38% → 0%
+[Fainted] The opposing Dragonite fainted!
+[-] sent out Tyranitar!
+[Ability] Tyranitar’s Sand Stream
+[-] A sandstorm kicked up!
+# controller: chose move 4 (Extreme Speed)
+
+=== Turn 3 ===
+[Move] Lucario used Close Combat!
+[HP Lost] Tyranitar’s HP: 100% → 22%
+[-] It’s super effective!
+[Stat Down] Lucario’s Defense fell!
+[Stat Down] Lucario’s Sp. Def fell!
+[Move] The opposing Tyranitar used Earthquake!
+[HP Lost] Lucario’s HP: 147 → 31
+[-] It’s super effective!
+[-] The sandstorm is raging.
+# controller: chose move 2 (Close Combat)
+
+=== Coverage notes ===
+# none

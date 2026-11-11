@@ -59,7 +59,8 @@ def test_run_header_record_and_rating(run: Path) -> None:
 
 
 def test_battle_list_carries_each_battles_result(run: Path) -> None:
-    first, second = RunReader(run).state()["battles"]
+    first, second, third = RunReader(run).state()["battles"]
+    assert (third["index"], third["outcome"], third["rating_before"]) == (3, None, 1542.007)  # still playing
     assert (first["index"], first["outcome"], second["index"], second["outcome"]) == (1, "loss", 2, "loss")
     assert first["opponent"][:2] == ["Dragalge", "Corviknight"] and first["picks"] == [
         "Kingambit",
@@ -71,9 +72,9 @@ def test_battle_list_carries_each_battles_result(run: Path) -> None:
     assert first["disconnects"] == 3 and second["disconnects"] == 1 and first["decisions"] == 9
 
 
-def test_latest_battle_panels(run: Path) -> None:
-    state = RunReader(run).state()
-    assert state["battle"]["index"] == 2 and state["turn"] == 8 and state["screen"] == "options"
+def test_battle_panels_of_a_finished_battle(run: Path) -> None:
+    state = RunReader(run).state(battle=2)
+    assert state["battle"]["index"] == 2 and state["turn"] == 8 and state["screen"] == "wait"
     decision = state["decision"]
     assert decision["label"] == "Close Combat" and decision["order"] == "move closecombat"
     assert decision["degrade"] == "tracked" and decision["kind"] == "action"
@@ -88,9 +89,9 @@ def test_latest_battle_panels(run: Path) -> None:
     assert state["field"]["weather"]["name"] == "Rain"
     lucario = state["your_team"][0]
     assert lucario["item"] == "Lucarionite" and lucario["moves"][1] == {"name": "Close Combat", "pp": [8, 8]}
-    assert (
-        state["battle_log"].startswith("# Pokemon Champions battle log") and "battle_number: 2" in state["battle_log"]
-    )
+    log = state["log"]
+    assert log["source"] == "battle_log.txt" and log["format"] == "standard" and log["header"]["battle_number"] == "2"
+    assert [t["turn"] for t in log["turns"]] == [1, 2, 3, 4, 5, 6, 7, 8] and log["raw"] == ""
     assert state["battle_state"]["battle_object"].startswith("TURN 8")
 
 
@@ -114,7 +115,7 @@ def test_decision_list_has_notes_timing_and_the_preview_pick(run: Path) -> None:
 def test_value_is_shown_only_where_the_record_has_one(run: Path) -> None:
     """Battle 2's records carry the critic's value (notes v); battle 1's were recorded before it existed."""
     reader = RunReader(run)
-    latest = reader.state()
+    latest = reader.state(battle=2)
     assert latest["decision"]["notes"]["v"] == -0.8
     assert [r["notes"]["v"] for r in latest["decisions"]] == [-1.02, -0.8]
     assert latest["preview"]["notes"]["v"] == -0.0496  # the team pick always had one
@@ -178,17 +179,20 @@ def test_an_empty_or_absent_run_folder_is_a_waiting_page(tmp_path: Path) -> None
         state = RunReader(folder).state()
         assert state["status"] == "WAITING" and state["battle"] is None and state["decision"] is None
         assert state["battles"] == [] and state["rating"] is None and state["frame_id"] is None
-        assert state["decisions"] == [] and state["battle_log"] == "" and state["player"] is None
+        assert state["decisions"] == [] and state["log"]["turns"] == [] and state["player"] is None
+        assert (
+            state["log"]["source"] is None and state["winrate"]["rate"] is None and state["winrate"]["battles"] == 0
+        )
 
 
 def test_missing_manifest_battle_folder_and_log(run: Path) -> None:
     (run / "manifest.json").unlink()
-    shutil.rmtree(run / "battle-2")
+    shutil.rmtree(run / "battle-3")
     state = RunReader(run).state()
     assert state["player"] is None and state["player_view"]["params"] == []
-    assert state["battle"]["index"] == 2 and state["decision"] is None and state["decisions"] == []
-    assert state["battle_log"] == "" and state["session_record"]["losses"] == 2
-    assert state["battle_state"] == {"battle": "2", "screen": "options"}
+    assert state["battle"]["index"] == 3 and state["decision"] is None and state["decisions"] == []
+    assert state["log"]["turns"] == [] and state["log"]["raw"] == "" and state["session_record"]["losses"] == 2
+    assert state["battle_state"] == {"battle": "3", "screen": "wait"}
     assert battle_view(run, {"index": 7}, "prep") == {}  # a battle without a folder: no stale panels of another
 
 
@@ -196,14 +200,14 @@ def test_a_half_written_record_shows_the_one_before_it(run: Path) -> None:
     decisions = run / "battle-2" / "decisions"
     whole = (decisions / "0010-action.json").read_text(encoding="utf-8")
     reader = RunReader(run)
-    assert reader.state()["decision"]["sequence"] == 10
+    assert reader.state(battle=2)["decision"]["sequence"] == 10
     (decisions / "0011-action.json").write_text(whole[: len(whole) // 2], encoding="utf-8")
-    state = reader.state()
+    state = reader.state(battle=2)
     assert state["decision"]["sequence"] == 10 and [r["sequence"] for r in state["decisions"]] == [9, 10]
     record = latest_record(run, 2)
     assert record is not None and record.path.name == "0010-action.json"
     (decisions / "0011-action.json").write_text(whole.replace('"sequence": 10', '"sequence": 11'), encoding="utf-8")
-    state = reader.state()
+    state = reader.state(battle=2)
     assert state["decision"]["sequence"] == 11 and [r["sequence"] for r in state["decisions"]] == [9, 10, 11]
 
 
@@ -214,7 +218,7 @@ def test_records_of_an_unexpected_shape_do_not_break_the_page(run: Path) -> None
     )
     (decisions / "0012-action.json").write_text("[1, 2]", encoding="utf-8")
     (run / "manifest.json").write_text("{", encoding="utf-8")
-    state = RunReader(run).state()
+    state = RunReader(run).state(battle=2)
     assert state["player"] is None and state["session_record"]["losses"] == 2
     assert len(state["decisions"]) == 3 and state["decisions"][-1]["legal"] == []
     json.dumps(state)  # still serialisable
@@ -222,7 +226,7 @@ def test_records_of_an_unexpected_shape_do_not_break_the_page(run: Path) -> None
 
 def test_a_decision_without_a_snapshot_still_fills_the_decision_panel(run: Path) -> None:
     (run / "battle-2" / "decisions" / "0010-action.txt").unlink()
-    state = RunReader(run).state()
+    state = RunReader(run).state(battle=2)
     assert state["decision"]["label"] == "Close Combat" and state["foes"] == [] and state["opponent"]["name"] is None
     assert state["active"]["name"] == "Lucario"  # ours comes from the game's request
     assert "no tracked battle snapshot" in state["battle_state"]["battle_object"]

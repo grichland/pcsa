@@ -1,0 +1,8 @@
+TURN 1   weather: -   fields: -
+OURS   side: -
+  lucario        ACTIVE  HP 147/147   Fighting/Steel   status -    boosts -          ability innerfocus     item lucarionite     moves crunch, closecombat, meteormash, extremespeed
+  garchomp       bench   HP 185/185   Dragon/Ground    status -    boosts -          ability roughskin      item choicescarf    moves stoneedge, earthquake, outrage, firefang
+  mimikyu        bench   HP 132/132   Ghost/Fairy      status -    boosts -          ability disguise       item lifeorb        moves playrough, shadowsneak, woodhammer, drainpunch
+THEIRS side: -
+  dragonite      ACTIVE  HP 100%      Dragon/Flying    status -    boosts -          ability ?              item ?              moves ?
+  preview, not yet seen: gholdengo, rotomwash, meowscarada, tyranitar, azumarill

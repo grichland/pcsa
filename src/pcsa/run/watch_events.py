@@ -20,10 +20,17 @@ WARNINGS = 200
 DETAIL_WIDTH = 160
 META = ("ts", "level", "event")
 TEAM_KEYS = ("battle", "kind", "team", "names")
+WON = ("win", "opponent_forfeit")
+RECENT = 10
 
 
 def _number(value) -> float | None:
     return float(value) if isinstance(value, int | float) and not isinstance(value, bool) else None
+
+
+def _rate(outcomes: list[str]) -> dict:
+    wins = sum(1 for o in outcomes if o in WON)
+    return {"battles": len(outcomes), "wins": wins, "rate": round(wins / len(outcomes), 4) if outcomes else None}
 
 
 def detail_of(event: dict) -> str:
@@ -201,3 +208,15 @@ class EventScan:
             "delta": round(now - start, 3) if now is not None and start is not None else None,
             "series": list(self.ratings),
         }
+
+    def winrate_view(self) -> dict:
+        """Finished battles and the share won (a forfeit by the opponent is a win), over the run and over its
+        last 10 battles, and the current run of equal results (`streak`: +2 two wins, -3 three losses)."""
+        outcomes = [str(b["outcome"]) for _, b in sorted(self.battles.items()) if b.get("outcome") in OUTCOME_KEYS]
+        streak = 0
+        for outcome in reversed(outcomes):
+            step = 1 if outcome in WON else -1 if outcome == "loss" else 0
+            if step == 0 or (streak and (step > 0) != (streak > 0)):
+                break
+            streak += step
+        return {**_rate(outcomes), "recent": _rate(outcomes[-RECENT:]), "recent_size": RECENT, "streak": streak}

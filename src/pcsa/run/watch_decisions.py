@@ -3,8 +3,9 @@
 Each record (schema pcsa-decision/1) carries the choice, the order sent, the legal orders, the degrade rung and
 the player's own notes. Notes are shown as they are: the rule name and whatever numbers the player wrote. The
 neural player's are named (`p` the probability of the chosen action, `h` the normalised entropy, `v` the critic
-value at team preview, `ms`, and `why` under the rule `neural:fallback`). A record that is missing, half written
-or of an older shape is skipped. This module only reads.
+value, `ms`, `why` under the rule `neural:fallback`, the `matrix` of the decision, and on a guard-rule override
+`override`, `override_why` and `network`, the order the network wanted). A record that is missing, half written or
+of an older shape is skipped. This module only reads.
 """
 
 from __future__ import annotations
@@ -13,9 +14,10 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 
+from pcsa.run.watch_matrix import matrix_view
 from pcsa.run.watch_names import names_of, order_view
 
-NAMED = ("rule", "why", "p", "h", "v", "ms")
+NAMED = ("rule", "why", "p", "h", "v", "ms", "matrix", "override", "override_why", "network")
 VALUE_WIDTH = 120
 LOGS = ("battle_log.txt", "log.txt")  # written when the battle ends; saved after every visit to the log
 
@@ -37,19 +39,29 @@ def _strings(value) -> list[str]:
     return [_order(x) if isinstance(x, str) else _plain(x) for x in value] if isinstance(value, list) else []
 
 
-def notes_view(notes) -> dict | None:
-    """Rule, the neural numbers when present, and every other note as a (key, value) pair."""
+def _text(notes: dict, key: str) -> str | None:
+    return _plain(notes[key]) if notes.get(key) is not None else None
+
+
+def notes_view(notes, names: dict[str, str] | None = None, order=None) -> dict | None:
+    """Rule, the neural numbers and matrix when present, the override fields, and every other note as a
+    (key, value) pair. `names` and `order` (the record's) name the matrix rows and find the row played."""
     if not isinstance(notes, dict) or not notes:
         return None
     rule = notes.get("rule")
+    network = _order(notes["network"]) if isinstance(notes.get("network"), str) else None
     return {
         "rule": str(rule) if rule is not None else None,
         "fallback": isinstance(rule, str) and rule.endswith(":fallback"),
-        "why": _plain(notes["why"]) if notes.get("why") is not None else None,
+        "why": _text(notes, "why"),
         "p": _number(notes.get("p")),
         "h": _number(notes.get("h")),
         "v": _number(notes.get("v")),
         "ms": _number(notes.get("ms")),
+        "matrix": matrix_view(notes.get("matrix"), names, order, network),
+        "override": _text(notes, "override"),
+        "override_why": _text(notes, "override_why"),
+        "network": order_view(network, names or {}) if network else None,
         "rest": [{"key": str(k), "value": _plain(v)} for k, v in notes.items() if k not in NAMED],
     }
 
@@ -80,7 +92,7 @@ def row_of(data: dict, mtime: float) -> dict:
         "legal": [order_view(o, names) for o in _strings(data.get("legal"))],
         "dropped": [order_view(o, names) for o in _strings(data.get("dropped"))],
         "warnings": _strings(data.get("warnings")),
-        "notes": notes_view(data.get("notes")),
+        "notes": notes_view(data.get("notes"), names, data.get("order") or data.get("choice")),
         "ts": datetime.fromtimestamp(mtime, UTC).isoformat(),
         "timing": None,
     }
@@ -132,15 +144,3 @@ class DecisionRows:
                 self._cache[path] = cached
             out.append(dict(cached[1]))
         return out
-
-
-def battle_log(battle_dir: Path | None) -> str:
-    """The battle's log as text: the finished battle's battle_log.txt, else the rows collected so far (log.txt)."""
-    if battle_dir is None:
-        return ""
-    for name in LOGS:
-        try:
-            return (battle_dir / name).read_text(encoding="utf-8", errors="replace")
-        except OSError:
-            continue
-    return ""

@@ -18,6 +18,47 @@ from pcsa.run.watch import RunReader, make_server
 from pcsa.run.watch_events import EventScan
 
 FIXTURE = paths.repo_root() / "tests" / "fixtures" / "watch_run"
+# What app.js, matrix.js and panels.js write to: the top bar, the frame and the four panels.
+PAGE_IDS = (
+    "run-status",
+    "top-battle",
+    "top-turn",
+    "session-record",
+    "top-rating",
+    "top-player",
+    "params",
+    "warn",
+    "warn-count",
+    "warnings",
+    "theme",
+    "t-frame",
+    "phone-frame",
+    "t-matrix",
+    "mx-action",
+    "mx-stats",
+    "mx-banner",
+    "mx-grid",
+    "mx-alt",
+    "mx-empty",
+    "t-win",
+    "win-record",
+    "win-rate",
+    "win-recent",
+    "win-rating",
+    "spark",
+    "strip",
+    "follow",
+    "chance",
+    "vspark",
+    "t-teams",
+    "team-ours",
+    "field-strip",
+    "team-theirs",
+    "unseen",
+    "t-log",
+    "battle-log",
+    "tip",
+)
 
 
 def line(**event) -> str:
@@ -101,8 +142,9 @@ def test_state_follows_a_run_as_its_files_appear(tmp_path: Path) -> None:
         stream.writelines(events[first_end:])
         stream.flush()
         state = reader.state()
-    assert state["battle"]["index"] == 2 and state["session_record"]["losses"] == 2
-    assert state["decision"] is None and state["decisions"] == []  # battle 2's folder has not been copied
+    assert state["battle"]["index"] == 3 and state["session_record"]["losses"] == 2
+    assert state["decision"] is None and state["decisions"] == []  # battle 3's folder has not been copied
+    assert state["preview"]["names"] == ["Lucario", "Garchomp", "Mimikyu"] and state["winrate"]["rate"] == 0.0
     assert reader.state(battle=1)["decision"]["label"] == "Iron Head"
 
 
@@ -137,25 +179,29 @@ def test_server_serves_the_page_and_its_data(server: str) -> None:
     status, kind, body = get(server + "/")
     page = body.decode("utf-8")
     assert status == 200 and kind.startswith("text/html") and "PCSA Singles Agent" in page
-    wanted_ids = ("t-decision", "t-run", "decision-list", "battle-log", "warnings", "m-p", "m-h", "m-v", "vspark")
-    for wanted in (f'id="{name}"' for name in wanted_ids):
+    for wanted in (f'id="{name}"' for name in PAGE_IDS):
         assert wanted in page
-    for gone in ("win chance", "What will they do?", "Team preview</h2>", "heuristic", "threat"):
-        assert gone not in page  # panels of the old decision network
+    for gone in ("t-decision", "decision-list", "sb-match", "tab-events", "m-h", "What will they do?", "heuristic"):
+        assert gone not in page  # the old tiles, tabs and meters
     status, kind, body = get(server + "/style.css")
-    assert status == 200 and kind.startswith("text/css") and b".hpbar" in body
+    assert status == 200 and kind.startswith("text/css") and b".hpbar" in body and b"prefers-reduced-motion" in body
+    assert b".is-playing .mx-cell" in body  # the one-shot animation of a new decision
     status, kind, body = get(server + "/app.js")
     assert status == 200 and kind.startswith("text/javascript") and b"/api/state" in body
+    for script, marker in (("/matrix.js", b"function renderMatrix"), ("/panels.js", b"function renderLog")):
+        status, kind, body = get(server + script)
+        assert status == 200 and kind.startswith("text/javascript") and marker in body and f'src="{script}"' in page
 
     status, kind, body = get(server + "/api/state")
     state = json.loads(body)
     assert status == 200 and kind.startswith("application/json")
-    assert state["player"] == "neural" and state["battle"]["index"] == 2 and len(state["battles"]) == 2
+    assert state["player"] == "neural" and state["battle"]["index"] == 3 and len(state["battles"]) == 3
     assert state["decision"]["notes"]["rule"] == "neural" and state["frame_id"].startswith("00001-poll-lobby.jpg:")
-    assert state["decision"]["notes"]["v"] == -0.8
+    assert state["decision"]["notes"]["v"] == 0.52 and len(state["decision"]["notes"]["matrix"]["cells"]) == 11
+    assert state["winrate"]["battles"] == 2 and [t["turn"] for t in state["log"]["turns"]] == [1, 2, 3]
     pinned = json.loads(get(server + "/api/state?battle=1")[2])
     assert pinned["battle"]["index"] == 1 and pinned["pinned"] == 1 and len(pinned["decisions"]) == 4
-    assert json.loads(get(server + "/api/state?battle=abc")[2])["battle"]["index"] == 2  # not a number: the newest
+    assert json.loads(get(server + "/api/state?battle=abc")[2])["battle"]["index"] == 3  # not a number: the newest
 
     status, kind, body = get(server + "/api/frame")
     assert status == 200 and kind == "image/jpeg" and body.startswith(b"\xff\xd8")

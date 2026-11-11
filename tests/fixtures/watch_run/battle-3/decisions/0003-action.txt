@@ -1,0 +1,9 @@
+TURN 4   weather: SANDSTORM   fields: -
+OURS   side: -
+  lucariomega    ACTIVE  HP 31/147    Fighting/Steel   status -    boosts def-1 spd-1 ability adaptability   item lucarionite     moves crunch, closecombat, meteormash, extremespeed
+  garchomp       bench   HP 185/185   Dragon/Ground    status -    boosts -          ability roughskin      item choicescarf    moves stoneedge, earthquake, outrage, firefang
+  mimikyu        bench   HP 132/132   Ghost/Fairy      status -    boosts -          ability disguise       item lifeorb        moves playrough, shadowsneak, woodhammer, drainpunch
+THEIRS side: -
+  dragonite      fainted HP 0%        Dragon/Flying    status FNT  boosts -          ability ?              item ?              moves dragondance
+  tyranitar      ACTIVE  HP 22%       Rock/Dark        status -    boosts -          ability Sand Stream    item ?              moves earthquake
+  preview, not yet seen: gholdengo, rotomwash, meowscarada, azumarill

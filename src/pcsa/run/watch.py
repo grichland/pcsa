@@ -17,11 +17,17 @@ from urllib.parse import parse_qs, urlsplit
 
 from pcsa.common import paths
 from pcsa.run.watch_battle import battle_dir, battle_view
-from pcsa.run.watch_decisions import DecisionRows, battle_log, folder_key, notes_view, read_json
+from pcsa.run.watch_decisions import DecisionRows, folder_key, notes_view, read_json
 from pcsa.run.watch_events import EventScan
+from pcsa.run.watch_log import log_view
 
 STATIC = Path(__file__).with_name("static")
-ASSETS = {"/style.css": "text/css", "/app.js": "text/javascript"}
+ASSETS = {
+    "/style.css": "text/css",
+    "/app.js": "text/javascript",
+    "/matrix.js": "text/javascript",
+    "/panels.js": "text/javascript",
+}
 STALE_S = 35
 SETTLE_S = 1.0  # a frame younger than this may still be on its way to disk: the one before it is shown
 SUMMARY_KEYS = ("checkpoint", "update", "sampling")
@@ -127,6 +133,8 @@ class RunReader:
     def _decisions(self, current: dict | None, folder: Path | None) -> list[dict]:
         rows = self._rows.rows(folder) if current else []
         for row in rows:
+            if row["notes"] and row["notes"].get("matrix"):  # the list stays light: only the latest decision's matrix
+                row["notes"] = {**row["notes"], "matrix": None}
             if row["kind"] == "action" and isinstance(row["visit"], int):
                 row["timing"] = self._scan.timings.get((current["index"], row["visit"])) if current else None
         return rows
@@ -155,7 +163,8 @@ class RunReader:
             "decision": None,
             "decisions": self._decisions(current, folder),
             "preview": {**preview, "notes": notes_view(preview.get("notes"))} if preview else None,
-            "battle_log": battle_log(folder) if current else "",
+            "winrate": scan.winrate_view(),
+            "log": log_view(folder if current else None),
             "battle_state": {"battle": str(current["index"]) if current else "pending", "screen": str(screen)},
             "timeline": list(scan.timeline),
             "warnings": list(scan.warnings),

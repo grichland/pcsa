@@ -1,0 +1,8 @@
+TURN 2   weather: -   fields: -
+OURS   side: -
+  lucariomega    ACTIVE  HP 147/147   Fighting/Steel   status -    boosts -          ability adaptability   item lucarionite     moves crunch, closecombat, meteormash, extremespeed
+  garchomp       bench   HP 185/185   Dragon/Ground    status -    boosts -          ability roughskin      item choicescarf    moves stoneedge, earthquake, outrage, firefang
+  mimikyu        bench   HP 132/132   Ghost/Fairy      status -    boosts -          ability disguise       item lifeorb        moves playrough, shadowsneak, woodhammer, drainpunch
+THEIRS side: -
+  dragonite      ACTIVE  HP 38%       Dragon/Flying    status -    boosts atk+1 spe+1 ability ?              item ?              moves dragondance
+  preview, not yet seen: gholdengo, rotomwash, meowscarada, tyranitar, azumarill
