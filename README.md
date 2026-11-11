@@ -34,8 +34,8 @@ The Showdown engine doubles as the simulator the players are measured in.
    `config/players/best_matchup.yaml`), `disciplined` (best_matchup plus damage-race rules for priority, Mega,
    replacements and switching, `config/players/disciplined.yaml`), `mixed` (a weighted pool of the others,
    one drawn per game, `config/players/mixed.yaml`), `endgame` (disciplined plus a 1v1 chain search once both
-   sides are down to two members, `config/players/endgame.yaml`) and `neural` (a PPO / imitation network
-   trained in the research repo, `config/players/neural.yaml`, network code in `rl_training/`; see "Neural
+   sides are down to two members, `config/players/endgame.yaml`) and `neural` (a transformer policy
+   trained by self-play in the research repo, `config/players/neural.yaml`, network code in `rl_training/`; see "Neural
    player" below).
 4. **Simulator** (`sim/`): the Showdown engine as a local server, with its team validator, on which
    `pcsa sim play` plays games between the player kinds.
@@ -134,31 +134,51 @@ touches the phone), is picked once at start (start it again for a later run) and
 `scripts\run_agent.ps1` opens it next to a run when `$Watch = $true` is set at the top of the file (off by
 default).
 
-**Neural player.** `neural` plays a checkpoint from the research runs (`research/pcsa-rl`: `runs/<run>/ckpt/*.pt`,
-any size S/M/L, read from the checkpoint). It needs torch (`uv sync --inexact --extra train`; `pcsa setup --with
+**Neural player.** `neural` plays a poke-singles-former checkpoint from the research runs (`research/pcsa-rl`:
+`runs/<run>/ckpt/*.pt`; the model's size is read from the checkpoint). It needs torch (`uv sync --inexact --extra train`; `pcsa setup --with
 train` installs it too) and runs on the CPU. Point it at a network with one override (or set `checkpoint` in
 `config/players/neural.yaml`; relative paths are looked up in `$PCSA_NETWORKS`, then in the repo). Keep the
 checkpoints in `assets/models/` (create the folder; its `.pt` files are not committed):
 
 ```
-uv run pcsa sim play --a neural --b disciplined --battles 100 --set policy.neural_checkpoint=assets/models/team2-fine-tuned.pt
-uv run pcsa run --player neural --battles 10 --set policy.neural_checkpoint=assets/models/team2-fine-tuned.pt
+uv run pcsa sim play --a neural --b disciplined --battles 100 --set policy.neural_checkpoint=assets/models/poke-singles-former.pt
+uv run pcsa run --player neural --battles 10 --set policy.neural_checkpoint=assets/models/poke-singles-former.pt
 ```
 
-![The neural player's network: 12 Pokémon rows and the field are encoded into 13 tokens per decision, a block-causal transformer attends over the last 16 decisions, and a policy head and a value head read the current decision out](docs/images/network.svg)
+![The neural player's network: 12 Pokémon, the field and the last turn become 14 tokens per decision; a transformer with a memory of earlier decisions feeds three readouts; the network first predicts the opponent's action, then scores each of its own actions against each predicted one in a matrix, and a value head estimates the win chance](docs/images/network.svg)
 
-The network (`rl_training/model.py`) encodes each of the 12 Pokémon (318 numbers plus species, item, ability and move embeddings) and the field (126 numbers) into one token each, runs a block-causal transformer over the last 16 decisions of the battle, and reads the current decision's 13 tokens out twice: a policy over the 11 actions and a value. The checkpoints in use are size S (d 64, 4 layers, 4 heads, 1.6 M parameters); M is 5.8 M and L 10.3 M.
+The network (`rl_training/former.py`, 1.8 M parameters: d 128, 4 layers, 4 heads) works in two steps: predict the
+opponent, then choose.
+
+- **Inputs.** Each of the 12 Pokémon (338 numbers plus species, item, ability and move embeddings), the field (126
+  numbers) and what both sides did last turn become one token each: 14 tokens per decision. Nothing about the
+  opponent is guessed: their rows hold only the moves, item and ability the battle has shown, and damage is given
+  as a range over the builds they could have.
+- **Memory.** Every token attends to its own decision's 14 tokens and to one stored token for each earlier
+  decision of the battle (up to 64).
+- **Their action.** One head gives a probability to every move their active Pokémon could use (anything its species
+  can learn, plus anything it has shown) and to each of their bench members coming in, and separately the chance
+  they Mega Evolve.
+- **The matrix.** Their 4 most relevant moves (every move they have shown, then the most likely) and their 5 switch
+  slots are the columns; our 11 actions (4 moves, the same 4 with Mega Evolution, 3 switches) are the rows. A cell
+  scores our action against theirs. Each row is averaged over the columns, weighted by how likely each column is,
+  and that gives the policy.
+- **Value.** A third head estimates the outcome (+1 a win, −1 a loss); it also picks the three Pokémon to bring by
+  scoring all 60 lead/second/third picks.
+
+The matrix of every decision is written into the run's decision records, and the dashboard draws it.
 
 Live play defaults to the most likely action (`sampling: greedy`; `sample` draws from training's capped 0.99
 distribution) and training's team preview (the critic scores all 60 lead/second/third picks, softmax at 0.1,
 top-p 0.9; `preview: greedy` takes the best). Whenever the network cannot decide (no or unreadable checkpoint,
-a size mismatch, no tracked Battle, an error, slower than `max_decision_s` or the turn deadline) the
+a checkpoint of another network, no tracked Battle, an error, slower than `max_decision_s` or the turn deadline) the
 `fallback` kind (`disciplined`) decides, and the decision's notes say why (`rule: neural:fallback`, `why`).
 
 Four guard rules (`rules` in `config/players/neural.yaml`, on by default) stop plainly wasted actions: a heal at
 full HP, a hazard already up or a status move on an already statused foe, a lock into moves that do nothing, and a
 missed sure priority KO. The network's best other action is played and the notes say so (`override`,
-`override_why`, `network`). `--set policy.neural_rules=none` plays the network alone.
+`override_why`, `network`). The rules are the one place the neural player uses a guessed opposing build (the set
+catalog, with builds seen on the ladder first); the network itself does not. `--set policy.neural_rules=none` plays the network alone.
 
 ## Where things go
 

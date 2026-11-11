@@ -1,210 +1,275 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 660" width="1200" height="660" font-family="Segoe UI, Helvetica, Arial, sans-serif">
-  <title>pcsa neural player: policy/value network</title>
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0f172a"/>
-      <stop offset="1" stop-color="#1e1b4b"/>
-    </linearGradient>
-    <linearGradient id="ours" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#2563eb"/>
-      <stop offset="1" stop-color="#3b82f6"/>
-    </linearGradient>
-    <linearGradient id="theirs" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#dc2626"/>
-      <stop offset="1" stop-color="#f87171"/>
-    </linearGradient>
-    <linearGradient id="field" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#059669"/>
-      <stop offset="1" stop-color="#34d399"/>
-    </linearGradient>
-    <linearGradient id="tf" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#7c3aed"/>
-      <stop offset="1" stop-color="#4c1d95"/>
-    </linearGradient>
-    <linearGradient id="pol" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#f59e0b"/>
-      <stop offset="1" stop-color="#fbbf24"/>
-    </linearGradient>
-    <linearGradient id="val" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#0891b2"/>
-      <stop offset="1" stop-color="#22d3ee"/>
-    </linearGradient>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" fill="#cbd5e1"/>
-    </marker>
-    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
-      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000" flood-opacity="0.35"/>
-    </filter>
-  </defs>
-
-  <rect width="1200" height="660" rx="22" fill="url(#bg)"/>
-  <text x="40" y="52" font-size="26" font-weight="700" fill="#f8fafc">The neural player's network</text>
-  <text x="40" y="80" font-size="14.5" fill="#a5b4fc">One forward pass per decision · policy (which of 11 actions) and value (how good the position is) · size S: 1.6 M parameters</text>
-
-  <!-- column headings -->
-  <g font-size="13" font-weight="700" fill="#94a3b8" letter-spacing="1.5">
-    <text x="40" y="120">1 · WHAT IT SEES</text>
-    <text x="350" y="120">2 · ENCODE EACH PART</text>
-    <text x="620" y="120">3 · ATTEND OVER THE BATTLE</text>
-    <text x="940" y="120">4 · DECIDE</text>
-  </g>
-
-  <!-- 1: inputs -->
-  <g filter="url(#shadow)">
-    <rect x="40" y="136" width="270" height="170" rx="14" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5"/>
-    <rect x="40" y="136" width="270" height="34" rx="14" fill="url(#ours)"/>
-    <rect x="40" y="156" width="270" height="14" fill="url(#ours)"/>
-    <text x="56" y="159" font-size="15" font-weight="700" fill="#fff">Our 6 Pokémon</text>
-    <text x="56" y="194" font-size="13" fill="#e2e8f0">active · 2 brought · 3 left at home</text>
-    <text x="56" y="218" font-size="13" fill="#cbd5e1">318 numbers each: HP, status, boosts,</text>
-    <text x="56" y="236" font-size="13" fill="#cbd5e1">stats, speed and damage both ways,</text>
-    <text x="56" y="254" font-size="13" fill="#cbd5e1">move facts, PP, Mega, what it did</text>
-    <text x="56" y="282" font-size="13" fill="#93c5fd">+ species · item · ability · 4 moves</text>
-  </g>
-  <g filter="url(#shadow)">
-    <rect x="40" y="322" width="270" height="170" rx="14" fill="#1e293b" stroke="#ef4444" stroke-width="1.5"/>
-    <rect x="40" y="322" width="270" height="34" rx="14" fill="url(#theirs)"/>
-    <rect x="40" y="342" width="270" height="14" fill="url(#theirs)"/>
-    <text x="56" y="345" font-size="15" font-weight="700" fill="#fff">Their 6 Pokémon</text>
-    <text x="56" y="380" font-size="13" fill="#e2e8f0">active · 2 seen · 3 only in preview</text>
-    <text x="56" y="404" font-size="13" fill="#cbd5e1">the same 318 numbers, with their set</text>
-    <text x="56" y="422" font-size="13" fill="#cbd5e1">assumed from top usage and corrected</text>
-    <text x="56" y="440" font-size="13" fill="#cbd5e1">by what the battle has revealed</text>
-    <text x="56" y="468" font-size="13" fill="#fca5a5">+ species · item · ability · 4 moves</text>
-  </g>
-  <g filter="url(#shadow)">
-    <rect x="40" y="508" width="270" height="118" rx="14" fill="#1e293b" stroke="#10b981" stroke-width="1.5"/>
-    <rect x="40" y="508" width="270" height="34" rx="14" fill="url(#field)"/>
-    <rect x="40" y="528" width="270" height="14" fill="url(#field)"/>
-    <text x="56" y="531" font-size="15" font-weight="700" fill="#fff">The field</text>
-    <text x="56" y="566" font-size="13" fill="#cbd5e1">126 numbers: turn, weather, terrain,</text>
-    <text x="56" y="584" font-size="13" fill="#cbd5e1">hazards and screens, last turn,</text>
-    <text x="56" y="602" font-size="13" fill="#cbd5e1">their tendencies, threat summary</text>
-  </g>
-
-  <!-- arrows 1 -> 2 -->
-  <g stroke="#cbd5e1" stroke-width="2" fill="none" marker-end="url(#arrow)">
-    <path d="M312 221 L346 221"/>
-    <path d="M312 407 L346 407"/>
-    <path d="M312 567 L346 567"/>
-  </g>
-
-  <!-- 2: encoders -->
-  <g filter="url(#shadow)">
-    <rect x="350" y="150" width="240" height="140" rx="14" fill="#1e293b" stroke="#64748b"/>
-    <text x="366" y="178" font-size="15" font-weight="700" fill="#f1f5f9">Embeddings</text>
-    <text x="366" y="200" font-size="13" fill="#cbd5e1">species 32 · item 16 · ability 16</text>
-    <text x="366" y="218" font-size="13" fill="#cbd5e1">4 moves × 16</text>
-    <text x="366" y="246" font-size="15" font-weight="700" fill="#f1f5f9">Pokémon encoder</text>
-    <text x="366" y="268" font-size="13" fill="#cbd5e1">MLP 446 → 512 → 256 → d</text>
-  </g>
-  <g filter="url(#shadow)">
-    <rect x="350" y="336" width="240" height="140" rx="14" fill="#1e293b" stroke="#64748b"/>
-    <text x="366" y="364" font-size="15" font-weight="700" fill="#f1f5f9">Same encoder, shared</text>
-    <text x="366" y="386" font-size="13" fill="#cbd5e1">one token per Pokémon: 12</text>
-    <text x="366" y="414" font-size="15" font-weight="700" fill="#f1f5f9">+ token-type embedding</text>
-    <text x="366" y="436" font-size="13" fill="#cbd5e1">which seat / role each row is</text>
-    <text x="366" y="456" font-size="13" fill="#cbd5e1">+ decision-position embedding</text>
-  </g>
-  <g filter="url(#shadow)">
-    <rect x="350" y="508" width="240" height="118" rx="14" fill="#1e293b" stroke="#64748b"/>
-    <text x="366" y="536" font-size="15" font-weight="700" fill="#f1f5f9">Field encoder</text>
-    <text x="366" y="558" font-size="13" fill="#cbd5e1">MLP 126 → 256 → d</text>
-    <text x="366" y="586" font-size="13" fill="#cbd5e1">one field token</text>
-    <text x="366" y="606" font-size="13" fill="#86efac">13 tokens per decision</text>
-  </g>
-
-  <!-- token strip -->
-  <g>
-    <text x="620" y="152" font-size="13" fill="#cbd5e1">The last 16 decisions of this battle, 13 tokens each</text>
-    <g>
-      <rect x="620" y="164" width="290" height="30" rx="8" fill="#0b1220" stroke="#334155"/>
-      <g>
-        <rect x="628" y="171" width="16" height="16" rx="3" fill="#10b981"/>
-        <rect x="648" y="171" width="16" height="16" rx="3" fill="#3b82f6"/>
-        <rect x="668" y="171" width="16" height="16" rx="3" fill="#3b82f6" opacity="0.8"/>
-        <rect x="688" y="171" width="16" height="16" rx="3" fill="#3b82f6" opacity="0.6"/>
-        <rect x="708" y="171" width="16" height="16" rx="3" fill="#ef4444"/>
-        <rect x="728" y="171" width="16" height="16" rx="3" fill="#ef4444" opacity="0.8"/>
-        <rect x="748" y="171" width="16" height="16" rx="3" fill="#ef4444" opacity="0.6"/>
-        <text x="772" y="184" font-size="12" fill="#94a3b8">… turn t−15 … t−1</text>
-        <rect x="874" y="171" width="16" height="16" rx="3" fill="#fbbf24"/>
-        <text x="894" y="184" font-size="12" fill="#fde68a">t</text>
-      </g>
-    </g>
-  </g>
-  <g stroke="#cbd5e1" stroke-width="2" fill="none" marker-end="url(#arrow)">
-    <path d="M592 400 C 605 400, 606 300, 616 300"/>
-    <path d="M592 220 C 606 220, 606 260, 616 270"/>
-    <path d="M592 567 C 606 567, 606 360, 616 340"/>
-  </g>
-
-  <!-- 3: transformer -->
-  <g filter="url(#shadow)">
-    <rect x="620" y="210" width="290" height="300" rx="16" fill="url(#tf)"/>
-    <text x="640" y="244" font-size="17" font-weight="700" fill="#fff">Transformer</text>
-    <text x="640" y="266" font-size="13" fill="#ddd6fe">block-causal: a decision sees itself</text>
-    <text x="640" y="283" font-size="13" fill="#ddd6fe">and the earlier ones, never later ones</text>
-    <g font-size="13" fill="#f5f3ff">
-      <rect x="640" y="300" width="250" height="32" rx="8" fill="#ffffff" fill-opacity="0.12"/>
-      <text x="656" y="321">self-attention · pre-norm</text>
-      <rect x="640" y="340" width="250" height="32" rx="8" fill="#ffffff" fill-opacity="0.12"/>
-      <text x="656" y="361">SwiGLU feed-forward</text>
-      <text x="656" y="398" font-size="22" font-weight="700" fill="#fff">× layers</text>
-    </g>
-    <g font-size="13" fill="#ede9fe">
-      <text x="640" y="436">S: d 64 · 4 layers · 4 heads (in use)</text>
-      <text x="640" y="456">M: d 192 · 6 layers · 6 heads</text>
-      <text x="640" y="476">L: d 256 · 8 layers · 8 heads</text>
-      <text x="640" y="496" fill="#c4b5fd">final LayerNorm</text>
-    </g>
-  </g>
-  <text x="620" y="540" font-size="13" fill="#94a3b8">The current decision's 13 output tokens</text>
-  <text x="620" y="558" font-size="13" fill="#94a3b8">are flattened (13 × d) and read out twice.</text>
-
-  <g stroke="#cbd5e1" stroke-width="2" fill="none" marker-end="url(#arrow)">
-    <path d="M912 300 C 925 300, 925 215, 936 215"/>
-    <path d="M912 420 C 925 420, 925 470, 936 470"/>
-  </g>
-
-  <!-- 4: heads -->
-  <g filter="url(#shadow)">
-    <rect x="940" y="136" width="220" height="230" rx="14" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
-    <rect x="940" y="136" width="220" height="34" rx="14" fill="url(#pol)"/>
-    <rect x="940" y="156" width="220" height="14" fill="url(#pol)"/>
-    <text x="956" y="159" font-size="15" font-weight="700" fill="#1c1917">Policy head</text>
-    <text x="956" y="194" font-size="13" fill="#cbd5e1">MLP → 512 → 11 actions</text>
-    <g font-size="12.5" fill="#fde68a">
-      <rect x="956" y="206" width="188" height="24" rx="6" fill="#f59e0b" fill-opacity="0.18"/>
-      <text x="966" y="223">4 moves</text>
-      <rect x="956" y="234" width="188" height="24" rx="6" fill="#f59e0b" fill-opacity="0.18"/>
-      <text x="966" y="251">4 moves + Mega Evolve</text>
-      <rect x="956" y="262" width="188" height="24" rx="6" fill="#f59e0b" fill-opacity="0.18"/>
-      <text x="966" y="279">3 switches</text>
-    </g>
-    <text x="956" y="310" font-size="13" fill="#cbd5e1">illegal actions masked out;</text>
-    <text x="956" y="328" font-size="13" fill="#cbd5e1">no action above 99%</text>
-    <text x="956" y="350" font-size="13" fill="#fbbf24" font-weight="700">→ the move it plays</text>
-  </g>
-  <g filter="url(#shadow)">
-    <rect x="940" y="390" width="220" height="236" rx="14" fill="#1e293b" stroke="#06b6d4" stroke-width="1.5"/>
-    <rect x="940" y="390" width="220" height="34" rx="14" fill="url(#val)"/>
-    <rect x="940" y="410" width="220" height="14" fill="url(#val)"/>
-    <text x="956" y="413" font-size="15" font-weight="700" fill="#082f49">Value head</text>
-    <text x="956" y="448" font-size="13" fill="#cbd5e1">MLP → 512 → 1</text>
-    <text x="956" y="474" font-size="13" fill="#cbd5e1">expected reward from here:</text>
-    <text x="956" y="492" font-size="13" fill="#cbd5e1">+1 win / −1 loss, ±0.1 a faint</text>
-    <!-- value bar -->
-    <rect x="956" y="508" width="188" height="10" rx="5" fill="#334155"/>
-    <rect x="1050" y="508" width="70" height="10" rx="5" fill="#22d3ee"/>
-    <line x1="1050" y1="503" x2="1050" y2="523" stroke="#e2e8f0" stroke-width="1.5"/>
-    <text x="956" y="536" font-size="11" fill="#94a3b8">−1</text>
-    <text x="1046" y="536" font-size="11" fill="#94a3b8">0</text>
-    <text x="1136" y="536" font-size="11" fill="#94a3b8">+1</text>
-    <text x="956" y="566" font-size="13" fill="#67e8f9" font-weight="700">→ team preview:</text>
-    <text x="956" y="584" font-size="13" fill="#cbd5e1">scores all 60 lead + two picks,</text>
-    <text x="956" y="602" font-size="13" fill="#cbd5e1">samples from the best (top-p 0.9)</text>
-  </g>
-
-  <text x="1160" y="650" text-anchor="end" font-size="11" fill="#64748b">trained by PPO (research/pcsa-rl) · inference in src/pcsa/rl_training</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 1150" style="width:100%;height:auto;display:block"
+ font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b1020"/><stop offset="1" stop-color="#1e1b4b"/></linearGradient>
+ <linearGradient id="tf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6d28d9"/><stop offset="1" stop-color="#3b0764"/></linearGradient>
+ <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#cbd5e1"/></marker>
+ <filter id="sh" x="-5%" y="-5%" width="110%" height="115%"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.4"/></filter>
+</defs>
+<rect width="2000" height="1150" rx="20" fill="url(#bg)"/>
+<text x="30" y="46" font-size="28" fill="#f8fafc" font-weight="700" text-anchor="start">poke-singles-former: predict the opponent, then choose</text>
+<text x="30" y="74" font-size="14" fill="#a5b4fc" text-anchor="start">src/pcsa/rl_training/former.py · 1,798,048 parameters · d 128 · 4 layers · 4 heads · shapes per decision (training batches add [G games, T decisions] in front)</text>
+<text x="30" y="108" font-size="13" fill="#94a3b8" font-weight="700" text-anchor="start">1 · INPUTS PER DECISION</text>
+<text x="470" y="108" font-size="13" fill="#94a3b8" font-weight="700" text-anchor="start">2 · ENCODERS → 14 TOKENS</text>
+<text x="870" y="108" font-size="13" fill="#94a3b8" font-weight="700" text-anchor="start">3 · BACKBONE + TURN MEMORY</text>
+<text x="1300" y="108" font-size="13" fill="#94a3b8" font-weight="700" text-anchor="start">4 · READOUTS</text>
+<text x="1570" y="108" font-size="13" fill="#94a3b8" font-weight="700" text-anchor="start">5 · HEADS</text>
+<rect x="30" y="120" width="410" height="470" rx="12" fill="#141c2e" stroke="#3b82f6" stroke-width="1.6" filter="url(#sh)"/>
+<rect x="30" y="120" width="410" height="30" rx="12" fill="#3b82f6" fill-opacity="0.9"/><rect x="30" y="138" width="410" height="12" fill="#3b82f6" fill-opacity="0.9"/>
+<text x="42" y="141" font-size="15" fill="#0b1020" font-weight="700" text-anchor="start">rows: 12 Pokémon</text>
+<text x="42" y="170" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">[12, 338] float32</text>
+<text x="42" y="187" font-size="11.5" fill="#94a3b8" text-anchor="start">row order: 0 our active · 1–2 our bench · 3–5 empty</text>
+<text x="42" y="204" font-size="11.5" fill="#94a3b8" text-anchor="start">6 their active · 7–11 their seen, then preview-only</text>
+<text x="42" y="221" font-size="12.5" fill="#cbd5e1" font-weight="700" text-anchor="start">base layout, 318:</text>
+<text x="42" y="239" font-size="11.5" fill="#cbd5e1" font-family="Consolas, Menlo, monospace" text-anchor="start">identity 24     types 18, base stats 6</text>
+<text x="42" y="256" font-size="11.5" fill="#cbd5e1" font-family="Consolas, Menlo, monospace" text-anchor="start">build 10        known/gone item, ability, stats</text>
+<text x="42" y="273" font-size="11.5" fill="#cbd5e1" font-family="Consolas, Menlo, monospace" text-anchor="start">condition 110   HP, status, boosts 7, volatiles 90</text>
+<text x="42" y="290" font-size="11.5" fill="#cbd5e1" font-family="Consolas, Menlo, monospace" text-anchor="start">knowledge 4     brought / not brought / seen</text>
+<text x="42" y="307" font-size="11.5" fill="#cbd5e1" font-family="Consolas, Menlo, monospace" text-anchor="start">matchup 6       speed order, their hit on us</text>
+<text x="42" y="324" font-size="11.5" fill="#cbd5e1" font-family="Consolas, Menlo, monospace" text-anchor="start">evidence 4      biggest hit, moved 1st/2nd</text>
+<text x="42" y="341" font-size="11.5" fill="#cbd5e1" font-family="Consolas, Menlo, monospace" text-anchor="start">moves 4 × 40    27 facts · PP, disabled,</text>
+<text x="42" y="358" font-size="11.5" fill="#cbd5e1" font-family="Consolas, Menlo, monospace" text-anchor="start">                locked, known · 9 damage cols</text>
+<text x="42" y="378" font-size="12.5" fill="#cbd5e1" font-weight="700" text-anchor="start">extra, 20:</text>
+<text x="42" y="396" font-size="11.5" fill="#cbd5e1" font-family="Consolas, Menlo, monospace" text-anchor="start">stat low 6 · stat high 6 · could Mega</text>
+<text x="42" y="413" font-size="11.5" fill="#cbd5e1" font-family="Consolas, Menlo, monospace" text-anchor="start">item unknown · ability unknown · #abilities</text>
+<text x="42" y="430" font-size="11.5" fill="#cbd5e1" font-family="Consolas, Menlo, monospace" text-anchor="start">revealed moves · ours · learnset size</text>
+<text x="42" y="452" font-size="12.5" fill="#fca5a5" text-anchor="start">Theirs: revealed moves/item/ability only;</text>
+<text x="42" y="469" font-size="12.5" fill="#fca5a5" text-anchor="start">damage = RANGE over unknown spread/nature</text>
+<text x="42" y="486" font-size="11.5" fill="#fca5a5" text-anchor="start">(their upper bound ×1.5 while item unknown)</text>
+<rect x="30" y="604" width="410" height="120" rx="12" fill="#141c2e" stroke="#3b82f6" stroke-width="1.6" filter="url(#sh)"/>
+<rect x="30" y="604" width="410" height="30" rx="12" fill="#3b82f6" fill-opacity="0.9"/><rect x="30" y="622" width="410" height="12" fill="#3b82f6" fill-opacity="0.9"/>
+<text x="42" y="625" font-size="15" fill="#0b1020" font-weight="700" text-anchor="start">ids: 12 Pokémon</text>
+<text x="42" y="654" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">[12, 10] int64 (0 = unknown / pad)</text>
+<text x="42" y="671" font-size="12.5" fill="#cbd5e1" text-anchor="start">species · item · ability · move ×4 ·</text>
+<text x="42" y="688" font-size="12.5" fill="#cbd5e1" text-anchor="start">possible ability ×3 (from the species)</text>
+<text x="42" y="705" font-size="11.5" fill="#94a3b8" text-anchor="start">theirs: item/ability/moves only once revealed</text>
+<rect x="30" y="738" width="410" height="150" rx="12" fill="#141c2e" stroke="#10b981" stroke-width="1.6" filter="url(#sh)"/>
+<rect x="30" y="738" width="410" height="30" rx="12" fill="#10b981" fill-opacity="0.9"/><rect x="30" y="756" width="410" height="12" fill="#10b981" fill-opacity="0.9"/>
+<text x="42" y="759" font-size="15" fill="#0b1020" font-weight="700" text-anchor="start">field</text>
+<text x="42" y="788" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">[126] float32</text>
+<text x="42" y="805" font-size="11.5" fill="#cbd5e1" font-family="Consolas, Menlo, monospace" text-anchor="start">global 16 · weather 6 · terrain 5 · rooms 5</text>
+<text x="42" y="822" font-size="11.5" fill="#cbd5e1" font-family="Consolas, Menlo, monospace" text-anchor="start">side conditions 2 × 15 · last turn 2 × 8</text>
+<text x="42" y="839" font-size="11.5" fill="#cbd5e1" font-family="Consolas, Menlo, monospace" text-anchor="start">their last move 21 · tendencies 2 × 4</text>
+<text x="42" y="856" font-size="11.5" fill="#cbd5e1" font-family="Consolas, Menlo, monospace" text-anchor="start">threat summary 6 · misc 13</text>
+<rect x="30" y="902" width="410" height="128" rx="12" fill="#141c2e" stroke="#94a3b8" stroke-width="1.6" filter="url(#sh)"/>
+<rect x="30" y="902" width="410" height="30" rx="12" fill="#94a3b8" fill-opacity="0.9"/><rect x="30" y="920" width="410" height="12" fill="#94a3b8" fill-opacity="0.9"/>
+<text x="42" y="923" font-size="15" fill="#0b1020" font-weight="700" text-anchor="start">last turn</text>
+<text x="42" y="952" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">[20] float32 + [4] int64</text>
+<text x="42" y="969" font-size="12" fill="#cbd5e1" text-anchor="start">per side ×9: moved / switched / no action, Mega,</text>
+<text x="42" y="986" font-size="12" fill="#cbd5e1" text-anchor="start">moved first, damage taken, faints, item/ability shown</text>
+<text x="42" y="1003" font-size="12" fill="#cbd5e1" text-anchor="start">turn/30, first turn · ids: our move, our switch-in,</text>
+<text x="42" y="1020" font-size="12" fill="#cbd5e1" text-anchor="start">their move, their switch-in (turns.py)</text>
+<rect x="30" y="1044" width="410" height="84" rx="12" fill="#141c2e" stroke="#f59e0b" stroke-width="1.6" filter="url(#sh)"/>
+<rect x="30" y="1044" width="410" height="30" rx="12" fill="#f59e0b" fill-opacity="0.9"/><rect x="30" y="1062" width="410" height="12" fill="#f59e0b" fill-opacity="0.9"/>
+<text x="42" y="1065" font-size="15" fill="#0b1020" font-weight="700" text-anchor="start">mask</text>
+<text x="42" y="1094" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">[11] bool</text>
+<text x="42" y="1111" font-size="12" fill="#cbd5e1" text-anchor="start">0–3 move · 4–7 move + Mega · 8–10 switch to bench</text>
+<rect x="470" y="120" width="370" height="196" rx="12" fill="#141c2e" stroke="#a78bfa" stroke-width="1.6" filter="url(#sh)"/>
+<rect x="470" y="120" width="370" height="30" rx="12" fill="#a78bfa" fill-opacity="0.9"/><rect x="470" y="138" width="370" height="12" fill="#a78bfa" fill-opacity="0.9"/>
+<text x="482" y="141" font-size="15" fill="#0b1020" font-weight="700" text-anchor="start">embeddings</text>
+<text x="830" y="140" font-size="11" fill="#0b1020" font-family="Consolas, Menlo, monospace" text-anchor="end">lookup</text>
+<text x="482" y="170" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">species  1519 × 32</text>
+<text x="482" y="187" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">item      238 × 16</text>
+<text x="482" y="204" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">ability   318 × 16   (×4 lookups)</text>
+<text x="482" y="221" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">move      955 × 32   (×4 lookups)</text>
+<text x="482" y="238" font-size="12" fill="#94a3b8" text-anchor="start">row: 32 + 16 + 4·16 + 4·32 = 240</text>
+<text x="482" y="255" font-size="11.5" fill="#94a3b8" text-anchor="start">88,064 params</text>
+<rect x="470" y="330" width="370" height="150" rx="12" fill="#141c2e" stroke="#3b82f6" stroke-width="1.6" filter="url(#sh)"/>
+<rect x="470" y="330" width="370" height="30" rx="12" fill="#3b82f6" fill-opacity="0.9"/><rect x="470" y="348" width="370" height="12" fill="#3b82f6" fill-opacity="0.9"/>
+<text x="482" y="351" font-size="15" fill="#0b1020" font-weight="700" text-anchor="start">pokemon_net (shared ×12)</text>
+<text x="482" y="380" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">Linear 578 → 256  (338 + 240)</text>
+<text x="482" y="397" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">GELU</text>
+<text x="482" y="414" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">Linear 256 → 128</text>
+<text x="482" y="431" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">LayerNorm 128</text>
+<text x="482" y="448" font-size="11.5" fill="#94a3b8" text-anchor="start">181,376 params → 12 tokens [12, 128]</text>
+<rect x="470" y="494" width="370" height="132" rx="12" fill="#141c2e" stroke="#10b981" stroke-width="1.6" filter="url(#sh)"/>
+<rect x="470" y="494" width="370" height="30" rx="12" fill="#10b981" fill-opacity="0.9"/><rect x="470" y="512" width="370" height="12" fill="#10b981" fill-opacity="0.9"/>
+<text x="482" y="515" font-size="15" fill="#0b1020" font-weight="700" text-anchor="start">field_net</text>
+<text x="482" y="544" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">Linear 126 → 256 · GELU</text>
+<text x="482" y="561" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">Linear 256 → 128 · LayerNorm</text>
+<text x="482" y="578" font-size="11.5" fill="#94a3b8" text-anchor="start">65,664 params → 1 token</text>
+<rect x="470" y="640" width="370" height="150" rx="12" fill="#141c2e" stroke="#94a3b8" stroke-width="1.6" filter="url(#sh)"/>
+<rect x="470" y="640" width="370" height="30" rx="12" fill="#94a3b8" fill-opacity="0.9"/><rect x="470" y="658" width="370" height="12" fill="#94a3b8" fill-opacity="0.9"/>
+<text x="482" y="661" font-size="15" fill="#0b1020" font-weight="700" text-anchor="start">last_net</text>
+<text x="482" y="690" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">in 148 = 20 + 2 moves·32 + 2 species·32</text>
+<text x="482" y="707" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">Linear 148 → 256 · GELU</text>
+<text x="482" y="724" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">Linear 256 → 128 · LayerNorm</text>
+<text x="482" y="741" font-size="11.5" fill="#94a3b8" text-anchor="start">71,296 params → 1 token</text>
+<rect x="470" y="804" width="370" height="196" rx="12" fill="#141c2e" stroke="#a78bfa" stroke-width="1.6" filter="url(#sh)"/>
+<rect x="470" y="804" width="370" height="30" rx="12" fill="#a78bfa" fill-opacity="0.9"/><rect x="470" y="822" width="370" height="12" fill="#a78bfa" fill-opacity="0.9"/>
+<text x="482" y="825" font-size="15" fill="#0b1020" font-weight="700" text-anchor="start">+ token type + position</text>
+<text x="482" y="854" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">token_type  [14, 128]  (which slot)</text>
+<text x="482" y="871" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">position   [128, 128]  (decision index t)</text>
+<text x="482" y="888" font-size="12.5" fill="#cbd5e1" font-weight="700" text-anchor="start">tokens per decision:</text>
+<text x="482" y="905" font-size="11.5" fill="#cbd5e1" font-family="Consolas, Menlo, monospace" text-anchor="start">[0] field  [1–6] ours  [7–12] theirs  [13] last</text>
+<text x="482" y="922" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">→ x  [14, 128]</text>
+<text x="482" y="939" font-size="11.5" fill="#94a3b8" text-anchor="start">18,176 params</text>
+<path d="M442,300 L466,300" fill="none" stroke="#cbd5e1" stroke-width="2" marker-end="url(#a)"/>
+<path d="M442,650 L466,400" fill="none" stroke="#cbd5e1" stroke-width="2" marker-end="url(#a)"/>
+<path d="M442,810 L466,560" fill="none" stroke="#cbd5e1" stroke-width="2" marker-end="url(#a)"/>
+<path d="M442,960 L466,715" fill="none" stroke="#cbd5e1" stroke-width="2" marker-end="url(#a)"/>
+<rect x="870" y="120" width="400" height="960" rx="16" fill="url(#tf)" filter="url(#sh)"/>
+<text x="888" y="150" font-size="18" fill="#fff" font-weight="700" text-anchor="start">Transformer backbone</text>
+<text x="888" y="172" font-size="12.5" fill="#fde68a" text-anchor="start">memory: one field token per earlier decision</text>
+<text x="888" y="468" font-size="11.5" fill="#fde68a" text-anchor="start">training computes every decision of a game in one pass</text>
+<text x="888" y="484" font-size="11.5" fill="#fde68a" text-anchor="start">([T·14] sequence + a mask = the same concatenation)</text>
+<text x="888" y="196" font-size="13.5" fill="#fff" font-weight="700" text-anchor="start">Attention at each layer = a concatenation</text>
+<text x="898" y="230" font-size="11.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">keys / values  [≤ 64 + 14, 128]:</text>
+<rect x="900" y="238" width="12" height="12" rx="2" fill="#10b981"/>
+<rect x="915" y="238" width="12" height="12" rx="2" fill="#10b981"/>
+<rect x="930" y="238" width="12" height="12" rx="2" fill="#10b981"/>
+<rect x="945" y="238" width="12" height="12" rx="2" fill="#10b981"/>
+<rect x="960" y="238" width="12" height="12" rx="2" fill="#10b981"/>
+<rect x="975" y="238" width="12" height="12" rx="2" fill="#10b981"/>
+<rect x="990" y="238" width="12" height="12" rx="2" fill="#10b981"/>
+<rect x="1005" y="238" width="12" height="12" rx="2" fill="#10b981"/>
+<text x="1022" y="248" font-size="13" fill="#34d399" text-anchor="start">…</text>
+<rect x="1036" y="235" width="2" height="18" fill="#fde68a"/>
+<rect x="1044" y="238" width="12" height="12" rx="2" fill="#10b981"/>
+<rect x="1059" y="238" width="12" height="12" rx="2" fill="#3b82f6"/>
+<rect x="1074" y="238" width="12" height="12" rx="2" fill="#3b82f6"/>
+<rect x="1089" y="238" width="12" height="12" rx="2" fill="#3b82f6"/>
+<rect x="1104" y="238" width="12" height="12" rx="2" fill="#3b82f6"/>
+<rect x="1119" y="238" width="12" height="12" rx="2" fill="#3b82f6"/>
+<rect x="1134" y="238" width="12" height="12" rx="2" fill="#3b82f6"/>
+<rect x="1149" y="238" width="12" height="12" rx="2" fill="#ef4444"/>
+<rect x="1164" y="238" width="12" height="12" rx="2" fill="#ef4444"/>
+<rect x="1179" y="238" width="12" height="12" rx="2" fill="#ef4444"/>
+<rect x="1194" y="238" width="12" height="12" rx="2" fill="#ef4444"/>
+<rect x="1209" y="238" width="12" height="12" rx="2" fill="#ef4444"/>
+<rect x="1224" y="238" width="12" height="12" rx="2" fill="#ef4444"/>
+<rect x="1239" y="238" width="12" height="12" rx="2" fill="#94a3b8"/>
+<text x="960" y="268" font-size="11" fill="#34d399" text-anchor="middle">earlier field tokens</text>
+<text x="960" y="282" font-size="11" fill="#34d399" text-anchor="middle">t−64 … t−1</text>
+<text x="1148" y="268" font-size="11" fill="#fde68a" text-anchor="middle">this decision&#x27;s 14 tokens</text>
+<text x="1148" y="282" font-size="11" fill="#c4b5fd" text-anchor="middle">field · 6 ours · 6 theirs · last</text>
+<text x="898" y="310" font-size="11.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">queries  [14, 128]:</text>
+<rect x="1044" y="318" width="12" height="12" rx="2" fill="#10b981"/>
+<rect x="1059" y="318" width="12" height="12" rx="2" fill="#3b82f6"/>
+<rect x="1074" y="318" width="12" height="12" rx="2" fill="#3b82f6"/>
+<rect x="1089" y="318" width="12" height="12" rx="2" fill="#3b82f6"/>
+<rect x="1104" y="318" width="12" height="12" rx="2" fill="#3b82f6"/>
+<rect x="1119" y="318" width="12" height="12" rx="2" fill="#3b82f6"/>
+<rect x="1134" y="318" width="12" height="12" rx="2" fill="#3b82f6"/>
+<rect x="1149" y="318" width="12" height="12" rx="2" fill="#ef4444"/>
+<rect x="1164" y="318" width="12" height="12" rx="2" fill="#ef4444"/>
+<rect x="1179" y="318" width="12" height="12" rx="2" fill="#ef4444"/>
+<rect x="1194" y="318" width="12" height="12" rx="2" fill="#ef4444"/>
+<rect x="1209" y="318" width="12" height="12" rx="2" fill="#ef4444"/>
+<rect x="1224" y="318" width="12" height="12" rx="2" fill="#ef4444"/>
+<rect x="1239" y="318" width="12" height="12" rx="2" fill="#94a3b8"/>
+<path d="M1148,316 L1148,288" fill="none" stroke="#fde68a" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="1160" y="304" font-size="10.5" fill="#fde68a" text-anchor="start">attend to everything above</text>
+<text x="898" y="362" font-size="11.5" fill="#ede9fe" text-anchor="start">out [14, 128] → next layer; this decision&#x27;s field token at this</text>
+<text x="898" y="378" font-size="11.5" fill="#ede9fe" text-anchor="start">layer is stored and becomes memory for later decisions.</text>
+<text x="898" y="398" font-size="11.5" fill="#c4b5fd" text-anchor="start">Each layer keeps its own memory list (≤ 64 field tokens).</text>
+<text x="898" y="420" font-size="11.5" fill="#c4b5fd" text-anchor="start">Earlier decisions&#x27; other tokens (ours, theirs, last) are not</text>
+<text x="898" y="436" font-size="11.5" fill="#c4b5fd" text-anchor="start">in memory: the field token carries each past turn forward.</text>
+<rect x="888" y="510" width="364" height="400" rx="12" fill="#ffffff" fill-opacity="0.08" stroke="#c4b5fd" stroke-opacity="0.5"/>
+<text x="902" y="536" font-size="14" fill="#fff" font-weight="700" text-anchor="start">Block × 4   (199,472 params each)</text>
+<text x="906" y="566" font-size="13" fill="#ede9fe" font-family="Consolas, Menlo, monospace" text-anchor="start">LayerNorm 128</text>
+<text x="906" y="596" font-size="13" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">QKV  Linear 128 → 384</text>
+<text x="906" y="626" font-size="13" fill="#ede9fe" font-family="Consolas, Menlo, monospace" text-anchor="start">split 4 heads × 32</text>
+<text x="906" y="656" font-size="13" fill="#ede9fe" font-family="Consolas, Menlo, monospace" text-anchor="start">scaled dot-product attention</text>
+<text x="906" y="686" font-size="13" fill="#c4b5fd" font-family="Consolas, Menlo, monospace" text-anchor="start">   over [memory ‖ this decision]</text>
+<text x="906" y="716" font-size="13" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">out  Linear 128 → 128   + residual</text>
+<text x="906" y="746" font-size="13" fill="#ede9fe" font-family="Consolas, Menlo, monospace" text-anchor="start">LayerNorm 128</text>
+<text x="906" y="776" font-size="13" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">gate_up  Linear 128 → 688</text>
+<text x="906" y="806" font-size="13" fill="#ede9fe" font-family="Consolas, Menlo, monospace" text-anchor="start">SiLU(gate[344]) ⊙ up[344]</text>
+<text x="906" y="836" font-size="13" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">down  Linear 344 → 128   + residual</text>
+<text x="888" y="938" font-size="12.5" fill="#fff" font-family="Consolas, Menlo, monospace" text-anchor="start">final LayerNorm 128  →  h  [14, 128] per decision</text>
+<text x="888" y="972" font-size="12" fill="#c4b5fd" text-anchor="start">797,888 + 256 params</text>
+<text x="888" y="1004" font-size="12" fill="#ede9fe" text-anchor="start">live and training give identical outputs</text>
+<text x="888" y="1024" font-size="12" fill="#c4b5fd" text-anchor="start">~8 ms per decision on CPU (1 thread)</text>
+<path d="M842,900 L866,900" fill="none" stroke="#cbd5e1" stroke-width="2" marker-end="url(#a)"/>
+<rect x="1300" y="120" width="250" height="196" rx="12" fill="#141c2e" stroke="#fb7185" stroke-width="1.6" filter="url(#sh)"/>
+<rect x="1300" y="120" width="250" height="30" rx="12" fill="#fb7185" fill-opacity="0.9"/><rect x="1300" y="138" width="250" height="12" fill="#fb7185" fill-opacity="0.9"/>
+<text x="1312" y="141" font-size="15" fill="#0b1020" font-weight="700" text-anchor="start">opp-action readout</text>
+<text x="1540" y="140" font-size="11" fill="#0b1020" font-family="Consolas, Menlo, monospace" text-anchor="end">132,608</text>
+<text x="1312" y="170" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">query  q [128] (learned)</text>
+<text x="1312" y="187" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">MultiheadAttention 128, 4 heads</text>
+<text x="1312" y="204" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">keys/values: h (14)</text>
+<text x="1312" y="221" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">+ q (residual)</text>
+<text x="1312" y="238" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">FFN 128 → 256 → 128 + LN</text>
+<text x="1312" y="255" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">→ r [128]</text>
+<text x="1312" y="272" font-size="11.5" fill="#94a3b8" text-anchor="start">reads the board for them</text>
+<rect x="1300" y="400" width="250" height="196" rx="12" fill="#141c2e" stroke="#f59e0b" stroke-width="1.6" filter="url(#sh)"/>
+<rect x="1300" y="400" width="250" height="30" rx="12" fill="#f59e0b" fill-opacity="0.9"/><rect x="1300" y="418" width="250" height="12" fill="#f59e0b" fill-opacity="0.9"/>
+<text x="1312" y="421" font-size="15" fill="#0b1020" font-weight="700" text-anchor="start">our-action readout</text>
+<text x="1540" y="420" font-size="11" fill="#0b1020" font-family="Consolas, Menlo, monospace" text-anchor="end">132,608</text>
+<text x="1312" y="450" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">query  q [128] (learned)</text>
+<text x="1312" y="467" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">MultiheadAttention 128, 4 heads</text>
+<text x="1312" y="484" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">keys/values: h + r_opp (15)</text>
+<text x="1312" y="501" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">+ q (residual)</text>
+<text x="1312" y="518" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">FFN 128 → 256 → 128 + LN</text>
+<text x="1312" y="535" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">→ r [128]</text>
+<text x="1312" y="552" font-size="11.5" fill="#94a3b8" text-anchor="start">sees the opponent readout</text>
+<rect x="1300" y="860" width="250" height="196" rx="12" fill="#141c2e" stroke="#22d3ee" stroke-width="1.6" filter="url(#sh)"/>
+<rect x="1300" y="860" width="250" height="30" rx="12" fill="#22d3ee" fill-opacity="0.9"/><rect x="1300" y="878" width="250" height="12" fill="#22d3ee" fill-opacity="0.9"/>
+<text x="1312" y="881" font-size="15" fill="#0b1020" font-weight="700" text-anchor="start">value readout</text>
+<text x="1540" y="880" font-size="11" fill="#0b1020" font-family="Consolas, Menlo, monospace" text-anchor="end">132,608</text>
+<text x="1312" y="910" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">query  q [128] (learned)</text>
+<text x="1312" y="927" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">MultiheadAttention 128, 4 heads</text>
+<text x="1312" y="944" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">keys/values: h (14)</text>
+<text x="1312" y="961" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">+ q (residual)</text>
+<text x="1312" y="978" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">FFN 128 → 256 → 128 + LN</text>
+<text x="1312" y="995" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">→ r [128]</text>
+<text x="1312" y="1012" font-size="11.5" fill="#94a3b8" text-anchor="start"></text>
+<path d="M1272,220 L1296,220" fill="none" stroke="#cbd5e1" stroke-width="2" marker-end="url(#a)"/>
+<path d="M1272,500 L1296,500" fill="none" stroke="#cbd5e1" stroke-width="2" marker-end="url(#a)"/>
+<path d="M1272,950 L1296,950" fill="none" stroke="#cbd5e1" stroke-width="2" marker-end="url(#a)"/>
+<path d="M1425,318 L1425,396" fill="none" stroke="#fb7185" stroke-width="2" marker-end="url(#a)"/>
+<text x="1432" y="362" font-size="12" fill="#fb7185" font-family="Consolas, Menlo, monospace" text-anchor="start">r_opp</text>
+<rect x="1580" y="120" width="390" height="300" rx="12" fill="#141c2e" stroke="#fb7185" stroke-width="1.6" filter="url(#sh)"/>
+<rect x="1580" y="120" width="390" height="30" rx="12" fill="#fb7185" fill-opacity="0.9"/><rect x="1580" y="138" width="390" height="12" fill="#fb7185" fill-opacity="0.9"/>
+<text x="1592" y="141" font-size="15" fill="#0b1020" font-weight="700" text-anchor="start">① their action</text>
+<text x="1960" y="140" font-size="11" fill="#0b1020" font-family="Consolas, Menlo, monospace" text-anchor="end">54,145</text>
+<text x="1592" y="170" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">move_vec MLP 32 → 128 → 128 + LN</text>
+<text x="1592" y="187" font-size="11.5" fill="#cbd5e1" font-family="Consolas, Menlo, monospace" text-anchor="start">  over all 955 move embeddings → V [955, 128]</text>
+<text x="1592" y="204" font-size="11.5" fill="#94a3b8" text-anchor="start">  (cached when not training)</text>
+<text x="1592" y="221" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">moves:  (Linear 128→128 · r_opp) · Vᵀ / √128</text>
+<text x="1592" y="238" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">        → [955]</text>
+<text x="1592" y="255" font-size="12.5" fill="#fca5a5" text-anchor="start">  mask: learnset[their active] ∪ revealed</text>
+<text x="1592" y="272" font-size="11.5" fill="#94a3b8" text-anchor="start">  (table 1519 × 955 bool, 68,857 pairs)</text>
+<text x="1592" y="289" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">switch: (Linear 128→128 · r_opp) · h[8–12] / √128</text>
+<text x="1592" y="306" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">        → [5]  mask: present, HP &gt; 0</text>
+<text x="1592" y="323" font-size="12.5" fill="#cbd5e1" font-weight="700" text-anchor="start">softmax over [960] → p</text>
+<text x="1592" y="340" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">Mega:  Linear 128 → 1 (sigmoid), masked</text>
+<text x="1592" y="357" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">       unless they could Mega Evolve</text>
+<rect x="1580" y="434" width="390" height="430" rx="12" fill="#141c2e" stroke="#f59e0b" stroke-width="1.6" filter="url(#sh)"/>
+<rect x="1580" y="434" width="390" height="30" rx="12" fill="#f59e0b" fill-opacity="0.9"/><rect x="1580" y="452" width="390" height="12" fill="#f59e0b" fill-opacity="0.9"/>
+<text x="1592" y="455" font-size="15" fill="#0b1020" font-weight="700" text-anchor="start">② pair matrix → our policy</text>
+<text x="1960" y="454" font-size="11" fill="#0b1020" font-family="Consolas, Menlo, monospace" text-anchor="end">100,268</text>
+<text x="1592" y="484" font-size="12.5" fill="#cbd5e1" font-weight="700" text-anchor="start">keep: revealed moves, then top by p (4) + 5 switches</text>
+<text x="1592" y="501" font-size="11.5" fill="#94a3b8" text-anchor="start">p_kept renormalised · stop-gradient</text>
+<text x="1592" y="518" font-size="12.5" fill="#cbd5e1" font-weight="700" text-anchor="start">their vectors B [9, 32]:</text>
+<text x="1592" y="535" font-size="11.5" fill="#cbd5e1" font-family="Consolas, Menlo, monospace" text-anchor="start">  moves:   MLP [h_their_active ; V_m] 256→128→32</text>
+<text x="1592" y="552" font-size="11.5" fill="#cbd5e1" font-family="Consolas, Menlo, monospace" text-anchor="start">  switches: Linear 128 → 32 on h[8–12]</text>
+<text x="1592" y="569" font-size="12.5" fill="#cbd5e1" font-weight="700" text-anchor="start">our vectors A [11, 32]:</text>
+<text x="1592" y="586" font-size="11.5" fill="#cbd5e1" font-family="Consolas, Menlo, monospace" text-anchor="start">  moves:   MLP [h_our_active ; V_ourmove] 256→128→32</text>
+<text x="1592" y="603" font-size="11.5" fill="#cbd5e1" font-family="Consolas, Menlo, monospace" text-anchor="start">  Mega moves: A_move + mega_vec [32]</text>
+<text x="1592" y="620" font-size="11.5" fill="#cbd5e1" font-family="Consolas, Menlo, monospace" text-anchor="start">  switches: Linear 128 → 32 on h[2–4]</text>
+<text x="1592" y="637" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">base  c [11] = MLP r_us 128 → 128 → 11</text>
+<text x="1592" y="654" font-size="14" fill="#fbbf24" font-weight="700" font-family="Consolas, Menlo, monospace" text-anchor="start">M [11, 9] = c + A · Bᵀ</text>
+<text x="1592" y="676" font-size="14" fill="#fbbf24" font-weight="700" font-family="Consolas, Menlo, monospace" text-anchor="start">logits_i = Σ_j p_kept_j · M[i, j] / τ</text>
+<text x="1592" y="698" font-size="11.5" fill="#94a3b8" text-anchor="start">τ = exp(log_tau), learned (≈ 0.1 at update 490)</text>
+<text x="1592" y="715" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">illegal → −1e9 · probabilities capped at 0.99</text>
+<text x="1592" y="732" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">→ sample (training) / argmax (greedy live)</text>
+<text x="1592" y="749" font-size="11.5" fill="#94a3b8" text-anchor="start">M[i, j] = &#x27;how good my i is if they do j&#x27;:</text>
+<text x="1592" y="766" font-size="11.5" fill="#94a3b8" text-anchor="start">search can later overwrite cells</text>
+<rect x="1580" y="878" width="390" height="202" rx="12" fill="#141c2e" stroke="#22d3ee" stroke-width="1.6" filter="url(#sh)"/>
+<rect x="1580" y="878" width="390" height="30" rx="12" fill="#22d3ee" fill-opacity="0.9"/><rect x="1580" y="896" width="390" height="12" fill="#22d3ee" fill-opacity="0.9"/>
+<text x="1592" y="899" font-size="15" fill="#0b1020" font-weight="700" text-anchor="start">③ value</text>
+<text x="1960" y="898" font-size="11" fill="#0b1020" font-family="Consolas, Menlo, monospace" text-anchor="end">23,091</text>
+<text x="1592" y="928" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">MLP r_v 128 → 128 → 51</text>
+<text x="1592" y="945" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">support linspace(−1.6, 1.6, 51)</text>
+<text x="1592" y="962" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">V = Σ softmax(logits) · support</text>
+<text x="1592" y="979" font-size="12.5" fill="#fde68a" font-family="Consolas, Menlo, monospace" text-anchor="start">loss: two-hot cross-entropy</text>
+<text x="1592" y="996" font-size="12.5" fill="#cbd5e1" text-anchor="start">→ win chance (dashboard), team preview:</text>
+<text x="1592" y="1013" font-size="11.5" fill="#94a3b8" text-anchor="start">  60 lead/2nd/3rd picks, softmax τ 0.1, top-p 0.9</text>
+<path d="M1552,220 L1576,220" fill="none" stroke="#fb7185" stroke-width="2" marker-end="url(#a)"/>
+<path d="M1552,500 L1576,560" fill="none" stroke="#f59e0b" stroke-width="2" marker-end="url(#a)"/>
+<path d="M1552,950 L1576,950" fill="none" stroke="#22d3ee" stroke-width="2" marker-end="url(#a)"/>
+<path d="M1775,420 L1775,433" fill="none" stroke="#fb7185" stroke-width="2" marker-end="url(#a)"/>
+<text x="1786" y="431" font-size="10.5" fill="#fb7185" text-anchor="start">p, no gradient back</text>
 </svg>
