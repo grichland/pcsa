@@ -125,6 +125,8 @@ def matrix_view(raw, names: dict[str, str] | None = None, order=None, network=No
         "col_labels": [pretty(c, names) for c in cols],
         "col_kind": [str(k) for k in kinds] if isinstance(kinds, list) and len(kinds) == COLS else default_kinds,
         "shown": _flags(raw.get("shown"), COLS, False),
+        # which of their columns they can take at all (a fainted switch target is False); None in older records
+        "col_legal": _flags(raw.get("col_legal"), COLS, True) if isinstance(raw.get("col_legal"), list) else None,
         "p_cols": p_cols,
         "cells": grid,
         "probs": probs,

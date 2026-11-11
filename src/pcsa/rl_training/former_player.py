@@ -124,6 +124,7 @@ def matrix_notes(obs: fx.Obs, out: dict, probs: torch.Tensor, index: int) -> dic
         "cols": cols,
         "col_kind": ["move" if i < v else "switch" for i in kept],
         "shown": [i in shown for i in kept],
+        "col_legal": [bool(out["opp_logits"][i] > MASKED) for i in kept],  # False: fainted or absent
         "p_cols": [round(float(x), 3) for x in out["kept_p"].tolist()],
         "cells": [[round(float(x), 3) for x in row] for row in out["matrix"].tolist()],
         "probs": [round(float(x), 3) for x in probs[0].tolist()],

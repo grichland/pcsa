@@ -328,3 +328,15 @@ def test_the_page_has_the_control_of_the_trust_in_the_prediction() -> None:
         assert label in matrix
     for rule in (".mx-calt", ".mx-cnum.alt", ".mx-stepper", ".mx-opp-now"):
         assert rule in style
+
+
+def test_col_legal_passes_through_and_the_page_hides_columns_they_cannot_take() -> None:
+    record = json.loads((FIXTURE / "battle-3" / "decisions" / "0003-action.json").read_text(encoding="utf-8"))
+    notes = record["notes"]
+    assert notes_view(notes)["matrix"]["col_legal"] is None  # an older record: the page falls back to p = 0
+    flags = [True] * 8 + [False]
+    with_flags = {**notes, "matrix": {**notes["matrix"], "col_legal": flags}}
+    assert notes_view(with_flags)["matrix"]["col_legal"] == flags
+    bad = {**notes, "matrix": {**notes["matrix"], "col_legal": "yes"}}
+    assert notes_view(bad)["matrix"]["col_legal"] is None
+    assert "col_legal" in (STATIC / "matrix.js").read_text(encoding="utf-8")

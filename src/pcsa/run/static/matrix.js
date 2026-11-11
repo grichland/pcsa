@@ -338,7 +338,10 @@ function mxTotalsHead(what) {
 function mxGrid(m) {
   const megaLegal = m.legal.slice(MX.megaAt, MX.switchAt).some(Boolean);
   const rows = m.rows.map((_, i) => i).filter((i) => m.rows[i] && (rowKind(i) !== "mega" || megaLegal));
-  const cols = m.cols.map((_, j) => j).filter((j) => m.cols[j]);
+  // A column they cannot take is not drawn: an empty slot, or a switch target that has fainted (col_legal from the
+  // player; records without it: a switch slot the network gave exactly 0).
+  const open = (j) => (Array.isArray(m.col_legal) ? m.col_legal[j] !== false : !(m.col_kind[j] === "switch" && m.p_cols[j] === 0));
+  const cols = m.cols.map((_, j) => j).filter((j) => m.cols[j] && open(j));
   const ranks = {};
   [...cols].sort((a, b) => m.p_cols[b] - m.p_cols[a]).forEach((j, rank) => { ranks[j] = rank; });
   const what = mxWhatIf(m, cols, mxTop, mxOpp);
