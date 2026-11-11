@@ -15,7 +15,7 @@ The Showdown engine doubles as the simulator the players are measured in.
 
 [![The agent playing a ranked battle: the dashboard with the latest decision, the phone mirror and the tracked battle](docs/images/demo-poster.jpg)](https://www.youtube.com/watch?v=o6kFk4MY2VQ "Watch the demo on YouTube")
 
-*Click the image to watch on YouTube (1:50): the neural player plays a ranked battle on the phone while `pcsa watch` shows each decision, its confidence, the critic's value and the tracked battle state. Trainer names and session identifiers are blurred.*
+*Click the image to watch on YouTube (1:50): the neural player plays a ranked battle on the phone while `pcsa watch` shows each decision, its confidence, the critic's value and the tracked battle state (recorded with the first dashboard and network; the current ones are described below). Trainer names and session identifiers are blurred.*
 
 ![Season M-7 singles result: Master Ball tier, rank 4, final rating 1,561](docs/images/master-ball-tier.jpg)
 
@@ -121,15 +121,19 @@ uv run pcsa watch                                             # the newest run u
 uv run pcsa watch --run output\runs\<stamp>-run --port 8770   # a given run, another port; --no-browser to not open it
 ```
 
-It shows the two Pokémon on the field with their HP, the field and side conditions, the latest decision (the
-action sent, the legal alternatives, the degrade level, the player's own notes and the timing), every decision of
-the battle, the battle log, the opponent's revealed sets, your team, the record and rating over the run with one
-square per battle (click one to look at that battle), warnings and disconnects, and the newest saved phone frame.
-For the neural player the decision shows the probability of the chosen action and the entropy as meters, and a
-decision the fallback player made is marked with its reason. It also shows the critic's value of the position
-(notes `v`: the expected return, +1 a win and −1 a loss, with a rough win chance `(v + 1) / 2`) on the decision,
-on every row of the decision list and as a line over the battle; runs recorded before decisions carried it show
-none. The page only reads the run folder (it never
+It has four panels. On the left, the newest saved phone frame, and under it the neural player's decision matrix:
+the opponent's likeliest moves and their switches across the top (each with the probability the network gives it,
+and a mark on moves they have already shown), our actions down the side, every cell shaded by how good our action
+is against theirs, and our resulting policy as a bar per row. The action played is written large with the win
+chance (from the value, `(v + 1) / 2`), the chance they Mega Evolve and the decision time. Each new decision plays
+once as a short animation: their columns, the cells, our row bars, then the chosen row. A guard-rule override
+shows the rule and its reason and marks both the network's row and the row played; a decision the fallback player
+made shows its reason in place of the matrix. On the right: the record, the win rate over the run and over the
+last ten battles, the rating with one square per battle (click one to look at that battle) and the win-chance line
+of the current battle; the two teams, ours in blue facing theirs in red, with only what the battle has revealed
+about theirs and the field conditions between them; and the battle log by turn, which the run saves after every
+visit to the log. Warnings open from the top bar. Runs recorded by the first network have no matrix and say so.
+The page only reads the run folder (it never
 touches the phone), is picked once at start (start it again for a later run) and listens on this computer only.
 `scripts\run_agent.ps1` opens it next to a run when `$Watch = $true` is set at the top of the file (off by
 default).

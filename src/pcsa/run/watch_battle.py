@@ -1,6 +1,6 @@
 """What `pcsa watch` shows about the current battle: read from the newest `battle-N/decisions/` record.
 
-Each decision leaves `NNNN-<kind>.json` (schema pcsa-decision/1: request, order, notes) and, for tracked
+Each decision leaves `NNNN-<kind>.json` (schema pcsa-decision/2: request, order, notes) and, for tracked
 battles, `NNNN-<kind>.txt` (battle.state.battle_text). The page is read-only, so this module only parses.
 """
 

@@ -18,7 +18,7 @@ common  <-  battle  <-  phone | sim  <-  players  <-  run  <-  live  <-  cli
 | `run` | run records and their read-only view: battle bookkeeping, the recorder, `pcsa sim play`, the `pcsa watch` dashboard |
 | `live` | live play on the phone: device input, taps, navigation, session, turn pipeline, handlers, supervisor, `pcsa run` |
 | `sprite_training` | the sprite network's trainer, `pcsa train sprites` (needs the `train` extra; nothing at runtime imports it) |
-| `rl_training` | the neural player's network, inference only, copied from research/pcsa-rl/rl (each file names its source version): observations, the transformer, the 0.99 cap, team preview, the policy player. Needs torch (`train` extra); only `players.neural` imports it, lazily |
+| `rl_training` | the neural player's network (the poke-singles-former), inference only, copied from research/pcsa-rl/rl and rl2 (each file names its source version): guess-free observations, the turn parser, the transformer with its memory of earlier decisions, the opponent head and pair matrix, the 0.99 cap, team preview, and the policy player (propose, commit, restore). Needs torch (`train` extra); only `players.neural` imports it, lazily |
 
 The direction is enforced by `import-linter` (`.importlinter`) in CI. `phone` never imports `battle` state
 construction; `battle` never imports `phone`; that boundary is what makes the loop testable without a phone.
@@ -64,11 +64,15 @@ A local page over one run folder, in `run/watch*.py` with its page in `run/stati
 JavaScript; standard-library HTTP server on 127.0.0.1; no extra dependency, no torch, no phone or adb import).
 It only reads what a run already writes: `events.jsonl` (read incrementally, up to the last complete line),
 `manifest.json`, the newest file in `frames/`, and per battle `decisions/NNNN-<kind>.json` + `.txt`,
-`battle_log.txt` (or `log.txt` while the battle is on). A file that is missing or half written leaves its panel
-empty until it lands. `watch_events.py` keeps the record, rating, battle list, warnings and timeline;
-`watch_decisions.py` the decision rows and the players' notes; `watch_battle.py` the current battle from the
-newest decision record; `watch_field.py` weather, terrain and side conditions from its protocol;
-`watch_names.py` the written names of ids, taken from the record itself. The page polls `/api/state`
+`battle_log.txt` (or `log.txt`), which the live loop rewrites after every visit to the log. A file that is
+missing or half written leaves its panel empty until it lands. `watch_events.py` keeps the record, win rates,
+rating, battle list and warnings; `watch_decisions.py` the decision rows and the players' notes;
+`watch_matrix.py` the neural player's pair matrix of a decision (names, the row played, a guard-rule
+override); `watch_log.py` the battle log as turns; `watch_battle.py` the two teams from the newest decision
+record (the opponent's side shows revealed information only); `watch_field.py` weather, terrain and side
+conditions from its protocol; `watch_names.py` the written names of ids, taken from the record itself. The
+page has four panels: the phone frame over the decision matrix on the left; win rate, the teams (ours blue,
+theirs red) and the battle log on the right. A new decision plays once as an animation of the matrix. The page polls `/api/state`
 (`?battle=N` pins a battle) once a second and `/api/frame` when the frame changes.
 
 ## Device independence

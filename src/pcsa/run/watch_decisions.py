@@ -1,6 +1,6 @@
 """The decision records of one battle as `pcsa watch` lists them: `battle-N/decisions/NNNN-<kind>.json`.
 
-Each record (schema pcsa-decision/1) carries the choice, the order sent, the legal orders, the degrade rung and
+Each record (schema pcsa-decision/2) carries the choice, the order sent, the legal orders, the degrade rung and
 the player's own notes. Notes are shown as they are: the rule name and whatever numbers the player wrote. The
 neural player's are named (`p` the probability of the chosen action, `h` the normalised entropy, `v` the critic
 value, `ms`, `why` under the rule `neural:fallback`, the `matrix` of the decision, and on a guard-rule override
