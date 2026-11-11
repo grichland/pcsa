@@ -1,6 +1,8 @@
 # From research/pcsa-rl/rl/features.py (sha256 61303b72c917, 2026-11-08 20:15); keep diffable.
-"""Decision observations for the policy: 12 Pokémon rows [12, 318] + ids [12, 7], a field vector [126] and the
-legal-action mask [11], from the poke-env Battle a pcsa player sees (always the p1 view).
+# pcsa: the first network's own observation (their_rows with assumed sets, observe, preview_observations) is
+# removed with that network; what is left is what former_features builds on.
+"""Shared parts of a decision observation: our rows, their members in canonical order, the per-observation damage
+cache and the action mapping, from the poke-env Battle a pcsa player sees (always the p1 view).
 
 Canonical rows: 0 my active (or the member that just fainted), 1-2 my bench in request order (= switch actions
 8-9), 3-5 my unbrought (always empty: the Battle holds only the request's members); 6 their active (or the one
@@ -20,11 +22,10 @@ from poke_env.data.normalize import to_id_str
 
 from pcsa.battle import game
 from pcsa.players.base import LegalAction
-from pcsa.players.opponent import assumed, move_object, own_fighter, revealed_moves, set_fighter
-from pcsa.rl_training import features_field, features_log, features_rows
+from pcsa.players.opponent import own_fighter
+from pcsa.rl_training import features_rows
 from pcsa.rl_training.features_moves import hits, pp_fraction
 from pcsa.rl_training.features_rows import Row
-from pcsa.rl_training.spec import ACTIONS, POKEMON_FLOATS, POKEMON_IDS, ROWS
 
 MOVE_ACTIONS, MEGA_AT, SWITCH_AT = 4, 4, 8
 
@@ -137,71 +138,8 @@ def _their_members(battle, log) -> list[tuple[str | None, Any]]:
     return (seen + preview)[:6]
 
 
-def their_rows(battle, log, catalog, tracker) -> list[Row]:
-    members = _their_members(battle, log)
-    revealed = sum(1 for k, _ in members if k is not None)
-    rows = []
-    for k, mon in members:
-        chosen = assumed(battle, mon, catalog, tracker)
-        shown = revealed_moves(mon)[:4] if k is not None else []
-        ids = (shown + [m for m in chosen.moves if m not in shown])[:4]
-        moves = [mon.moves.get(i) or move_object(i) for i in ids]
-        active = k is not None and mon is battle.opponent_active_pokemon and not mon.fainted
-        rows.append(
-            Row(
-                mon,
-                False,
-                key=k,
-                chosen=chosen,
-                brought=float(k is not None),
-                not_brought=float(k is None and revealed >= 3),
-                active=active,
-                moves=moves,
-                known=[i in shown for i in ids],
-                fighter=set_fighter(battle, mon, chosen),
-            ).resolve(battle)
-        )
-    rows += [Row(None, False) for _ in range(6 - len(rows))]
-    return rows
-
-
-def _encode(ctx: _Ctx, mine: list[Row], theirs: list[Row], legal, cache: dict | None = None) -> tuple:
-    """(rows, ids, field). My rows face their active once it has been seen in battle; theirs face my active (at
-    preview: the lead). `cache` reuses row encodings across preview picks."""
-    rows = np.zeros((ROWS, POKEMON_FLOATS), dtype=np.float32)
-    ids = np.zeros((ROWS, POKEMON_IDS), dtype=np.int64)
-    my_opp = theirs[0] if theirs[0].mon is not None and theirs[0].key is not None else None
-    their_opp = mine[0] if mine[0].mon is not None else None
-    for i, row in enumerate(mine + theirs):
-        opp = my_opp if i < 6 else their_opp
-        k = (id(row), id(opp))
-        if cache is None or k not in cache:
-            encoded = features_rows.encode(ctx.battle, row, opp, ctx)
-            if cache is None:
-                rows[i], ids[i] = encoded
-                continue
-            cache[k] = encoded
-        rows[i], ids[i] = cache[k]
-    field = features_field.encode(ctx.battle, mine, theirs, legal, ctx.log, rows)
-    return _clean(rows), ids, _clean(field)
-
-
 def _clean(x: np.ndarray) -> np.ndarray:
     return np.nan_to_num(x, nan=0.0, posinf=2.0, neginf=-2.0).astype(np.float32, copy=False)
-
-
-def observe(battle, legal: Sequence[LegalAction], *, catalog, tracker) -> Obs:
-    """The observation of one decision."""
-    if tracker is not None:
-        tracker.observe(battle)
-    log = features_log.read(battle)
-    mine, theirs = my_rows(battle, legal), their_rows(battle, log, catalog, tracker)
-    rows, ids, field = _encode(_Ctx(battle, log, legal), mine, theirs, legal)
-    _remember_bench(battle)
-    mask = np.zeros(ACTIONS, dtype=bool)
-    for a in legal:
-        mask[action_index(a, battle)] = True
-    return Obs(rows, ids, field, mask)
 
 
 _BENCH: dict[int, int] = {}  # id(Pokemon) -> bench slot, from the battle of the last observe()
@@ -235,21 +173,3 @@ def legal_action(index: int, legal: Sequence[LegalAction], battle=None) -> Legal
         if action_index(a, battle) == index:
             return a
     raise ValueError(f"action {index} is not legal here")
-
-
-def preview_observations(battle, picks: Sequence[tuple[int, int, int]], *, catalog, tracker) -> list[Obs]:
-    """Turn-0 observations, one per (lead, second, third) pick: our trio with the lead active, their six."""
-    team = list(battle.team.values())
-    log = features_log.read(battle)
-    ctx, cache = _Ctx(battle, log, ()), {}
-    theirs = their_rows(battle, log, catalog, tracker)
-    lead_rows = {i: my_rows(battle, (), [team[i]], active=0)[0] for i in {p[0] for p in picks}}
-    bench_rows = {i: my_rows(battle, (), [team[i]], active=None)[0] for p in picks for i in p[1:]}
-    out = []
-    for lead, *rest in picks:
-        mine = [lead_rows[lead], *(bench_rows[i] for i in rest)]
-        mine += [Row(None, True) for _ in range(6 - len(mine))]
-        rows, ids, field = _encode(ctx, mine, theirs, (), cache)
-        rows[0, 147] = 1.0  # the lead
-        out.append(Obs(rows, ids, field, np.zeros(ACTIONS, dtype=bool)))
-    return out

@@ -25,7 +25,7 @@ from pcsa.battle.stats import form_of, known_ability
 from pcsa.players.base import LegalAction
 from pcsa.players.opponent import _base, _status, _types, move_object, own_fighter, revealed_item, revealed_moves
 from pcsa.rl_training import features as f1
-from pcsa.rl_training import features_field, features_log
+from pcsa.rl_training import features_field, features_log, spec
 from pcsa.rl_training import features_moves as fm
 from pcsa.rl_training import features_rows as fr
 from pcsa.rl_training import turns as tt
@@ -39,7 +39,7 @@ WIDTH = ROW + EXTRA
 IDS = 10  # species, item, ability, move 1-4 (S1's 7), possible abilities 1-3
 LAST = 20
 LAST_IDS = 4  # our move, our switch-in species, their move, their switch-in species
-ACTIONS = f1.ACTIONS
+ACTIONS = spec.ACTIONS
 ITEM_UNKNOWN_UPPER = 1.5  # the upper bound of an unrevealed item on their damage (Choice Band / Specs)
 STAT_DIV = fr.STAT_DIV
 STATS = fr.STATS

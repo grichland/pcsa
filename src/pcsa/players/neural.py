@@ -90,7 +90,7 @@ def resolve_checkpoint(raw: str, environ: Mapping[str, str] | None = None) -> Pa
 
 
 def load_policy(params: NeuralParams, path: Path) -> tuple[Any, dict]:
-    """(PolicyPlayer, facts about the checkpoint); ConfigError without torch, ValueError on a bad checkpoint."""
+    """(FormerPlayer, facts about the checkpoint); ConfigError without torch, ValueError on a bad checkpoint."""
     try:
         import torch
     except ImportError as error:
