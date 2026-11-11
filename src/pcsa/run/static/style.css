@@ -230,7 +230,7 @@ button[data-tip], summary[data-tip] { cursor: pointer; }
 .mx-rl .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mx-tag { flex: none; margin-left: auto; padding: 0 0.35rem; border-radius: 99px; font-size: 0.62rem; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; color: var(--you-ink); background: var(--surface); }
 .mx-tag.is-net { color: var(--muted); box-shadow: inset 0 0 0 1px var(--bar); }
-.mx-cell { border-radius: 0.3rem; background: var(--cell-mid); min-width: 0; }
+.mx-cell { border-radius: 0.3rem; background: var(--cell-mid); min-width: 0; display: grid; place-items: center; font-size: 0.82rem; font-weight: 650; font-variant-numeric: tabular-nums; color: var(--ink); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35); }
 .mx-cell.pos { background: color-mix(in srgb, var(--good) var(--a), var(--cell-mid)); }
 .mx-cell.neg { background: color-mix(in srgb, var(--bad) var(--a), var(--cell-mid)); }
 .mx-cell:hover { outline: 2px solid var(--ink); outline-offset: -1px; }
