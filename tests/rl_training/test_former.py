@@ -113,7 +113,7 @@ def test_the_notes_carry_the_matrix_with_every_revealed_move_as_a_column() -> No
         assert len(m["cols"]) == len(m["p_cols"]) == len(m["shown"]) == k + 5 and all(
             len(r) == k + 5 for r in m["cells"]
         )
-        assert m["col_kind"] == ["move"] * k + ["switch"] * 5
+        assert m["col_kind"] == ["move"] * k + ["switch"] * 5 and m["tau"] == 1.0  # an untrained network: tau 1
         shown = {name for name, yes in zip(m["cols"], m["shown"], strict=True) if yes}
         assert shown == {"dragondance", "outrage", "extremespeed"}
         assert abs(sum(m["p_cols"]) - 1.0) < 0.01 and abs(sum(m["probs"]) - 1.0) < 0.01
