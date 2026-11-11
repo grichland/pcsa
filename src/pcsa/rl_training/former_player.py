@@ -255,7 +255,7 @@ class FormerPlayer:
         self._notes = {"rule": "rl", "p": round(float(p.probs.max()), 4), "h": round(h, 4), "v": round(p.value, 4)}
         self._notes["matrix"] = matrix_notes(p.obs, p.out, p.probs, p.index)
         # tau: the policy is softmax over legal rows of (sum_j p_cols[j] * cells[i][j]) / tau
-        self._notes["matrix"]["tau"] = round(float(self.net.log_tau.exp()), 4)
+        self._notes["matrix"]["tau"] = round(float(self.net.log_tau.detach().exp()), 4)
         self._notes["decisions"] = int(p.cache.get("t", 0))
         if p.replaces:
             self._notes["retry"] = True
