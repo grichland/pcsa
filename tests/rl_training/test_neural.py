@@ -1,5 +1,5 @@
-"""The neural player: settings, checkpoint lookup, every fallback (no checkpoint, size mismatch, an error, a late
-answer, no time left), and (torch) synthetic S and M checkpoints playing preview and decisions."""
+"""The neural player: settings, checkpoint lookup, every fallback (no checkpoint, another network's checkpoint, an
+error, a late answer, no time left), and (torch) synthetic checkpoints playing preview and decisions."""
 
 from __future__ import annotations
 
@@ -22,10 +22,7 @@ from tests.conftest import REPO
 from tests.players.test_disciplined import battle as decision_battle
 from tests.rl_training.battles import preview_battle
 
-REAL = {
-    "S": Path(r"C:\Users\geral\Code\research\pcsa-rl\runs\s1\ckpt\latest.pt"),
-    "M": Path(r"C:\Users\geral\Code\research\pcsa-rl\runs\imitation\m-bc2\ckpt\best.pt"),
-}
+REAL = Path(r"C:\Users\geral\Code\research\pcsa-rl\runs\v2-scratch\ckpt\latest.pt")
 
 
 def view_of(b) -> DecisionView:
@@ -108,7 +105,7 @@ def fake_player(tmp_path: Path, policy: FakePolicy, **settings) -> NeuralPlayer:
     path = tmp_path / "fake.pt"
     path.write_bytes(b"x")
     params = replace(NeuralParams(), **settings)
-    return NeuralPlayer(params, MaxDamagePlayer(), path, loader=lambda p, c: (policy, {"size": "S"}))
+    return NeuralPlayer(params, MaxDamagePlayer(), path, loader=lambda p, c: (policy, {"d": 128}))
 
 
 def test_a_network_error_plays_the_fallback(tmp_path: Path) -> None:
@@ -151,17 +148,17 @@ def test_a_screen_level_decision_plays_the_fallback(tmp_path: Path) -> None:
 
 
 # torch ---------------------------------------------------------------------------------------------------
-def synthetic_checkpoint(tmp_path: Path, size: str, *, with_model: bool = True) -> Path:
+def synthetic_checkpoint(tmp_path: Path, d: int = 64, *, version: str | None = "v2") -> Path:
     import torch
 
-    from pcsa.rl_training.model import SIZES, Net
+    from pcsa.rl_training.former import Config, Net
 
     torch.manual_seed(0)
-    cfg = SIZES[size]
-    state = {"net": Net(cfg).state_dict(), "update": 7, "config": {"name": f"test-{size}", "size": size}}
-    if with_model:
-        state["model"] = asdict(cfg)
-    path = tmp_path / f"{size}.pt"
+    cfg = Config(d=d, layers=2)
+    state = {"net": Net(cfg).state_dict(), "update": 7, "config": {"name": f"test-{d}"}, "model": asdict(cfg)}
+    if version:
+        state["version"] = version
+    path = tmp_path / f"{d}-{version}.pt"
     torch.save(state, path)
     return path
 
@@ -171,10 +168,11 @@ def neural(path: Path, **settings) -> NeuralPlayer:
 
 
 @pytest.mark.torch
-@pytest.mark.parametrize("size", ["S", "M"])
-def test_synthetic_checkpoints_load_and_play(tmp_path: Path, size: str) -> None:
-    player = neural(synthetic_checkpoint(tmp_path, size, with_model=size == "S"))
-    assert player.error is None and player.facts == {"size": size, "update": 7, "run": f"test-{size}"}
+@pytest.mark.parametrize("d", [64, 96])
+def test_synthetic_checkpoints_load_and_play(tmp_path: Path, d: int) -> None:
+    player = neural(synthetic_checkpoint(tmp_path, d))
+    want = {"update": 7, "run": f"test-{d}", "d": d, "layers": 2, "columns": 9, "memory": 64}
+    assert player.error is None and player.facts == want
     team = player.choose_team(preview_view(), soon())
     assert len(team) == 3 and len(set(team)) == 3 and all(0 <= i < 6 for i in team)
     assert player.notes()["rule"] == "neural"
@@ -183,21 +181,23 @@ def test_synthetic_checkpoints_load_and_play(tmp_path: Path, size: str) -> None:
     notes = player.notes()
     assert notes["rule"] == "neural" and 0 < notes["p"] <= 0.99 and notes["ms"] >= 0
     assert isinstance(notes["v"], float) and -2.0 < notes["v"] < 2.0  # the critic's value, kept for the dashboard
+    matrix = notes["matrix"]  # the whole pair matrix, for the run records and the dashboard
+    assert len(matrix["cells"]) == 11 and len(matrix["cols"]) == 9 and matrix["legal"][matrix["chosen"]]
 
 
 @pytest.mark.torch
-def test_a_size_mismatch_plays_the_fallback(tmp_path: Path) -> None:
-    player = neural(synthetic_checkpoint(tmp_path, "S"), size="M")
-    assert player.error and "size mismatch" in player.error
+def test_a_checkpoint_of_another_network_plays_the_fallback(tmp_path: Path) -> None:
+    player = neural(synthetic_checkpoint(tmp_path, version=None))
+    assert player.error and "poke-singles-former" in player.error
     player.choose_action(view_of(decision_battle("Azumarill")), soon())
-    assert "size mismatch" in player.notes()["why"]
+    assert "poke-singles-former" in player.notes()["why"]
 
 
 @pytest.mark.torch
 def test_greedy_takes_the_most_likely_action_and_sample_draws(tmp_path: Path) -> None:
     import numpy as np
 
-    path = synthetic_checkpoint(tmp_path, "S")
+    path = synthetic_checkpoint(tmp_path)
     greedy, sampled = neural(path), neural(path, sampling="sample")
     b = decision_battle("Slowbro")
     view = view_of(b)
@@ -217,7 +217,7 @@ def test_greedy_preview_takes_the_best_value(tmp_path: Path) -> None:
 
     from pcsa.rl_training import preview
 
-    player = neural(synthetic_checkpoint(tmp_path, "S"), preview="greedy")
+    player = neural(synthetic_checkpoint(tmp_path), preview="greedy")
     view = preview_view()
     values = player.policy.preview_values(view.battle, preview.all_picks())
     assert player.choose_team(view, soon()) == list(preview.all_picks()[int(np.argmax(values))])
@@ -225,32 +225,55 @@ def test_greedy_preview_takes_the_best_value(tmp_path: Path) -> None:
 
 @pytest.mark.torch
 def test_a_same_turn_retry_replaces_the_last_decision(tmp_path: Path) -> None:
-    player = neural(synthetic_checkpoint(tmp_path, "S"))
+    player = neural(synthetic_checkpoint(tmp_path))
     player.choose_team(preview_view(), soon())
     first = player.choose_action(view_of(decision_battle("Azumarill")), soon())
-    assert player.policy.game.decisions == 1
+    assert player.policy.game.cache["t"] == 1
     again = player.choose_action(view_of(decision_battle("Azumarill")), soon())
-    assert again.message == first.message and player.policy.game.decisions == 1 and player.notes().get("retry")
-    player.choose_action(
-        view_of(decision_battle("Azumarill", [["|move|p1a: Azumarill|Aqua Jet|p2a: Dragonite"]])), soon()
-    )
-    assert player.policy.game.decisions == 2
+    assert again.message == first.message and player.policy.game.cache["t"] == 1 and player.notes().get("retry")
+    later = [["|move|p1a: Azumarill|Aqua Jet|p2a: Dragonite"]]
+    player.choose_action(view_of(decision_battle("Azumarill", later)), soon())
+    assert player.policy.game.cache["t"] == 2
 
 
 @pytest.mark.torch
-@pytest.mark.parametrize("size", ["S", "M"])
-def test_real_checkpoints_load(size: str) -> None:
-    if not REAL[size].is_file():
-        pytest.skip(f"no research checkpoint at {REAL[size]}")
-    player = neural(REAL[size])
-    assert player.error is None and player.facts["size"] == size
+def test_a_late_answer_leaves_no_trace_in_the_networks_memory(tmp_path: Path) -> None:
+    player = neural(synthetic_checkpoint(tmp_path))
+    player.choose_action(view_of(decision_battle("Azumarill")), soon())
+    proposal = player.policy.propose(
+        view_of(decision_battle("Azumarill", [["|move|p1a: Azumarill|Aqua Jet|p2a: Dragonite"]]))
+    )
+    assert proposal.cache["t"] == 2 and player.policy.game.cache["t"] == 1  # proposed, never committed
+
+
+@pytest.mark.torch
+def test_restore_rebuilds_the_memory_of_a_resumed_battle(tmp_path: Path) -> None:
+    path = synthetic_checkpoint(tmp_path)
+    later = [["|move|p1a: Azumarill|Aqua Jet|p2a: Dragonite"]]
+    played = neural(path)
+    played.choose_action(view_of(decision_battle("Azumarill")), soon())
+    want = played.choose_action(view_of(decision_battle("Azumarill", later)), soon())
+    resumed = neural(path)
+    assert resumed.restore([view_of(decision_battle("Azumarill"))]) == 1
+    got = resumed.choose_action(view_of(decision_battle("Azumarill", later)), soon())
+    assert got.message == want.message and resumed.notes()["decisions"] == 2
+    broken = NeuralPlayer(NeuralParams(), MaxDamagePlayer(), tmp_path / "absent.pt")
+    assert broken.restore([view_of(decision_battle("Azumarill"))]) == 0
+
+
+@pytest.mark.torch
+def test_the_research_checkpoint_loads() -> None:
+    if not REAL.is_file():
+        pytest.skip(f"no research checkpoint at {REAL}")
+    player = neural(REAL)
+    assert player.error is None and player.facts["d"] == 128 and player.facts["columns"] == 9
     view = view_of(decision_battle("Charizard"))
     assert player.choose_action(view, soon()) in view.legal and player.notes()["rule"] == "neural"
 
 
 @pytest.mark.torch
 def test_override_rules_replace_a_full_hp_heal_with_the_networks_next_choice(tmp_path: Path, monkeypatch) -> None:
-    path = synthetic_checkpoint(tmp_path, "S")
+    path = synthetic_checkpoint(tmp_path)
     player = NeuralPlayer(replace(NeuralParams(seed=0), rules=["no_full_heal"]), MaxDamagePlayer(), path)
     b = decision_battle("Slowbro")  # full HP, Slack Off legal
     proposal = player.policy.propose(view_of(b))

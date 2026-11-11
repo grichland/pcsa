@@ -1,11 +1,15 @@
-"""The neural player: a PPO / imitation checkpoint from the research runs (pcsa.rl_training), with a fallback.
+"""The neural player: a poke-singles-former checkpoint from the research runs (pcsa.rl_training), with a fallback.
 
 Settings in config/players/neural.yaml (NeuralParams). The network sees the Battle the loop gives it (in the
 simulator the arena's p1 view, on the phone the Battle rebuilt from the battle log) and decides team preview
 and every move or switch. The fallback kind (disciplined by default) decides instead, with the reason in the
-notes, whenever the network cannot: no checkpoint, an unreadable one or a size mismatch (found once, at build),
-no Battle (a screen-level decision), an exception, or no answer within the decision budget
+notes, whenever the network cannot: no checkpoint, an unreadable one or one of another network (found once, at
+build), no Battle (a screen-level decision), an exception, or no answer within the decision budget
 (min(max_decision_s, the deadline's remaining time - reserve_s)).
+
+The network's inputs hold no guessed opposing build. The guard rules do use one: this player keeps the build
+catalog (seen builds first) and an opponent tracker for them alone, loaded on the first decision with rules on.
+A battle resumed in a new process gets its memory back through `restore`.
 
 Guard rules (pcsa.players.neural_rules, the `rules` list) stop plainly wasted actions (a heal at full HP, Stealth
 Rock already up, a status move on a statused foe, a lock into moves that do nothing, a missed sure priority KO): the
@@ -18,7 +22,7 @@ from __future__ import annotations
 
 import os
 import threading
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import asdict, dataclass, field, fields, replace
 from pathlib import Path
 from typing import Any
@@ -35,14 +39,12 @@ from pcsa.players.base import DecisionView, LegalAction, Player, TeamPreviewView
 NETWORKS_ENV = "PCSA_NETWORKS"  # a folder relative checkpoint paths are looked up in first
 SAMPLING = ("greedy", "sample")
 PREVIEW = ("critic", "greedy")
-SIZES = ("S", "M", "L")
 TORCH_HINT = "the neural player needs torch: run `uv sync --extra train` (or `uv sync --inexact --extra train`)"
 
 
 @dataclass
 class NeuralParams:
     checkpoint: str = "assets/models/neural.pt"  # absolute, or relative to $PCSA_NETWORKS, then to the repo
-    size: str | None = None  # S | M | L; None: the checkpoint's own (a different one is a size mismatch)
     device: str = "cpu"
     sampling: str = "greedy"  # greedy: the most likely action; sample: training's capped (0.99) distribution
     temperature: float = 1.0  # of `sample`
@@ -70,8 +72,6 @@ class NeuralParams:
             raise ConfigError(f"{where}: sampling must be one of {SAMPLING}, not {self.sampling!r}")
         if self.preview not in PREVIEW:
             raise ConfigError(f"{where}: preview must be one of {PREVIEW}, not {self.preview!r}")
-        if self.size is not None and self.size not in SIZES:
-            raise ConfigError(f"{where}: size must be one of {SIZES} or null, not {self.size!r}")
         if self.fallback == "neural":
             raise ConfigError(f"{where}: the fallback cannot be the neural player itself")
         if self.temperature <= 0 or self.max_decision_s <= 0 or self.threads < 1:
@@ -95,18 +95,16 @@ def load_policy(params: NeuralParams, path: Path) -> tuple[Any, dict]:
         import torch
     except ImportError as error:
         raise ConfigError(TORCH_HINT) from error
-    from pcsa.battle.builds import Catalog
-    from pcsa.rl_training.model import Net
-    from pcsa.rl_training.player import PolicyPlayer, checkpoint_config, load_checkpoint
+    from pcsa.rl_training.former import Net
+    from pcsa.rl_training.former_player import FormerPlayer, checkpoint_config, load_checkpoint
 
     torch.set_num_threads(params.threads)
     state = load_checkpoint(path)
-    cfg, size = checkpoint_config(state, params.size)
+    cfg = checkpoint_config(state)
     temperature = params.temperature if params.sampling == "sample" else 0.0
-    policy = PolicyPlayer(
+    policy = FormerPlayer(
         Net(cfg),
         cfg,
-        catalog=Catalog.load(seen=True),  # builds seen on the live ladder first
         device=params.device,
         temperature=temperature,
         rng=params.seed,
@@ -114,7 +112,17 @@ def load_policy(params: NeuralParams, path: Path) -> tuple[Any, dict]:
         greedy_preview=params.preview == "greedy",
     )
     policy.load_state_dict(state["net"])
-    return policy, {"size": size, "update": state.get("update"), "run": (state.get("config") or {}).get("name")}
+    facts = {"update": state.get("update"), "run": (state.get("config") or {}).get("name")}
+    return policy, {**facts, "d": cfg.d, "layers": cfg.layers, "columns": cfg.top_k + 5, "memory": cfg.memory}
+
+
+def load_threat() -> tuple[Any, Any]:
+    """(build catalog with the builds seen on the live ladder first, opponent tracker), for the guard rules."""
+    from pcsa.battle.builds import Catalog
+    from pcsa.players.opponent import Tracker
+
+    catalog = Catalog.load(seen=True)
+    return catalog, Tracker(catalog)
 
 
 class NeuralPlayer:
@@ -127,8 +135,10 @@ class NeuralPlayer:
         checkpoint: Path,
         *,
         loader: Callable[[NeuralParams, Path], tuple[Any, dict]] = load_policy,
+        threat: Callable[[], tuple[Any, Any]] = load_threat,
     ) -> None:
         self.p, self.fallback, self.checkpoint = params, fallback, checkpoint
+        self._load_threat, self._threat = threat, None  # (catalog, tracker) of the guard rules, loaded on first use
         neural_rules.check(params.rules, "neural player")  # a bad rule name fails at build, not mid-battle
         self.policy: Any = None
         self.facts: dict = {}
@@ -163,6 +173,8 @@ class NeuralPlayer:
     def choose_team(self, view: TeamPreviewView, deadline: Deadline) -> list[int]:
         backup = self.fallback.choose_team(view, deadline)  # also resets the fallback's per-game state
         backup_notes = self.fallback.notes()
+        if self._threat is not None:
+            self._threat[1].reset()
         why = self.error or ("no battle at preview" if view.battle is None else None)
         if why is None:
             answer, why, ms = self._timed(lambda: self._preview(view, deadline), deadline)
@@ -201,14 +213,12 @@ class NeuralPlayer:
         if not self.p.rules:
             return proposal, {}
         try:
-            spot = neural_rules.Spot(
-                view.battle,
-                view.legal,
-                proposal.chosen,
-                self._ranked(view, proposal),
-                self.policy.catalog,
-                self.policy.tracker,
-            )
+            if self._threat is None:
+                self._threat = self._load_threat()
+            catalog, tracker = self._threat
+            tracker.observe(view.battle)
+            ranked = self._ranked(view, proposal)
+            spot = neural_rules.Spot(view.battle, view.legal, proposal.chosen, ranked, catalog, tracker)
             out = neural_rules.apply(self.p.rules, spot)
         except Exception as error:
             return proposal, {"override_error": f"{type(error).__name__}: {error}"}
@@ -233,6 +243,19 @@ class NeuralPlayer:
             if action not in out:
                 out.append(action)
         return out
+
+    def restore(self, views: Iterable[DecisionView]) -> int:
+        """Rebuild the network's memory from the views of this battle's earlier decisions, oldest first (a battle
+        resumed in a new process); returns how many decisions are in the memory (0 when the network is
+        unavailable). Never raises."""
+        if self.error or self.policy is None:
+            return 0
+        with self._lock:
+            try:
+                return int(self.policy.restore(views))
+            except Exception as error:
+                log.warning("neural_restore_failed", reason=f"{type(error).__name__}: {error}")
+                return 0
 
     def _fallback_notes(self, why: str | None, notes: dict) -> dict:
         """The fallback's own notes, its rule kept as fallback_rule, under rule neural:fallback with the reason."""
