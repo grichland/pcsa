@@ -12,7 +12,7 @@ import threading
 import webbrowser
 from datetime import UTC, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from urllib.parse import parse_qs, urlsplit
 
 from pcsa.common import paths
@@ -64,7 +64,8 @@ def player_view(manifest: dict) -> dict:
         if value is None:
             continue
         full = value if isinstance(value, str) else json.dumps(value, ensure_ascii=False, default=str)
-        short = Path(full).name if isinstance(value, str) and ("/" in full or "\\" in full) else full
+        # PureWindowsPath splits on both separators on every OS (a manifest written on Windows read on Linux).
+        short = PureWindowsPath(full).name if isinstance(value, str) and ("/" in full or "\\" in full) else full
         params.append({"key": str(key), "value": short, "full": full})
     by_key = {p["key"]: p["value"] for p in params}
     parts = [f"update {by_key[k]}" if k == "update" else by_key[k] for k in SUMMARY_KEYS if k in by_key]
