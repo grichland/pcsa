@@ -176,3 +176,26 @@ def test_a_new_tag_for_every_decision_keeps_the_memory() -> None:
     assert restored.restore(views) == 3
     live.reset()
     assert live.game.cache == {} and live.propose(view_of(GAME[0])).cache["t"] == 1
+
+
+def test_locked_into_one_move_the_network_can_only_repeat_it_or_switch() -> None:
+    """A Choice item (or Encore) leaves one move legal: the loop passes that move and the switches, the mask has
+    exactly those rows, and no other row can be chosen whatever the network prefers."""
+    full = view_of(GAME[1])
+    moves = [a for a in full.legal if a.action.kind == "move" and not a.action.mega]
+    assert len(moves) > 1
+    locked = moves[-1]
+    legal = (locked, *(a for a in full.legal if a.action.kind == "switch"))
+    view = DecisionView(legal, ScreenFacts(), Degrade.FULL, random.Random(0), full.battle)
+    for seed in range(8):
+        p = player(seed)
+        sampler = player(seed)
+        sampler.temperature = 1.0
+        chosen = p.choose_action(view, soon())
+        m = p.notes()["matrix"]
+        assert [i for i, ok in enumerate(m["legal"][:8]) if ok] == [locked.action.move]
+        assert sum(m["legal"][8:]) == len(legal) - 1
+        assert chosen.action in [a.action for a in legal] and m["legal"][m["chosen"]]
+        assert all(prob == 0 for prob, ok in zip(m["probs"], m["legal"], strict=True) if not ok)
+        drawn = {sampler.propose(view).chosen.action for _ in range(40)}
+        assert drawn <= {a.action for a in legal}
