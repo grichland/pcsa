@@ -11,7 +11,7 @@ It builds on the work below.
 | Champions item effects, move PP and learnable moves (`vocab.json`: Champions items, `champions_moves`) | `assets/game/vocab.json` | From the Pokémon Champions battle data published by [championsbattledata.com](https://championsbattledata.com). |
 | The simulator's team catalog (usage-ranked builds per species) | `assets/sets/top_builds.json` | Built from the Pokémon Champions ranked-usage statistics published by [championsbattledata.com](https://championsbattledata.com). Thanks to its maintainers for collecting and sharing the data. |
 | Sprite network weights and reference vectors | `assets/sprites/` | Trained by this project (`pcsa train sprites`, `docs/sprites.md`). No sprite images are distributed. |
-| A demo recording of this project's agent playing a ranked battle (trainer names, session identifiers and clocks blurred; no audio), its poster frame, and one screenshot of its ranked result (trainer name and ID masked) | `docs/media/pcsa-demo.mp4`, `docs/images/demo-poster.jpg`, `docs/images/master-ball-tier.jpg` | A screen from Pokémon Champions, © Nintendo / Creatures Inc. / GAME FREAK inc. / The Pokémon Company, shown for illustration only. |
+| The poster frame of a demo recording of this project's agent playing a ranked battle (trainer names, session identifiers and clocks blurred; the video itself is on YouTube), and one screenshot of its ranked result (trainer name and ID masked) | `docs/images/demo-poster.jpg`, `docs/images/master-ball-tier.jpg` | A screen from Pokémon Champions, © Nintendo / Creatures Inc. / GAME FREAK inc. / The Pokémon Company, shown for illustration only. |
 
 ## Downloaded by `pcsa setup`, not redistributed
 
