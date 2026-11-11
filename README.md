@@ -55,7 +55,8 @@ issue was fixed, and the known defects of the battle-log reader.
   that fits what the battle has revealed, with the builds seen on the live ladder first and then the usage-ranked
   catalog. After every live battle each opposing set it revealed is either covered by the catalog or added to
   `assets/sets/seen_builds.json` (`pcsa sets learn` does the same for recorded runs). The simulator's teams use the
-  catalog alone.
+  catalog alone. The neural player's network is the exception: it is given only what the battle has revealed and
+  predicts the opponent's action itself; only its guard rules and its fallback player use an assumed build.
 
 **Requirements:** Windows 10/11 and an Android phone with Pokémon Champions and USB debugging on; an NVIDIA GPU
 speeds up training the sprite network. Python, adb, scrcpy, the OCR models and the battle engine are installed for you.
@@ -124,7 +125,11 @@ uv run pcsa watch --run output\runs\<stamp>-run --port 8770   # a given run, ano
 It has four panels. On the left, the newest saved phone frame, and under it the neural player's decision matrix:
 the opponent's likeliest moves and their switches across the top (each with the probability the network gives it,
 and a mark on moves they have already shown), our actions down the side, every cell shaded by how good our action
-is against theirs, and our resulting policy as a bar per row. The action played is written large with the win
+is against theirs (the score is printed in each cell), and our resulting policy as a bar per row. A score per row
+is the row's cells weighted by their probabilities, which is what the network ranks our actions by; a "for them"
+total per column says how each of their actions turns out for them over what we are likely to do. A control
+(All / Top 5 / 3 / 2 / 1) recomputes the scores over only their most likely actions and says which action that
+would pick: a what-if on the page, not a change to the player. The action played is written large with the win
 chance (from the value, `(v + 1) / 2`), the chance they Mega Evolve and the decision time. Each new decision plays
 once as a short animation: their columns, the cells, our row bars, then the chosen row. A guard-rule override
 shows the rule and its reason and marks both the network's row and the row played; a decision the fallback player
@@ -135,8 +140,8 @@ about theirs and the field conditions between them; and the battle log by turn, 
 visit to the log. Warnings open from the top bar. Runs recorded by the first network have no matrix and say so.
 The page only reads the run folder (it never
 touches the phone), is picked once at start (start it again for a later run) and listens on this computer only.
-`scripts\run_agent.ps1` opens it next to a run when `$Watch = $true` is set at the top of the file (off by
-default).
+`scripts\run_agent.ps1` opens it next to a run (`$Watch = $true` at the top of the file, the default; set it to
+`$false` to run without the page).
 
 **Neural player.** `neural` plays a poke-singles-former checkpoint from the research runs (`research/pcsa-rl`:
 `runs/<run>/ckpt/*.pt`; the model's size is read from the checkpoint). It needs torch (`uv sync --inexact --extra train`; `pcsa setup --with
@@ -145,9 +150,14 @@ train` installs it too) and runs on the CPU. Point it at a network with one over
 checkpoints in `assets/models/` (create the folder; its `.pt` files are not committed):
 
 ```
-uv run pcsa sim play --a neural --b disciplined --battles 100 --set policy.neural_checkpoint=assets/models/poke-singles-former.pt
-uv run pcsa run --player neural --battles 10 --set policy.neural_checkpoint=assets/models/poke-singles-former.pt
+uv run pcsa sim play --a neural --b disciplined --battles 100 --set policy.neural_checkpoint=assets/models/poke-transformer-general-800.pt
+uv run pcsa run --player neural --battles 10 --set policy.neural_checkpoint=assets/models/team2.pt
 ```
+
+`poke-transformer-general-800.pt` is the general network (update 800 of the training run, any team); `team1.pt`,
+`team2.pt` and `team3.pt` are the same network trained a little further with one of the account's three teams on
+its side of every battle. `config/players/neural.yaml` names the general one; `scripts\run_agent.ps1` runs the
+neural player unless `$Player` is changed.
 
 ![The neural player's network: 12 Pokémon, the field and the last turn become 14 tokens per decision; a transformer with a memory of earlier decisions feeds three readouts; the network first predicts the opponent's action, then scores each of its own actions against each predicted one in a matrix, and a value head estimates the win chance](docs/images/network.svg)
 
@@ -177,6 +187,16 @@ distribution) and training's team preview (the critic scores all 60 lead/second/
 top-p 0.9; `preview: greedy` takes the best). Whenever the network cannot decide (no or unreadable checkpoint,
 a checkpoint of another network, no tracked Battle, an error, slower than `max_decision_s` or the turn deadline) the
 `fallback` kind (`disciplined`) decides, and the decision's notes say why (`rule: neural:fallback`, `why`).
+
+Two temperatures can be set for play without touching the checkpoint. `temperature` applies to `sampling: sample`
+only: it multiplies the network's own policy temperature, so 2.0 draws from a flatter distribution (under `greedy`
+it changes nothing, the top action stays the top action). `opponent_temperature` applies to the prediction of the
+opponent's action where it weights the matrix: above 1 the choice hedges against their less likely actions, below
+1 it trusts the favourite more, and this does change the action played under `greedy`. Both are 1.0 by default.
+
+The network remembers a battle through one stored token per earlier decision. A same-turn retry replaces the last
+decision instead of adding one, an answer that arrives too late leaves no trace, and a battle picked up again
+after a restart gets its memory rebuilt from the run's saved decision records.
 
 Four guard rules (`rules` in `config/players/neural.yaml`, on by default) stop plainly wasted actions: a heal at
 full HP, a hazard already up or a status move on an already statused foe, a lock into moves that do nothing, and a
