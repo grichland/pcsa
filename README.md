@@ -196,7 +196,9 @@ opponent's action where it weights the matrix: above 1 the choice hedges against
 1 it trusts the favourite more, and this does change the action played under `greedy`. `neural.yaml` sets it to
 1.3, the value at which the prediction's confidence matches how often it was right on 295 recorded ladder battles
 (as trained, 1.0, it was 48% sure of its top guess and right 38% of the time against real people); `temperature`
-is 1.0.
+is 1.0. `opponent_top` weighs our options against only their N likeliest actions instead of all nine columns
+(`neural.yaml`: 3; 0 is all of them, as trained). It was chosen from the dashboard's what-if on live games and
+has not been measured in the simulator yet.
 
 The network remembers a battle through one stored token per earlier decision. A same-turn retry replaces the last
 decision instead of adding one, an answer that arrives too late leaves no trace, and a battle picked up again

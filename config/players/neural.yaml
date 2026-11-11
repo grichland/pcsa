@@ -2,7 +2,7 @@
 # (research/pcsa-rl, network code in src/pcsa/rl_training). Needs torch: `uv sync --extra train`.
 # Point a run at another network without editing this file: --set policy.neural_checkpoint=<path>
 # (or the environment variable PCSA__policy__neural_checkpoint=<path>).
-checkpoint: assets/models/poke-transformer-general-800.pt  # team1.pt / team2.pt / team3.pt: the per-team networks; relative to the repo (or to $PCSA_NETWORKS when the file is there), or absolute
+checkpoint: assets/models/team2.pt  # team1.pt / team2.pt / team3.pt: the per-team networks; relative to the repo (or to $PCSA_NETWORKS when the file is there), or absolute
 device: cpu
 sampling: greedy                # greedy: the most likely action; sample: training's capped (0.99) distribution
 temperature: 1.0                # of `sample`
@@ -14,6 +14,9 @@ opponent_temperature: 1.3       # how much to trust the prediction of their acti
                                 # Against simulator opponents it made no measurable difference (1,050 battles).
 preview: critic                 # critic: training's softmax(value / 0.1), top-p 0.9 nucleus; greedy: the best value
 fallback: disciplined           # decides when the network cannot: no or bad checkpoint, no Battle, an error, too slow
+opponent_top: 3                 # weigh our options against only their 3 likeliest actions (0 = all of them, as
+                                # trained). Set from the dashboard's what-if on live games (user, 11 Nov); not
+                                # yet measured in the simulator.
 max_decision_s: 5.0             # a decision (or team preview) taking longer than this goes to the fallback
 reserve_s: 0.5                  # deadline time kept for the fallback
 threads: 1                      # torch CPU threads

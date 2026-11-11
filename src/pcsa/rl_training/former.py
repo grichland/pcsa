@@ -116,6 +116,8 @@ class Net(nn.Module):
         # Inference only (training keeps 1): the temperature of their action distribution where it weights the
         # matrix columns. Above 1 hedges against their less likely actions, below 1 trusts the favourite more.
         self.opp_temperature = 1.0
+        # Inference only (training keeps 0 = all): weigh our actions against only their N likeliest kept actions.
+        self.opp_top = 0
         self.value = _mlp(d, (d,), BINS, norm=False)
         self.register_buffer("support", torch.linspace(VMIN, VMAX, BINS), persistent=False)
         self.register_buffer("learnset", learnset_table(), persistent=False)
@@ -229,9 +231,14 @@ class Net(nn.Module):
         a_moves = self.a_move(torch.cat([ours, moves[ids[:, 0, 3:7]]], dim=-1))  # [B, 4, r]
         a_vec = torch.cat([a_moves, a_moves + self.mega_vec, self.a_switch(h[:, OUR_BENCH])], dim=1)  # [B, 11, r]
         m = self.base(r)[:, :, None] + a_vec @ b_vec.transpose(1, 2)  # [B, 11, K+5]
-        logits = (m * kept_p[:, None, :]).sum(-1) / self.log_tau.exp()
+        used = kept_p
+        if self.opp_top:  # their N likeliest kept actions only, renormalised
+            best = kept_p.topk(min(int(self.opp_top), kept_p.shape[-1]), dim=-1).indices
+            used = kept_p * torch.zeros_like(kept_p).scatter_(1, best, 1.0)
+            used = used / used.sum(-1, keepdim=True).clamp_min(1e-9)
+        logits = (m * used[:, None, :]).sum(-1) / self.log_tau.exp()
         logits = torch.where(mask, logits, torch.full_like(logits, NEG))
-        return {"logits": logits, "matrix": m, "kept_idx": kept_idx, "kept_p": kept_p}
+        return {"logits": logits, "matrix": m, "kept_idx": kept_idx, "kept_p": kept_p, "kept_w": used}
 
     # One game, step by step (inference) --------------------------------------------------------------------------
     @torch.no_grad()

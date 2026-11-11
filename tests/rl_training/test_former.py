@@ -240,3 +240,27 @@ def test_the_opponent_temperature_reweights_their_columns_and_nothing_else() -> 
     assert all(abs(x - y) < 0.01 for x, y in zip(b["p_cols"], want, strict=True))
     assert max(b["p_cols"]) < max(a["p_cols"])  # flatter
     assert player(2).net.opp_temperature == 1.0
+
+
+def test_opponent_top_weighs_only_their_likeliest_actions() -> None:
+    """With opponent_top = 3 the three most probable kept actions carry all the weight, renormalised; the columns,
+    their probabilities and the cells are recorded as before, and the policy follows the weights used."""
+    import math
+
+    plain, top3 = player(4), player(4, opponent_top=3)
+    plain.choose_action(view_of(GAME[2]), soon())
+    top3.choose_action(view_of(GAME[2]), soon())
+    a, b = plain.notes()["matrix"], top3.notes()["matrix"]
+    assert (a["opp_top"], b["opp_top"]) == (0, 3) and a["w_cols"] == a["p_cols"]
+    assert a["cols"] == b["cols"] and a["cells"] == b["cells"] and a["p_cols"] == b["p_cols"]
+    order = sorted(range(len(b["p_cols"])), key=lambda j: -b["p_cols"][j])
+    used = [j for j, w in enumerate(b["w_cols"]) if w > 0]
+    assert sorted(used) == sorted(order[:3]) and abs(sum(b["w_cols"]) - 1.0) < 0.01
+    total = sum(b["p_cols"][j] for j in order[:3])
+    assert all(abs(b["w_cols"][j] - b["p_cols"][j] / total) < 0.01 for j in order[:3])
+    legal = [i for i, ok in enumerate(b["legal"]) if ok]
+    score = {i: sum(w * c for w, c in zip(b["w_cols"], b["cells"][i], strict=True)) for i in legal}
+    top = max(score.values())
+    e = {i: math.exp((v - top) / b["tau"]) for i, v in score.items()}
+    assert all(abs(e[i] / sum(e.values()) - b["probs"][i]) < 0.03 for i in legal)
+    assert player(4).net.opp_top == 0

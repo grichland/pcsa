@@ -134,5 +134,6 @@ def matrix_view(raw, names: dict[str, str] | None = None, order=None, network=No
         "played": played if played is not None else chosen,
         "mega_p": _number(raw.get("mega_p")),
         "tau": _positive(raw.get("tau")),
+        "opp_top": raw.get("opp_top") if type(raw.get("opp_top")) is int and raw["opp_top"] >= 0 else None,
         "opp_temperature": _positive(raw.get("opp_temperature")),
     }
