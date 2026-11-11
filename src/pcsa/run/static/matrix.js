@@ -1,15 +1,68 @@
 /* pcsa watch: the decision matrix. Their kept actions run across the top (4 moves, then 5 switches) with the
    probability of each; our 11 actions run down the side (4 moves, the same 4 with Mega Evolution, 3 switches).
-   A cell says how good our action is if they answer with that column; the bar on the right is our final policy.
+   A cell says how good our action is if they answer with that column. SCORE is a row weighed by their
+   probabilities, the bar on the right is our final policy, and FOR THEM is a column weighed by our policy.
+   "Their actions considered" weighs only their N most likely actions and shows what we would then pick.
    A new decision plays once: columns, cells (most likely column first), row bars, then the row played. */
 const MX = { megaAt: 4, switchAt: 8, reach: 1.2 };
 const MX_T = { col: 35, cells: 420, rank: 55, row: 7, bars: 960, bar: 22, ring: 1380, overrideGap: 620, done: 3200 };
+const MX_TOPS = [0, 5, 3, 2, 1]; // their actions considered: 0 is all of them
+const MX_TOP_KEY = "pcsa-mx-top";
 const KIND = { forced: "forced switch", action: "turn action", team: "team preview" };
 const mxSeen = new Set(); // "battle:sequence" of every decision already drawn: none of them animates again
 let mxTimer = null;
+let mxTop = mxReadTop();
+let mxShown = null; // the matrix on screen: the control redraws it without a new decision
 
 const orderLabel = (kind, label) => (kind === "switch" ? `⇄ ${label}` : label);
 const rowKind = (i) => (i >= MX.switchAt ? "switch" : i >= MX.megaAt ? "mega" : "move");
+const rowName = (m, i) => orderLabel(rowKind(i) === "switch" ? "switch" : "move", m.row_labels[i]);
+const topName = (top) => (top ? `Top ${top}` : "All");
+const mxNum = (v, digits = 2) => signed(Number(v.toFixed(digits)), digits); // never "−0.00"
+const mxBest = (keys, of) => keys.reduce((best, k) => (best === null || of[k] > of[best] ? k : best), null);
+
+/** The choice of "their actions considered": ?top=N in the address, else the one remembered, else all. */
+function mxReadTop() {
+  let raw = new URLSearchParams(location.search).get("top");
+  try { raw = raw ?? localStorage.getItem(MX_TOP_KEY); } catch (e) { /* storage blocked: all of them */ }
+  const top = raw === null || raw === "" ? 0 : Number(raw);
+  return MX_TOPS.includes(top) ? top : 0;
+}
+
+/** What the matrix says when only their `top` most likely columns count (0: all of them, as the network does).
+    weight: p_j, or p_j / Σ p of the columns kept; score_i = Σ_j weight_j · cells[i][j] over the legal rows;
+    best: the row with the highest score; policy: softmax(score / tau) over the legal rows, when tau is known. */
+function mxWhatIf(m, cols, top) {
+  const ranked = [...cols].sort((a, b) => m.p_cols[b] - m.p_cols[a] || a - b);
+  const used = top ? ranked.slice(0, top) : ranked;
+  const mass = used.reduce((sum, j) => sum + m.p_cols[j], 0);
+  const weight = {};
+  used.forEach((j) => { weight[j] = !top ? m.p_cols[j] : mass > 0 ? m.p_cols[j] / mass : 1 / used.length; });
+  const legal = m.legal.map((ok, i) => (ok && m.rows[i] ? i : -1)).filter((i) => i >= 0);
+  const score = {};
+  legal.forEach((i) => { score[i] = used.reduce((sum, j) => sum + weight[j] * m.cells[i][j], 0); });
+  const best = mxBest(legal, score);
+  let policy = null;
+  if (isNum(m.tau) && m.tau > 0 && best !== null) {
+    const raised = legal.map((i) => Math.exp((score[i] - score[best]) / m.tau));
+    const total = raised.reduce((sum, x) => sum + x, 0);
+    policy = {};
+    legal.forEach((i, at) => { policy[i] = raised[at] / total; });
+  }
+  return { top, used: new Set(used), weight, legal, score, best, policy };
+}
+
+/** Each column from their side: value_j = −Σ_i probs[i] · cells[i][j] over our legal rows (what it brings them
+    against our policy), mean_j = −(plain mean of the column), their best column and the one we think most likely. */
+function mxForThem(m, legal, cols) {
+  const value = {};
+  const mean = {};
+  cols.forEach((j) => {
+    value[j] = -legal.reduce((sum, i) => sum + m.probs[i] * m.cells[i][j], 0);
+    mean[j] = legal.length ? -legal.reduce((sum, i) => sum + m.cells[i][j], 0) / legal.length : 0;
+  });
+  return { value, mean, best: legal.length ? mxBest(cols, value) : null, likely: mxBest(cols, m.p_cols) };
+}
 
 function mxStat(label, value, message, fraction, tone) {
   const stat = tip(node("span", `mx-stat${tone ? ` ${tone}` : ""}`), message);
@@ -56,8 +109,23 @@ function mxBanner(decision) {
   }
 }
 
-function mxColumn(m, j, order, top) {
-  const col = node("div", `mx-col is-${m.col_kind[j] === "switch" ? "switch" : "move"}`);
+/** The readout next to the control: the row with the highest SCORE, and whether the network chose another. */
+function mxPickLine(m, g) {
+  const line = el("mx-pick");
+  const { what, ref, differs } = g;
+  line.className = `mx-pick${differs ? " is-diff" : ""}`;
+  if (what.best === null) return line.replaceChildren();
+  const tail = differs ? `instead of ${rowName(m, ref)}` : ref === null ? "" : "same as the network";
+  line.replaceChildren(node("small", "", differs ? `${topName(what.top).toUpperCase()} WOULD PICK` : "WOULD PICK"), node("b", "", rowName(m, what.best)), node("span", "", tail));
+  const scope = what.top ? `only their ${what.top === 1 ? "most likely action" : `${what.top} most likely actions`}` : "all their actions";
+  const verdict = differs ? `; the network chose ${rowName(m, ref)} (SCORE ${mxNum(what.score[ref] ?? 0)} here)` : ref === null ? "" : ", the action the network chose";
+  const noTau = what.policy ? "" : " This record has no temperature, so the policy under this setting cannot be shown.";
+  return tip(line, `Weighing ${scope}, the highest SCORE is ${rowName(m, what.best)} (${mxNum(what.score[what.best])})${verdict}.${noTau}`);
+}
+
+function mxColumn(m, j, order, top, what) {
+  const used = what.used.has(j);
+  const col = node("div", `mx-col is-${m.col_kind[j] === "switch" ? "switch" : "move"}${used ? "" : " is-off"}`);
   col.style.setProperty("--d", `${order * MX_T.col}ms`);
   const bar = node("span", "mx-cbar");
   const fill = node("i");
@@ -67,13 +135,15 @@ function mxColumn(m, j, order, top) {
   if (m.shown[j]) name.append(node("i", "dot-shown"));
   name.append(node("span", "", m.col_labels[j]));
   col.append(node("b", "mx-cnum", pct(m.p_cols[j])), bar, name);
-  const what = m.col_kind[j] === "switch" ? `They switch to ${m.col_labels[j]}` : `They use ${m.col_labels[j]}`;
-  return tip(col, `${what}: ${pct(m.p_cols[j])} likely${m.shown[j] ? " (a move they have already shown)" : m.col_kind[j] === "switch" ? "" : " (not shown yet: the network expects it)"}`);
+  const does = m.col_kind[j] === "switch" ? `They switch to ${m.col_labels[j]}` : `They use ${m.col_labels[j]}`;
+  const counted = !what.top ? "" : used ? ` · counts for ${pct(what.weight[j])} under ${topName(what.top)}` : ` · left out under ${topName(what.top)}`;
+  return tip(col, `${does}: ${pct(m.p_cols[j])} likely${m.shown[j] ? " (a move they have already shown)" : m.col_kind[j] === "switch" ? "" : " (not shown yet: the network expects it)"}${counted}`);
 }
 
-function mxCell(m, i, j, rank, rowOrder) {
+function mxCell(m, i, j, rank, rowOrder, what) {
   const v = m.cells[i][j];
-  const cell = node("span", "mx-cell");
+  const used = what.used.has(j);
+  const cell = node("span", `mx-cell${used ? "" : " is-off"}`);
   cell.tabIndex = -1;
   cell.setAttribute("role", "cell");
   if (!m.legal[i]) return cell;
@@ -85,36 +155,104 @@ function mxCell(m, i, j, rank, rowOrder) {
   }
   cell.style.setProperty("--d", `${MX_T.cells + rank * MX_T.rank + rowOrder * MX_T.row}ms`);
   const verdict = v > 0.03 ? "good for us" : v < -0.03 ? "bad for us" : "even";
-  return tip(cell, `${m.row_labels[i]} against ${m.col_labels[j]}: ${signed(v, 2)} (${verdict}) · they do this ${pct(m.p_cols[j])} of the time`);
+  return tip(cell, `${m.row_labels[i]} against ${m.col_labels[j]}: ${signed(v, 2)} (${verdict}) · they do this ${pct(m.p_cols[j])} of the time${used ? "" : ` · left out under ${topName(what.top)}`}`);
 }
 
-function mxRow(m, i, cols, ranks, rowOrder, top, groupStart) {
-  const kind = rowKind(i);
-  const overridden = m.played !== m.chosen;
-  const row = node("div", `mx-row is-${kind}${m.legal[i] ? "" : " is-illegal"}${i === m.played ? " is-played" : ""}${overridden && i === m.chosen ? " is-network" : ""}${groupStart ? " is-group" : ""}`);
-  row.setAttribute("role", "row");
-  const label = node("span", "mx-rl");
-  label.append(node("span", "nm", orderLabel(kind === "switch" ? "switch" : "move", m.row_labels[i])));
-  if (overridden && i === m.chosen) label.append(node("span", "mx-tag is-net", "network"));
-  if (overridden && i === m.played) label.append(node("span", "mx-tag", "played"));
-  tip(label, `${kind === "switch" ? `Switch to ${m.row_labels[i]}` : m.row_labels[i]}: ${m.legal[i] ? `our policy gives it ${pct(m.probs[i])}` : "not legal this turn"}${i === m.played ? " · the action played" : ""}${overridden && i === m.chosen ? " · the network's choice, replaced by a guard rule" : ""}`);
-  row.append(label);
-  cols.forEach((j, at) => {
-    if (at > 0 && m.col_kind[j] !== m.col_kind[cols[at - 1]]) row.append(node("span", "mx-div"));
-    row.append(mxCell(m, i, j, ranks[j], rowOrder));
-  });
+/** The row's SCORE: its cells weighed by the probabilities of their actions in use. */
+function mxScore(m, i, rowOrder, what) {
+  const cell = node("b", `mx-sc${i === what.best ? " is-best" : ""}`);
+  cell.setAttribute("role", "cell");
+  cell.style.setProperty("--d", `${MX_T.bars + rowOrder * MX_T.bar}ms`);
+  if (!(i in what.score)) return cell;
+  cell.textContent = mxNum(what.score[i]);
+  const scope = what.top ? ` (only their ${what.top} most likely, as ${topName(what.top)} is on)` : "";
+  return tip(cell, `${m.row_labels[i]} ${mxNum(what.score[i])}: what this action is worth on average against what we expect them to do${scope}${i === what.best ? " · the highest score" : ""}`);
+}
+
+/** Our policy for the row: the network's own bar and number and, when the temperature is known, the policy the
+    current "their actions considered" would give (a thin bar under it, and its number). */
+function mxPolicy(m, i, rowOrder, g) {
+  const { what, topRow } = g;
   const prob = node("span", "mx-rp");
   prob.style.setProperty("--d", `${MX_T.bars + rowOrder * MX_T.bar}ms`);
+  const bars = node("span", "mx-rbars");
   const track = node("span", "mx-rbar");
   const fill = node("i");
-  fill.style.width = `${clamp01(m.probs[i] / top) * 100}%`;
+  fill.style.width = `${clamp01(m.probs[i] / topRow) * 100}%`;
   track.append(fill);
-  prob.append(track, node("b", "", m.legal[i] ? pct(m.probs[i]) : "–"));
-  row.append(prob);
+  bars.append(track);
+  prob.append(bars, node("b", "", m.legal[i] ? pct(m.probs[i]) : "–"));
+  if (!what.policy) return m.legal[i] ? tip(prob, `${m.row_labels[i]}: our policy gives it ${pct(m.probs[i])}`) : prob;
+  const would = what.policy[i];
+  const alt = node("span", "mx-ralt");
+  const altFill = node("i");
+  altFill.style.width = `${clamp01((would ?? 0) / topRow) * 100}%`;
+  alt.append(altFill);
+  bars.append(alt);
+  prob.append(node("b", "alt", isNum(would) ? pct(would) : ""));
+  if (!isNum(would)) return prob;
+  const how = what.top
+    ? `weighing only their ${what.top} most likely actions it would be ${pct(would)}`
+    : `worked out again from the SCORE column it is ${pct(would)} (the network also caps an action at 99% and its figures are rounded)`;
+  return tip(prob, `${m.row_labels[i]}: our policy gives it ${pct(m.probs[i])} · ${how} · softmax of SCORE ÷ ${m.tau.toFixed(2)}, the network's temperature`);
+}
+
+function mxRow(m, i, rowOrder, g, groupStart) {
+  const kind = rowKind(i);
+  const overridden = m.played !== m.chosen;
+  const pick = g.differs && i === g.what.best;
+  const row = node("div", `mx-row is-${kind}${m.legal[i] ? "" : " is-illegal"}${i === m.played ? " is-played" : ""}${overridden && i === m.chosen ? " is-network" : ""}${pick ? " is-pick" : ""}${groupStart ? " is-group" : ""}`);
+  row.setAttribute("role", "row");
+  const label = node("span", "mx-rl");
+  label.append(node("span", "nm", rowName(m, i)));
+  if (pick && i !== m.played) label.append(node("span", "mx-tag is-pick", "would pick")); // the played row keeps its one tag
+  if (overridden && i === m.chosen) label.append(node("span", "mx-tag is-net", "network"));
+  if (overridden && i === m.played) label.append(node("span", "mx-tag", "played"));
+  tip(label, `${kind === "switch" ? `Switch to ${m.row_labels[i]}` : m.row_labels[i]}: ${m.legal[i] ? `our policy gives it ${pct(m.probs[i])}` : "not legal this turn"}${i === m.played ? " · the action played" : ""}${overridden && i === m.chosen ? " · the network's choice, replaced by a guard rule" : ""}${pick ? ` · the highest SCORE under ${topName(g.what.top)}: what we would pick` : ""}`);
+  row.append(label);
+  g.cols.forEach((j, at) => {
+    if (at > 0 && m.col_kind[j] !== m.col_kind[g.cols[at - 1]]) row.append(node("span", "mx-div"));
+    row.append(mxCell(m, i, j, g.ranks[j], rowOrder, g.what));
+  });
+  row.append(mxScore(m, i, rowOrder, g.what), mxPolicy(m, i, rowOrder, g));
   return row;
 }
 
-/** The grid's column tracks: row label, their moves, a divider, their switches, our probability bar. */
+/** The row under the grid: each of their actions from their side, weighed by our policy. */
+function mxFoot(m, g, rowOrder) {
+  const { them, cols } = g;
+  const row = node("div", "mx-row mx-foot");
+  row.setAttribute("role", "row");
+  row.style.setProperty("--d", `${MX_T.bars + rowOrder * MX_T.bar}ms`);
+  const label = node("span", "mx-fl");
+  label.append(tip(node("span", "side opp", "FOR THEM"), "How each of their actions turns out for them, on average over what we are likely to do (our policy): red is good for them. It does not depend on \"their actions considered\"."));
+  if (them.best !== null) {
+    const same = them.best === them.likely;
+    const note = node("span", `mx-fnote ${same ? "is-same" : "is-diff"}`);
+    note.append(node("b", "", same ? "=" : "≠"), node("span", "", "most likely"));
+    label.append(tip(note, same
+      ? `Their best action against our policy (${m.col_labels[them.best]}, ${mxNum(them.value[them.best])}) is also the one we think most likely (${pct(m.p_cols[them.likely])})`
+      : `Their best action against our policy is ${m.col_labels[them.best]} (${mxNum(them.value[them.best])}), but the one we think most likely is ${m.col_labels[them.likely]} (${pct(m.p_cols[them.likely])}, ${mxNum(them.value[them.likely])} for them)`));
+  }
+  row.append(label);
+  cols.forEach((j, at) => {
+    if (at > 0 && m.col_kind[j] !== m.col_kind[cols[at - 1]]) row.append(node("span", "mx-div"));
+    const v = them.value[j];
+    const cell = node("b", `mx-fc${j === them.best ? " is-best" : ""}`);
+    cell.setAttribute("role", "cell");
+    if (them.best === null) return row.append(cell);
+    cell.textContent = mxNum(v);
+    if (v > 0.03) {
+      cell.classList.add("pos");
+      cell.style.setProperty("--a", `${Math.round((0.14 + 0.78 * Math.min(1, v / MX.reach) ** 0.85) * 100)}%`);
+    }
+    return row.append(tip(cell, `${m.col_labels[j]} ${mxNum(v)}: if they do this, how it turns out for them on average over what we are likely to do · plain average over our ${g.what.legal.length} legal actions: ${mxNum(them.mean[j])}${j === them.best ? " · their best action" : ""}${j === them.likely ? " · the one we think most likely" : ""}`));
+  });
+  row.append(node("span", "mx-sc"), node("span", "mx-rp"));
+  return row;
+}
+
+/** The grid's column tracks: row label, their moves, a divider, their switches, the score, our probability bar. */
 function mxTemplate(m, cols) {
   const moves = cols.filter((j) => m.col_kind[j] !== "switch").length;
   const switches = cols.length - moves;
@@ -122,8 +260,29 @@ function mxTemplate(m, cols) {
   if (moves) parts.push(`repeat(${moves}, minmax(0, 1fr))`);
   if (moves && switches) parts.push("var(--mx-gap)");
   if (switches) parts.push(`repeat(${switches}, minmax(0, 1fr))`);
-  parts.push("var(--mx-prob)");
+  parts.push("var(--mx-score)", "var(--mx-prob)");
   return parts.join(" ");
+}
+
+/** The headings of the two columns after the grid: SCORE and our policy (with the key of its two bars). */
+function mxTotalsHead(what) {
+  const scope = what.top ? `their ${what.top} most likely actions, their probabilities scaled to add up to 100%` : "all their actions";
+  const score = tip(node("span", "mx-shead", "SCORE"), `Each cell of the row times the probability of its column, added up over ${scope}: what this action is worth on average against what we expect them to do. The highest is marked.`);
+  const policy = node("span", "mx-phead");
+  policy.append(node("span", "", "Our policy"));
+  if (what.policy) {
+    const key = node("span", "mx-pkey");
+    const net = node("span");
+    net.append(node("i", "k-net"), "network");
+    const own = node("span");
+    own.append(node("i", "k-alt"), topName(what.top)); // the name on the control: All, Top 3
+    key.append(net, own);
+    policy.append(key);
+  }
+  const alt = !what.policy ? "" : what.top
+    ? ` The thin bar and the second number: the policy it would have if only their ${what.top} most likely actions counted.`
+    : " The thin bar and the second number: the same policy worked out again from the SCORE column (it should match closely).";
+  return [score, tip(policy, `The probability the network gives each of our actions after weighing every column: the action played is outlined.${alt}`)];
 }
 
 function mxGrid(m) {
@@ -132,9 +291,14 @@ function mxGrid(m) {
   const cols = m.cols.map((_, j) => j).filter((j) => m.cols[j]);
   const ranks = {};
   [...cols].sort((a, b) => m.p_cols[b] - m.p_cols[a]).forEach((j, rank) => { ranks[j] = rank; });
+  const what = mxWhatIf(m, cols, mxTop);
+  const ref = m.chosen ?? m.played ?? null; // the network's own row
+  const topRow = Math.max(0.4, ...rows.map((i) => m.probs[i]), ...Object.values(what.policy || {}));
+  const g = { cols, ranks, what, ref, topRow, differs: ref !== null && what.best !== null && what.best !== ref, them: mxForThem(m, what.legal, cols) };
   const grid = el("mx-grid");
   grid.style.setProperty("--mx-cols", mxTemplate(m, cols));
   grid.dataset.rows = rows.length;
+  grid.classList.toggle("has-alt", Boolean(what.policy));
   const head = node("div", "mx-head");
   const corner = node("span", "mx-corner");
   corner.append(sideTag("opp", "THEIRS →"), sideTag("you", "OURS ↓"));
@@ -142,13 +306,14 @@ function mxGrid(m) {
   const topCol = Math.max(0.4, ...cols.map((j) => m.p_cols[j]));
   cols.forEach((j, at) => {
     if (at > 0 && m.col_kind[j] !== m.col_kind[cols[at - 1]]) head.append(node("span", "mx-div"));
-    head.append(mxColumn(m, j, at, topCol));
+    head.append(mxColumn(m, j, at, topCol, what));
   });
-  head.append(tip(node("span", "mx-phead", "Our policy"), "The probability the network gives each of our actions after weighing every column: the action played is outlined"));
+  head.append(...mxTotalsHead(what));
   const body = node("div", "mx-rows");
-  const topRow = Math.max(0.4, ...rows.map((i) => m.probs[i]));
-  rows.forEach((i, at) => body.append(mxRow(m, i, cols, ranks, at, topRow, at > 0 && rowKind(i) !== rowKind(rows[at - 1]))));
+  rows.forEach((i, at) => body.append(mxRow(m, i, at, g, at > 0 && rowKind(i) !== rowKind(rows[at - 1]))));
+  body.append(mxFoot(m, g, rows.length));
   grid.replaceChildren(head, body);
+  mxPickLine(m, g);
 }
 
 /** In place of the grid when the decision has no matrix (a fallback, or a record of an older player). */
@@ -183,16 +348,40 @@ function mxPlay(overridden) {
   mxTimer = window.setTimeout(() => tileEl.classList.remove("is-playing"), MX_T.done + (overridden ? MX_T.overrideGap : 0));
 }
 
+function mxStop() {
+  window.clearTimeout(mxTimer);
+  el("t-matrix").classList.remove("is-playing");
+}
+
+function mxPaintTop() {
+  el("mx-top").querySelectorAll("button").forEach((button) => button.setAttribute("aria-pressed", String(Number(button.dataset.top) === mxTop)));
+}
+
+/** A new choice of "their actions considered": remembered, and the matrix on screen is drawn again at once.
+    It is not a new decision, so nothing plays again (an animation still running is cut short). */
+function mxSetTop(top) {
+  if (!MX_TOPS.includes(top) || top === mxTop) return;
+  mxTop = top;
+  try { localStorage.setItem(MX_TOP_KEY, String(top)); } catch (e) { /* storage blocked: the choice lasts this visit */ }
+  mxPaintTop();
+  if (!mxShown) return;
+  mxStop();
+  mxGrid(mxShown);
+  armTips();
+}
+
 function renderMatrix(state, isPinned) {
   const decision = state.decision;
   const picked = state.preview?.names?.length ? `Team picked: ${state.preview.names.join(", ")}. The matrix appears with the first decision of the battle.` : null;
   const waiting = picked || (state.battle ? "Waiting for this battle's first decision" : "Waiting for the first decision");
   tile("t-matrix", Boolean(decision), waiting, "mx-empty");
   el("mx-legend").hidden = !decision?.notes?.matrix;
+  el("mx-what").hidden = !decision?.notes?.matrix;
   if (!decision) {
     el("mx-meta").textContent = "";
     el("mx-badge").replaceChildren();
     drawn.matrix = null;
+    mxShown = null;
     return;
   }
   const key = `${state.battle?.index}:${decision.sequence}`;
@@ -202,6 +391,7 @@ function renderMatrix(state, isPinned) {
   if (!changed("matrix", [key, decision.notes, decision.order, decision.label, decision.kind, decision.turn, decision.degrade, decision.legal, state.active?.name])) return;
   const n = decision.notes || {};
   const m = n.matrix;
+  mxShown = m || null;
   const label = KIND[decision.kind] || "decision";
   const ours = state.active?.name;
   el("mx-kind").replaceChildren(...(ours ? [sideTag("you"), node("span", "nm", ours), node("span", "", `· ${label}`)] : [node("span", "", title(label))]));
@@ -218,8 +408,13 @@ function renderMatrix(state, isPinned) {
   if (m) mxGrid(m);
   else mxAlt(decision);
   if (fresh && !isPinned) mxPlay(Boolean(m) && m.played !== m.chosen);
-  else {
-    window.clearTimeout(mxTimer);
-    el("t-matrix").classList.remove("is-playing");
-  }
+  else mxStop();
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  mxPaintTop();
+  el("mx-top").addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-top]");
+    if (button) mxSetTop(Number(button.dataset.top));
+  });
+});

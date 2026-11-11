@@ -66,6 +66,17 @@
             <span class="mx-key"><i class="dot-shown"></i>a move they have shown</span>
           </span>
           <span class="meta" id="mx-meta"></span><span id="mx-badge"></span>
+          <div class="mx-what" id="mx-what" hidden>
+            <span class="mx-what-label" data-tip="How many of their actions the SCORE column weighs: all of them, or only their most likely ones (those probabilities then add up to 100%). It shows what our decision would be if we only answered what they most probably do.">Their actions considered</span>
+            <span class="mx-seg" id="mx-top" role="group" aria-label="Their actions considered">
+              <button type="button" data-top="0" aria-pressed="true" data-tip="Weigh every action they may take, as the network does">All</button>
+              <button type="button" data-top="5" aria-pressed="false" data-tip="Weigh only their 5 most likely actions">Top 5</button>
+              <button type="button" data-top="3" aria-pressed="false" data-tip="Weigh only their 3 most likely actions">Top 3</button>
+              <button type="button" data-top="2" aria-pressed="false" data-tip="Weigh only their 2 most likely actions">Top 2</button>
+              <button type="button" data-top="1" aria-pressed="false" data-tip="Answer only their single most likely action">Top 1</button>
+            </span>
+            <span class="mx-pick" id="mx-pick"></span>
+          </div>
         </header>
         <div class="tile-body">
           <div class="mx-hero" id="mx-hero">

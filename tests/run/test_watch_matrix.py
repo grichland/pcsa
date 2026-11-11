@@ -109,7 +109,7 @@ def test_notes_view_passes_the_matrix_through_and_names_the_override() -> None:
     view = notes_view(raw, {"closecombat": "Close Combat"}, "/choose move extremespeed")
     assert view is not None
     matrix = view["matrix"]
-    for key in ("rows", "legal", "cols", "col_kind", "shown", "p_cols", "cells", "probs", "mega_p"):
+    for key in ("rows", "legal", "cols", "col_kind", "shown", "p_cols", "cells", "probs", "mega_p", "tau"):
         assert matrix[key] == raw["matrix"][key]
     assert (matrix["chosen"], matrix["played"]) == (1, 3) and matrix["row_labels"][1] == "Close Combat"
     assert view["override"] == "priority_ko" and view["network"]["label"] == "Close Combat"
@@ -136,6 +136,18 @@ def test_a_matrix_of_another_shape_is_left_out() -> None:
     loose = matrix_view({**good, "chosen": 99, "legal": "x", "shown": None, "col_kind": 4, "mega_p": "no"})
     assert loose is not None and loose["chosen"] is None and loose["played"] is None and loose["mega_p"] is None
     assert loose["legal"] == [True] * 11 and loose["shown"] == [False] * 9 and loose["col_kind"][4] == "switch"
+
+
+def test_the_temperature_is_passed_through_only_as_a_positive_number(run: Path) -> None:
+    good = notes_of("0003-action.json")["matrix"]
+    assert good["tau"] == 0.1 and matrix_view(good)["tau"] == 0.1  # type: ignore[index]
+    assert RunReader(run).state()["decision"]["notes"]["matrix"]["tau"] == 0.1
+    assert matrix_view({**good, "tau": 1})["tau"] == 1.0  # type: ignore[index]
+    old = {key: value for key, value in good.items() if key != "tau"}  # a record from before the temperature
+    assert matrix_view(old)["tau"] is None  # type: ignore[index]
+    for bad in (0, 0.0, -0.1, "0.1", None, True, [0.1], float("nan"), float("inf")):
+        view = matrix_view({**good, "tau": bad})
+        assert view is not None and view["tau"] is None and view["probs"] == good["probs"]
 
 
 def test_rows_of_orders_and_display_names() -> None:
@@ -274,3 +286,16 @@ def test_every_script_of_the_page_is_served() -> None:
     matrix = (STATIC / "matrix.js").read_text(encoding="utf-8")
     assert "mxSeen" in matrix and "is-playing" in matrix  # a decision animates once, by its battle and sequence
     assert "guess" not in page.lower() and "assumed" not in page.lower()  # nothing about guessed opposing builds
+
+
+def test_the_page_has_the_totals_and_the_control_of_their_actions_considered() -> None:
+    page = (STATIC / "index.html").read_text(encoding="utf-8")
+    matrix = (STATIC / "matrix.js").read_text(encoding="utf-8")
+    style = (STATIC / "style.css").read_text(encoding="utf-8")
+    assert 'id="mx-top"' in page and 'id="mx-pick"' in page and "Their actions considered" in page
+    tops = [f'data-top="{n}"' for n in (0, 5, 3, 2, 1)]  # All, Top 5, Top 3, Top 2, Top 1: in that order
+    assert all(top in page for top in tops) and sorted(tops, key=page.index) == tops
+    for label in ('"SCORE"', '"FOR THEM"', "WOULD PICK", "most likely", "pcsa-mx-top", "m.tau"):
+        assert label in matrix
+    for rule in (".mx-seg", ".mx-sc", ".mx-foot", ".mx-pick", ".is-off", ".mx-ralt"):
+        assert rule in style
