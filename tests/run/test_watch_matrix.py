@@ -109,7 +109,8 @@ def test_notes_view_passes_the_matrix_through_and_names_the_override() -> None:
     view = notes_view(raw, {"closecombat": "Close Combat"}, "/choose move extremespeed")
     assert view is not None
     matrix = view["matrix"]
-    for key in ("rows", "legal", "cols", "col_kind", "shown", "p_cols", "cells", "probs", "mega_p", "tau"):
+    keys = ("rows", "legal", "cols", "col_kind", "shown", "p_cols", "cells", "probs", "mega_p", "tau")
+    for key in (*keys, "opp_temperature"):
         assert matrix[key] == raw["matrix"][key]
     assert (matrix["chosen"], matrix["played"]) == (1, 3) and matrix["row_labels"][1] == "Close Combat"
     assert view["override"] == "priority_ko" and view["network"]["label"] == "Close Combat"
@@ -148,6 +149,20 @@ def test_the_temperature_is_passed_through_only_as_a_positive_number(run: Path) 
     for bad in (0, 0.0, -0.1, "0.1", None, True, [0.1], float("nan"), float("inf")):
         view = matrix_view({**good, "tau": bad})
         assert view is not None and view["tau"] is None and view["probs"] == good["probs"]
+
+
+def test_the_opponent_temperature_is_passed_through_only_as_a_positive_number(run: Path) -> None:
+    good = notes_of("0003-action.json")["matrix"]
+    assert good["opp_temperature"] == 1.0 and matrix_view(good)["opp_temperature"] == 1.0  # type: ignore[index]
+    assert RunReader(run).state()["decision"]["notes"]["matrix"]["opp_temperature"] == 1.0
+    assert matrix_view({**good, "opp_temperature": 2})["opp_temperature"] == 2.0  # type: ignore[index]
+    assert matrix_view({**good, "opp_temperature": 0.75})["opp_temperature"] == 0.75  # type: ignore[index]
+    old = {key: value for key, value in good.items() if key != "opp_temperature"}  # a record from before it
+    view = matrix_view(old)
+    assert view is not None and view["opp_temperature"] is None and view["tau"] == 0.1  # the page reads None as 1
+    for bad in (0, 0.0, -2, "1.5", None, True, [1.0], {"t": 1}, float("nan"), float("inf")):
+        view = matrix_view({**good, "opp_temperature": bad})
+        assert view is not None and view["opp_temperature"] is None and view["p_cols"] == good["p_cols"]
 
 
 def test_rows_of_orders_and_display_names() -> None:
@@ -298,4 +313,18 @@ def test_the_page_has_the_totals_and_the_control_of_their_actions_considered() -
     for label in ('"SCORE"', '"FOR THEM"', "WOULD PICK", "most likely", "pcsa-mx-top", "m.tau"):
         assert label in matrix
     for rule in (".mx-seg", ".mx-sc", ".mx-foot", ".mx-pick", ".is-off", ".mx-ralt"):
+        assert rule in style
+
+
+def test_the_page_has_the_control_of_the_trust_in_the_prediction() -> None:
+    page = (STATIC / "index.html").read_text(encoding="utf-8")
+    matrix = (STATIC / "matrix.js").read_text(encoding="utf-8")
+    style = (STATIC / "style.css").read_text(encoding="utf-8")
+    assert 'id="mx-opp"' in page and "Trust in the prediction" in page and "Temperature on our prediction" in page
+    parts = ['id="mx-top"', 'id="mx-opp"', 'data-step="-1"', 'id="mx-opp-now"', 'data-step="1"', 'id="mx-opp-reset"']
+    assert all(part in page for part in parts) and sorted(parts, key=page.index) == parts  # in this order
+    assert page.index('id="mx-opp-reset"') < page.index('id="mx-pick"')  # both controls and the readout: one line
+    for label in ("pcsa-mx-opp", '"opp"', "m.opp_temperature", "MX_OPPS = [0.5, 0.75, 1, 1.5, 2, 3, 5]", "at trust"):
+        assert label in matrix
+    for rule in (".mx-calt", ".mx-cnum.alt", ".mx-stepper", ".mx-opp-now"):
         assert rule in style

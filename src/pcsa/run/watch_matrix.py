@@ -1,10 +1,12 @@
 """The decision matrix of `pcsa watch`: the neural player's `matrix` note, checked and given display names.
 
 The note holds our 11 actions (4 moves, the same 4 with Mega Evolution, 3 switches) against the opponent's 9
-kept actions (4 moves, 5 switches): a value per pair, a probability per column, our final distribution and the
-temperature `tau` that turned the weighted rows into it (the page works the row and column totals out itself). Its
-names are ids (`dragondance`, `garchomp`); the page shows the written name: from the record when it spells the
-name out, else from the game data, else the id with a capital. A note of another shape gives no matrix.
+kept actions (4 moves, 5 switches): a value per pair, a probability per column, our final distribution, the
+temperature `tau` that turned the weighted rows into it and the temperature `opp_temperature` the column
+probabilities were taken at (the page works the row and column totals out itself, and what they would be at
+another opponent temperature). Its names are ids (`dragondance`, `garchomp`); the page shows the written name:
+from the record when it spells the name out, else from the game data, else the id with a capital. A note of
+another shape gives no matrix.
 """
 
 from __future__ import annotations
@@ -25,7 +27,7 @@ def _number(value) -> float | None:
 
 
 def _positive(value) -> float | None:
-    """A finite number above zero (the temperature `tau`); None for anything else."""
+    """A finite number above zero (a temperature: `tau`, `opp_temperature`); None for anything else."""
     number = _number(value)
     return number if number is not None and isfinite(number) and number > 0 else None
 
@@ -130,4 +132,5 @@ def matrix_view(raw, names: dict[str, str] | None = None, order=None, network=No
         "played": played if played is not None else chosen,
         "mega_p": _number(raw.get("mega_p")),
         "tau": _positive(raw.get("tau")),
+        "opp_temperature": _positive(raw.get("opp_temperature")),
     }

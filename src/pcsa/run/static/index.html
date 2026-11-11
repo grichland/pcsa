@@ -75,6 +75,13 @@
               <button type="button" data-top="2" aria-pressed="false" data-tip="Weigh only their 2 most likely actions">Top 2</button>
               <button type="button" data-top="1" aria-pressed="false" data-tip="Answer only their single most likely action">Top 1</button>
             </span>
+            <span class="mx-what-label" id="mx-opp-label" data-tip="Temperature on our prediction of their action. Higher = hedge against their less likely actions; lower = trust the favourite more.">Trust in the prediction</span>
+            <span class="mx-seg mx-stepper" id="mx-opp" role="group" aria-label="Trust in the prediction">
+              <button type="button" data-step="-1" aria-label="Lower temperature" data-tip="Lower temperature: trust the favourite more">‹</button>
+              <output class="mx-opp-now is-rec" id="mx-opp-now" data-tip="Their probabilities as the network recorded them">as recorded</output>
+              <button type="button" data-step="1" aria-label="Higher temperature" data-tip="Higher temperature: hedge against their less likely actions">›</button>
+              <button type="button" class="mx-opp-reset" id="mx-opp-reset" data-step="0" hidden aria-label="Back to as recorded" data-tip="Back to their probabilities as recorded">↺</button>
+            </span>
             <span class="mx-pick" id="mx-pick"></span>
           </div>
         </header>

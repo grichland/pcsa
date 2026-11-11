@@ -188,17 +188,24 @@ button[data-tip], summary[data-tip] { cursor: pointer; }
 .mx-grid.has-alt { --mx-prob: minmax(8rem, 12rem); }
 .t-matrix .tile-head { margin-bottom: 0.35rem; flex-wrap: wrap; row-gap: 0.3rem; }
 /* Their actions considered: the control, and what the matrix would pick under it */
-.mx-what { flex: 1 0 100%; display: flex; align-items: center; gap: 0.6rem; min-width: 0; color: var(--muted); font-size: 0.76rem; }
-.mx-what-label { flex: none; font-size: 0.68rem; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+.mx-what { flex: 1 0 100%; display: flex; align-items: center; gap: 0.5rem; min-width: 0; color: var(--muted); font-size: 0.76rem; }
+.mx-what-label { flex: none; font-size: 0.68rem; font-weight: 650; letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; }
 .mx-seg { display: inline-flex; flex: none; gap: 2px; padding: 2px; border-radius: 99px; background: var(--inset); box-shadow: inset 0 0 0 1px var(--line); }
 .mx-seg button { height: 1.35rem; padding: 0 0.6rem; border: 0; border-radius: 99px; background: transparent; color: var(--ink-2); font-size: 0.74rem; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; cursor: pointer; }
 .mx-seg button:hover { color: var(--ink); background: var(--track); }
 .mx-seg button[aria-pressed="true"] { color: var(--ink); background: var(--surface); box-shadow: 0 0 0 1px var(--bar); }
 .mx-seg button[aria-pressed="true"]:not([data-top="0"]) { color: var(--on-side); background: var(--alt); box-shadow: none; }
-.mx-pick { display: flex; align-items: baseline; gap: 0.4rem; flex: 0 1 auto; min-width: 0; padding: 0.12rem 0.6rem; border-radius: 99px; white-space: nowrap; overflow: hidden; }
-.mx-pick small { flex: none; font-size: 0.64rem; font-weight: 700; letter-spacing: .08em; }
-.mx-pick b { flex: none; color: var(--ink-2); font-weight: 650; }
-.mx-pick span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+/* Trust in the prediction: a stepper over the temperatures; purple once it is not the recorded one */
+.mx-stepper button { padding: 0 0.32rem; font-size: 0.95rem; line-height: 1; }
+.mx-stepper button:disabled { opacity: .3; cursor: default; background: transparent; }
+.mx-stepper .mx-opp-reset { font-size: 0.82rem; color: var(--alt-ink); }
+.mx-opp-now { display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem; min-width: 2.5rem; height: 1.35rem; padding: 0 0.55rem; border-radius: 99px; font-size: 0.74rem; font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink); background: var(--surface); box-shadow: 0 0 0 1px var(--bar); }
+.mx-opp-now small { font-size: 0.66rem; font-weight: 500; color: var(--muted); }
+.mx-opp-now.is-alt { color: var(--on-side); background: var(--alt); box-shadow: none; }
+.mx-pick { display: flex; align-items: baseline; gap: 0.35rem; flex: 0 1 auto; min-width: 0; padding: 0.12rem 0.5rem; border-radius: 99px; white-space: nowrap; overflow: hidden; }
+.mx-pick small { flex: none; font-size: 0.64rem; font-weight: 700; letter-spacing: .05em; }
+.mx-pick b { flex: 0 1 auto; min-width: 2.5rem; overflow: hidden; text-overflow: ellipsis; color: var(--ink-2); font-weight: 650; }
+.mx-pick > span { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .mx-pick.is-diff { color: var(--alt-ink); background: var(--alt-soft); box-shadow: inset 0 0 0 1.5px var(--alt-edge); }
 .mx-pick.is-diff b { color: var(--ink); font-weight: 750; }
 .t-matrix .tile-body { gap: 0.45rem; }
@@ -231,7 +238,14 @@ button[data-tip], summary[data-tip] { cursor: pointer; }
 .mx-corner { display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 0.25rem; align-self: stretch; }
 .mx-corner .side.opp { align-self: flex-end; }
 .mx-col { display: grid; grid-template-rows: auto 2.1rem auto; justify-items: center; gap: 0.12rem; min-width: 0; }
+.mx-cnums { display: flex; align-items: baseline; justify-content: center; gap: 0.3rem; min-width: 0; white-space: nowrap; }
 .mx-cnum { font-size: 0.78rem; font-weight: 650; color: var(--ink-2); }
+/* A what-if changes the weights of their actions: the weight in use in purple, next to the recorded one */
+.has-w .mx-cnum:not(.alt) { font-size: 0.7rem; font-weight: 500; color: var(--muted); }
+.mx-cnum.alt { color: var(--alt-ink); font-weight: 700; }
+.mx-cbars { display: flex; align-items: flex-end; justify-content: center; gap: 2px; width: 100%; height: 100%; min-width: 0; }
+.mx-calt { display: flex; align-items: flex-end; flex: none; width: 4px; height: 100%; border-radius: 2px 2px 0 0; background: var(--track); overflow: hidden; }
+.mx-calt i { display: block; width: 100%; min-height: 2px; border-radius: 2px 2px 0 0; background: var(--alt); transform-origin: bottom; }
 .mx-cbar { display: flex; align-items: flex-end; width: min(62%, 2.3rem); height: 100%; border-radius: 4px 4px 0 0; background: var(--track); overflow: hidden; }
 .mx-cbar i { display: block; width: 100%; min-height: 2px; border-radius: 4px 4px 0 0; background: var(--opp); transform-origin: bottom; }
 .mx-cname { display: flex; align-items: flex-start; justify-content: center; gap: 0.25rem; width: 100%; height: 2.95em; padding: 0.22rem 0.1rem 0; border-top: 2px solid var(--opp); font-size: 0.74rem; font-weight: 600; line-height: 1.12; text-align: center; overflow: hidden; overflow-wrap: anywhere; }
@@ -310,6 +324,7 @@ button[data-tip], summary[data-tip] { cursor: pointer; }
 /* The one-shot animation of a new decision: columns, cells, row bars, then the row played */
 .is-playing .mx-col { animation: mx-rise .3s var(--ease) both; animation-delay: var(--d); }
 .is-playing .mx-cbar i { animation: mx-grow-y .5s var(--ease) both; animation-delay: calc(var(--d) + 110ms); }
+.is-playing .mx-calt i { animation: mx-grow-y .5s var(--ease) both; animation-delay: calc(var(--d) + 220ms); }
 .is-playing .mx-cell { animation: mx-cell .3s ease-out both; animation-delay: var(--d); }
 .is-playing .mx-rbar i { animation: mx-grow-x .45s var(--ease) both; animation-delay: var(--d); }
 .is-playing .mx-rp b { animation: fade .3s ease-out both; animation-delay: calc(var(--d) + 180ms); }
@@ -469,6 +484,15 @@ body.is-pinned .t-win { border-color: color-mix(in srgb, var(--accent) 55%, var(
   .mx-cname .dot-shown { position: absolute; left: 2px; bottom: 1.78rem; margin: 0; } /* on the rule: the name keeps the width */
   .mx-rl { padding: 0 0.4rem; font-size: 0.8rem; }
   .win-top, .chance { gap: 1rem; }
+  .has-w .mx-cnum:not(.alt) { display: none; } /* the weight in use takes the place of the recorded one */
+}
+/* Short and narrow: both controls and the readout share the first line of the header */
+@media (max-height: 820px) and (max-width: 1500px) {
+  .mx-what { gap: 0.4rem; }
+  .mx-seg button { padding: 0 0.45rem; }
+  .mx-stepper button { padding: 0 0.25rem; }
+  .mx-opp-now { min-width: 0; padding: 0 0.45rem; }
+  .mx-opp-now small, .mx-pick-what { display: none; }
 }
 
 /* Narrow windows: one column, the page scrolls ------------------------------------------------------- */

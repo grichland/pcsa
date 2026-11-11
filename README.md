@@ -129,7 +129,8 @@ is against theirs (the score is printed in each cell), and our resulting policy 
 is the row's cells weighted by their probabilities, which is what the network ranks our actions by; a "for them"
 total per column says how each of their actions turns out for them over what we are likely to do. A control
 (All / Top 5 / 3 / 2 / 1) recomputes the scores over only their most likely actions and says which action that
-would pick: a what-if on the page, not a change to the player. The action played is written large with the win
+would pick, and a stepper ("trust in the prediction") reweights their probabilities at another opponent
+temperature: both are what-ifs on the page, not changes to the player. The action played is written large with the win
 chance (from the value, `(v + 1) / 2`), the chance they Mega Evolve and the decision time. Each new decision plays
 once as a short animation: their columns, the cells, our row bars, then the chosen row. A guard-rule override
 shows the rule and its reason and marks both the network's row and the row played; a decision the fallback player
