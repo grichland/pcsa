@@ -14,8 +14,10 @@ from pcsa.common import log
 from pcsa.common.clock import Clock, Deadline
 from pcsa.common.config import AgentConfig
 from pcsa.common.types import Observation, Screen
-from pcsa.live.decide import Decider
+from pcsa.live import restore
+from pcsa.live.decide import Decider, event_notes
 from pcsa.live.log_reader import LogReader, LogVisit
+from pcsa.live.log_save import LogSaver
 from pcsa.players.base import ScreenFacts
 from pcsa.run.battle_state import PIVOT_MOVES, BattleRecord, action_detail, same_name, same_name_in
 from pcsa.run.recorder import Recorder
@@ -43,6 +45,7 @@ class TurnPipeline:
         self.clock = clock
         self.seed = seed
         self.logs = LogReader(phone, recorder, config, clock)
+        self.log_saver = LogSaver(recorder, seed)
 
     # Screens ----------------------------------------------------------------------------------------
     def peek(self, b: BattleRecord) -> Observation | None:
@@ -87,6 +90,7 @@ class TurnPipeline:
         deadline = Deadline(self.clock, t0 + budget).minus(self.cfg.degrade.tap_reserve_s)
         peek = self.peek(b)
         log_info = self.logs.collect_log(b, visit, deadline.minus(self.cfg.degrade.decide_reserve_s))
+        self.log_saver.after_visit(b, self.team)  # the log files are current while the battle is on
         last = b.last_action or {}
         same_turn = (
             bool(last)
@@ -263,7 +267,7 @@ class TurnPipeline:
             return None, None, None
         try:
             battle, out = tracking.build(
-                f"{b.battle_id}-{len(b.decisions)}",
+                restore.battle_tag(b.battle_id, len(b.decisions)),
                 self.team,
                 b.opponent_preview,
                 picks=b.requested,
@@ -294,7 +298,8 @@ class TurnPipeline:
         sequence = len(b.decisions)
         b.decisions.append(kind)
         record = {
-            "schema": "pcsa-decision/1",
+            "schema": "pcsa-decision/2",  # /2: battle_id; notes may hold nested values (the neural player's matrix)
+            "battle_id": b.battle_id,
             "sequence": sequence,
             "kind": kind,
             "turn": battle.turn if battle is not None else None,
@@ -328,7 +333,7 @@ class TurnPipeline:
             degrade=str(decision.degrade),
             legal=len(decision.legal),
             dropped=len(decision.dropped),
-            **decision.notes,
+            **event_notes(decision.notes),  # the record above keeps the full notes
         )
 
     def _check_identity(self, b: BattleRecord, active: str | None) -> None:

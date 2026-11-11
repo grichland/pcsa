@@ -20,6 +20,19 @@ from pcsa.players.base import DecisionView, Degrade, LegalAction, Player, Screen
 from pcsa.players.heuristic import HeuristicPlayer
 from pcsa.run.battle_state import BattleRecord
 
+EVENT_LIST_LIMIT = 16
+
+
+def event_notes(notes: dict) -> dict:
+    """A player's notes as they go into the flattened `decision` event: scalars and short lists. A dict or a
+    long list (the neural player's pair `matrix`) is kept in the decision record only."""
+    return {
+        key: value
+        for key, value in notes.items()
+        if not isinstance(value, dict)
+        and not (isinstance(value, list | tuple | set | frozenset) and len(value) > EVENT_LIST_LIMIT)
+    }
+
 
 @dataclass(frozen=True)
 class Decision:

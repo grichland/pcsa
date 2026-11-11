@@ -12,9 +12,11 @@ from pcsa.battle.teams import teambuilder_team
 from pcsa.common import log
 from pcsa.common.clock import Deadline
 from pcsa.common.types import Observation, Screen
+from pcsa.live import restore
+from pcsa.live.decide import event_notes
+from pcsa.live.log_save import write_log
 from pcsa.live.team_read import TeamReadSession
 from pcsa.phone.log_merge import BattleLog
-from pcsa.phone.rank import rank_text
 from pcsa.phone.screens import to_reference
 from pcsa.phone.sprites import match_team_preview
 from pcsa.players.base import TeamPreviewView
@@ -27,6 +29,7 @@ LOBBY_SETTLE_S = 2.0
 
 
 def on_lobby(s, obs: Observation) -> None:
+    restore.release(s)
     if s.team is None:
         sheet, team = TeamReadSession(s.phone, s.agent.timing.team_menu_settle_s).read()
         s.team = team
@@ -59,8 +62,9 @@ def new_battle(s, roster: tuple[str | None, ...], adopted: bool = False) -> Batt
             log.warning("roster_mismatch", expected=s.team.names, observed=roster)
         else:
             roster = reconciled[0]
-    battle_id = f"{datetime.now():%Y%m%dT%H%M%S}-{uuid.uuid4().hex[:8]}"
     index = s.state.played + 1
+    earlier = restore.earlier(s, index) if adopted else None  # this battle was already in progress: pick it up
+    battle_id = earlier.battle_id if earlier else f"{datetime.now():%Y%m%dT%H%M%S}-{uuid.uuid4().hex[:8]}"
     b = BattleRecord(
         index,
         battle_id,
@@ -76,6 +80,10 @@ def new_battle(s, roster: tuple[str | None, ...], adopted: bool = False) -> Batt
     s.state.pending_battle = index
     s.state.save()
     log.event("battle_start", battle=index, battle_id=battle_id, roster=list(roster), adopted=adopted)
+    if earlier is not None:
+        restore.resume(s, b, earlier)
+    else:
+        restore.claim(s.rec, b)
     return b
 
 
@@ -121,7 +129,7 @@ def on_team_select(s, obs: Observation, frame, t0: float) -> None:
             kind="team",
             team=team,
             names=[b.roster[i] if i < len(b.roster) else None for i in team],
-            **s.player.notes(),
+            **event_notes(s.player.notes()),
         )
         s.execute(s.phone.executor.plan_team(team), Screen.TEAM_SELECT, obs)
         return
@@ -173,8 +181,7 @@ def finalize(s, outcome: str | None) -> None:
             turn=b.current_turn(),
         )
     b.log.note("final_turn", f"turn {b.current_turn()}: the final turn is not collectable", turn=b.current_turn())
-    b.log.save(s.rec.dir / b.dir)
-    write_standard_log(s, b)
+    write_log(s.rec, b, s.team, s.state.seed)  # the final versions of the files the turn flow keeps current
     if b.requested and s.team is not None:
         try:
             battle, out = tracking.build(
@@ -228,26 +235,6 @@ def _learn_builds(s, b: BattleRecord, battle, abilities: dict[str, str]) -> None
         log.warning("builds_not_learned", battle=b.index, reason=f"{type(error).__name__}: {error}")
 
 
-def write_standard_log(s, b: BattleRecord) -> None:
-    team = ", ".join(f"{name} (roster row {row + 1})" for name, row in zip(b.names, b.requested or [], strict=False))
-    header = {
-        "battle_id": b.battle_id,
-        "battle_number": b.index,
-        "started": b.started_at,
-        "own_team": s.team.name if s.team else "unknown",
-        "own_rank_before": rank_text(b.rank_before),
-        "own_rank_after": rank_text(b.rank_after),
-        "team_requested": team or "unknown",
-        "lead_observed": b.observed.get("lead") or "unknown",
-        "opponents_seen": ", ".join(b.opponents) or "none",
-        "opponent_preview": ", ".join(m.name or "?" for m in b.opponent_preview) or "unknown",
-        "outcome": b.outcome or "unknown",
-        "outcome_source": b.outcome_source or "none",
-        "seed": s.state.seed,
-    }
-    s.rec.write_text(f"{b.dir}/battle_log.txt", b.log.standard_text(header, b.actions))
-
-
 def on_result(s, obs: Observation) -> None:
     finalize(s, obs.fields.get("outcome"))
     s.clock.sleep(s.agent.timing.poll_interval_s)
@@ -261,6 +248,7 @@ def on_forfeit(s, obs: Observation) -> None:
 
 def on_options(s, obs: Observation) -> None:
     finalize(s, None)
+    restore.release(s)
     if s.state.done():
         s.finished = True
         return
