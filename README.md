@@ -193,7 +193,10 @@ Two temperatures can be set for play without touching the checkpoint. `temperatu
 only: it multiplies the network's own policy temperature, so 2.0 draws from a flatter distribution (under `greedy`
 it changes nothing, the top action stays the top action). `opponent_temperature` applies to the prediction of the
 opponent's action where it weights the matrix: above 1 the choice hedges against their less likely actions, below
-1 it trusts the favourite more, and this does change the action played under `greedy`. Both are 1.0 by default.
+1 it trusts the favourite more, and this does change the action played under `greedy`. `neural.yaml` sets it to
+1.3, the value at which the prediction's confidence matches how often it was right on 295 recorded ladder battles
+(as trained, 1.0, it was 48% sure of its top guess and right 38% of the time against real people); `temperature`
+is 1.0.
 
 The network remembers a battle through one stored token per earlier decision. A same-turn retry replaces the last
 decision instead of adding one, an answer that arrives too late leaves no trace, and a battle picked up again
