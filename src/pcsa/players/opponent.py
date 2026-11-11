@@ -16,7 +16,7 @@ from poke_env.data import GenData
 from poke_env.data.normalize import to_id_str
 
 from pcsa.battle import game
-from pcsa.battle.builds import Build, Catalog
+from pcsa.battle.builds import Build, Catalog, first_fit, fits
 from pcsa.battle.damage import Conditions, Fighter, build_stats, damage, nature_percent
 from pcsa.battle.moves import base_data
 from pcsa.battle.stats import current_stats, form_of, known_ability, multipliers, stage
@@ -66,8 +66,8 @@ class AssumedSet:
 
 @lru_cache(maxsize=1)
 def default_catalog() -> Catalog:
-    """The shipped build catalog, loaded once."""
-    return Catalog.load()
+    """The players' build catalog (builds seen on the live ladder first), loaded once."""
+    return Catalog.load(seen=True)
 
 
 @lru_cache(maxsize=1024)
@@ -122,24 +122,33 @@ def _assume(battle, mon, catalog: Catalog, tracker: Tracker | None) -> AssumedSe
         item = revealed_item(mon)[1]
         flat = {s: FLAT_POINTS for s in STAT_ORDER}
         return AssumedSet(mon.species, item, ability, FALLBACK_NATURE, flat, tuple(moves), "fallback")
-    build, item, source = _base_build(builds, mon, form, mega, tracker)
+    build, item, source = _base_build(builds, mon, form, mega, tracker, (moves, None if mega else ability))
     fill = [m for m in (to_id_str(x) for x in build.moves) if m not in moves]
     moves = (moves + fill)[: max(MOVE_SLOTS, len(moves))]
     points: dict[str, int] = {s: int(p) for s, p in zip(STAT_ORDER, build.points, strict=True)}
     return AssumedSet(mon.species, item, ability or build.ability, build.nature, points, tuple(moves), source)
 
 
-def _base_build(builds: list[Build], mon, form: str, mega: bool, tracker: Tracker | None) -> tuple:
-    """(build, item, source): the build the set starts from, the item it holds and why."""
-    top = builds[0]
+def _base_build(
+    builds: list[Build], mon, form: str, mega: bool, tracker: Tracker | None, revealed: tuple = ((), None)
+) -> tuple:
+    """(build, item, source): the build the set starts from (the first, seen builds first, that fits what the battle
+    revealed: (moves, ability)), the item it holds and why."""
+    moves, ability = revealed
+    top = first_fit(builds, lambda b: fits(b, moves, None, ability), lambda b: fits(b, moves))
     if mega:
-        stone = next(
-            (b for b in builds if to_id_str(game.mega_form_for_stone(mon.species, b.item) or "") == form), None
+        stones = [b for b in builds if to_id_str(game.mega_form_for_stone(mon.species, b.item) or "") == form]
+        stone = (
+            first_fit(stones, lambda b: fits(b, moves, None, ability), lambda b: fits(b, moves)) if stones else None
         )
         item = stone.item if stone else game.species_entry(form).get("requiredItem")
         return stone or top, item, "revealed+top"
     known, item = revealed_item(mon)
     if known:
+        if item:
+            top = first_fit(
+                builds, lambda b: fits(b, moves, item, ability), lambda b: fits(b, moves, item), lambda b: b is top
+            )
         return top, item, "revealed+top"
     species = to_id_str(mon.species)
     if tracker is not None and species in tracker.fast and to_id_str(top.item) != "choicescarf":

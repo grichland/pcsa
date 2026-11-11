@@ -63,6 +63,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     play.add_argument("--port", type=int, default=None)
 
+    sets = commands.add_parser("sets", help="the build catalog and the builds seen on the live ladder")
+    sets_commands = sets.add_subparsers(dest="sets_command", required=True)
+    learn = sets_commands.add_parser(
+        "learn", help="add the opposing builds of recorded live battles (seen_builds.json)"
+    )
+    learn.add_argument("--runs", default=None, help="folder of live runs (default: output/runs)")
+    learn.add_argument("--dry-run", action="store_true", help="report only; write nothing")
+
     train_parser(commands)
     live.add_parsers(commands, _config_args)
     return parser
@@ -94,6 +102,8 @@ def dispatch(args: argparse.Namespace) -> int:
         return live.dispatch(args, _load(args))
     if args.command == "watch":
         return _watch(args)
+    if args.command == "sets":
+        return _sets(args)
     return _sim(args) if args.command == "sim" else train(args)
 
 
@@ -112,6 +122,27 @@ def _watch(args: argparse.Namespace) -> int:
     except OSError as error:
         print(f"error: cannot serve on port {args.port}: {error}", file=sys.stderr)
         return 1
+
+
+def _sets(args: argparse.Namespace) -> int:
+    from collections import Counter
+    from pathlib import Path
+
+    from pcsa.battle import seen_builds, seen_runs
+    from pcsa.common import paths
+
+    runs = Path(args.runs) if args.runs else paths.output_dir() / "runs"
+    rows = seen_runs.learn_runs(runs, dry_run=args.dry_run)
+    for row in rows:
+        if row.get("result") == "added":
+            print(
+                f"added  {row['species']}: {row['build']['item']} / {row['build']['ability']} / "
+                f"{', '.join(row['build']['moves'])}  (seen: {', '.join(row['seen']) or '-'})"
+            )
+    counts = Counter(r.get("result") for r in rows)
+    print(f"{len({r['battle'] for r in rows})} battles; " + ", ".join(f"{k}: {v}" for k, v in counts.most_common()))
+    print("(dry run: nothing written)" if args.dry_run else f"written: {seen_builds.shared().path}")
+    return 0
 
 
 def _sim(args: argparse.Namespace) -> int:

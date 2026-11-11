@@ -53,8 +53,8 @@ def _heuristic_params(config: Config) -> HeuristicParams:
 
 @cache
 def _catalog() -> Catalog:
-    """The build catalog, read once per process."""
-    return Catalog.load()
+    """The players' build catalog (builds seen on the live ladder first), read once per process."""
+    return Catalog.load(seen=True)
 
 
 def _best_matchup(config: Config) -> Player:

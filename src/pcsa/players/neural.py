@@ -106,7 +106,7 @@ def load_policy(params: NeuralParams, path: Path) -> tuple[Any, dict]:
     policy = PolicyPlayer(
         Net(cfg),
         cfg,
-        catalog=Catalog.load(),
+        catalog=Catalog.load(seen=True),  # builds seen on the live ladder first
         device=params.device,
         temperature=temperature,
         rng=params.seed,

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import pytest
@@ -11,6 +12,22 @@ from pcsa.common.clock import FakeClock
 from pcsa.common.config import Config, load_config
 
 REPO = paths.repo_root()
+
+# The players' catalog ranks the builds seen on the live ladder first (assets/sets/seen_builds.json, which grows with
+# every live battle). Tests must not depend on it, so it points at a file that never exists (the plain catalog order).
+os.environ["PCSA_SEEN_BUILDS"] = str(REPO / "tests" / "__no_seen_builds__.json")
+
+
+@pytest.fixture(autouse=True)
+def _empty_seen_builds(tmp_path: Path) -> None:
+    """Every test starts with no seen builds, saved (by the live session's end-of-battle hook) under its tmp_path."""
+    from pcsa.battle import seen_builds
+
+    store = seen_builds.shared()
+    store.path = tmp_path / "seen_builds.json"
+    store.by_species.clear()
+    store.battles.clear()
+    store.version += 1
 
 
 @pytest.fixture

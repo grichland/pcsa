@@ -51,9 +51,11 @@ issue was fixed, and the known defects of the battle-log reader.
 - **One device, one game version.** Everything was built on a single phone (the profile in
   `config/devices/`). Screen layouts, the menu map and the perception rules are tuned to that setup; another
   phone needs `pcsa calibrate` and will likely need fixes, and game updates can break the screen rules.
-- **Singles only.** The opponents' hidden builds are not inferred from play: `disciplined` and `endgame` assume
-  each opponent runs its species' top usage build (`players/opponent.py`), corrected by what the battle has
-  revealed; the other players read only what has been revealed.
+- **Singles only.** An opponent's hidden build is assumed (`players/opponent.py`): the first build of its species
+  that fits what the battle has revealed, with the builds seen on the live ladder first and then the usage-ranked
+  catalog. After every live battle each opposing set it revealed is either covered by the catalog or added to
+  `assets/sets/seen_builds.json` (`pcsa sets learn` does the same for recorded runs). The simulator's teams use the
+  catalog alone.
 
 **Requirements:** Windows 10/11 and an Android phone with Pokémon Champions and USB debugging on; an NVIDIA GPU
 speeds up training the sprite network. Python, adb, scrcpy, the OCR models and the battle engine are installed for you.
@@ -168,6 +170,7 @@ missed sure priority KO. The network's best other action is played and the notes
 | Settings | `config/agent.yaml`, `config/screen.yaml`, `config/devices/*.yaml`; players: `config/players/heuristic.yaml`, `best_matchup.yaml`, `disciplined.yaml`, `mixed.yaml`, `endgame.yaml`, `neural.yaml` |
 | Network checkpoints for the neural player | `assets/models/` (`.pt` files not committed; or any path, or `PCSA_NETWORKS`) |
 | Game data, the sprite network (see `docs/sprites.md`), the simulator's set catalog | `assets/` |
+| Opposing builds seen on the live ladder (grows after every live battle; ranked first when a build is assumed) | `assets/sets/seen_builds.json` |
 
 ## Development
 

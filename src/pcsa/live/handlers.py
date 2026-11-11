@@ -189,6 +189,7 @@ def finalize(s, outcome: str | None) -> None:
             lines = out.lines + ([f"|win|{winner}"] if winner else [])
             s.rec.write_text(f"{b.dir}/showdown.log", "\n".join(lines) + "\n")
             s.rec.write_text(f"{b.dir}/battle_final.txt", tracking.battle_text(battle, out.revealed_abilities))
+            _learn_builds(s, b, battle, out.revealed_abilities)
         except Exception as error:
             log.warning("final_tracking_failed", battle=b.index, reason=str(error))
     counts = s.state.count_forfeits or b.outcome not in ("opponent_forfeit",)
@@ -209,6 +210,22 @@ def finalize(s, outcome: str | None) -> None:
         played=s.state.played,
         degrade=b.degrade_counts,
     )
+
+
+def _learn_builds(s, b: BattleRecord, battle, abilities: dict[str, str]) -> None:
+    """Every opposing set this battle revealed is covered by the build catalog or added to it
+    (assets/sets/seen_builds.json); what happened is kept in the battle folder (builds_seen.json)."""
+    try:
+        from pcsa.battle import seen_builds
+
+        store = seen_builds.shared()
+        report = seen_builds.learn_battle(store, b.battle_id, battle, abilities)
+        store.save()
+        s.rec.write_json(f"{b.dir}/builds_seen.json", report)
+        added = [f"{r['species']}: {', '.join(r['build']['moves'])}" for r in report if r.get("result") == "added"]
+        log.event("builds_learned", battle=b.index, sets=len(report), added=added)
+    except Exception as error:
+        log.warning("builds_not_learned", battle=b.index, reason=f"{type(error).__name__}: {error}")
 
 
 def write_standard_log(s, b: BattleRecord) -> None:

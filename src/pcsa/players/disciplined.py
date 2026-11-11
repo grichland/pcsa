@@ -115,7 +115,7 @@ class DisciplinedPlayer(BestMatchupMaxDamagePlayer):
     ) -> None:
         super().__init__(heuristic)
         self.rules = rules or DisciplinedParams()
-        self.catalog = catalog if catalog is not None else Catalog.load()
+        self.catalog = catalog if catalog is not None else Catalog.load(seen=True)
         self.tracker = opponent.Tracker(self.catalog)
 
     def params(self) -> dict:
