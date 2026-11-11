@@ -223,3 +223,18 @@ def test_the_sampling_temperature_flattens_the_policy_and_is_recorded() -> None:
     top = max(score.values())
     e = {i: math.exp((v - top) / b["tau"]) for i, v in score.items()}
     assert all(abs(e[i] / sum(e.values()) - b["probs"][i]) < 0.03 for i in legal)
+
+
+def test_the_opponent_temperature_reweights_their_columns_and_nothing_else() -> None:
+    """Their kept actions and the cells stay the same; each column's weight becomes p ** (1 / T), renormalised."""
+    plain, hedged = player(2), player(2, opponent_temperature=3.0)
+    plain.choose_action(view_of(GAME[2]), soon())
+    hedged.choose_action(view_of(GAME[2]), soon())
+    a, b = plain.notes()["matrix"], hedged.notes()["matrix"]
+    assert (a["opp_temperature"], b["opp_temperature"]) == (1.0, 3.0)
+    assert a["cols"] == b["cols"] and a["cells"] == b["cells"]
+    want = [p ** (1 / 3.0) for p in a["p_cols"]]
+    want = [w / sum(want) for w in want]
+    assert all(abs(x - y) < 0.01 for x, y in zip(b["p_cols"], want, strict=True))
+    assert max(b["p_cols"]) < max(a["p_cols"])  # flatter
+    assert player(2).net.opp_temperature == 1.0

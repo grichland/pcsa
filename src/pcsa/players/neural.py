@@ -48,6 +48,7 @@ class NeuralParams:
     device: str = "cpu"
     sampling: str = "greedy"  # greedy: the most likely action; sample: training's capped (0.99) distribution
     temperature: float = 1.0  # of `sample`
+    opponent_temperature: float = 1.0  # of their predicted actions where they weight the matrix; 1 = as trained
     preview: str = "critic"  # critic: training's softmax(value / 0.1) top-p 0.9 nucleus; greedy: the best value
     fallback: str = "disciplined"  # the player kind that decides when the network cannot
     max_decision_s: float = 5.0  # longest a decision (or team preview) may take before the fallback decides
@@ -74,8 +75,10 @@ class NeuralParams:
             raise ConfigError(f"{where}: preview must be one of {PREVIEW}, not {self.preview!r}")
         if self.fallback == "neural":
             raise ConfigError(f"{where}: the fallback cannot be the neural player itself")
-        if self.temperature <= 0 or self.max_decision_s <= 0 or self.threads < 1:
-            raise ConfigError(f"{where}: temperature, max_decision_s and threads must be positive")
+        if self.temperature <= 0 or self.max_decision_s <= 0 or self.threads < 1 or self.opponent_temperature <= 0:
+            raise ConfigError(
+                f"{where}: temperature, opponent_temperature, max_decision_s and threads must be positive"
+            )
 
 
 def resolve_checkpoint(raw: str, environ: Mapping[str, str] | None = None) -> Path:
@@ -110,6 +113,7 @@ def load_policy(params: NeuralParams, path: Path) -> tuple[Any, dict]:
         rng=params.seed,
         tag=path.stem,
         greedy_preview=params.preview == "greedy",
+        opponent_temperature=params.opponent_temperature,
     )
     policy.load_state_dict(state["net"])
     facts = {"update": state.get("update"), "run": (state.get("config") or {}).get("name")}

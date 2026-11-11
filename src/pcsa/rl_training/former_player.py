@@ -145,8 +145,11 @@ class FormerPlayer:
         rng=None,
         tag: str = "policy",
         greedy_preview: bool = False,
+        opponent_temperature: float = 1.0,
     ) -> None:
         self.net, self.cfg, self.device = net.to(device).eval(), cfg, device
+        # the temperature of their predicted actions where they weight the matrix (1 = as trained)
+        self.net.opp_temperature = float(opponent_temperature)
         self.temperature, self.rng = temperature, as_numpy_rng(rng)
         self.greedy_preview = greedy_preview
         self.name = f"rl:{tag}"
@@ -256,6 +259,7 @@ class FormerPlayer:
         self._notes["matrix"] = matrix_notes(p.obs, p.out, p.probs, p.index)
         # tau: `probs` is softmax over legal rows of (sum_j p_cols[j] * cells[i][j]) / tau. It is the network's
         # learned temperature times the player's sampling temperature (1 when it plays greedy).
+        self._notes["matrix"]["opp_temperature"] = round(float(self.net.opp_temperature), 4)  # of p_cols
         scale = self.temperature if self.temperature > 0 else 1.0
         self._notes["matrix"]["tau"] = round(float(self.net.log_tau.detach().exp()) * scale, 4)
         self._notes["decisions"] = int(p.cache.get("t", 0))

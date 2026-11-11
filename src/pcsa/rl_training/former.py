@@ -113,6 +113,9 @@ class Net(nn.Module):
         self.mega_vec = nn.Parameter(torch.zeros(cfg.rank))
         self.base = _mlp(d, (d,), ACTIONS, norm=False)
         self.log_tau = nn.Parameter(torch.zeros(()))
+        # Inference only (training keeps 1): the temperature of their action distribution where it weights the
+        # matrix columns. Above 1 hedges against their less likely actions, below 1 trusts the favourite more.
+        self.opp_temperature = 1.0
         self.value = _mlp(d, (d,), BINS, norm=False)
         self.register_buffer("support", torch.linspace(VMIN, VMAX, BINS), persistent=False)
         self.register_buffer("learnset", learnset_table(), persistent=False)
@@ -211,7 +214,7 @@ class Net(nn.Module):
         ids = b["ids"].reshape(-1, *b["ids"].shape[2:])
         mask = b["mask"].reshape(-1, ACTIONS)
         moves, v = opp.pop("moves"), VOCAB["move"]
-        p = opp["opp_logits"].detach().softmax(-1)
+        p = (opp["opp_logits"].detach() / self.opp_temperature).softmax(-1)
         # their active's revealed moves always get a column; the rest of the top_k are filled by probability
         shown = torch.zeros_like(p[:, :v]).scatter_(1, ids[:, 6, 3:7], 2.0)
         shown[:, 0] = 0.0  # id 0 = no move revealed in that slot

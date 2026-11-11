@@ -6,6 +6,9 @@ checkpoint: assets/models/poke-singles-former.pt  # relative to the repo (or to 
 device: cpu
 sampling: greedy                # greedy: the most likely action; sample: training's capped (0.99) distribution
 temperature: 1.0                # of `sample`
+opponent_temperature: 1.0       # how much to trust the prediction of their action when weighing our options:
+                                # above 1 hedges against their less likely actions, below 1 trusts the favourite
+                                # more; 1 = as trained. Changes the action played, also under greedy.
 preview: critic                 # critic: training's softmax(value / 0.1), top-p 0.9 nucleus; greedy: the best value
 fallback: disciplined           # decides when the network cannot: no or bad checkpoint, no Battle, an error, too slow
 max_decision_s: 5.0             # a decision (or team preview) taking longer than this goes to the fallback
