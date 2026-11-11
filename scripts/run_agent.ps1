@@ -1,6 +1,6 @@
 param(
-    [int]$Battles = 100,
-    [int]$MaxBattlesTotal = 112
+    [int]$Battles = 10,
+    [int]$MaxBattlesTotal = 11
 )
 
 # Launch the Ranked Singles agent with the settings below.
@@ -11,7 +11,7 @@ param(
 # "neural" (a research network; needs torch: uv sync --inexact --extra train). Pick its network with
 #   $Overrides = @("policy.neural_checkpoint=C:/path/to/ckpt.pt")   (else the checkpoint in config\players\neural.yaml)
 # ============================== SETTINGS (edit these) ==============================
-$Player     = "neural"                   # neural (config/players/neural.yaml) | random | simple_heuristic | custom_heuristic | max_damage | best_matchup_max_damage | disciplined | mixed | endgame
+$Player     = "neural"  # random | simple_heuristic | custom_heuristic | max_damage | best_matchup_max_damage | disciplined | mixed
 $Seed       = $null               # $null = new random seed; a number makes choices and taps reproducible
 $RunName    = "run"               # run folder prefix under output\runs\
 $Config     = "config/agent.yaml" # controller settings; player files are named inside it
