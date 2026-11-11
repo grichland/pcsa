@@ -254,8 +254,10 @@ class FormerPlayer:
         # v: the critic's value of this position (expected return: +1 win / -1 loss, +-0.1 per faint)
         self._notes = {"rule": "rl", "p": round(float(p.probs.max()), 4), "h": round(h, 4), "v": round(p.value, 4)}
         self._notes["matrix"] = matrix_notes(p.obs, p.out, p.probs, p.index)
-        # tau: the policy is softmax over legal rows of (sum_j p_cols[j] * cells[i][j]) / tau
-        self._notes["matrix"]["tau"] = round(float(self.net.log_tau.detach().exp()), 4)
+        # tau: `probs` is softmax over legal rows of (sum_j p_cols[j] * cells[i][j]) / tau. It is the network's
+        # learned temperature times the player's sampling temperature (1 when it plays greedy).
+        scale = self.temperature if self.temperature > 0 else 1.0
+        self._notes["matrix"]["tau"] = round(float(self.net.log_tau.detach().exp()) * scale, 4)
         self._notes["decisions"] = int(p.cache.get("t", 0))
         if p.replaces:
             self._notes["retry"] = True

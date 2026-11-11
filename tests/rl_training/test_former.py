@@ -199,3 +199,27 @@ def test_locked_into_one_move_the_network_can_only_repeat_it_or_switch() -> None
         assert all(prob == 0 for prob, ok in zip(m["probs"], m["legal"], strict=True) if not ok)
         drawn = {sampler.propose(view).chosen.action for _ in range(40)}
         assert drawn <= {a.action for a in legal}
+
+
+def test_the_sampling_temperature_flattens_the_policy_and_is_recorded() -> None:
+    """Sampling at temperature 2 is the network's own temperature doubled: the top action loses probability, the
+    recorded tau doubles, and the recorded policy is still softmax(score / tau)."""
+    import math
+
+    import torch
+
+    greedy, hot = player(3), player(3)
+    with torch.no_grad():
+        for p in (greedy, hot):
+            p.net.log_tau.fill_(math.log(0.08))  # as sharp as the trained network
+    hot.temperature = 2.0
+    greedy.choose_action(view_of(GAME[2]), soon())
+    hot.choose_action(view_of(GAME[2]), soon())
+    a, b = greedy.notes()["matrix"], hot.notes()["matrix"]
+    assert a["tau"] == 0.08 and b["tau"] == 0.16 and a["cells"] == b["cells"] and a["p_cols"] == b["p_cols"]
+    assert max(b["probs"]) < max(a["probs"])
+    legal = [i for i, ok in enumerate(b["legal"]) if ok]
+    score = {i: sum(w * c for w, c in zip(b["p_cols"], b["cells"][i], strict=True)) for i in legal}
+    top = max(score.values())
+    e = {i: math.exp((v - top) / b["tau"]) for i, v in score.items()}
+    assert all(abs(e[i] / sum(e.values()) - b["probs"][i]) < 0.03 for i in legal)
