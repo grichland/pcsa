@@ -175,6 +175,8 @@ class NeuralPlayer:
         backup_notes = self.fallback.notes()
         if self._threat is not None:
             self._threat[1].reset()
+        if self.policy is not None and hasattr(self.policy, "reset"):
+            self.policy.reset()  # a new battle, also when the fallback picks the team
         why = self.error or ("no battle at preview" if view.battle is None else None)
         if why is None:
             answer, why, ms = self._timed(lambda: self._preview(view, deadline), deadline)

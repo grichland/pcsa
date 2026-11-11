@@ -152,3 +152,27 @@ def test_only_a_former_checkpoint_loads(tmp_path) -> None:
     for old in ({"net": {}, "model": {"d": 64}}, {"net": {}, "config": {"size": "S"}}, {"net": {}, "version": "v2"}):
         with pytest.raises(ValueError, match="poke-singles-former"):
             checkpoint_config(old)
+
+
+def test_a_new_tag_for_every_decision_keeps_the_memory() -> None:
+    """The live loop builds a new Battle (and tag) per decision; the simulator keeps one tag per battle."""
+    import torch
+
+    same, live = player(), player()
+    for k, turns in enumerate(GAME[:3]):
+        same.choose_action(view_of(turns), soon())
+        view = view_of(turns)
+        view.battle._battle_tag = f"battle-7-{k}"
+        live.choose_action(view, soon())
+    assert live.game.cache["t"] == 3
+    last = view_of(GAME[3])
+    last.battle._battle_tag = "battle-7-3"
+    assert torch.equal(live.propose(last).out["logits"], same.propose(view_of(GAME[3])).out["logits"])
+    restored = player()
+    views = []
+    for k, turns in enumerate(GAME[:3]):
+        views.append(view_of(turns))
+        views[-1].battle._battle_tag = f"battle-7-{k}"
+    assert restored.restore(views) == 3
+    live.reset()
+    assert live.game.cache == {} and live.propose(view_of(GAME[0])).cache["t"] == 1

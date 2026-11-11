@@ -217,17 +217,20 @@ class FormerPlayer:
         except Exception as error:  # any failure plays the first legal action
             return self._fallback(view, f"{type(error).__name__}: {error}")
 
-    def _game(self, battle, turn: int) -> _Game:
-        """This battle's game, or an empty one when the battle (or its turn count) started over."""
-        tag = getattr(battle, "battle_tag", None)
-        g = self.game
-        return g if turn >= g.turn and (g.tag is None or g.tag == tag) else _Game()
+    def reset(self) -> None:
+        """Forget the game (a new battle)."""
+        self.game = _Game()
+
+    def _game(self, turn: int) -> _Game:
+        """The game so far, or an empty one when the turn count started over. The battle's tag is not compared:
+        the live loop builds a new Battle, with a new tag, for every decision of one battle."""
+        return self.game if turn >= self.game.turn else _Game()
 
     def _step(self, view: DecisionView) -> tuple[fx.Obs, int, bool, dict, dict, dict]:
         """(observation, turn, replaces, memory before, memory after, outputs) of this view; changes nothing."""
         battle = view.battle
         turn = int(battle.turn or 0)  # type: ignore[union-attr]
-        g = self._game(battle, turn)
+        g = self._game(turn)
         obs = fx.observe(battle, view.legal)
         replaces = g.last is not None and g.turn == turn and _same(g.last, obs)
         base = g.before if replaces else g.cache
