@@ -50,7 +50,7 @@ mode every decision's notes carry `belief` (members tracked, updates, rebuilds, 
 - A decision's protocol that does not extend the one read before (a battle log re-read differently; 169 of 2,798
   recorded live decisions in stage 1): the tracker starts again and reads the whole protocol turn by turn, each turn
   with the request first seen at it, so it ends where a tracker that saw the new protocol all along would
-  (`BattleBelief._rebuild`; tests/belief). Dry run: 29 such decisions in pcsa's recorded runs, all rebuilt.
+  (`BattleBelief._rebuild`; tests/belief). Dry run: 128 such decisions in the 3,574 recorded ones, all rebuilt.
 - One Battle per decision (the live loop): the tracker keeps its own board and reads only the protocol text and the
   request; memos keyed by object ids are cleared on every update.
 - Our own new Mega: in the belief modes our member's Fighter has its Mega ability (Tough Claws, ...) once evolved
@@ -61,9 +61,10 @@ mode every decision's notes carry `belief` (members tracked, updates, rebuilds, 
 
 ## Cost (live machine, recorded live decisions, research/pcsa-belief/stage4/runs)
 
-Measured while a research training run used every core. Per decision, the player's own `ms` (observation, network,
-guard rules): base ~9 ms mean; belief+mega ~17 ms mean, p90 ~26 ms, worst ~105 ms (the first decisions of a battle
-build species spaces). Team preview ~45 ms base, ~58 ms belief+mega. The decision budget is `max_decision_s: 5.0`
+3,574 decisions of 355 battles, measured while a research training run used every core. Per decision, the player's
+own `ms` (observation, network, guard rules): base 9.6 ms mean (p90 13); belief+mega 17.3 ms mean, p90 26 ms, worst
+153 ms (the first decisions of a battle build species spaces); the observation alone 2.9 vs 9.9 ms. Team preview
+47 ms base, 57 ms belief+mega. The decision budget is `max_decision_s: 5.0`
 (minus `reserve_s`), so the belief modes use well under 1% of it; a slow decision would go to the fallback anyway.
 
 ## Equivalence with research (research/pcsa-belief/stage4)
