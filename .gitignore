@@ -30,6 +30,5 @@ output/
 docs/media/
 
 # Network checkpoints for the neural player (config/players/neural.yaml); copied from the research runs.
-# assets/models/ is the folder for them (create it); the weights stay local.
+# assets/models/ holds them and they are tracked (plain git; each is well under GitHub's 100 MB limit).
 networks/
-assets/models/*.pt
