@@ -95,22 +95,32 @@ def test_a_belief_checkpoint_keeps_one_belief_per_battle(tmp_path: Path) -> None
 
 
 @pytest.mark.torch
-def test_the_stage3_hook_is_off_and_recomputes_the_logits_as_the_network(tmp_path: Path) -> None:
+def test_the_stage3_hook_is_off_and_adds_to_the_logits(tmp_path: Path) -> None:
     import torch
 
     player = NeuralPlayer(NeuralParams(seed=0), MaxDamagePlayer(), checkpoint(tmp_path, None))
     policy = player.policy
-    assert policy.matrix_blend is None
+    assert not policy.matrix_blend and policy.matrix_values is None
     view = view_of(decision_battle("Azumarill"))
     plain = policy.propose(view)
     seen = []
-    policy.matrix_blend = lambda battle, obs, out, belief: seen.append(belief) or out["matrix"]
-    same = policy.propose(view)
-    assert seen == [None] and torch.allclose(same.out["logits"], plain.out["logits"], atol=1e-5)
-    policy.matrix_blend = lambda battle, obs, out, belief: out["matrix"] * 0.0
-    flat = policy.propose(view)
-    legal = flat.out["logits"] > -1e8
-    assert torch.all(flat.out["logits"][legal] == 0) and torch.equal(flat.out["network_logits"], plain.out["logits"])
+
+    def values(battle, legal, out, belief):
+        seen.append(belief)
+        return [1.0] * len(out["logits"]), {"cells": 0}
+
+    policy.matrix_values = values
+    assert torch.equal(policy.propose(view).out["logits"], plain.out["logits"])  # weight 0: off
+    policy.matrix_blend = 0.5
+    shifted = policy.propose(view).out
+    assert seen == [None] and torch.allclose(shifted["logits"], plain.out["logits"] + 0.5)
+    assert torch.equal(shifted["network_logits"], plain.out["logits"]) and shifted["matrix_info"] == {"cells": 0}
+
+    def broken(battle, legal, out, belief):
+        raise RuntimeError("no cells")
+
+    policy.matrix_values = broken
+    assert torch.equal(policy.propose(view).out["logits"], plain.out["logits"]) and policy.matrix_errors == 1
 
 
 def _live_battles(count: int) -> list[Path]:

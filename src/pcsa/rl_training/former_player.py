@@ -185,7 +185,10 @@ class FormerPlayer:
         self.features = features
         # new_battle_belief's options (crit_reported, empty_unknown); research's defaults when not given
         self.belief_options = dict(belief_options or {})
-        self.matrix_blend: Any = None  # stage 3's cell blend (see _blend); None: the network's matrix as trained
+        # stage 3 (see _blend): logits + matrix_blend x Q from `matrix_values`; 0 / None = the network as trained
+        self.matrix_blend = 0.0
+        self.matrix_values: Any = None
+        self.matrix_errors = 0
         # the temperature of their predicted actions where they weight the matrix (1 = as trained)
         self.net.opp_temperature = float(opponent_temperature)
         self.net.opp_top = int(opponent_top)  # weigh only their N likeliest kept actions (0 = all, as trained)
@@ -313,24 +316,23 @@ class FormerPlayer:
         return Proposal(obs, index, probs, float(out["value"]), turn, tag, replaces, chosen, base, cache, out, belief)
 
     def _blend(self, view: DecisionView, obs: fx.Obs, out: dict, belief: Any) -> dict:
-        """The place for stage 3 (research/pcsa-belief/stage3, research rl2's `matrix_blend`, default off; not ported
-        yet): `matrix_blend(battle, obs, out, belief)` returns the pair matrix [11, K+5] with cells blended from the
-        belief (damage-calculator cells against their kept actions), or None to keep the network's. Our logits are
-        then recomputed as the network computes them (former.Net._matrix: the matrix weighted by `kept_w`, over the
-        learned temperature, masked). Off (None) the network's outputs are returned untouched."""
-        if self.matrix_blend is None:
+        """The place for stage 3 (research/pcsa-belief stage 3: rl2/matrix.py and rl2/player.py's `matrix_blend`,
+        default off; not ported yet). There: Q_i = sum_j p_j V(i, j), a one-turn value per (our action, their kept
+        action) cell from the belief's damage calculator, and the logits become logits + matrix_blend x Q (masked
+        actions stay masked), never on a forced switch, the network's logits on any error. Here `matrix_values(battle,
+        legal, out, belief) -> (q [ACTIONS], info)` stands for rl2.matrix.action_values; in feature mode "base" the
+        matrix would need a belief of its own (research keeps one for the matrix only). Off: `out` untouched."""
+        if not self.matrix_blend or self.matrix_values is None or obs.forced:
             return out
-        cells = self.matrix_blend(view.battle, obs, out, belief)
-        if cells is None:
+        try:
+            q, info = self.matrix_values(view.battle, view.legal, out, belief)
+            with torch.no_grad():
+                q = torch.as_tensor(np.asarray(q, np.float32), dtype=out["logits"].dtype, device=out["logits"].device)
+                logits = out["logits"] + float(self.matrix_blend) * q
+        except Exception:  # the matrix never stops a decision (research: the same)
+            self.matrix_errors += 1
             return out
-        from pcsa.rl_training.former import NEG
-
-        with torch.no_grad():
-            m = torch.as_tensor(cells, dtype=out["matrix"].dtype, device=out["matrix"].device)
-            mask = torch.as_tensor(np.asarray(obs.mask, bool), device=m.device)
-            logits = (m * out["kept_w"][None, :]).sum(-1) / self.net.log_tau.exp()
-            logits = torch.where(mask, logits, torch.full_like(logits, NEG))
-        return {**out, "matrix": m, "logits": logits, "network_logits": out["logits"]}
+        return {**out, "logits": logits, "network_logits": out["logits"], "matrix_q": q, "matrix_info": info}
 
     def commit(self, p: Proposal) -> LegalAction:
         """Make a proposal the game's latest decision (later decisions remember it) and return its action."""

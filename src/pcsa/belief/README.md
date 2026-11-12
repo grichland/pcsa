@@ -76,9 +76,12 @@ version runs in the tests (`tests/rl_training/test_belief_parity.py`, skipped wi
 
 ## Stage 3
 
-`FormerPlayer.matrix_blend` (None) and `FormerPlayer._blend`: the place for research's matrix-cell blend
-(research/pcsa-belief/stage3, rl2 `matrix_blend`, default off). A callable `(battle, obs, out, belief) -> matrix`
-replaces the pair matrix; the logits are recomputed as the network computes them. Not ported: off.
+`FormerPlayer.matrix_blend` (0.0) and `FormerPlayer.matrix_values` (None), applied in `FormerPlayer._blend`: the
+place for research's matrix-cell blend (research/pcsa-belief stage 3: rl2/matrix.py, rl2/player.py `matrix_blend`,
+default off, still in progress on 12 Nov). As there: logits + matrix_blend x Q, with Q_i the belief's one-turn value
+of our action i against the opponent head's kept actions; never on a forced switch; the network's logits on any
+error. Not ported: off. Porting it means copying rl2/matrix.py's `action_values` as `matrix_values` and, in feature
+mode `base`, keeping a belief for the matrix only (research does).
 
 ## A live trial
 
