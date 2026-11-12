@@ -13,7 +13,7 @@ The Showdown engine doubles as the simulator the players are measured in.
 
 ## Demo
 
-[![The agent playing a ranked battle: the dashboard with the latest decision, the phone mirror and the tracked battle](docs/images/demo-poster.png)](https://www.youtube.com/watch?v=o6kFk4MY2VQ "Watch the demo on YouTube")
+[![The agent playing a ranked battle: the dashboard with the latest decision, the phone mirror and the tracked battle](docs/images/demo-poster.jpg)](https://www.youtube.com/watch?v=o6kFk4MY2VQ "Watch the demo on YouTube")
 
 *Click the image to watch on YouTube (1:50): the neural player plays a ranked battle on the phone while `pcsa watch` shows each decision, its confidence, the critic's value and the tracked battle state (recorded with the first dashboard and network; the current ones are described below). Trainer names and session identifiers are blurred.*
 
