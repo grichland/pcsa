@@ -162,7 +162,8 @@ class Session:
             handlers.on_team_select(self, obs, frame, frame.captured_at)
         elif screen == Screen.ACTION:
             self.in_battle()
-            self.turns.action(self.battle, obs, frame.captured_at)  # type: ignore[arg-type]
+            repeated = self.previous is not None and self.previous.screen == Screen.ACTION
+            self.turns.action(self.battle, obs, frame.captured_at, repeated)  # type: ignore[arg-type]
             self.progress()
         elif screen == Screen.FORCED or self.persistent_party_without_back(obs):
             self.in_battle()

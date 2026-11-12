@@ -62,6 +62,9 @@ class BattleRecord:
     fainted: set[int] = field(default_factory=set)
     mega_used: bool = False
     mega_pending: bool = False
+    mega_spent: bool = False  # live/move_peek: our Mega Evolution is over for this battle (log or move list)
+    pp_offsets: dict[str, int] = field(default_factory=dict)  # live/move_peek: PP uses the log count missed
+    log_doubts: int = 0  # live/move_peek: unusable log rows up to the last decision
     last_action: dict | None = None
     last_turn: int | None = None
     start_partial: bool = False

@@ -54,6 +54,7 @@ class TimingConfig(Strict):
     poll_interval_s: float = 1.0
     fight_settle_s: float = 0.9
     back_settle_s: float = 0.7
+    move_peek: Literal["always", "when_needed"] = "always"  # live/move_peek.py
     team_menu_settle_s: float = 0.8
     log_open_settle_s: float = 1.2
     log_swipe_settle_s: float = 0.6

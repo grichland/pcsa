@@ -38,6 +38,7 @@ class Step:
     advance_on: tuple[str, ...] | None = None  # accepted taps that move to the next step (default: all accepted)
     log_rows: tuple[str, ...] = ()  # what the battle log would show on this step (harness log reader)
     log_turn: int | None = None
+    log_stop: str = "top_confirmed"  # how the log read of this step ended (harness log reader that honours it)
 
 
 class ScriptedDevice:
