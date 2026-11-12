@@ -90,4 +90,3 @@ def test_the_most_recently_seen_build_ranks_first_and_late_learning_keeps_the_da
     store.learn("b0", [sash], plain(), "2026-11-02")  # an older run, learned later
     [top] = [s for s in store.ranked("garchomp") if s.build.item == "Focus Sash"]
     assert (top.count, top.first, top.last) == (2, "2026-11-02", "2026-11-11")
-
