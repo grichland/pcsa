@@ -163,7 +163,8 @@ uv run pcsa run --player neural --battles 10 --set policy.neural_checkpoint=asse
 `poke-transformer-general-800.pt` is the general network (update 800 of the training run, any team).
 `poke-transformer-teams-20261111-2212.pt` is the one `config/players/neural.yaml` names: the same network trained
 50 updates further with the account's three teams on its side (one drawn per battle), then 25 epochs on the
-opponents' actions in every recorded live battle. One file covers all three teams. `scriptsun_agent.ps1` runs the
+opponents' actions in every recorded live battle. One file covers all three teams. `scripts
+un_agent.ps1` runs the
 neural player unless `$Player` is changed.
 
 ![The neural player's network: 12 Pokémon, the field and the last turn become 14 tokens per decision; a transformer with a memory of earlier decisions feeds three readouts; the network first predicts the opponent's action, then scores each of its own actions against each predicted one in a matrix, and a value head estimates the win chance](docs/images/network.svg)
