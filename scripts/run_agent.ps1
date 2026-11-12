@@ -1,6 +1,6 @@
 param(
-    [int]$Battles = 10,
-    [int]$MaxBattlesTotal = 11
+    [int]$Battles = 50,
+    [int]$MaxBattlesTotal = 51
 )
 
 # Launch the Ranked Singles agent with the settings below.

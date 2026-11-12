@@ -2,11 +2,11 @@
 # (research/pcsa-rl, network code in src/pcsa/rl_training). Needs torch: `uv sync --extra train`.
 # Point a run at another network without editing this file: --set policy.neural_checkpoint=<path>
 # (or the environment variable PCSA__policy__neural_checkpoint=<path>).
-checkpoint: assets/models/team2.pt  # team1.pt / team2.pt / team3.pt: the per-team networks; relative to the repo (or to $PCSA_NETWORKS when the file is there), or absolute
+checkpoint: assets/models/team3.pt  # team1.pt / team2.pt / team3.pt: the per-team networks; relative to the repo (or to $PCSA_NETWORKS when the file is there), or absolute
 device: cpu
 sampling: greedy                # greedy: the most likely action; sample: training's capped (0.99) distribution
 temperature: 1.0                # of `sample`
-opponent_temperature: 1.3       # how much to trust the prediction of their action when weighing our options:
+opponent_temperature: 1.2       # how much to trust the prediction of their action when weighing our options:
                                 # above 1 hedges against their less likely actions, below 1 trusts the favourite
                                 # more; 1 = as trained. Changes the action played, also under greedy.
                                 # 1.3 is fitted on 295 recorded ladder battles: against real people the network
