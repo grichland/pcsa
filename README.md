@@ -208,6 +208,13 @@ is 1.0. `opponent_top` weighs our options against only their N likeliest actions
 (`neural.yaml`: 3; 0 is all of them, as trained). It was chosen from the dashboard's what-if on live games and
 has not been measured in the simulator yet.
 
+**Feature modes.** A network reads the observation columns it was trained with: the checkpoint says which
+(`features` in its run config; none means `base`, as for every network up to gold940). Networks trained with the
+belief tracker (`belief`, `belief+mega`; research/pcsa-belief) get stat, speed and damage columns from a belief
+per battle (`src/pcsa/belief/`); `features: checkpoint` in `config/players/neural.yaml` follows the checkpoint and a
+`base` network refuses the belief modes, so pointing `policy.neural_checkpoint` at a belief network is all a trial
+needs. See `src/pcsa/belief/README.md` for the setting, the live fixes and the cost.
+
 The network remembers a battle through one stored token per earlier decision. A same-turn retry replaces the last
 decision instead of adding one, an answer that arrives too late leaves no trace, and a battle picked up again
 after a restart gets its memory rebuilt from the run's saved decision records.

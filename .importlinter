@@ -2,16 +2,21 @@
 root_package = pcsa
 
 [importlinter:contract:layers]
-name = Layered packages: common <- battle <- phone | sim <- players <- run <- live <- cli
+name = Layered packages: common <- battle <- phone | sim <- players <- belief <- run <- live <- cli
 type = layers
 layers =
     pcsa.cli
     pcsa.live
     pcsa.run
+    pcsa.belief
     pcsa.players
     pcsa.phone | pcsa.sim
     pcsa.battle
     pcsa.common
+# the neural player loads the network code, and through its belief feature modes the belief tracker (built on the
+# player basics: pcsa.players.opponent); nothing else in pcsa.players reaches pcsa.belief
+ignore_imports =
+    pcsa.players.neural -> pcsa.rl_training.*
 
 [importlinter:contract:sprite-training-is-a-leaf]
 name = Nothing at runtime imports the sprite trainer (only the `pcsa train` commands do: cli and train_cli)
@@ -22,6 +27,7 @@ source_modules =
     pcsa.phone
     pcsa.sim
     pcsa.players
+    pcsa.belief
     pcsa.run
     pcsa.live
 forbidden_modules =
@@ -37,6 +43,7 @@ source_modules =
     pcsa.phone
     pcsa.sim
     pcsa.players
+    pcsa.belief
     pcsa.run
     pcsa.live
 forbidden_modules =

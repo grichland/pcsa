@@ -14,6 +14,11 @@ resumed in a new process from the views of its earlier decisions.
 The notes of a decision carry the whole pair matrix (`matrix`: our 11 actions against their kept actions) for
 the run records and the dashboard. Research's training player (rl2/player.py: episodes, rewards, exploration)
 is not copied.
+
+Feature modes (`features`, research rl2/player.py): "base" is the observation the network was trained on before
+the belief tracker; "belief" and "belief+mega" (pcsa.rl_training.belief_features) replace some columns with what
+one belief per battle (pcsa.belief.fast.BattleBelief, kept with the game's memory) says. The mode must be the one
+the checkpoint was trained with (checkpoint_features); pcsa.players.neural enforces it.
 """
 
 from __future__ import annotations
@@ -38,6 +43,7 @@ from pcsa.rl_training.spec import VOCAB
 
 PREVIEW_TAU, PREVIEW_TOP_P = 0.1, 0.9
 VERSION = "v2"  # the "version" field of a poke-singles-former checkpoint
+FEATURES = ("base", "belief", "belief+mega")  # feature modes (belief_features.MODES)
 MOVES, MEGA_AT, SWITCH_AT = 4, 4, 8  # action rows: 0-3 move, 4-7 move with Mega, 8-10 switch to bench
 THEIR_ACTIVE, THEIR_BENCH = 6, 7  # observation rows of their active and of their first bench member
 MASKED = -1e8  # a logit below this is a masked one
@@ -50,6 +56,7 @@ class _Game:
     cache: dict = field(default_factory=dict)  # the memory after the latest committed decision
     before: dict = field(default_factory=dict)  # the memory before it (a same-turn retry starts here again)
     last: Any = None  # the latest committed decision's observation
+    belief: Any = None  # pcsa.belief.fast.BattleBelief of this battle (feature modes other than "base")
 
 
 @dataclass(frozen=True)
@@ -67,6 +74,7 @@ class Proposal:
     base: dict  # the memory this decision was computed from
     cache: dict  # the memory with this decision in it
     out: dict  # the network's outputs (matrix, kept_idx, kept_p, opp_mega, ...)
+    belief: Any = None  # the battle's belief (feature modes other than "base"), carried into the committed game
 
 
 def as_numpy_rng(rng) -> np.random.Generator:
@@ -89,6 +97,15 @@ def checkpoint_config(state: dict) -> Config:
     if state.get("version") != VERSION or not isinstance(model, dict):
         raise ValueError(f"not a poke-singles-former checkpoint (version {state.get('version')!r}, need {VERSION!r})")
     return Config(**model)
+
+
+def checkpoint_features(state: dict) -> str:
+    """The feature mode a checkpoint was trained with: its run config's `features` (research rl2/train.py Run2),
+    "base" when the config has none (every run before the belief tracker)."""
+    mode = (state.get("config") or {}).get("features") or "base"
+    if mode not in FEATURES:
+        raise ValueError(f"checkpoint trained with unknown feature mode {mode!r} (known: {', '.join(FEATURES)})")
+    return mode
 
 
 def _copy(cache: dict) -> dict:
@@ -133,6 +150,17 @@ def matrix_notes(obs: fx.Obs, out: dict, probs: torch.Tensor, index: int) -> dic
     }
 
 
+def belief_notes(belief) -> dict:
+    """A short summary of the battle's belief for the decision record (feature modes other than "base")."""
+    t = belief.tracker
+    return {
+        "members": len(t.members),
+        "updates": int(belief.updates),
+        "rebuilds": int(belief.rebuilds),
+        "evidence": {k: int(v) for k, v in sorted(t.stats.items())},
+    }
+
+
 class FormerPlayer:
     """pcsa Player protocol over a former.Net; never raises on a decision (falls back to the first legal one)."""
 
@@ -148,8 +176,16 @@ class FormerPlayer:
         greedy_preview: bool = False,
         opponent_temperature: float = 1.0,
         opponent_top: int = 0,
+        features: str = "base",
+        belief_options: dict | None = None,
     ) -> None:
+        if features not in FEATURES:
+            raise ValueError(f"unknown feature mode {features!r} (one of {', '.join(FEATURES)})")
         self.net, self.cfg, self.device = net.to(device).eval(), cfg, device
+        self.features = features
+        # new_battle_belief's options (crit_reported, empty_unknown); research's defaults when not given
+        self.belief_options = dict(belief_options or {})
+        self.matrix_blend: Any = None  # stage 3's cell blend (see _blend); None: the network's matrix as trained
         # the temperature of their predicted actions where they weight the matrix (1 = as trained)
         self.net.opp_temperature = float(opponent_temperature)
         self.net.opp_top = int(opponent_top)  # weigh only their N likeliest kept actions (0 = all, as trained)
@@ -174,7 +210,29 @@ class FormerPlayer:
 
     def params(self) -> dict:
         c = self.cfg
-        return {"temperature": self.temperature, "d": c.d, "layers": c.layers, "top_k": c.top_k, "memory": c.memory}
+        out = {"temperature": self.temperature, "d": c.d, "layers": c.layers, "top_k": c.top_k, "memory": c.memory}
+        return out | {"features": self.features}
+
+    # Observations -------------------------------------------------------------------------------------
+    def _belief(self, game: _Game):
+        """The battle's belief (created on first use), or None in feature mode "base"."""
+        if self.features == "base":
+            return None
+        if game.belief is None:
+            from pcsa.rl_training.belief_features import new_battle_belief
+
+            game.belief = new_battle_belief(**self.belief_options)
+        return game.belief
+
+    def _observe(self, battle, legal, game: _Game) -> fx.Obs:
+        if self.features == "base":
+            return fx.observe(battle, legal)
+        return fx.observe(battle, legal, belief=self._belief(game), feature_mode=self.features)
+
+    def _preview_observations(self, battle, picks) -> list[fx.Obs]:
+        if self.features == "base":
+            return fx.preview_observations(battle, picks)
+        return fx.preview_observations(battle, picks, belief=self._belief(self.game), feature_mode=self.features)
 
     def notes(self) -> dict:
         notes, self._notes = self._notes, {}
@@ -203,7 +261,7 @@ class FormerPlayer:
     @torch.no_grad()
     def preview_values(self, battle, picks) -> np.ndarray:
         """The value of each pick's turn-0 observation, each pick its own one-decision game."""
-        obs = fx.preview_observations(battle, picks)
+        obs = self._preview_observations(battle, picks)
         out = self.net(stack([[o] for o in obs], self.device))
         return out["value"][:, 0].float().cpu().numpy()
 
@@ -232,29 +290,51 @@ class FormerPlayer:
         the live loop builds a new Battle, with a new tag, for every decision of one battle."""
         return self.game if turn >= self.game.turn else _Game()
 
-    def _step(self, view: DecisionView) -> tuple[fx.Obs, int, bool, dict, dict, dict]:
-        """(observation, turn, replaces, memory before, memory after, outputs) of this view; changes nothing."""
+    def _step(self, view: DecisionView) -> tuple[fx.Obs, int, bool, dict, dict, dict, Any]:
+        """(observation, turn, replaces, memory before, memory after, outputs, belief) of this view. Changes nothing
+        but the battle's belief, which reads the view's protocol (the same protocol read again changes nothing)."""
         battle = view.battle
         turn = int(battle.turn or 0)  # type: ignore[union-attr]
         g = self._game(turn)
-        obs = fx.observe(battle, view.legal)
+        obs = self._observe(battle, view.legal, g)
         replaces = g.last is not None and g.turn == turn and _same(g.last, obs)
         base = g.before if replaces else g.cache
         cache = _copy(base)
-        return obs, turn, replaces, base, cache, self.net.step_cached(obs, cache)
+        return obs, turn, replaces, base, cache, self.net.step_cached(obs, cache), g.belief
 
     def propose(self, view: DecisionView) -> Proposal:
         """The decision for this view; changes nothing (the game's memory is stepped on a copy)."""
-        obs, turn, replaces, base, cache, out = self._step(view)
+        obs, turn, replaces, base, cache, out, belief = self._step(view)
+        out = self._blend(view, obs, out, belief)
         mask = torch.as_tensor(np.asarray(obs.mask, bool), device=out["logits"].device)
         index, probs = self._sample(out["logits"][None], mask[None])
         chosen = features.legal_action(index, view.legal, view.battle)
         tag = getattr(view.battle, "battle_tag", None)
-        return Proposal(obs, index, probs, float(out["value"]), turn, tag, replaces, chosen, base, cache, out)
+        return Proposal(obs, index, probs, float(out["value"]), turn, tag, replaces, chosen, base, cache, out, belief)
+
+    def _blend(self, view: DecisionView, obs: fx.Obs, out: dict, belief: Any) -> dict:
+        """The place for stage 3 (research/pcsa-belief/stage3, research rl2's `matrix_blend`, default off; not ported
+        yet): `matrix_blend(battle, obs, out, belief)` returns the pair matrix [11, K+5] with cells blended from the
+        belief (damage-calculator cells against their kept actions), or None to keep the network's. Our logits are
+        then recomputed as the network computes them (former.Net._matrix: the matrix weighted by `kept_w`, over the
+        learned temperature, masked). Off (None) the network's outputs are returned untouched."""
+        if self.matrix_blend is None:
+            return out
+        cells = self.matrix_blend(view.battle, obs, out, belief)
+        if cells is None:
+            return out
+        from pcsa.rl_training.former import NEG
+
+        with torch.no_grad():
+            m = torch.as_tensor(cells, dtype=out["matrix"].dtype, device=out["matrix"].device)
+            mask = torch.as_tensor(np.asarray(obs.mask, bool), device=m.device)
+            logits = (m * out["kept_w"][None, :]).sum(-1) / self.net.log_tau.exp()
+            logits = torch.where(mask, logits, torch.full_like(logits, NEG))
+        return {**out, "matrix": m, "logits": logits, "network_logits": out["logits"]}
 
     def commit(self, p: Proposal) -> LegalAction:
         """Make a proposal the game's latest decision (later decisions remember it) and return its action."""
-        self.game = _Game(turn=p.turn, tag=p.tag, cache=p.cache, before=p.base, last=p.obs)
+        self.game = _Game(turn=p.turn, tag=p.tag, cache=p.cache, before=p.base, last=p.obs, belief=p.belief)
         mask = torch.as_tensor(np.asarray(p.obs.mask, bool), device=p.probs.device)
         h = float(entropy.normalised_entropy(p.probs, mask[None])[0])
         # v: the critic's value of this position (expected return: +1 win / -1 loss, +-0.1 per faint)
@@ -269,6 +349,8 @@ class FormerPlayer:
         scale = self.temperature if self.temperature > 0 else 1.0
         self._notes["matrix"]["tau"] = round(float(self.net.log_tau.detach().exp()) * scale, 4)
         self._notes["decisions"] = int(p.cache.get("t", 0))
+        if p.belief is not None:
+            self._notes["belief"] = belief_notes(p.belief)
         if p.replaces:
             self._notes["retry"] = True
         return p.chosen
@@ -280,11 +362,16 @@ class FormerPlayer:
         self.game = _Game()
         for view in views:
             try:
-                obs, turn, _, base, cache, _ = self._step(view)
+                obs, turn, _, base, cache, _, belief = self._step(view)
             except Exception:  # keep what was rebuilt
                 break
             self.game = _Game(
-                turn=turn, tag=getattr(view.battle, "battle_tag", None), cache=cache, before=base, last=obs
+                turn=turn,
+                tag=getattr(view.battle, "battle_tag", None),
+                cache=cache,
+                before=base,
+                last=obs,
+                belief=belief,
             )
         return int(self.game.cache.get("t", 0))
 

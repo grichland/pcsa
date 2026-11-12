@@ -24,3 +24,11 @@ seed: null                      # preview and `sample` draws; null: fresh each r
 # Guard rules: stop plainly wasted actions; the network's best other action is played instead ([] = the network
 # alone; one run: --set policy.neural_rules=none, or names separated by commas). See src/pcsa/players/neural_rules.py.
 rules: [no_full_heal, useless_status, locked_futile, priority_ko]
+# Feature mode: which observation columns the network reads. checkpoint (default): the mode the network was trained
+# with (its run config's `features`; none = base, as every network before the belief tracker, gold940 included).
+# base | belief | belief+mega force one; a base network refuses the belief modes. In the belief modes the player
+# keeps a belief tracker per battle (src/pcsa/belief/README.md). One run: --set policy.neural_checkpoint=<belief
+# network> is enough, the mode follows it.
+features: checkpoint
+belief_crit_lines: false        # belief modes: the protocol prints critical hits (true only for simulator runs;
+                                # the phone's battle log does not, so any hit may have been one)

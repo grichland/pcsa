@@ -3,7 +3,7 @@
 ## Packages and the one rule between them
 
 ```
-common  <-  battle  <-  phone | sim  <-  players  <-  run  <-  live  <-  cli
+common  <-  battle  <-  phone | sim  <-  players  <-  belief  <-  run  <-  live  <-  cli
                                                      sprite_training (the sprite network's trainer; only cli imports it)
                                                      rl_training (the neural player's network; only players.neural imports it)
 ```
@@ -15,6 +15,7 @@ common  <-  battle  <-  phone | sim  <-  players  <-  run  <-  live  <-  cli
 | `phone` | reading the device: adb screenshots, screens, OCR, sprites, the log panel, team sheets, calibration |
 | `sim` | the Showdown engine: the local server and the team validator `pcsa sim play` runs on |
 | `players` | how it decides: random, the two heuristics, max_damage, best_matchup_max_damage, disciplined, the mixed pool, neural (and the sim-only endgame) |
+| `belief` | what each opposing member could be: the belief tracker of research/pcsa-belief (weighted builds narrowed by the protocol's evidence; stat, speed and damage ranges), read by the neural player's belief feature modes through `rl_training`; numpy only (`src/pcsa/belief/README.md`) |
 | `run` | run records and their read-only view: battle bookkeeping, the recorder, `pcsa sim play`, the `pcsa watch` dashboard |
 | `live` | live play on the phone: device input, taps, navigation, session, turn pipeline, handlers, supervisor, `pcsa run` |
 | `sprite_training` | the sprite network's trainer, `pcsa train sprites` (needs the `train` extra; nothing at runtime imports it) |

@@ -1,4 +1,5 @@
 # From research/pcsa-rl/rl2/features.py (sha256 6b9f6eeb6cb2, 2026-11-11 12:28); keep diffable.
+# pcsa: the belief feature modes' hooks from research's later version (sha256 33773407c2d6, 2026-11-12 14:14).
 """v2 decision observations: revealed-only opposing rows, damage ranges, a last-turn token.
 
 The network never sees a guessed build. Opposing rows hold what the battle revealed (moves, item, ability), facts
@@ -73,11 +74,14 @@ def their_fighter(battle, mon, stats: dict | None = None, *, spread_known: bool 
 
 class Ctx(f1._Ctx):
     """S1's per-observation cache, with damage from ranges instead of assumed sets. Fighters (the stats, types,
-    item and ability of one side of a damage calculation) are built once per member per observation."""
+    item and ability of one side of a damage calculation) are built once per member per observation. `belief`: a
+    pcsa.belief.fast.BattleBelief (feature modes other than "base", belief_features), else None."""
 
-    def __init__(self, battle, log, legal) -> None:
+    def __init__(self, battle, log, legal, belief=None, feature_mode: str = "base") -> None:
         super().__init__(battle, log, legal)
         self._fighters: dict[tuple[int, str], Fighter] = {}
+        self.belief = belief
+        self.feature_mode = feature_mode if belief is not None else "base"
 
     def own(self, mon) -> Fighter:
         k = (id(mon), "own")
@@ -107,6 +111,10 @@ class Ctx(f1._Ctx):
         return self._hits[k]
 
     def _range_hits(self, att: Row, dfn: Row) -> list:
+        if self.belief is not None:
+            from pcsa.rl_training import belief_features
+
+            return belief_features.hits(self, att, dfn)
         b, moves = self.battle, att.moves[:4]
         if att.ours:
             fd = self.own(dfn.mon) if dfn.ours else self.their(dfn.mon)
@@ -203,6 +211,10 @@ def _encode(
         if cache is None or k not in cache:
             f, d = fr.encode(ctx.battle, row, opp, ctx)
             e, ed = extra(ctx.battle, row, ctx)
+            if ctx.belief is not None:
+                from pcsa.rl_training import belief_features
+
+                belief_features.patch(ctx, row, opp, f, e)
             entry = (np.concatenate([f, e]), np.concatenate([d, np.asarray(ed, np.int64)]))
             if cache is None:
                 rows[i], ids[i] = entry
@@ -255,11 +267,15 @@ def last_turn(battle, records: dict[int, tt.TurnRecord] | None = None) -> tuple[
 
 
 # Observations --------------------------------------------------------------------------------------------------
-def observe(battle, legal: Sequence[LegalAction]) -> Obs:
-    """The v2 observation of one decision (no catalog, no tracker)."""
+def observe(battle, legal: Sequence[LegalAction], belief=None, feature_mode: str = "belief") -> Obs:
+    """The v2 observation of one decision (no catalog, no tracker). With `belief` (a pcsa.belief.fast.BattleBelief,
+    one per battle) the belief columns of belief_features in `feature_mode` ("belief" or "belief+mega"); the belief
+    first reads the battle's new protocol lines and request."""
     log = features_log.read(battle)
     mine, theirs = f1.my_rows(battle, legal), their_rows(battle, log)
-    rows, ids, field = _encode(Ctx(battle, log, legal), mine, theirs, legal)
+    if belief is not None:
+        belief.update_from(battle)
+    rows, ids, field = _encode(Ctx(battle, log, legal, belief, feature_mode), mine, theirs, legal)
     f1._remember_bench(battle)
     mask = np.zeros(ACTIONS, dtype=bool)
     for a in legal:
@@ -269,11 +285,14 @@ def observe(battle, legal: Sequence[LegalAction]) -> Obs:
     return Obs(rows, ids, field, last, last_ids, mask, int(battle.turn or 0), forced)
 
 
-def preview_observations(battle, picks: Sequence[tuple[int, int, int]]) -> list[Obs]:
-    """Turn-0 observations, one per (lead, second, third) pick: our trio with the lead active, their six."""
+def preview_observations(
+    battle, picks: Sequence[tuple[int, int, int]], belief=None, feature_mode: str = "belief"
+) -> list[Obs]:
+    """Turn-0 observations, one per (lead, second, third) pick: our trio with the lead active, their six. With
+    `belief`, their rows from their species' priors (belief_features)."""
     team = list(battle.team.values())
     log = features_log.read(battle)
-    ctx, cache = Ctx(battle, log, ()), {}
+    ctx, cache = Ctx(battle, log, (), belief, feature_mode), {}
     theirs = their_rows(battle, log)
     last, last_ids = last_turn(battle)
     leads = {i: f1.my_rows(battle, (), [team[i]], active=0)[0] for i in {p[0] for p in picks}}

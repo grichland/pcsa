@@ -116,6 +116,8 @@ max-statements = 50
 "src/pcsa/live/log_reader.py" = ["PLR0913"]
 # Network code copied from research/pcsa-rl/rl and kept diffable with it: feature layouts are numbered slots.
 "src/pcsa/rl_training/**" = ["PLR2004", "PLR0913", "E731"]
+# The belief tracker copied from research/pcsa-belief/belief and kept diffable with it (numpy over game arithmetic).
+"src/pcsa/belief/**" = ["PLR2004", "PLR0913", "E731", "E741", "C901", "SIM102", "SIM108", "SIM300"]
 # Standalone helper scripts print their progress.
 "scripts/**" = ["T20"]
 

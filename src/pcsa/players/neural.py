@@ -15,6 +15,14 @@ Guard rules (pcsa.players.neural_rules, the `rules` list) stop plainly wasted ac
 Rock already up, a status move on a statused foe, a lock into moves that do nothing, a missed sure priority KO): the
 network's best other action is played and the notes say so (`override`, `override_why`, `network`).
 
+Feature mode (`features`): the observation columns the network reads. A checkpoint carries the mode it was trained
+with (its run config's `features`; none = "base", every network before the belief tracker), and by default
+(`features: checkpoint`) that is the mode used, so an old network is never fed belief columns. An explicit mode
+is refused at build when the checkpoint is "base" and the mode is not; between belief modes it is allowed (logged).
+In the belief modes the player keeps one belief tracker per battle (pcsa.belief); `belief_crit_lines` says whether
+the protocol prints critical hits (false on the phone: a hit may then have been one), and empty items / abilities
+of seen builds count as unknown. See src/pcsa/belief/README.md.
+
 torch is imported only when a checkpoint is loaded; it comes with the `train` extra (`uv sync --extra train`).
 """
 
@@ -39,6 +47,7 @@ from pcsa.players.base import DecisionView, LegalAction, Player, TeamPreviewView
 NETWORKS_ENV = "PCSA_NETWORKS"  # a folder relative checkpoint paths are looked up in first
 SAMPLING = ("greedy", "sample")
 PREVIEW = ("critic", "greedy")
+FEATURES = ("checkpoint", "base", "belief", "belief+mega")  # checkpoint: the mode the network was trained with
 TORCH_HINT = "the neural player needs torch: run `uv sync --extra train` (or `uv sync --inexact --extra train`)"
 
 
@@ -57,6 +66,8 @@ class NeuralParams:
     threads: int = 1  # torch CPU threads
     seed: int | None = None  # preview and `sample` draws; None: fresh each run
     rules: list[str] = field(default_factory=list)  # guard rules (pcsa.players.neural_rules); [] = the network alone
+    features: str = "checkpoint"  # the observation's feature mode; checkpoint: the one the network was trained with
+    belief_crit_lines: bool = False  # belief modes: the protocol shows critical hits (the simulator does; live: no)
 
     @classmethod
     def load(cls, path: Path) -> NeuralParams:
@@ -74,6 +85,8 @@ class NeuralParams:
             raise ConfigError(f"{where}: sampling must be one of {SAMPLING}, not {self.sampling!r}")
         if self.preview not in PREVIEW:
             raise ConfigError(f"{where}: preview must be one of {PREVIEW}, not {self.preview!r}")
+        if self.features not in FEATURES:
+            raise ConfigError(f"{where}: features must be one of {FEATURES}, not {self.features!r}")
         if not isinstance(self.opponent_top, int) or isinstance(self.opponent_top, bool) or self.opponent_top < 0:
             raise ConfigError(f"{where}: opponent_top must be a whole number, 0 (all) or more")
         if self.fallback == "neural":
@@ -95,18 +108,37 @@ def resolve_checkpoint(raw: str, environ: Mapping[str, str] | None = None) -> Pa
     return paths.repo_root() / path
 
 
+def feature_mode(setting: str, trained: str, checkpoint: str = "the checkpoint") -> str:
+    """The feature mode to play with: the checkpoint's (`trained`) unless `setting` names another. ConfigError when
+    that would feed belief columns to a network trained without them."""
+    if setting in ("checkpoint", trained):
+        return trained
+    if trained == "base":
+        raise ConfigError(
+            f"features: {setting} asked for, but {checkpoint} was trained with feature mode base: an old network "
+            "cannot read belief columns (set features: checkpoint, or point policy.neural_checkpoint at a belief one)"
+        )
+    log.warning("neural_features_override", trained=trained, used=setting, checkpoint=checkpoint)
+    return setting
+
+
 def load_policy(params: NeuralParams, path: Path) -> tuple[Any, dict]:
-    """(FormerPlayer, facts about the checkpoint); ConfigError without torch, ValueError on a bad checkpoint."""
+    """(FormerPlayer, facts about the checkpoint); ConfigError without torch or on a feature mode the network cannot
+    read, ValueError on a bad checkpoint."""
     try:
         import torch
     except ImportError as error:
         raise ConfigError(TORCH_HINT) from error
     from pcsa.rl_training.former import Net
-    from pcsa.rl_training.former_player import FormerPlayer, checkpoint_config, load_checkpoint
+    from pcsa.rl_training.former_player import FormerPlayer, checkpoint_config, checkpoint_features, load_checkpoint
 
     torch.set_num_threads(params.threads)
     state = load_checkpoint(path)
     cfg = checkpoint_config(state)
+    trained = checkpoint_features(state)
+    mode = feature_mode(params.features, trained, path.name)
+    # live: no critical-hit lines (a hit may have been one); a seen build's empty item or ability is unknown
+    belief_options = {"crit_reported": bool(params.belief_crit_lines), "empty_unknown": True}
     temperature = params.temperature if params.sampling == "sample" else 0.0
     policy = FormerPlayer(
         Net(cfg),
@@ -118,6 +150,8 @@ def load_policy(params: NeuralParams, path: Path) -> tuple[Any, dict]:
         greedy_preview=params.preview == "greedy",
         opponent_temperature=params.opponent_temperature,
         opponent_top=params.opponent_top,
+        features=mode,
+        belief_options=belief_options,
     )
     policy.load_state_dict(state["net"])
     facts = {"update": state.get("update"), "run": (state.get("config") or {}).get("name")}
@@ -172,6 +206,8 @@ class NeuralPlayer:
             **self.facts,
             "fallback_kind": self.fallback.name,
         }
+        if self.policy is not None and hasattr(self.policy, "features"):
+            out["features_used"] = self.policy.features  # the feature mode played (the checkpoint's, by default)
         return out | ({"error": self.error} if self.error else {})
 
     def notes(self) -> dict:
