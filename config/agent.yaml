@@ -24,7 +24,7 @@ timing:
   poll_interval_s: 1.0
   fight_settle_s: 0.9
   back_settle_s: 0.7
-  move_peek: always       # always: look at the move list before every action turn (Fight, read, Back).
+  move_peek: when_needed  # always: look at the move list before every action turn (Fight, read, Back).
                           # when_needed: skip the look (about 3.4 s a turn) and take move names from the team
                           # sheet, PP from the log count and the Mega button from the log; the move row is then
                           # tapped twice. The turn still looks when a move's counted PP is 4 or less, the log

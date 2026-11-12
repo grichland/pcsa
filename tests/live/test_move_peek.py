@@ -11,7 +11,7 @@ import pytest
 
 from pcsa.battle.stats import hp_value, stat_value
 from pcsa.common import paths
-from pcsa.common.config import Config, load_config
+from pcsa.common.config import Config, TimingConfig, load_config
 from pcsa.common.errors import ConfigError
 from pcsa.common.types import MoveInfo, Screen
 from pcsa.live import move_peek
@@ -157,13 +157,17 @@ def mega_offered(player: Scripted) -> list[bool]:
     return [any(" mega" in message for message in offered) for offered in player.offered]
 
 
-def test_the_setting_defaults_to_always_and_rejects_other_values(config: Config) -> None:
-    assert config.agent.timing.move_peek == "always"
+def test_the_setting_is_when_needed_in_agent_yaml_and_rejects_other_values(config: Config) -> None:
+    assert config.agent.timing.move_peek == "when_needed"  # agent.yaml since 11 Nov; the code's default stays always
+    assert TimingConfig().move_peek == "always"
     with pytest.raises(ConfigError, match="timing.move_peek"):
         load_config(paths.repo_root() / "config" / "agent.yaml", ["timing.move_peek=sometimes"], environ={})
 
 
-def test_always_records_the_look_on_every_turn(config: Config, tmp_path: Path) -> None:
+def test_always_records_the_look_on_every_turn(tmp_path: Path) -> None:
+    config = load_config(
+        paths.repo_root() / "config" / "agent.yaml", [*OVERRIDES[:1], "timing.move_peek=always"], environ={}
+    )
     steps = lobby_to_team_select() + one_turn(1, START) + one_turn(2, QUAKE) + end_of_battle("win")
     state, device, recorder = harness.run_script(config, steps, tmp_path)
     assert state.outcomes == ["win"] and device.rejected == []

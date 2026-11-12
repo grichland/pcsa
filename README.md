@@ -103,6 +103,11 @@ uv run pcsa nav --to lobby           # walk the menus to the lobby
 
 `--player` takes a player kind (default: `policy.kind` in `config/agent.yaml`, `custom_heuristic`).
 
+An action turn reads the battle log, decides, and taps Fight and the move row twice: it does not first open the
+move list. It still looks at the move list on a turn that needs it (a move nearly out of PP by the log's count, a
+log read that lost lines, taps that did not go through, an unconfirmed Mega). `timing.move_peek: always` in
+`config/agent.yaml` looks before every turn instead.
+
 For longer evaluation sessions, `scripts\run_agent.ps1` holds the settings (player, seed, run name,
 overrides) at the top of the file, stops any agent left over from a run that ended abruptly, syncs the
 environment, checks the phone and starts the run. With `$Mirror = $true` (the default) it also opens a phone
