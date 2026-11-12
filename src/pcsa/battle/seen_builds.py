@@ -101,8 +101,9 @@ class SeenBuilds:
         tmp.replace(self.path)
 
     def ranked(self, species: str) -> list[Seen]:
-        """A species' seen builds, the most often seen first (then the most recently seen)."""
-        return sorted(self.by_species.get(to_id_str(species), []), key=lambda s: (s.count, s.last), reverse=True)
+        """A species' seen builds, the most recently seen first (then the most often seen): what the ladder brings now
+        comes before what it brought earlier in the season."""
+        return sorted(self.by_species.get(to_id_str(species), []), key=lambda s: (s.last, s.count), reverse=True)
 
     # Learning ------------------------------------------------------------------------------------------------
     def learn(
@@ -127,7 +128,7 @@ class SeenBuilds:
         for s in ranked:
             if covers(s.build, o):
                 _extend(s, o, catalog)
-                s.count, s.last = s.count + 1, when
+                _seen_again(s, when)
                 return _row(o, "seen again" if s.source == "catalog" else "added build seen again", s)
         cover = next((b for b in catalog.builds(o.species) if covers(b, o)), None)
         if cover is not None:
@@ -138,11 +139,18 @@ class SeenBuilds:
         for s in ranked:
             if s.source == "added" and _fits_seen(s, o):
                 _extend(s, o, catalog)
-                s.count, s.last = s.count + 1, when
+                _seen_again(s, when)
                 return _row(o, "added build extended", s)
         s = Seen(_new_build(o, catalog), "added", 1, when, when, o.moves, o.item is not None, o.ability is not None)
         entries.append(s)
         return _row(o, "added", s)
+
+
+def _seen_again(s: Seen, when: str) -> None:
+    """One more sighting on `when`; battles learned out of order (an older run learned later) keep the dates right."""
+    s.count += 1
+    s.first = min(s.first, when) if s.first else when
+    s.last = max(s.last, when)
 
 
 # Coverage --------------------------------------------------------------------------------------------------------

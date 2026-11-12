@@ -76,3 +76,18 @@ def test_the_assumed_set_starts_from_the_first_build_that_fits_what_was_revealed
     assert build.item == "Focus Sash" and fits(build, ["scaleshot"])
     build, _, _ = _base_build(builds, mon, "garchomp", False, None)
     assert build.item == "Choice Scarf"  # nothing revealed: the top build
+
+
+def test_the_most_recently_seen_build_ranks_first_and_late_learning_keeps_the_dates(store: SeenBuilds) -> None:
+    """Today's sighting goes to the top even when an older build was seen more often; a battle from an older run
+    learned afterwards adds to the count without making its build look recent."""
+    scarf, sash = Observed("garchomp", ("outrage",)), Observed("garchomp", ("swordsdance",))
+    store.learn("b1", [scarf], plain(), "2026-11-04")
+    store.learn("b2", [scarf], plain(), "2026-11-05")
+    store.learn("b3", [sash], plain(), "2026-11-11")
+    assert [(s.build.item, s.count) for s in store.ranked("garchomp")] == [("Focus Sash", 1), ("Choice Scarf", 2)]
+    assert Catalog(CATALOG, seen=store).builds("Garchomp")[0].item == "Focus Sash"
+    store.learn("b0", [sash], plain(), "2026-11-02")  # an older run, learned later
+    [top] = [s for s in store.ranked("garchomp") if s.build.item == "Focus Sash"]
+    assert (top.count, top.first, top.last) == (2, "2026-11-02", "2026-11-11")
+
