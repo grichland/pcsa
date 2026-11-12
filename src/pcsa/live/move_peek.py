@@ -10,7 +10,7 @@ has one runs today's flow unchanged. Measured on the recorded runs: research/pcs
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from poke_env.data import GenData
 from poke_env.data.normalize import to_id_str
@@ -184,3 +184,22 @@ def screen_facts(
     b.mega_spent = b.mega_spent or done
     mega = holds_stone(member, t.battle) and not b.mega_spent
     return ScreenFacts(logged_rows(b, member, t), mega, False, active_hp)
+
+
+def refused_moves(last: dict, turn: int, same_turn: bool, repeated: bool) -> tuple[int, ...]:
+    """The move slots we tapped in this turn that the game did not take: the action screen is back in the same turn
+    (the log shows no new turn, or the screen never left and the turn number did not move). Empty for a new turn or
+    after a switch; it grows with every refusal of the turn, so two blocked moves cannot be tried in turns."""
+    label = str(last.get("label") or "")
+    again = same_turn or (repeated and last.get("turn") == turn)
+    if not again or "move" not in label:
+        return ()
+    return (*last.get("refused", ()), int(label.rsplit("move", 1)[1]))
+
+
+def without_moves(screen: ScreenFacts, slots: tuple[int, ...]) -> ScreenFacts:
+    """The screen's facts with the refused moves marked unavailable: whatever blocks them (Disable, Torment, a rule
+    the log reader does not know), the player is not offered them again in this turn."""
+    if not slots:
+        return screen
+    return replace(screen, moves=tuple(replace(m, disabled=True) if m.slot in slots else m for m in screen.moves))

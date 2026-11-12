@@ -112,16 +112,17 @@ class TurnPipeline:
         if why is None and (why := move_peek.why_after_log(b, self.team, t)) is not None:
             peek = self.peek(b)  # the log is already read; from here the turn is the peek-first flow
         hp = obs.fields.get("active_hp")
-        screen = move_peek.screen_facts(b, self.team, t, peek, why, hp)
+        refused = move_peek.refused_moves(last, turn, same_turn, repeated)
+        screen = move_peek.without_moves(move_peek.screen_facts(b, self.team, t, peek, why, hp), refused)
         request = self._request(b, "action", battle, out, t.active, screen, {t.active: tuple(hp)} if hp else {})
         if request is None and why is None:  # not trackable after all: a decision from the screen needs the list
             why, peek = "untracked", self.peek(b)
-            screen = move_peek.screen_facts(b, self.team, t, peek, why, hp)
+            screen = move_peek.without_moves(move_peek.screen_facts(b, self.team, t, peek, why, hp), refused)
         if request is None:
             battle, out = None, None
         slot_moves = list(self.team.members[b.requested[t.active]].moves) if self.team and b.requested else []
         decision = self.decider.decide(b, screen, battle, out, deadline, slot_moves=slot_moves, active=t.active)
-        path = {"same_turn": same_turn, "peek": why or move_peek.SKIPPED}
+        path = {"same_turn": same_turn, "peek": why or move_peek.SKIPPED, "refused": list(refused)}
         self._save_decision(b, "action", battle, out, request, decision, visit=visit, log_turn=log_info.turn, **path)
         plan = self.phone.executor.plan_action(
             decision.chosen.action, b.visible_order, peek.fields.get("focused_row") if peek else None
@@ -179,6 +180,7 @@ class TurnPipeline:
             "turn": turn,
             "move_name": move_name,
             "log_turn": log_info.turn,
+            "refused": tuple(path["refused"]),
             "at": t0,
         }
 

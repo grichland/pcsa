@@ -240,7 +240,9 @@ def test_taps_that_did_not_go_through_look_on_the_retry(fast: Config, tmp_path: 
     taps, decisions, _ = play(fast, tmp_path, turns, Scripted())
     assert [d["peek"] for d in decisions] == ["skipped", "retry", "retry", "skipped"]
     assert [d["same_turn"] for d in decisions] == [False, True, True, False]
-    assert taps == [NOT_LOOKED, LOOKED, LOOKED, NOT_LOOKED]
+    assert [d["refused"] for d in decisions] == [[], [0], [0, 1], []]  # a refused move is not tried again that turn
+    retry = [["fight", "move_back", "fight", f"move_rows{row}", f"move_rows{row}"] for row in (1, 2)]
+    assert taps == [NOT_LOOKED, *retry, NOT_LOOKED]
 
 
 def test_pressure_is_counted_and_a_low_count_looks_so_an_empty_move_is_never_offered(
@@ -293,3 +295,25 @@ def test_a_request_the_battle_rejects_looks_after_all(when_needed: Config, tmp_p
     assert [d["peek"] for d in decisions] == ["skipped", "untracked"]
     assert [d["degrade"] for d in decisions] == ["full", "screen"]
     assert taps[1] == LOOKED
+
+
+def test_a_move_refused_by_the_game_is_not_offered_again_in_that_turn() -> None:
+    """The action screen back in the same turn after a move was tapped: whatever blocks the move, it is marked
+    unavailable for the rest of this turn, so the player picks something else instead of the turn timer."""
+    from pcsa.common.types import MoveInfo
+    from pcsa.live import move_peek
+    from pcsa.players.base import ScreenFacts
+
+    last = {"label": "move3", "turn": 10, "log_turn": 9}
+    assert move_peek.refused_moves(last, 10, True, False) == (3,)  # the log shows no new turn
+    assert move_peek.refused_moves(last, 10, False, True) == (3,)  # the log read failed, the screen never left
+    assert move_peek.refused_moves(last, 11, False, True) == ()  # a new turn
+    assert move_peek.refused_moves(last, 10, False, False) == ()
+    assert move_peek.refused_moves({"label": "mega+move1", "turn": 4}, 4, True, False) == (1,)
+    assert move_peek.refused_moves({"label": "move2", "turn": 4, "refused": (3,)}, 4, True, False) == (3, 2)
+    assert move_peek.refused_moves({"label": "switch2", "turn": 4, "refused": (3,)}, 4, True, True) == ()
+    assert move_peek.refused_moves({}, 1, True, True) == ()
+    screen = ScreenFacts(tuple(MoveInfo(i, f"m{i}", (8, 8)) for i in range(4)), True, False, (10, 20))
+    marked = move_peek.without_moves(screen, (3, 2))
+    assert [m.disabled for m in marked.moves] == [False, False, True, True] and marked.mega_available
+    assert move_peek.without_moves(screen, ()) is screen
