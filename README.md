@@ -157,7 +157,7 @@ uv run pcsa run --player neural --battles 10 --set policy.neural_checkpoint=asse
 
 `poke-transformer-general-800.pt` is the general network (update 800 of the training run, any team); `team1.pt`,
 `team2.pt` and `team3.pt` are the same network trained a little further with one of the account's three teams on
-its side of every battle. `config/players/neural.yaml` names the general one; `scripts\run_agent.ps1` runs the
+its side of every battle. `config/players/neural.yaml` names the one in use (match it to the team on the phone); `scripts\run_agent.ps1` runs the
 neural player unless `$Player` is changed.
 
 ![The neural player's network: 12 Pokémon, the field and the last turn become 14 tokens per decision; a transformer with a memory of earlier decisions feeds three readouts; the network first predicts the opponent's action, then scores each of its own actions against each predicted one in a matrix, and a value head estimates the win chance](docs/images/network.svg)
@@ -193,9 +193,9 @@ Two temperatures can be set for play without touching the checkpoint. `temperatu
 only: it multiplies the network's own policy temperature, so 2.0 draws from a flatter distribution (under `greedy`
 it changes nothing, the top action stays the top action). `opponent_temperature` applies to the prediction of the
 opponent's action where it weights the matrix: above 1 the choice hedges against their less likely actions, below
-1 it trusts the favourite more, and this does change the action played under `greedy`. `neural.yaml` sets it to
-1.3, the value at which the prediction's confidence matches how often it was right on 295 recorded ladder battles
-(as trained, 1.0, it was 48% sure of its top guess and right 38% of the time against real people); `temperature`
+1 it trusts the favourite more, and this does change the action played under `greedy`. `neural.yaml` sets it a little above 1
+(1.2 now; 1.3 is the value at which the prediction's confidence matches how often it was right on 295 recorded ladder battles
+; as trained, 1.0, it was 48% sure of its top guess and right 38% of the time against real people); `temperature`
 is 1.0. `opponent_top` weighs our options against only their N likeliest actions instead of all nine columns
 (`neural.yaml`: 3; 0 is all of them, as trained). It was chosen from the dashboard's what-if on live games and
 has not been measured in the simulator yet.
