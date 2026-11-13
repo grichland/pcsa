@@ -245,6 +245,7 @@ def build(
     rows_by_turn=None,
     decision_turn: int = 0,
     sprites_by_turn=None,
+    regenerator: bool = True,
 ) -> tuple[Battle, Translation]:
     """The Battle for one decision. Without `picks` it is the team preview.
 
@@ -257,7 +258,7 @@ def build(
         battle = ChampionsBattle(tag, USERNAME, LOGGER, 9)
         battle.player_role = "p1"
         members = their_members(preview, replaced)
-        t = Translator(battle, our_members(team, picks), members, disguises=disguises)
+        t = Translator(battle, our_members(team, picks), members, disguises=disguises, regenerator=regenerator)
         for line in ["|player|p1|me|", "|player|p2|opponent|", "|gen|9", "|clearpoke"]:
             t.apply(line)
         for member in members:

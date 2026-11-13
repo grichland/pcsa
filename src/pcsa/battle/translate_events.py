@@ -12,6 +12,7 @@ from pcsa.battle import game
 from pcsa.battle.log_rows import Event, RawRow
 from pcsa.battle.moves import observed_form
 from pcsa.battle.names import showdown_species
+from pcsa.battle.regenerator import on_switch_out
 from pcsa.battle.translate import CONSUMED_IDS, INFORMATIONAL_KINDS, LEVEL, Member, Translator, has_illusion, letters
 from pcsa.battle.translate_megas import mega, mega_reacting, resolve_pending_mega
 
@@ -71,6 +72,9 @@ def _send_out(t: Translator, row: RawRow, e: Event) -> None:
         t.out.inferred.append({"kind": "illusion", "row": row.row_id, "shown": member.name, "real": real.name})
         member = real
     verb = "switch" if e.kind == "send_out" else "drag"
+    out = t.battle.opponent_active_pokemon if side == "p2" and t.regenerator else None
+    if out is not None and out is not t.tracked(side, member) and on_switch_out(out):
+        t.out.inferred.append({"kind": "regenerator", "row": row.row_id, "hp": out.current_hp})
     t.apply(f"|{verb}|{t.ident(side, member)}|{member.species}, L{LEVEL}|{t.hp_field(side, member)}")
     if side in t.passed_substitute:  # Shed Tail: the decoy stays for the replacement
         t.passed_substitute.discard(side)

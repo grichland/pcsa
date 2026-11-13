@@ -90,9 +90,16 @@ def has_illusion(species: str) -> bool:
 
 class Translator:
     def __init__(
-        self, battle: Battle, ours: list[Member], theirs: list[Member], *, disguises: dict[str, str] | None = None
+        self,
+        battle: Battle,
+        ours: list[Member],
+        theirs: list[Member],
+        *,
+        disguises: dict[str, str] | None = None,
+        regenerator: bool = True,
     ) -> None:
         self.battle = battle
+        self.regenerator = regenerator  # their Regenerator user heals on switch-out (pcsa.battle.regenerator)
         self.disguises = dict(disguises or {})
         self.alias: dict[str, tuple[str, Member]] = {}  # side -> (shown name, Illusion user)
         self.sent_out: dict[str, str] = {}  # side -> row id of its latest send-out
