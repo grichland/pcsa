@@ -198,6 +198,10 @@ class Net(nn.Module):
         scale = self.cfg.d**-0.5
         move_logits = (self.opp_move_q(r) @ moves.T) * scale  # [B, V]
         allowed = self.learnset[ids[:, 6, 0]].clone()
+        narrowed = b.get("opp_allowed")  # pcsa (inference): their moves narrowed by builds (opponent_moves.py)
+        if narrowed is not None:
+            narrowed = allowed & narrowed
+            allowed = torch.where(narrowed[:, 1:].any(-1, keepdim=True), narrowed, allowed)
         allowed.scatter_(1, ids[:, 6, 3:7], True)
         allowed[:, 0] = False
         bench = h[:, THEIR_BENCH]
@@ -242,13 +246,16 @@ class Net(nn.Module):
 
     # One game, step by step (inference) --------------------------------------------------------------------------
     @torch.no_grad()
-    def step_cached(self, obs, cache: dict) -> dict:
+    def step_cached(self, obs, cache: dict, opp_allowed=None) -> dict:
         """The next decision of a game, given `cache` (one dict per game, empty at its start): each layer keeps the
         inputs of earlier decisions' field tokens (the only tokens later decisions see), so only this decision's 14
-        tokens run. Equal to the full pass."""
+        tokens run. Equal to the full pass. `opp_allowed` ([move vocab] bool, pcsa): their active's moves narrowed
+        to these (and its revealed ones) in the opponent head; None = every learnable move, as trained."""
         device = next(self.parameters()).device
         t = cache.get("t", 0)
         b = stack([[obs]], device)
+        if opp_allowed is not None:
+            b["opp_allowed"] = torch.as_tensor(np.asarray(opp_allowed, bool), device=device)[None]
         x = self.encode(b)[0, 0]  # [14, d]; position 0 from encode, replaced by position t
         x = x - self.position[0] + self.position[min(t, self.cfg.max_positions - 1)]
         mems = cache.setdefault("mem", [[] for _ in self.blocks])

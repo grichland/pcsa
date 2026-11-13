@@ -20,6 +20,10 @@ fallback: disciplined           # decides when the network cannot: no or bad che
 opponent_top: 3                 # weigh our options against only their k likeliest actions (0 = all of them, as
                                 # trained, the setting research's matrix-blend comparison used). 3 here (user, 13 Nov; 5 on
                                 # 12 Nov); not measured in the simulator.
+opponent_moves_from_builds: true  # their active's move options: only moves of its builds seen on the ladder (else its
+                                # listed builds) that agree with its revealed moves, plus those; the opponent head's
+                                # move probabilities renormalised over them (inference only). false = every learnable
+                                # move, as trained. 13 Nov: Galarian Slowking's head gave Ice Punch 12-23%, no build has it.
 max_decision_s: 5.0             # a decision (or team preview) taking longer than this goes to the fallback
 reserve_s: 0.5                  # deadline time kept for the fallback
 threads: 1                      # torch CPU threads

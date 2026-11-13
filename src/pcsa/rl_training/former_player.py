@@ -151,6 +151,8 @@ class FormerPlayer:
         # the temperature of their predicted actions where they weight the matrix (1 = as trained)
         self.net.opp_temperature = float(opponent_temperature)
         self.net.opp_top = int(opponent_top)  # weigh only their N likeliest kept actions (0 = all, as trained)
+        # their active's move options narrowed to its listed builds' moves (pcsa.rl_training.opponent_moves)
+        self.opponent_moves_from_builds = False
         self.temperature, self.rng = temperature, as_numpy_rng(rng)
         self.greedy_preview = greedy_preview
         # preview rules (pcsa.players.preview_rules.keeper): (battle, picks) -> (keep per pick, notes); None = off
@@ -175,6 +177,7 @@ class FormerPlayer:
     def params(self) -> dict:
         c = self.cfg
         out = {"temperature": self.temperature, "d": c.d, "layers": c.layers, "top_k": c.top_k, "memory": c.memory}
+        out |= {"opponent_moves_from_builds": bool(self.opponent_moves_from_builds)}
         return out | {"features": self.features, "matrix_blend": float(self.matrix_blend)}
 
     # Observations -------------------------------------------------------------------------------------
@@ -284,7 +287,12 @@ class FormerPlayer:
         replaces = g.last is not None and g.turn == turn and _same(g.last, obs)
         base = g.before if replaces else g.cache
         cache = _copy(base)
-        return obs, turn, replaces, base, cache, self.net.step_cached(obs, cache), g.belief
+        allowed = None
+        if self.opponent_moves_from_builds:
+            from pcsa.rl_training.opponent_moves import allowed_mask
+
+            allowed = allowed_mask(battle)
+        return obs, turn, replaces, base, cache, self.net.step_cached(obs, cache, allowed), g.belief
 
     def propose(self, view: DecisionView) -> Proposal:
         """The decision for this view; changes nothing (the game's memory is stepped on a copy)."""

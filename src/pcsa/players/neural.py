@@ -67,6 +67,7 @@ class NeuralParams:
     temperature: float = 1.0  # of `sample`
     opponent_temperature: float = 1.0  # of their predicted actions where they weight the matrix; 1 = as trained
     opponent_top: int = 0  # weigh our actions against only their N likeliest actions; 0 = all, as trained
+    opponent_moves_from_builds: bool = False  # their move options: their listed builds' moves (opponent_moves.py)
     preview: str = "critic"  # critic: training's softmax(value / 0.1) top-p 0.9 nucleus; greedy: the best value
     fallback: str = "disciplined"  # the player kind that decides when the network cannot
     max_decision_s: float = 5.0  # longest a decision (or team preview) may take before the fallback decides
@@ -175,6 +176,7 @@ def load_policy(params: NeuralParams, path: Path) -> tuple[Any, dict]:
         belief_options=belief_options,
     )
     policy.load_state_dict(state["net"])
+    policy.opponent_moves_from_builds = bool(params.opponent_moves_from_builds)
     if params.matrix_blend:
         from pcsa.rl_training.matrix import action_values
 
