@@ -283,3 +283,40 @@ def test_override_rules_replace_a_full_hp_heal_with_the_networks_next_choice(tmp
     notes = player.notes()
     assert chosen.message != "/choose move slackoff" and notes["override"] == "no_full_heal"
     assert notes["network"] == "/choose move slackoff" and notes["rule"] == "neural"
+
+
+@pytest.mark.torch
+def test_preview_rules_remove_picks_and_the_critic_chooses_among_the_rest(tmp_path: Path) -> None:
+    import numpy as np
+
+    from pcsa.rl_training import preview
+
+    lead, pair = {"kingambit": ["Fire"]}, [{"types": ["Fire"], "species": ["azumarill", "slowbro"]}]  # Volcarona
+    path = synthetic_checkpoint(tmp_path)
+    player = neural(path, preview="greedy", preview_lead_avoid=lead, preview_bring_max_one=pair)
+    view = preview_view()
+    picks = preview.all_picks()
+    values = player.policy.preview_values(view.battle, picks)
+    allowed = [i for i, p in enumerate(picks) if p[0] != 5 and not {0, 1} <= set(p)]  # Kingambit 5, Azumarill 0
+    team = player.choose_team(view, soon())
+    assert team == list(picks[max(allowed, key=lambda i: values[i])])
+    notes = player.notes()["preview_rules"]
+    assert notes["kept"] == len(allowed) and notes["best_any"] == list(picks[int(np.argmax(values))])
+    every = {
+        name.lower(): ["Fire"] for name in ("azumarill", "slowbro", "charizard", "garchomp", "gengar", "kingambit")
+    }
+    stuck = neural(path, preview="greedy", preview_lead_avoid=every)
+    assert stuck.choose_team(preview_view(), soon()) == list(picks[int(np.argmax(values))])  # no pick left: all
+    assert stuck.notes()["preview_rules"]["unsatisfiable"]
+
+
+@pytest.mark.torch
+def test_the_sucker_punch_rule_reads_the_opponent_heads_kept_actions(tmp_path: Path) -> None:
+    player = neural(synthetic_checkpoint(tmp_path), rules=["sucker_punch"])
+    player.choose_team(preview_view(), soon())
+    view = view_of(decision_battle("Azumarill"))
+    their = NeuralPlayer._their(player.policy.propose(view))
+    assert their and len(their) == 9 and {kind for kind, _, _ in their} == {"move", "switch"}
+    assert abs(sum(p for _, _, p in their) - 1.0) < 1e-4
+    player.choose_action(view, soon())
+    assert "override_error" not in player.notes()

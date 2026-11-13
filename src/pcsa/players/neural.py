@@ -13,7 +13,10 @@ A battle resumed in a new process gets its memory back through `restore`.
 
 Guard rules (pcsa.players.neural_rules, the `rules` list) stop plainly wasted actions (a heal at full HP, Stealth
 Rock already up, a status move on a statused foe, a lock into moves that do nothing, a missed sure priority KO): the
-network's best other action is played and the notes say so (`override`, `override_why`, `network`).
+network's best other action is played and the notes say so (`override`, `override_why`, `network`). The
+sucker_punch rule also reads the opponent head's kept actions (the matrix's p_cols; `sucker_punch_passive`).
+Preview rules (`preview_lead_avoid`, `preview_bring_max_one`; pcsa.players.preview_rules) remove team-preview picks
+before the critic chooses among the rest (notes: `preview_rules`).
 
 Feature mode (`features`): the observation columns the network reads. A checkpoint carries the mode it was trained
 with (its run config's `features`; none = "base", every network before the belief tracker), and by default
@@ -46,7 +49,7 @@ from pcsa.common import log, paths
 from pcsa.common.clock import Deadline, precise_now
 from pcsa.common.config import Config
 from pcsa.common.errors import ConfigError
-from pcsa.players import neural_rules
+from pcsa.players import neural_rules, preview_rules
 from pcsa.players.base import DecisionView, LegalAction, Player, TeamPreviewView
 
 NETWORKS_ENV = "PCSA_NETWORKS"  # a folder relative checkpoint paths are looked up in first
@@ -76,6 +79,9 @@ class NeuralParams:
     matrix_blend: float = (
         0.0  # logits + matrix_blend x the belief's one-turn values (pcsa.rl_training.matrix); 0 = off
     )
+    sucker_punch_passive: float = 0.5  # sucker_punch rule: block above this P(their active does not attack)
+    preview_lead_avoid: dict = field(default_factory=dict)  # species -> types in their six that forbid leading it
+    preview_bring_max_one: list = field(default_factory=list)  # [{types, species}]: bring at most one of species
 
     @classmethod
     def load(cls, path: Path) -> NeuralParams:
@@ -89,6 +95,9 @@ class NeuralParams:
 
     def check(self, where: str) -> None:
         neural_rules.check(self.rules, where)
+        preview_rules.check(self.preview_lead_avoid, self.preview_bring_max_one, where)
+        if not isinstance(self.sucker_punch_passive, int | float) or not 0 <= self.sucker_punch_passive <= 1:
+            raise ConfigError(f"{where}: sucker_punch_passive must be a probability (0 to 1)")
         if self.sampling not in SAMPLING:
             raise ConfigError(f"{where}: sampling must be one of {SAMPLING}, not {self.sampling!r}")
         if self.preview not in PREVIEW:
@@ -170,6 +179,7 @@ def load_policy(params: NeuralParams, path: Path) -> tuple[Any, dict]:
         from pcsa.rl_training.matrix import action_values
 
         policy.matrix_blend, policy.matrix_values = float(params.matrix_blend), action_values
+    policy.preview_keep = preview_rules.keeper(params.preview_lead_avoid, params.preview_bring_max_one)
     facts = {"update": state.get("update"), "run": (state.get("config") or {}).get("name")}
     return policy, {**facts, "d": cfg.d, "layers": cfg.layers, "columns": cfg.top_k + 5, "memory": cfg.memory}
 
@@ -280,7 +290,10 @@ class NeuralPlayer:
             catalog, tracker = self._threat
             tracker.observe(view.battle)
             ranked = self._ranked(view, proposal)
-            spot = neural_rules.Spot(view.battle, view.legal, proposal.chosen, ranked, catalog, tracker)
+            their, passive = self._their(proposal), float(self.p.sucker_punch_passive)
+            spot = neural_rules.Spot(
+                view.battle, view.legal, proposal.chosen, ranked, catalog, tracker, their, passive
+            )
             out = neural_rules.apply(self.p.rules, spot)
         except Exception as error:
             return proposal, {"override_error": f"{type(error).__name__}: {error}"}
@@ -289,6 +302,16 @@ class NeuralPlayer:
         action, rule, reason = out
         notes = {"override": rule, "override_why": reason, "network": proposal.chosen.message}
         return replace(proposal, chosen=action), notes
+
+    @staticmethod
+    def _their(proposal: Any) -> tuple | None:
+        """The opponent head's kept actions with their probabilities (sucker_punch), None when unknown."""
+        out = getattr(proposal, "out", None)
+        if not isinstance(out, dict) or "kept_idx" not in out or "kept_p" not in out:
+            return None
+        from pcsa.rl_training.former_notes import their_actions
+
+        return their_actions(out)
 
     @staticmethod
     def _ranked(view: DecisionView, proposal: Any) -> list[LegalAction]:

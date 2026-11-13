@@ -27,7 +27,16 @@ threads: 1                      # torch CPU threads
 seed: null                      # preview and `sample` draws; null: fresh each run
 # Guard rules: stop plainly wasted actions; the network's best other action is played instead ([] = the network
 # alone; one run: --set policy.neural_rules=none, or names separated by commas). See src/pcsa/players/neural_rules.py.
-rules: [no_effect, no_full_heal, useless_status, locked_futile, priority_ko]
+rules: [no_effect, no_full_heal, useless_status, locked_futile, sucker_punch, priority_ko]
+sucker_punch_passive: 0.5       # sucker_punch rule (13 Nov): Sucker Punch / Thunderclap are blocked when they already
+                                # failed against that foe this battle, or when the opponent head's status moves plus
+                                # switches (the matrix's p_cols) exceed this; 19 of 42 live Sucker Punches failed
+# Team preview rules (13 Nov): they remove picks, the critic chooses among the rest (all of them when none is left).
+# Last 100 live battles: a Golisopod lead went 3-21 into a six with a Fire type (7-5 without); Fire moves caused 29%
+# of our faints (Golisopod 18 of 32, Gholdengo 12 of 20). {} / [] = off. See src/pcsa/players/preview_rules.py.
+preview_lead_avoid: {golisopod: [Fire]}     # species -> types in their six that forbid leading it
+preview_bring_max_one:                      # when their six holds one of `types`, bring at most one of `species`
+  - {types: [Fire], species: [golisopod, gholdengo]}
 # Feature mode: which observation columns the network reads. checkpoint (default): the mode the network was trained
 # with (its run config's `features`; none = base, as every network before the belief tracker, gold940 included).
 # base | belief | belief+mega force one; a base network refuses the belief modes. In the belief modes the player

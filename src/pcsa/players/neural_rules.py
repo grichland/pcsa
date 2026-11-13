@@ -12,7 +12,11 @@ that fires decides, and the decision's notes carry `override: <rule>`, the reaso
                   (Yawn, Toxic, Will-O-Wisp, Thunder Wave, sleep moves ...) on a foe that is already statused (Yawn:
                   or already drowsy)
   locked_futile   Encore or a Choice lock leaves only moves that do nothing: the network's best switch
-  priority_ko     a priority move surely KOs the foe and the network's pick does not KO it first
+  sucker_punch    Sucker Punch or Thunderclap (they fail unless the target attacks) when it already failed this
+                  battle against the same foe, or the network's opponent head gives their status moves and switches
+                  more than `sucker_punch_passive` (neural.yaml) of its probability (pcsa.players.sucker_punch)
+  priority_ko     a priority move surely KOs the foe and the network's pick does not KO it first (with sucker_punch
+                  on, never a Sucker Punch that rule blocks)
 
 Damage and speed are pcsa.players.threat's estimates on the sets pcsa.players.opponent assumes.
 """
@@ -20,13 +24,14 @@ Damage and speed are pcsa.players.threat's estimates on the sets pcsa.players.op
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from poke_env.battle import Effect, Move, SideCondition
 from poke_env.data.normalize import to_id_str
 
 from pcsa.common.errors import ConfigError
 from pcsa.players import no_effect as nothing
+from pcsa.players import sucker_punch as sucker
 from pcsa.players import threat
 from pcsa.players.base import LegalAction
 from pcsa.players.disciplined import RECOVERY
@@ -66,6 +71,9 @@ class Spot:
     ranked: list[LegalAction]  # every legal action, the network's most likely first
     catalog: object
     tracker: object
+    their: tuple[sucker.TheirAction, ...] | None = None  # the opponent head's kept actions; None: unknown
+    passive_max: float = sucker.PASSIVE_MAX  # sucker_punch: the largest share of their non-attacking actions
+    enabled: frozenset[str] = field(default_factory=frozenset)  # the rules on (set by apply)
 
     @property
     def mine(self):
@@ -131,10 +139,33 @@ def locked_futile(s: Spot) -> Outcome:
     return (switch, f"locked into {sorted(ids)[0]}, which does nothing") if switch else None
 
 
+def sucker_blocked(s: Spot, move: Move | None) -> str | None:
+    """Why `move` (one that fails unless the target attacks) is blocked here, else None."""
+    if move is None or move.id not in sucker.FAIL_UNLESS_ATTACKED:
+        return None
+    return sucker.why(s.battle, s.theirs, s.their, s.passive_max)
+
+
+def sucker_punch(s: Spot) -> Outcome:
+    move = _move(s.chosen)
+    reason = sucker_blocked(s, move)
+    if reason is None:
+        return None
+
+    def ok(a: LegalAction, strict: bool) -> bool:
+        m = _move(a)
+        return m is None or (m.id not in sucker.FAIL_UNLESS_ATTACKED and not (strict and useless(s, m)))
+
+    other = s.best(lambda a: ok(a, True)) or s.best(lambda a: ok(a, False))  # a useful action first
+    return (other, f"{move.id}: {reason}") if other else None  # type: ignore[union-attr]
+
+
 def priority_ko(s: Spot) -> Outcome:
     pk = threat.priority_ko(s.battle, s.mine, s.theirs, s.catalog, s.tracker)  # type: ignore[arg-type]
     if pk is None or (pk == "suckerpunch" and not foe_attacked(s.battle)):
         return None  # Sucker Punch fails unless they attack
+    if "sucker_punch" in s.enabled and sucker_blocked(s, move_object(to_id_str(pk))) is not None:
+        return None  # the sucker_punch rule would stop it
     action = s.best(lambda a: (m := _move(a)) is not None and m.id == to_id_str(pk))
     if action is None or useless(s, _move(action)):  # type: ignore[arg-type]
         return None  # e.g. the priority move cannot land (Psychic Terrain)
@@ -151,6 +182,7 @@ RULES: dict[str, Callable[[Spot], Outcome]] = {
     "no_full_heal": no_full_heal,
     "useless_status": useless_status,
     "locked_futile": locked_futile,
+    "sucker_punch": sucker_punch,
     "priority_ko": priority_ko,
 }
 
@@ -165,6 +197,7 @@ def apply(rules: Sequence[str], spot: Spot) -> tuple[LegalAction, str, str] | No
     """(action, rule, reason) of the first rule that replaces the network's choice, else None."""
     if spot.mine is None or spot.theirs is None or not spot.moves():
         return None  # a forced switch or no tracked actives: the network's pick
+    spot.enabled = frozenset(rules)
     for name in rules:
         out = RULES[name](spot)
         if out is not None and out[0] != spot.chosen:

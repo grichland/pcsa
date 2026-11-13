@@ -153,6 +153,8 @@ class FormerPlayer:
         self.net.opp_top = int(opponent_top)  # weigh only their N likeliest kept actions (0 = all, as trained)
         self.temperature, self.rng = temperature, as_numpy_rng(rng)
         self.greedy_preview = greedy_preview
+        # preview rules (pcsa.players.preview_rules.keeper): (battle, picks) -> (keep per pick, notes); None = off
+        self.preview_keep: Any = None
         self.name = f"rl:{tag}"
         self.game = _Game()
         self.fallbacks = 0
@@ -217,13 +219,23 @@ class FormerPlayer:
         try:
             picks = preview.all_picks(len(view.battle.team) or 6, view.battle.max_team_size or 3)
             values = self.preview_values(view.battle, picks)
+            keep, rules = self.preview_keep(view.battle, picks) if self.preview_keep else ([True] * len(picks), {})
+            rows = [i for i, k in enumerate(keep) if k] or list(range(len(picks)))  # none left: every pick
+            kept = values[rows]
             if self.greedy_preview:
-                index = int(np.argmax(values))
+                index = rows[int(np.argmax(kept))]
             else:
-                index = preview.choose_preview(values, self.rng, tau=PREVIEW_TAU, top_p=PREVIEW_TOP_P)
-            nats = preview.preview_entropy(values, tau=PREVIEW_TAU, top_p=PREVIEW_TOP_P)
-            h = nats / np.log(len(picks)) if len(picks) > 1 else 0.0
+                index = rows[preview.choose_preview(kept, self.rng, tau=PREVIEW_TAU, top_p=PREVIEW_TOP_P)]
+            nats = preview.preview_entropy(kept, tau=PREVIEW_TAU, top_p=PREVIEW_TOP_P)
+            h = nats / np.log(len(rows)) if len(rows) > 1 else 0.0
             self._notes = {"rule": "rl", "v": round(float(values[index]), 4), "h": round(float(h), 4)}
+            if rules:  # what the rules removed, and the critic's best pick without them
+                best = int(np.argmax(values))
+                self._notes["preview_rules"] = {
+                    **rules,
+                    "best_any": list(picks[best]),
+                    "v_any": round(float(values[best]), 4),
+                }
             return [int(i) for i in picks[index]]
         except Exception as error:  # a broken preview must not end the game
             return self._team_fallback(view, f"{type(error).__name__}: {error}")

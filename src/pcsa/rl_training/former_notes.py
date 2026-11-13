@@ -72,3 +72,14 @@ def blend_notes(out: dict, blend: float) -> dict:
         "network_index": int(torch.argmax(out["network_logits"])),
         "computed": {k: int(v) for k, v in (info.get("counts") or {}).items()},
     }
+
+
+def their_actions(out: dict) -> tuple[tuple[str, str, float], ...]:
+    """Their kept actions as the matrix weighs them (the notes' cols / col_kind / p_cols): (kind "move" or "switch",
+    move id or "", probability), for the neural player's sucker_punch guard rule."""
+    move, v = _names("move"), VOCAB["move"]
+    kept = [int(i) for i in out["kept_idx"].reshape(-1).tolist()]
+    probs = [float(p) for p in out["kept_p"].reshape(-1).tolist()]
+    return tuple(
+        ("move", move.get(i, ""), p) if i < v else ("switch", "", p) for i, p in zip(kept, probs, strict=True)
+    )
