@@ -51,7 +51,6 @@ def test_the_blend_is_off_by_default_and_the_live_config_turns_it_on() -> None:
     assert NeuralParams().matrix_blend == 0.0
     live = NeuralParams.load(REPO / "config" / "players" / "neural.yaml")
     assert live.matrix_blend == 4.0 and live.checkpoint == "assets/models/poke-transformer-belief100-20261112-1905.pt"
-    assert live.opponent_temperature == 1.0 and live.opponent_top == 0
     rollback = NeuralParams.load(ROLLBACK)
     assert rollback.matrix_blend == 0.0 and "gold940" in rollback.checkpoint
     differ = {k for k in vars(live) if getattr(live, k) != getattr(rollback, k)}

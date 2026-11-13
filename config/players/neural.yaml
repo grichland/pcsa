@@ -10,16 +10,17 @@ checkpoint: assets/models/poke-transformer-belief100-20261112-1905.pt  # v2-beli
 device: cpu
 sampling: greedy                # greedy: the most likely action; sample: training's capped (0.99) distribution
 temperature: 1.0                # of `sample`
-opponent_temperature: 1.0         # how much to trust the prediction of their action when weighing our options:
+opponent_temperature: 1.25         # how much to trust the prediction of their action when weighing our options:
                                 # above 1 hedges against their less likely actions, below 1 trusts the favourite
                                 # more; 1 = as trained. Changes the action played, also under greedy.
-                                # 1.0 here: this network's opponent head was fine-tuned on the live games (top-1
-                                # 71%, mean probability on their real action 0.50), so it is not overconfident
-                                # the way the old head was (48% sure, 38% right, which 1.3 corrected).
+                                # 1.25 here (user, 12 Nov). Research's +2 points vs gold940 were measured at 1.0;
+                                # this network's opponent head was fine-tuned on the live games (top-1 71%, mean
+                                # probability on their real action 0.50, in-sample).
 preview: critic                 # critic: training's softmax(value / 0.1), top-p 0.9 nucleus; greedy: the best value
 fallback: disciplined           # decides when the network cannot: no or bad checkpoint, no Battle, an error, too slow
-opponent_top: 0                 # weigh our options against only their k likeliest actions (0 = all of them, as
-                                # trained; the setting research's matrix-blend comparison used).
+opponent_top: 5                 # weigh our options against only their k likeliest actions (0 = all of them, as
+                                # trained, the setting research's matrix-blend comparison used). 5 here (user,
+                                # 12 Nov); not measured in the simulator.
 max_decision_s: 5.0             # a decision (or team preview) taking longer than this goes to the fallback
 reserve_s: 0.5                  # deadline time kept for the fallback
 threads: 1                      # torch CPU threads
