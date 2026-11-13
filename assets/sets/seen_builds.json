@@ -463,7 +463,12 @@
   "20261113T054006-d1711c0b",
   "20261113T054537-299f941a",
   "20261113T055037-93821bc8",
-  "20261113T055700-21c98313"
+  "20261113T055700-21c98313",
+  "20261113T124600-ba288e91",
+  "20261113T125400-180613c9",
+  "20261113T130305-b4ad9f68",
+  "20261113T131149-678a07f5",
+  "20261113T131724-8596dea0"
  ],
  "species": {
   "abomasnow": [
@@ -1069,7 +1074,7 @@
    },
    {
     "source": "added",
-    "count": 2,
+    "count": 3,
     "first": "2026-11-13",
     "last": "2026-11-13",
     "species": "Archaludon",
@@ -1655,7 +1660,7 @@
   "basculegion": [
    {
     "source": "added",
-    "count": 18,
+    "count": 19,
     "first": "2026-11-02",
     "last": "2026-11-13",
     "species": "Basculegion",
@@ -1938,9 +1943,9 @@
   "bellibolt": [
    {
     "source": "added",
-    "count": 1,
+    "count": 2,
     "first": "2026-11-11",
-    "last": "2026-11-11",
+    "last": "2026-11-13",
     "species": "Bellibolt",
     "item": "Leftovers",
     "ability": "Electromorphosis",
@@ -1967,6 +1972,30 @@
     ],
     "known_item": true,
     "known_ability": true
+   },
+   {
+    "source": "catalog",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Bellibolt",
+    "item": "Leftovers",
+    "ability": "Electromorphosis",
+    "nature": "Calm",
+    "points": {
+     "hp": 31,
+     "atk": 0,
+     "def": 4,
+     "spa": 0,
+     "spd": 28,
+     "spe": 3
+    },
+    "moves": [
+     "Soak",
+     "Toxic",
+     "Parabolic Charge",
+     "Slack Off"
+    ]
    },
    {
     "source": "catalog",
@@ -5640,9 +5669,9 @@
   "grimmsnarl": [
    {
     "source": "added",
-    "count": 1,
+    "count": 2,
     "first": "2026-11-12",
-    "last": "2026-11-12",
+    "last": "2026-11-13",
     "species": "Grimmsnarl",
     "item": "Light Clay",
     "ability": "Prankster",
@@ -5658,12 +5687,13 @@
     "moves": [
      "Reflect",
      "Swagger",
-     "Parting Shot",
-     "Light Screen"
+     "Light Screen",
+     "Parting Shot"
     ],
     "known_moves": [
      "reflect",
-     "swagger"
+     "swagger",
+     "lightscreen"
     ],
     "known_item": false,
     "known_ability": false
@@ -6706,7 +6736,7 @@
   "lopunny": [
    {
     "source": "catalog",
-    "count": 3,
+    "count": 4,
     "first": "2026-11-04",
     "last": "2026-11-13",
     "species": "Lopunny",
@@ -6795,7 +6825,7 @@
   "lucario": [
    {
     "source": "added",
-    "count": 13,
+    "count": 14,
     "first": "2026-11-03",
     "last": "2026-11-13",
     "species": "Lucario",
@@ -7132,7 +7162,7 @@
   "meganium": [
    {
     "source": "catalog",
-    "count": 3,
+    "count": 4,
     "first": "2026-11-03",
     "last": "2026-11-13",
     "species": "Meganium",
@@ -7158,7 +7188,7 @@
   "meowscarada": [
    {
     "source": "added",
-    "count": 4,
+    "count": 5,
     "first": "2026-11-02",
     "last": "2026-11-13",
     "species": "Meowscarada",
@@ -8059,6 +8089,30 @@
   "polteageist": [
    {
     "source": "catalog",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Polteageist",
+    "item": "Focus Sash",
+    "ability": "Weak Armor",
+    "nature": "Modest",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 2,
+     "spa": 32,
+     "spd": 0,
+     "spe": 0
+    },
+    "moves": [
+     "Stored Power",
+     "Shell Smash",
+     "Shadow Ball",
+     "Giga Drain"
+    ]
+   },
+   {
+    "source": "catalog",
     "count": 2,
     "first": "2026-11-03",
     "last": "2026-11-12",
@@ -8439,7 +8493,7 @@
   "rillaboom": [
    {
     "source": "catalog",
-    "count": 14,
+    "count": 15,
     "first": "2026-11-03",
     "last": "2026-11-13",
     "species": "Rillaboom",
@@ -8914,7 +8968,7 @@
   "sableye": [
    {
     "source": "added",
-    "count": 1,
+    "count": 2,
     "first": "2026-11-13",
     "last": "2026-11-13",
     "species": "Sableye",
@@ -8932,12 +8986,13 @@
     "moves": [
      "Will-O-Wisp",
      "Encore",
-     "Foul Play",
-     "Recover"
+     "Metal Burst",
+     "Foul Play"
     ],
     "known_moves": [
      "willowisp",
-     "encore"
+     "encore",
+     "metalburst"
     ],
     "known_item": true,
     "known_ability": false
@@ -8970,7 +9025,7 @@
   "salamence": [
    {
     "source": "catalog",
-    "count": 14,
+    "count": 15,
     "first": "2026-11-03",
     "last": "2026-11-13",
     "species": "Salamence",
@@ -9823,7 +9878,7 @@
   "slowkinggalar": [
    {
     "source": "catalog",
-    "count": 3,
+    "count": 4,
     "first": "2026-11-04",
     "last": "2026-11-13",
     "species": "Slowking-Galar",
