@@ -54,7 +54,7 @@ from pcsa.players.base import DecisionView, LegalAction, Player, TeamPreviewView
 
 NETWORKS_ENV = "PCSA_NETWORKS"  # a folder relative checkpoint paths are looked up in first
 SAMPLING = ("greedy", "sample")
-PREVIEW = ("critic", "greedy")
+PREVIEW = ("critic", "greedy", "robust")
 FEATURES = ("checkpoint", "base", "belief", "belief+mega")  # checkpoint: the mode the network was trained with
 TORCH_HINT = "the neural player needs torch: run `uv sync --extra train` (or `uv sync --inexact --extra train`)"
 
@@ -69,6 +69,9 @@ class NeuralParams:
     opponent_top: int = 0  # weigh our actions against only their N likeliest actions; 0 = all, as trained
     opponent_moves_from_builds: bool = False  # their move options: their listed builds' moves (opponent_moves.py)
     preview: str = "critic"  # critic: training's softmax(value / 0.1) top-p 0.9 nucleus; greedy: the best value
+    # robust: each pick scored against each of their six leads (turn-1 views); the pick with the best mean over its
+    # `preview_robust_worst` worst leads (pcsa.rl_training.preview_leads)
+    preview_robust_worst: int = 2
     fallback: str = "disciplined"  # the player kind that decides when the network cannot
     max_decision_s: float = 5.0  # longest a decision (or team preview) may take before the fallback decides
     reserve_s: float = 0.5  # deadline time kept for the fallback
@@ -103,6 +106,7 @@ class NeuralParams:
             raise ConfigError(f"{where}: sampling must be one of {SAMPLING}, not {self.sampling!r}")
         if self.preview not in PREVIEW:
             raise ConfigError(f"{where}: preview must be one of {PREVIEW}, not {self.preview!r}")
+        preview_rules.check_robust_worst(self.preview_robust_worst, where)
         if self.features not in FEATURES:
             raise ConfigError(f"{where}: features must be one of {FEATURES}, not {self.features!r}")
         if isinstance(self.matrix_blend, bool) or not isinstance(self.matrix_blend, int | float):
@@ -182,6 +186,7 @@ def load_policy(params: NeuralParams, path: Path) -> tuple[Any, dict]:
 
         policy.matrix_blend, policy.matrix_values = float(params.matrix_blend), action_values
     policy.preview_keep = preview_rules.keeper(params.preview_lead_avoid, params.preview_bring_max_one)
+    policy.preview_robust_worst = int(params.preview_robust_worst) if params.preview == "robust" else 0
     facts = {"update": state.get("update"), "run": (state.get("config") or {}).get("name")}
     return policy, {**facts, "d": cfg.d, "layers": cfg.layers, "columns": cfg.top_k + 5, "memory": cfg.memory}
 

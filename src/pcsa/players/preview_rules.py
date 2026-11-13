@@ -128,3 +128,13 @@ def keeper(lead_avoid: Mapping, bring_max_one: Sequence[Mapping]) -> Keep | None
     if not lead_avoid and not bring_max_one:
         return None
     return lambda battle, picks: keep_mask(battle, picks, lead_avoid, bring_max_one)
+
+
+THEIR_SIX = 6  # their possible leads at team preview
+
+
+def check_robust_worst(w, where: str) -> None:
+    """The robust preview's setting (players.neural `preview_robust_worst`): how many of a pick's worst leads
+    of theirs are averaged, 1 (maximin) to 6 (the plain mean)."""
+    if isinstance(w, bool) or not isinstance(w, int) or not 1 <= w <= THEIR_SIX:
+        raise ConfigError(f"{where}: preview_robust_worst must be a whole number from 1 to {THEIR_SIX}, not {w!r}")

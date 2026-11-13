@@ -157,6 +157,9 @@ class FormerPlayer:
         self.greedy_preview = greedy_preview
         # preview rules (pcsa.players.preview_rules.keeper): (battle, picks) -> (keep per pick, notes); None = off
         self.preview_keep: Any = None
+        # robust preview (pcsa.rl_training.preview_leads): > 0 = score each pick by the mean of its N worst values
+        # over their six possible leads (turn-1 views), and take the best; 0 = the critic's turn-0 values
+        self.preview_robust_worst = 0
         self.name = f"rl:{tag}"
         self.game = _Game()
         self.fallbacks = 0
@@ -221,6 +224,8 @@ class FormerPlayer:
             return self._team_fallback(view, "no battle at preview")
         try:
             picks = preview.all_picks(len(view.battle.team) or 6, view.battle.max_team_size or 3)
+            if self.preview_robust_worst > 0:
+                return self._robust_team(view, picks)
             values = self.preview_values(view.battle, picks)
             keep, rules = self.preview_keep(view.battle, picks) if self.preview_keep else ([True] * len(picks), {})
             rows = [i for i, k in enumerate(keep) if k] or list(range(len(picks)))  # none left: every pick
@@ -242,6 +247,17 @@ class FormerPlayer:
             return [int(i) for i in picks[index]]
         except Exception as error:  # a broken preview must not end the game
             return self._team_fallback(view, f"{type(error).__name__}: {error}")
+
+    def _robust_team(self, view: TeamPreviewView, picks) -> list[int]:
+        from pcsa.rl_training.preview_leads import robust_team
+
+        return robust_team(self, view.battle, picks)
+
+    def lead_values(self, battle, picks) -> tuple[np.ndarray, list[str]]:
+        """[picks, their six] turn-1 values (pcsa.rl_training.preview_leads.lead_values), and their six."""
+        from pcsa.rl_training.preview_leads import lead_values
+
+        return lead_values(self, battle, picks)
 
     @torch.no_grad()
     def preview_values(self, battle, picks) -> np.ndarray:
