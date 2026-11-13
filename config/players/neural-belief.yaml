@@ -1,0 +1,42 @@
+# Live trial of the belief network (research/pcsa-belief stage 4): neural.yaml with two changes, the checkpoint
+# (poke-transformer-belief100: belief+mega feature columns, the mode follows the checkpoint) and matrix_blend 4.0.
+# Run: pcsa run --config config/agent.yaml --player neural --set policy.neural=players/neural-belief.yaml ...
+# Back to the live network: leave out the --set (neural.yaml: gold940, matrix_blend 0).
+# The neural player (`--player neural`, live and sim): a poke-singles-former checkpoint from the research runs
+# (research/pcsa-rl, network code in src/pcsa/rl_training). Needs torch: `uv sync --extra train`.
+# Point a run at another network without editing this file: --set policy.neural_checkpoint=<path>
+# (or the environment variable PCSA__policy__neural_checkpoint=<path>).
+checkpoint: assets/models/poke-transformer-belief100-20261112-1905.pt  # v2-belief update 100 (belief+mega columns, from gold940), opponent head fit to live games; relative to the repo (or to $PCSA_NETWORKS when the file is there), or absolute
+device: cpu
+sampling: greedy                # greedy: the most likely action; sample: training's capped (0.99) distribution
+temperature: 1.0                # of `sample`
+opponent_temperature: 1.15       # how much to trust the prediction of their action when weighing our options:
+                                # above 1 hedges against their less likely actions, below 1 trusts the favourite
+                                # more; 1 = as trained. Changes the action played, also under greedy.
+                                # 1.3 is fitted on 295 recorded ladder battles: against real people the network
+                                # was 48% sure of its top guess and right 38% of the time; at 1.3 the two agree.
+                                # Against simulator opponents it made no measurable difference (1,050 battles).
+preview: critic                 # critic: training's softmax(value / 0.1), top-p 0.9 nucleus; greedy: the best value
+fallback: disciplined           # decides when the network cannot: no or bad checkpoint, no Battle, an error, too slow
+opponent_top: 3                 # weigh our options against only their k likeliest actions (0 = all of them, as
+                                # trained). Set from the dashboard's what-if on live games (user, 11 Nov); not
+                                # yet measured in the simulator.
+max_decision_s: 5.0             # a decision (or team preview) taking longer than this goes to the fallback
+reserve_s: 0.5                  # deadline time kept for the fallback
+threads: 1                      # torch CPU threads
+seed: null                      # preview and `sample` draws; null: fresh each run
+# Guard rules: stop plainly wasted actions; the network's best other action is played instead ([] = the network
+# alone; one run: --set policy.neural_rules=none, or names separated by commas). See src/pcsa/players/neural_rules.py.
+rules: [no_full_heal, useless_status, locked_futile, priority_ko]
+# Feature mode: which observation columns the network reads. checkpoint (default): the mode the network was trained
+# with (its run config's `features`; none = base, as every network before the belief tracker, gold940 included).
+# base | belief | belief+mega force one; a base network refuses the belief modes. In the belief modes the player
+# keeps a belief tracker per battle (src/pcsa/belief/README.md). One run: --set policy.neural_checkpoint=<belief
+# network> is enough, the mode follows it.
+features: checkpoint
+belief_crit_lines: false        # belief modes: the protocol prints critical hits (true only for simulator runs;
+                                # the phone's battle log does not, so any hit may have been one)
+matrix_blend: 4.0               # stage 3 (research/pcsa-belief): logits + matrix_blend x a one-turn value per action from
+                                # the belief's damage calculator (src/pcsa/rl_training/matrix.py); 0 = off, the network
+                                # alone. Research's +2 points vs gold940 were at 4.0 (simulator). The trial config is
+                                # neural-belief.yaml (--set policy.neural=players/neural-belief.yaml).

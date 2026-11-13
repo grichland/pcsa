@@ -23,11 +23,16 @@ In the belief modes the player keeps one belief tracker per battle (pcsa.belief)
 the protocol prints critical hits (false on the phone: a hit may then have been one), and empty items / abilities
 of seen builds count as unknown. See src/pcsa/belief/README.md.
 
+Matrix blend (`matrix_blend`, 0 = off): the network's logits plus matrix_blend x a one-turn value per action from
+the belief's damage calculator (pcsa.rl_training.matrix, research/pcsa-belief stage 3). In feature mode base the
+player keeps a belief for the matrix only, with the same live settings.
+
 torch is imported only when a checkpoint is loaded; it comes with the `train` extra (`uv sync --extra train`).
 """
 
 from __future__ import annotations
 
+import math
 import os
 import threading
 from collections.abc import Callable, Iterable, Mapping
@@ -68,6 +73,9 @@ class NeuralParams:
     rules: list[str] = field(default_factory=list)  # guard rules (pcsa.players.neural_rules); [] = the network alone
     features: str = "checkpoint"  # the observation's feature mode; checkpoint: the one the network was trained with
     belief_crit_lines: bool = False  # belief modes: the protocol shows critical hits (the simulator does; live: no)
+    matrix_blend: float = (
+        0.0  # logits + matrix_blend x the belief's one-turn values (pcsa.rl_training.matrix); 0 = off
+    )
 
     @classmethod
     def load(cls, path: Path) -> NeuralParams:
@@ -87,6 +95,10 @@ class NeuralParams:
             raise ConfigError(f"{where}: preview must be one of {PREVIEW}, not {self.preview!r}")
         if self.features not in FEATURES:
             raise ConfigError(f"{where}: features must be one of {FEATURES}, not {self.features!r}")
+        if isinstance(self.matrix_blend, bool) or not isinstance(self.matrix_blend, int | float):
+            raise ConfigError(f"{where}: matrix_blend must be a number, 0 (off) or more")
+        if not math.isfinite(self.matrix_blend) or self.matrix_blend < 0:
+            raise ConfigError(f"{where}: matrix_blend must be a number, 0 (off) or more")
         if not isinstance(self.opponent_top, int) or isinstance(self.opponent_top, bool) or self.opponent_top < 0:
             raise ConfigError(f"{where}: opponent_top must be a whole number, 0 (all) or more")
         if self.fallback == "neural":
@@ -154,6 +166,10 @@ def load_policy(params: NeuralParams, path: Path) -> tuple[Any, dict]:
         belief_options=belief_options,
     )
     policy.load_state_dict(state["net"])
+    if params.matrix_blend:
+        from pcsa.rl_training.matrix import action_values
+
+        policy.matrix_blend, policy.matrix_values = float(params.matrix_blend), action_values
     facts = {"update": state.get("update"), "run": (state.get("config") or {}).get("name")}
     return policy, {**facts, "d": cfg.d, "layers": cfg.layers, "columns": cfg.top_k + 5, "memory": cfg.memory}
 

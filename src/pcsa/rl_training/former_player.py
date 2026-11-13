@@ -19,6 +19,11 @@ Feature modes (`features`, research rl2/player.py): "base" is the observation th
 the belief tracker; "belief" and "belief+mega" (pcsa.rl_training.belief_features) replace some columns with what
 one belief per battle (pcsa.belief.fast.BattleBelief, kept with the game's memory) says. The mode must be the one
 the checkpoint was trained with (checkpoint_features); pcsa.players.neural enforces it.
+
+Matrix blend (stage 3 of research/pcsa-belief, research rl2/player.py `matrix_blend`): with `matrix_blend` > 0 and
+`matrix_values` set (pcsa.rl_training.matrix.action_values), the logits become logits + matrix_blend x Q, a
+one-turn value per our action from the battle's belief; in feature mode "base" the player keeps a belief for the
+matrix only (same options, updated on every decision that is not a forced switch).
 """
 
 from __future__ import annotations
@@ -26,7 +31,6 @@ from __future__ import annotations
 import random
 from collections.abc import Iterable
 from dataclasses import dataclass, field
-from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -37,16 +41,13 @@ from pcsa.common.clock import Deadline
 from pcsa.players.base import DecisionView, LegalAction, TeamPreviewView, random_team
 from pcsa.rl_training import entropy, features, preview
 from pcsa.rl_training import former_features as fx
-from pcsa.rl_training.features_vocab import tables
 from pcsa.rl_training.former import Config, Net, stack
-from pcsa.rl_training.spec import VOCAB
+from pcsa.rl_training.former_notes import belief_notes, blend_notes, matrix_notes
 
 PREVIEW_TAU, PREVIEW_TOP_P = 0.1, 0.9
 VERSION = "v2"  # the "version" field of a poke-singles-former checkpoint
 FEATURES = ("base", "belief", "belief+mega")  # feature modes (belief_features.MODES)
-MOVES, MEGA_AT, SWITCH_AT = 4, 4, 8  # action rows: 0-3 move, 4-7 move with Mega, 8-10 switch to bench
-THEIR_ACTIVE, THEIR_BENCH = 6, 7  # observation rows of their active and of their first bench member
-MASKED = -1e8  # a logit below this is a masked one
+__all__ = ["FormerPlayer", "Proposal", "belief_notes", "matrix_notes"]
 
 
 @dataclass
@@ -119,48 +120,6 @@ def _same(a: fx.Obs, b: fx.Obs) -> bool:
     )
 
 
-@lru_cache(maxsize=4)
-def _names(kind: str) -> dict[int, str]:
-    return {i: name for name, i in tables()[kind].items()}
-
-
-def matrix_notes(obs: fx.Obs, out: dict, probs: torch.Tensor, index: int) -> dict:
-    """The pair matrix of one decision as plain lists: our 11 actions (rows) against their kept actions (columns),
-    with each column's probability and our final distribution. Names are vocabulary ids ("" for an empty slot)."""
-    move, species = _names("move"), _names("species")
-    ours = [move.get(int(i), "") for i in obs.ids[0, 3 : 3 + MOVES]]
-    bench = [species.get(int(obs.ids[1 + k, 0]), "") for k in range(len(obs.mask) - SWITCH_AT)]
-    shown = {int(i) for i in obs.ids[THEIR_ACTIVE, 3 : 3 + MOVES] if int(i)}
-    kept = [int(i) for i in out["kept_idx"].tolist()]
-    v = VOCAB["move"]
-    cols = [move.get(i, "") if i < v else species.get(int(obs.ids[THEIR_BENCH + i - v, 0]), "") for i in kept]
-    mega = float(out["opp_mega"])
-    return {
-        "rows": [*ours, *(f"{m} + mega" if m else "" for m in ours), *bench],
-        "legal": [bool(x) for x in obs.mask],
-        "cols": cols,
-        "col_kind": ["move" if i < v else "switch" for i in kept],
-        "shown": [i in shown for i in kept],
-        "col_legal": [bool(out["opp_logits"][i] > MASKED) for i in kept],  # False: fainted or absent
-        "p_cols": [round(float(x), 3) for x in out["kept_p"].tolist()],
-        "cells": [[round(float(x), 3) for x in row] for row in out["matrix"].tolist()],
-        "probs": [round(float(x), 3) for x in probs[0].tolist()],
-        "chosen": index,
-        "mega_p": round(float(torch.sigmoid(out["opp_mega"])), 3) if mega > MASKED else None,
-    }
-
-
-def belief_notes(belief) -> dict:
-    """A short summary of the battle's belief for the decision record (feature modes other than "base")."""
-    t = belief.tracker
-    return {
-        "members": len(t.members),
-        "updates": int(belief.updates),
-        "rebuilds": int(belief.rebuilds),
-        "evidence": {k: int(v) for k, v in sorted(t.stats.items())},
-    }
-
-
 class FormerPlayer:
     """pcsa Player protocol over a former.Net; never raises on a decision (falls back to the first legal one)."""
 
@@ -214,13 +173,21 @@ class FormerPlayer:
     def params(self) -> dict:
         c = self.cfg
         out = {"temperature": self.temperature, "d": c.d, "layers": c.layers, "top_k": c.top_k, "memory": c.memory}
-        return out | {"features": self.features}
+        return out | {"features": self.features, "matrix_blend": float(self.matrix_blend)}
 
     # Observations -------------------------------------------------------------------------------------
     def _belief(self, game: _Game):
         """The battle's belief (created on first use), or None in feature mode "base"."""
         if self.features == "base":
             return None
+        if game.belief is None:
+            from pcsa.rl_training.belief_features import new_battle_belief
+
+            game.belief = new_battle_belief(**self.belief_options)
+        return game.belief
+
+    def _matrix_belief(self, game: _Game):
+        """Feature mode "base" with the matrix blend on: the belief kept for the matrix only (made on first use)."""
         if game.belief is None:
             from pcsa.rl_training.belief_features import new_battle_belief
 
@@ -300,6 +267,8 @@ class FormerPlayer:
         turn = int(battle.turn or 0)  # type: ignore[union-attr]
         g = self._game(turn)
         obs = self._observe(battle, view.legal, g)
+        if self.features == "base" and self.matrix_blend and self.matrix_values is not None and not obs.forced:
+            self._matrix_belief(g).update_from(battle)  # research Player2._matrix_belief
         replaces = g.last is not None and g.turn == turn and _same(g.last, obs)
         base = g.before if replaces else g.cache
         cache = _copy(base)
@@ -316,12 +285,11 @@ class FormerPlayer:
         return Proposal(obs, index, probs, float(out["value"]), turn, tag, replaces, chosen, base, cache, out, belief)
 
     def _blend(self, view: DecisionView, obs: fx.Obs, out: dict, belief: Any) -> dict:
-        """The place for stage 3 (research/pcsa-belief stage 3: rl2/matrix.py and rl2/player.py's `matrix_blend`,
-        default off; not ported yet). There: Q_i = sum_j p_j V(i, j), a one-turn value per (our action, their kept
-        action) cell from the belief's damage calculator, and the logits become logits + matrix_blend x Q (masked
-        actions stay masked), never on a forced switch, the network's logits on any error. Here `matrix_values(battle,
-        legal, out, belief) -> (q [ACTIONS], info)` stands for rl2.matrix.action_values; in feature mode "base" the
-        matrix would need a belief of its own (research keeps one for the matrix only). Off: `out` untouched."""
+        """Stage 3 (research rl2/player.py Player2._blend): Q_i = sum_j p_j V(i, j), a one-turn value per (our action,
+        their kept action) cell from the belief's damage calculator (`matrix_values(battle, legal, out, belief) ->
+        (q [ACTIONS], info)`, pcsa.rl_training.matrix.action_values), and the logits become logits + matrix_blend x Q
+        (masked actions stay masked), never on a forced switch, the network's logits on any error (counted, and
+        noted as `matrix_error`). Off (weight 0 or no matrix_values): `out` untouched."""
         if not self.matrix_blend or self.matrix_values is None or obs.forced:
             return out
         try:
@@ -329,9 +297,9 @@ class FormerPlayer:
             with torch.no_grad():
                 q = torch.as_tensor(np.asarray(q, np.float32), dtype=out["logits"].dtype, device=out["logits"].device)
                 logits = out["logits"] + float(self.matrix_blend) * q
-        except Exception:  # the matrix never stops a decision (research: the same)
+        except Exception as error:  # the matrix never stops a decision (research: the same)
             self.matrix_errors += 1
-            return out
+            return {**out, "matrix_error": f"{type(error).__name__}: {error}"[:300]}
         return {**out, "logits": logits, "network_logits": out["logits"], "matrix_q": q, "matrix_info": info}
 
     def commit(self, p: Proposal) -> LegalAction:
@@ -353,6 +321,9 @@ class FormerPlayer:
         self._notes["decisions"] = int(p.cache.get("t", 0))
         if p.belief is not None:
             self._notes["belief"] = belief_notes(p.belief)
+        blended = blend_notes(p.out, float(self.matrix_blend))
+        if blended:
+            self._notes["matrix"]["blend"] = blended
         if p.replaces:
             self._notes["retry"] = True
         return p.chosen

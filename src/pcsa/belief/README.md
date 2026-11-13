@@ -74,21 +74,34 @@ equals research rl2's bit for bit in all three modes (1,579 decisions, 111 team 
 u00848 and research's own belief+mega rollouts v2-belief u00002), and pcsa's `base` equals pcsa main's. A short
 version runs in the tests (`tests/rl_training/test_belief_parity.py`, skipped without the research folders).
 
-## Stage 3
+## Stage 3: the matrix blend
 
-`FormerPlayer.matrix_blend` (0.0) and `FormerPlayer.matrix_values` (None), applied in `FormerPlayer._blend`: the
-place for research's matrix-cell blend (research/pcsa-belief stage 3: rl2/matrix.py, rl2/player.py `matrix_blend`,
-default off, still in progress on 12 Nov). As there: logits + matrix_blend x Q, with Q_i the belief's one-turn value
-of our action i against the opponent head's kept actions; never on a forced switch; the network's logits on any
-error. Not ported: off. Porting it means copying rl2/matrix.py's `action_values` as `matrix_values` and, in feature
-mode `base`, keeping a belief for the matrix only (research does).
+`pcsa.rl_training.matrix` (with `matrix_cells`) is research's `rl2/matrix.py` (split for the file and function
+limits, same arithmetic in the same order): per decision a one-turn value V(i, j) for each of our legal actions i
+against each of the opponent head's kept actions j (p_j >= 0.01), from the belief's damage calculator, speed and
+item / ability probabilities, and Q_i = sum_j p_j V(i, j). With `matrix_blend` > 0 (config/players/neural.yaml,
+default 0.0: off, nothing imported) the logits become logits + matrix_blend x Q (`FormerPlayer._blend`, as research's
+`Player2._blend`): never on a forced switch, the network's logits on any error (`matrix_error` in the notes). In
+feature mode `base` the player keeps a belief for the matrix only (live settings). The decision notes carry
+`matrix.blend`: the weight, Q per action row and the action the network alone would have played. The matrix reads
+the head's `kept_p`, so `opponent_temperature` (1.15 live) changes Q's weights; research measured it at 1.0.
+
+Equivalence (research/pcsa-belief/stage4/equiv_matrix.py): research Player2 and pcsa FormerPlayer playing the same
+archived simulator episodes at blend 4, research's settings on both sides: observation, network logits, Q, cells,
+blended logits and choice bit-identical on 781 decisions (714 with a matrix; belief+mega on v2-belief u00002 /
+u00150 with belief100, base on v2-teams-1111 u00845 / v2-gold u00975 with gold940); blend 0 = pcsa main's
+FormerPlayer (index, probabilities, value) on all of them. On 3,044 recorded live decisions research's and pcsa's
+lookahead give the same Q and cells bit for bit (129 belief rebuilds). `tests/rl_training/test_matrix.py` runs a
+short version.
 
 ## A live trial
 
-1. A network trained in a belief mode: research `runs/v2-belief/ckpt/<update>.pt` (its run config says
-   `features: belief+mega`) once its validations pass; copy it to `assets/models/` (or `$PCSA_NETWORKS`).
+1. `config/players/neural-belief.yaml`: neural.yaml with the checkpoint `poke-transformer-belief100-20261112-1905.pt`
+   (research v2-belief update 100, belief+mega columns, its opponent head fit to the live games as gold940's was)
+   and `matrix_blend: 4.0`.
 2. This branch in the code the phone runs: `feature/belief` merged into main (the live session and research's
    training both run pcsa main's editable install; merge only when no training run is going).
-3. `pcsa run --config config/agent.yaml --player neural --set policy.neural_checkpoint=assets/models/<file>.pt ...`
-   The mode follows the checkpoint; the manifest says `features_used: belief+mega`.
-4. Back to today: drop the `--set` (gold940, `base`, exactly as before).
+3. `pcsa run --config config/agent.yaml --player neural --set policy.neural=players/neural-belief.yaml ...`
+   (`--player` takes a kind; the neural player's file is `policy.neural`). The mode follows the checkpoint; the
+   manifest's player params say `features_used: belief+mega` and `matrix_blend: 4.0`.
+4. Back to today: drop the `--set` (neural.yaml: gold940, `base`, blend 0, exactly as before).

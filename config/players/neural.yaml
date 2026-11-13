@@ -32,3 +32,7 @@ rules: [no_full_heal, useless_status, locked_futile, priority_ko]
 features: checkpoint
 belief_crit_lines: false        # belief modes: the protocol prints critical hits (true only for simulator runs;
                                 # the phone's battle log does not, so any hit may have been one)
+matrix_blend: 0.0               # stage 3 (research/pcsa-belief): logits + matrix_blend x a one-turn value per action from
+                                # the belief's damage calculator (src/pcsa/rl_training/matrix.py); 0 = off, the network
+                                # alone. Research's +2 points vs gold940 were at 4.0 (simulator). The trial config is
+                                # neural-belief.yaml (--set policy.neural=players/neural-belief.yaml).

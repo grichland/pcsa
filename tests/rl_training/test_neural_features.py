@@ -113,14 +113,18 @@ def test_the_stage3_hook_is_off_and_adds_to_the_logits(tmp_path: Path) -> None:
     assert torch.equal(policy.propose(view).out["logits"], plain.out["logits"])  # weight 0: off
     policy.matrix_blend = 0.5
     shifted = policy.propose(view).out
-    assert seen == [None] and torch.allclose(shifted["logits"], plain.out["logits"] + 0.5)
+    # base mode: the hook gets a belief kept for the matrix only (research Player2._matrix_belief), live settings
+    assert len(seen) == 1 and seen[0] is not None and not seen[0].tracker.crit_reported
+    assert torch.allclose(shifted["logits"], plain.out["logits"] + 0.5)
     assert torch.equal(shifted["network_logits"], plain.out["logits"]) and shifted["matrix_info"] == {"cells": 0}
 
     def broken(battle, legal, out, belief):
         raise RuntimeError("no cells")
 
     policy.matrix_values = broken
-    assert torch.equal(policy.propose(view).out["logits"], plain.out["logits"]) and policy.matrix_errors == 1
+    failed = policy.propose(view).out
+    assert torch.equal(failed["logits"], plain.out["logits"]) and policy.matrix_errors == 1
+    assert failed["matrix_error"] == "RuntimeError: no cells"
 
 
 def _live_battles(count: int) -> list[Path]:
