@@ -4,6 +4,9 @@ The network proposes an action and ranks every legal action (its capped probabil
 the position and may replace the proposal with the network's best action that is not the mistake; the first rule
 that fires decides, and the decision's notes carry `override: <rule>`, the reason and the network's own choice.
 
+  no_effect       a move that surely does nothing to the foe: an immune type or ability (Earthquake into Levitate,
+                  Electric into Volt Absorb), priority into Psychic Terrain, a status it cannot get, Fake Out after
+                  the first turn ... (pcsa.players.no_effect)
   no_full_heal    Roost / Recover / Slack Off / Rest ... at full HP
   useless_status  Stealth Rock already up, Spikes or Toxic Spikes already at their maximum, or a status move
                   (Yawn, Toxic, Will-O-Wisp, Thunder Wave, sleep moves ...) on a foe that is already statused (Yawn:
@@ -23,6 +26,7 @@ from poke_env.battle import Effect, Move, SideCondition
 from poke_env.data.normalize import to_id_str
 
 from pcsa.common.errors import ConfigError
+from pcsa.players import no_effect as nothing
 from pcsa.players import threat
 from pcsa.players.base import LegalAction
 from pcsa.players.disciplined import RECOVERY
@@ -87,6 +91,15 @@ class Spot:
 Outcome = tuple[LegalAction, str] | None
 
 
+def no_effect(s: Spot) -> Outcome:
+    move = _move(s.chosen)
+    reason = nothing.why(s.battle, s.mine, s.theirs, move) if move is not None else None
+    if reason is None:
+        return None
+    other = s.best(lambda a: (m := _move(a)) is None or not useless(s, m))
+    return (other, f"{move.id}: {reason}") if other else None  # type: ignore[union-attr]
+
+
 def no_full_heal(s: Spot) -> Outcome:
     move = _move(s.chosen)
     if move is None or move.id not in HEALS or s.mine.current_hp_fraction < FULL_HP:
@@ -123,8 +136,8 @@ def priority_ko(s: Spot) -> Outcome:
     if pk is None or (pk == "suckerpunch" and not foe_attacked(s.battle)):
         return None  # Sucker Punch fails unless they attack
     action = s.best(lambda a: (m := _move(a)) is not None and m.id == to_id_str(pk))
-    if action is None:
-        return None
+    if action is None or useless(s, _move(action)):  # type: ignore[arg-type]
+        return None  # e.g. the priority move cannot land (Psychic Terrain)
     move = _move(s.chosen)
     if move is not None and move.id != _move(action).id:  # type: ignore[union-attr]
         kos = s.hit(move) >= s.theirs.current_hp_fraction
@@ -134,6 +147,7 @@ def priority_ko(s: Spot) -> Outcome:
 
 
 RULES: dict[str, Callable[[Spot], Outcome]] = {
+    "no_effect": no_effect,
     "no_full_heal": no_full_heal,
     "useless_status": useless_status,
     "locked_futile": locked_futile,
@@ -184,7 +198,10 @@ def foe_attacked(battle) -> bool:
 
 
 def useless(s: Spot, move: Move) -> bool:
-    """A hazard already at its maximum, or a status move on a foe that is statused (Yawn: or drowsy)."""
+    """A hazard already at its maximum, a status move on a foe that is statused (Yawn: or drowsy), or a move that
+    surely does nothing to the foe (pcsa.players.no_effect)."""
+    if nothing.why(s.battle, s.mine, s.theirs, move) is not None:
+        return True
     if move.id in HAZARDS:
         condition, most = HAZARDS[move.id]
         conditions = s.battle.opponent_side_conditions  # type: ignore[attr-defined]

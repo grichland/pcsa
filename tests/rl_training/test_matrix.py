@@ -162,3 +162,21 @@ def test_q_equals_research_on_archived_decisions(record_property) -> None:
             nonzero += int(np.abs(qp).max() > 0)
     record_property("decisions", n)
     assert n > 5 and nonzero > 0
+
+
+def test_a_priority_move_the_defender_is_protected_from_does_nothing() -> None:
+    from poke_env.battle import Move
+
+    from pcsa.rl_training.matrix import priority_blocked
+    from tests.players.test_disciplined import battle
+    from tests.players.test_neural_rules import TERRAIN
+
+    jet, fi, protect, play = (Move(m, 9) for m in ("aquajet", "firstimpression", "protect", "playrough"))
+    grounded = battle("Azumarill", [TERRAIN], foe="Indeedee")
+    foe = grounded.opponent_active_pokemon
+    assert priority_blocked(grounded, foe, jet) and priority_blocked(grounded, foe, fi)
+    assert not priority_blocked(grounded, foe, play) and not priority_blocked(grounded, foe, protect)
+    flying = battle("Azumarill", [TERRAIN])  # Dragonite is not grounded
+    assert not priority_blocked(flying, flying.opponent_active_pokemon, jet)
+    plain = battle("Azumarill", foe="Indeedee")
+    assert not priority_blocked(plain, plain.opponent_active_pokemon, jet)

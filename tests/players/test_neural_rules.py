@@ -85,3 +85,21 @@ def test_the_rules_leave_the_network_alone_otherwise(threat) -> None:
 )
 def test_sucker_punch_ko_needs_the_foe_to_have_attacked(event: str, attacked: bool) -> None:
     assert neural_rules.foe_attacked(battle("Azumarill", [[event]])) is attacked
+
+
+TERRAIN = ["|-fieldstart|move: Psychic Terrain|[from] ability: Psychic Surge|[of] p2a: Indeedee"]
+
+
+def test_a_priority_move_into_psychic_terrain_on_a_grounded_foe_is_replaced(threat) -> None:
+    threat(priority={("azumarill", "indeedee"): "aquajet"})
+    b = battle("Azumarill", [TERRAIN], foe="Indeedee")
+    ranked = ["/choose move aquajet", "/choose move playrough"]
+    assert decide(ALL, spot(b, "/choose move aquajet", ranked)) == ("/choose move playrough", "no_effect")
+    # priority_ko never picks a priority move that cannot land
+    assert decide(ALL, spot(b, "/choose move playrough", ranked)) is None
+
+
+def test_psychic_terrain_does_not_block_priority_into_a_flying_foe(threat) -> None:
+    threat()
+    b = battle("Azumarill", [TERRAIN])  # Dragonite is not grounded
+    assert decide(ALL, spot(b, "/choose move aquajet")) is None

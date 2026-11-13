@@ -41,6 +41,22 @@ from pcsa.rl_training.spec import VOCAB
 
 ACROSS_MAX = 20000  # across-decision hit cache entries before it is cleared
 
+PRIORITY_BLOCKERS = frozenset({"queenlymajesty", "dazzling", "armortail"})
+FOE_TARGETS = frozenset({"normal", "any", "adjacentfoe", "alladjacentfoes", "randomnormal", "alladjacent"})
+
+
+def priority_blocked(battle, defender, mo) -> bool:
+    """A priority move aimed at the foe that cannot land (12 Nov 2026 fix, the same in research rl2/matrix.py and
+    pcsa): Psychic Terrain and a grounded defender, or a defender whose known ability blocks priority."""
+    if int(mo.priority or 0) <= 0:
+        return False
+    target = getattr(mo.target, "name", "") or str(mo.target or "")
+    if target.lower().replace("_", "") not in FOE_TARGETS:
+        return False
+    if Field.PSYCHIC_TERRAIN in battle.fields and battle.is_grounded(defender):
+        return True
+    return str(defender.ability or "").lower().replace(" ", "") in PRIORITY_BLOCKERS
+
 
 @lru_cache(maxsize=1)
 def _vocab_rev() -> dict[int, str]:
@@ -85,6 +101,8 @@ class Lookahead:
         if mid in FIRST_TURN and not attacker.first_turn:
             return h
         defender = our_mon if theirs_attacking else their_mon
+        if priority_blocked(battle, defender, mo):
+            return h  # used, does nothing
         hp = hp_of(defender) if defender_hp is None else defender_hp
         if hp <= 0:
             return h
