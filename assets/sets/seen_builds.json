@@ -468,7 +468,9 @@
   "20261113T125400-180613c9",
   "20261113T130305-b4ad9f68",
   "20261113T131149-678a07f5",
-  "20261113T131724-8596dea0"
+  "20261113T131724-8596dea0",
+  "20261113T134006-6be7447b",
+  "20261113T134742-b1652376"
  ],
  "species": {
   "abomasnow": [
@@ -4914,7 +4916,7 @@
   "gholdengo": [
    {
     "source": "catalog",
-    "count": 4,
+    "count": 5,
     "first": "2026-11-04",
     "last": "2026-11-13",
     "species": "Gholdengo",
@@ -8375,7 +8377,7 @@
   "raichu": [
    {
     "source": "added",
-    "count": 1,
+    "count": 2,
     "first": "2026-11-13",
     "last": "2026-11-13",
     "species": "Raichu",
@@ -8399,7 +8401,8 @@
     "known_moves": [
      "encore",
      "zapcannon",
-     "alluringvoice"
+     "alluringvoice",
+     "focusblast"
     ],
     "known_item": true,
     "known_ability": false
@@ -8823,6 +8826,30 @@
    },
    {
     "source": "catalog",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Rotom-Wash",
+    "item": "Leftovers",
+    "ability": "Levitate",
+    "nature": "Calm",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 2,
+     "spa": 0,
+     "spd": 32,
+     "spe": 0
+    },
+    "moves": [
+     "Volt Switch",
+     "Will-O-Wisp",
+     "Hydro Pump",
+     "Pain Split"
+    ]
+   },
+   {
+    "source": "catalog",
     "count": 2,
     "first": "2026-11-10",
     "last": "2026-11-12",
@@ -9025,7 +9052,7 @@
   "salamence": [
    {
     "source": "catalog",
-    "count": 15,
+    "count": 16,
     "first": "2026-11-03",
     "last": "2026-11-13",
     "species": "Salamence",
@@ -11059,7 +11086,7 @@
   "umbreon": [
    {
     "source": "catalog",
-    "count": 3,
+    "count": 4,
     "first": "2026-11-04",
     "last": "2026-11-13",
     "species": "Umbreon",
