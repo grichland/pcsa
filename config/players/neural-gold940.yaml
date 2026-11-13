@@ -1,12 +1,10 @@
-# Live trial of the belief network (research/pcsa-belief stage 4): neural.yaml with two changes, the checkpoint
-# (poke-transformer-belief100: belief+mega feature columns, the mode follows the checkpoint) and matrix_blend 4.0.
-# Run: pcsa run --config config/agent.yaml --player neural --set policy.neural=players/neural-belief.yaml ...
-# Back to the live network: leave out the --set (neural.yaml: gold940, matrix_blend 0).
+# The live player until 12 Nov 2026 (rollback): gold940, base columns, no matrix blend, opponent_temperature
+# 1.15 and opponent_top 3. Use: --set policy.neural=players/neural-gold940.yaml
 # The neural player (`--player neural`, live and sim): a poke-singles-former checkpoint from the research runs
 # (research/pcsa-rl, network code in src/pcsa/rl_training). Needs torch: `uv sync --extra train`.
 # Point a run at another network without editing this file: --set policy.neural_checkpoint=<path>
 # (or the environment variable PCSA__policy__neural_checkpoint=<path>).
-checkpoint: assets/models/poke-transformer-belief100-20261112-1905.pt  # v2-belief update 100 (belief+mega columns, from gold940), opponent head fit to live games; relative to the repo (or to $PCSA_NETWORKS when the file is there), or absolute
+checkpoint: assets/models/poke-transformer-gold940-20261112-1319.pt  # trained on the one team in use (Gholdengo, Mega Garchomp Z, ...), opponent head fit to live games; relative to the repo (or to $PCSA_NETWORKS when the file is there), or absolute
 device: cpu
 sampling: greedy                # greedy: the most likely action; sample: training's capped (0.99) distribution
 temperature: 1.0                # of `sample`
@@ -36,7 +34,7 @@ rules: [no_full_heal, useless_status, locked_futile, priority_ko]
 features: checkpoint
 belief_crit_lines: false        # belief modes: the protocol prints critical hits (true only for simulator runs;
                                 # the phone's battle log does not, so any hit may have been one)
-matrix_blend: 4.0               # stage 3 (research/pcsa-belief): logits + matrix_blend x a one-turn value per action from
+matrix_blend: 0.0               # stage 3 (research/pcsa-belief): logits + matrix_blend x a one-turn value per action from
                                 # the belief's damage calculator (src/pcsa/rl_training/matrix.py); 0 = off, the network
-                                # alone. Research's +2 points vs gold940 were at 4.0 (simulator). The trial config is
-                                # neural-belief.yaml (--set policy.neural=players/neural-belief.yaml).
+                                # alone. Research's +2 points vs gold940 were at 4.0 (simulator); live from
+                                # 12 Nov with the belief network (neural.yaml); neural-gold940.yaml is the rollback.

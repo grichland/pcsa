@@ -25,7 +25,7 @@ from tests.rl_training.test_neural_features import checkpoint
 RESEARCH = Path(os.environ.get("PCSA_RL_RESEARCH", r"C:\Users\geral\Code\research\pcsa-rl"))
 BELIEF = RESEARCH.parent / "pcsa-belief"
 STEM = RESEARCH / "runs" / "v2-teams-1111" / "archive" / "u00845"
-TRIAL = REPO / "config" / "players" / "neural-belief.yaml"
+ROLLBACK = REPO / "config" / "players" / "neural-gold940.yaml"
 BELIEF100 = REPO / "assets" / "models" / "poke-transformer-belief100-20261112-1905.pt"
 
 
@@ -47,18 +47,17 @@ def test_cell_arithmetic() -> None:
     assert q_values({0: {1: 1.0}}, {}) == {0: 0.0}
 
 
-def test_the_blend_is_off_by_default_and_the_trial_config_turns_it_on() -> None:
+def test_the_blend_is_off_by_default_and_the_live_config_turns_it_on() -> None:
     assert NeuralParams().matrix_blend == 0.0
     live = NeuralParams.load(REPO / "config" / "players" / "neural.yaml")
-    assert live.matrix_blend == 0.0 and "gold940" in live.checkpoint
-    trial = NeuralParams.load(TRIAL)
-    assert (
-        trial.matrix_blend == 4.0 and trial.checkpoint == "assets/models/poke-transformer-belief100-20261112-1905.pt"
-    )
-    differ = {k for k in vars(live) if getattr(live, k) != getattr(trial, k)}
-    assert differ == {"checkpoint", "matrix_blend"}  # the trial is neural.yaml with these two changed
-    config = load_config(REPO / "config" / "agent.yaml", overrides=["policy.neural=players/neural-belief.yaml"])
-    assert NeuralParams.load(config.directory / config.agent.policy.neural) == trial
+    assert live.matrix_blend == 4.0 and live.checkpoint == "assets/models/poke-transformer-belief100-20261112-1905.pt"
+    assert live.opponent_temperature == 1.0 and live.opponent_top == 0
+    rollback = NeuralParams.load(ROLLBACK)
+    assert rollback.matrix_blend == 0.0 and "gold940" in rollback.checkpoint
+    differ = {k for k in vars(live) if getattr(live, k) != getattr(rollback, k)}
+    assert differ == {"checkpoint", "matrix_blend", "opponent_temperature", "opponent_top"}
+    config = load_config(REPO / "config" / "agent.yaml", overrides=["policy.neural=players/neural-gold940.yaml"])
+    assert NeuralParams.load(config.directory / config.agent.policy.neural) == rollback
     for bad in (-1.0, float("nan"), True, "4"):
         with pytest.raises(ConfigError, match="matrix_blend"):
             replace(NeuralParams(), matrix_blend=bad).check("test")

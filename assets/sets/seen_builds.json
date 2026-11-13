@@ -386,7 +386,8 @@
   "20261112T193638-a7f1dafd",
   "20261112T194446-17ce7cff",
   "20261112T194959-f1cf901f",
-  "20261112T195736-d3454d80"
+  "20261112T195736-d3454d80",
+  "20261112T200724-5dd023ab"
  ],
  "species": {
   "abomasnow": [
@@ -3798,6 +3799,36 @@
     "known_ability": true
    },
    {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Garchomp",
+    "item": "Garchompite Z",
+    "ability": "Rough Skin",
+    "nature": "Jolly",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Protect",
+     "Fire Blast",
+     "Earthquake",
+     "Outrage"
+    ],
+    "known_moves": [
+     "protect",
+     "fireblast"
+    ],
+    "known_item": true,
+    "known_ability": false
+   },
+   {
     "source": "catalog",
     "count": 19,
     "first": "2026-11-02",
@@ -6642,6 +6673,30 @@
    },
    {
     "source": "catalog",
+    "count": 2,
+    "first": "2026-11-04",
+    "last": "2026-11-13",
+    "species": "Mimikyu",
+    "item": "Life Orb",
+    "ability": "Disguise",
+    "nature": "Adamant",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Shadow Claw",
+     "Play Rough",
+     "Shadow Sneak",
+     "Swords Dance"
+    ]
+   },
+   {
+    "source": "catalog",
     "count": 17,
     "first": "2026-11-02",
     "last": "2026-11-12",
@@ -6662,30 +6717,6 @@
      "Wood Hammer",
      "Swords Dance",
      "Shadow Sneak"
-    ]
-   },
-   {
-    "source": "catalog",
-    "count": 1,
-    "first": "2026-11-04",
-    "last": "2026-11-04",
-    "species": "Mimikyu",
-    "item": "Life Orb",
-    "ability": "Disguise",
-    "nature": "Adamant",
-    "points": {
-     "hp": 2,
-     "atk": 32,
-     "def": 0,
-     "spa": 0,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Shadow Claw",
-     "Play Rough",
-     "Shadow Sneak",
-     "Swords Dance"
     ]
    }
   ],
@@ -8611,9 +8642,9 @@
   "sneasler": [
    {
     "source": "catalog",
-    "count": 4,
+    "count": 5,
     "first": "2026-11-03",
-    "last": "2026-11-12",
+    "last": "2026-11-13",
     "species": "Sneasler",
     "item": "Normal Gem",
     "ability": "Unburden",

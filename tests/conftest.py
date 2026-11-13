@@ -35,7 +35,7 @@ def fake_clock() -> FakeClock:
     return FakeClock(start=1000.0)
 
 
-# The neural player's checkpoint in config/players/neural.yaml is a local file (assets/models/*.pt, not committed).
+# The neural player's checkpoint in config/players/neural.yaml (assets/models/*.pt, tracked in git since 12 Nov) may be absent.
 # Tests must not depend on whether one is present, so the shared config points it at a path that never exists:
 # `neural` then plays its fallback here as it does in CI; tests of the network pass their own checkpoints.
 NO_CHECKPOINT = "policy.neural_checkpoint=assets/models/__absent_in_tests__.pt"

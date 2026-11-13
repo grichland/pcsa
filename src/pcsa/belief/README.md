@@ -94,14 +94,12 @@ FormerPlayer (index, probabilities, value) on all of them. On 3,044 recorded liv
 lookahead give the same Q and cells bit for bit (129 belief rebuilds). `tests/rl_training/test_matrix.py` runs a
 short version.
 
-## A live trial
+## The live player (from 12 Nov 2026)
 
-1. `config/players/neural-belief.yaml`: neural.yaml with the checkpoint `poke-transformer-belief100-20261112-1905.pt`
-   (research v2-belief update 100, belief+mega columns, its opponent head fit to the live games as gold940's was)
-   and `matrix_blend: 4.0`.
-2. This branch in the code the phone runs: `feature/belief` merged into main (the live session and research's
-   training both run pcsa main's editable install; merge only when no training run is going).
-3. `pcsa run --config config/agent.yaml --player neural --set policy.neural=players/neural-belief.yaml ...`
-   (`--player` takes a kind; the neural player's file is `policy.neural`). The mode follows the checkpoint; the
-   manifest's player params say `features_used: belief+mega` and `matrix_blend: 4.0`.
-4. Back to today: drop the `--set` (neural.yaml: gold940, `base`, blend 0, exactly as before).
+The trial ended in promotion (user's decision). `config/players/neural.yaml` runs `poke-transformer-belief100-20261112-1905.pt`
+(research v2-belief update 100, belief+mega columns, its opponent head fit to the live games) with `matrix_blend: 4.0`,
+`opponent_temperature: 1.0` and `opponent_top: 0`. The mode follows the checkpoint; the manifest's player params say
+`features_used: belief+mega` and `matrix_blend: 4.0`.
+
+Back to the previous live player (gold940, `base`, blend 0, opponent_temperature 1.15, opponent_top 3):
+`pcsa run --config config/agent.yaml --player neural --set policy.neural=players/neural-gold940.yaml ...`
