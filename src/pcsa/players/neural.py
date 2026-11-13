@@ -1,15 +1,9 @@
 """The neural player: a poke-singles-former checkpoint from the research runs (pcsa.rl_training), with a fallback.
 
-Settings in config/players/neural.yaml (NeuralParams). The network sees the Battle the loop gives it (in the
-simulator the arena's p1 view, on the phone the Battle rebuilt from the battle log) and decides team preview
-and every move or switch. The fallback kind (disciplined by default) decides instead, with the reason in the
-notes, whenever the network cannot: no checkpoint, an unreadable one or one of another network (found once, at
-build), no Battle (a screen-level decision), an exception, or no answer within the decision budget
-(min(max_decision_s, the deadline's remaining time - reserve_s)).
-
-The network's inputs hold no guessed opposing build. The guard rules do use one: this player keeps the build
-catalog (seen builds first) and an opponent tracker for them alone, loaded on the first decision with rules on.
-A battle resumed in a new process gets its memory back through `restore`.
+Settings in config/players/neural.yaml (NeuralParams). The network decides team preview and every move or switch
+from the Battle the loop gives it; the fallback kind decides (reason in the notes) when it cannot: no or a bad
+checkpoint, no Battle, an exception, or no answer within min(max_decision_s, or max_preview_s at team preview;
+the deadline's remaining time - reserve_s). Preview `robust`: pcsa.rl_training.preview_leads.
 
 Guard rules (pcsa.players.neural_rules, the `rules` list) stop plainly wasted actions (a heal at full HP, Stealth
 Rock already up, a status move on a statused foe, a lock into moves that do nothing, a missed sure priority KO): the
@@ -73,7 +67,8 @@ class NeuralParams:
     # `preview_robust_worst` worst leads (pcsa.rl_training.preview_leads)
     preview_robust_worst: int = 2
     fallback: str = "disciplined"  # the player kind that decides when the network cannot
-    max_decision_s: float = 5.0  # longest a decision (or team preview) may take before the fallback decides
+    max_decision_s: float = 5.0  # longest a decision may take before the fallback decides
+    max_preview_s: float = 20.0  # longest a team preview may take (robust scores 360 turn-1 views)
     reserve_s: float = 0.5  # deadline time kept for the fallback
     threads: int = 1  # torch CPU threads
     seed: int | None = None  # preview and `sample` draws; None: fresh each run
@@ -117,7 +112,12 @@ class NeuralParams:
             raise ConfigError(f"{where}: opponent_top must be a whole number, 0 (all) or more")
         if self.fallback == "neural":
             raise ConfigError(f"{where}: the fallback cannot be the neural player itself")
-        if self.temperature <= 0 or self.max_decision_s <= 0 or self.threads < 1 or self.opponent_temperature <= 0:
+        if (
+            self.temperature <= 0
+            or min(self.max_decision_s, self.max_preview_s) <= 0
+            or self.threads < 1
+            or self.opponent_temperature <= 0
+        ):
             raise ConfigError(
                 f"{where}: temperature, opponent_temperature, max_decision_s and threads must be positive"
             )
@@ -256,7 +256,7 @@ class NeuralPlayer:
             self.policy.reset()  # a new battle, also when the fallback picks the team
         why = self.error or ("no battle at preview" if view.battle is None else None)
         if why is None:
-            answer, why, ms = self._timed(lambda: self._preview(view, deadline), deadline)
+            answer, why, ms = self._timed(lambda: self._preview(view, deadline), deadline, self.p.max_preview_s)
             if why is None:
                 team, notes = answer
                 self._notes = {**notes, "rule": "neural", "ms": ms}
@@ -354,10 +354,12 @@ class NeuralPlayer:
         out = {**notes, "rule": "neural:fallback", "why": why, "fallback": self.fallback.name}
         return out | ({"fallback_rule": notes["rule"]} if "rule" in notes else {})
 
-    def _timed(self, work: Callable[[], Any], deadline: Deadline) -> tuple[Any, str | None, float]:
+    def _timed(
+        self, work: Callable[[], Any], deadline: Deadline, limit: float = 0.0
+    ) -> tuple[Any, str | None, float]:
         """(result, None, ms), or (None, why, ms) on an error or no answer within the budget. The work runs in a
         thread so a late answer can be dropped; it is never applied."""
-        budget = min(self.p.max_decision_s, deadline.remaining() - self.p.reserve_s)
+        budget = min(limit or self.p.max_decision_s, deadline.remaining() - self.p.reserve_s)
         if budget <= 0:
             return None, f"deadline: {deadline.remaining():.2f}s left", 0.0
         if not self._lock.acquire(blocking=False):

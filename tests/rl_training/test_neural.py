@@ -43,7 +43,7 @@ def test_neural_is_a_live_kind_and_reads_its_file(config: Config) -> None:
     params = NeuralParams.load(config.directory / config.agent.policy.neural)
     assert (params.sampling, params.preview, params.fallback, params.device) == (
         "greedy",
-        "critic",
+        "robust",
         "disciplined",
         "cpu",
     )

@@ -84,11 +84,12 @@ def lead_values(policy, battle, picks) -> tuple[np.ndarray, list[str]]:
     from pcsa.rl_training.former_player import _Game
 
     species = their_species(battle)
+    games = {s: _Game() for s in species}  # one belief per lead of theirs: the same table, about a third faster
     obs = []
     for pick in picks:
         for s in species:
             b = lead_battle(battle, pick, s, species, f"{battle.battle_tag}-lead")
-            obs.append(policy._observe(b, legal_actions(b), _Game()))
+            obs.append(policy._observe(b, legal_actions(b), games[s]))
     out = policy.net(stack([[o] for o in obs], policy.device))
     return out["value"][:, 0].float().cpu().numpy().reshape(len(picks), len(species)), species
 

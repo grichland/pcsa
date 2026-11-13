@@ -9,13 +9,11 @@ checkpoint: assets/models/poke-transformer-hard50-20261113-1215.pt  # 13 Nov: v2
 device: cpu
 sampling: greedy                # greedy: the most likely action; sample: training's capped (0.99) distribution
 temperature: 1.0                # of `sample`
-opponent_temperature: 1.2         # how much to trust the prediction of their action when weighing our options:
-                                # above 1 hedges against their less likely actions, below 1 trusts the favourite
-                                # more; 1 = as trained. Changes the action played, also under greedy.
-                                # 1.2 here (user, 13 Nov; 1.25 on 12 Nov). Research's +2 points vs gold940 were measured at 1.0;
-                                # this network's opponent head was fine-tuned on the live games (top-1 71%, mean
-                                # probability on their real action 0.50, in-sample).
-preview: critic                 # critic: training's softmax(value / 0.1), top-p 0.9 nucleus; greedy: the best value
+opponent_temperature: 1.0         # how much to trust the prediction of their action when weighing our options:
+preview: robust                 # robust (13 Nov): each pick scored against each of their six leads (turn-1 views),
+                                # the best mean over its preview_robust_worst worst leads; critic: training's
+                                # softmax(value / 0.1), top-p 0.9 nucleus; greedy: the best value
+preview_robust_worst: 2         # robust: how many of a pick's worst leads of theirs are averaged (1 = maximin)
 fallback: disciplined           # decides when the network cannot: no or bad checkpoint, no Battle, an error, too slow
 opponent_top: 3                 # weigh our options against only their k likeliest actions (0 = all of them, as
                                 # trained, the setting research's matrix-blend comparison used). 3 here (user, 13 Nov; 5 on
@@ -24,7 +22,8 @@ opponent_moves_from_builds: true  # their active's move options: only moves of i
                                 # listed builds) that agree with its revealed moves, plus those; the opponent head's
                                 # move probabilities renormalised over them (inference only). false = every learnable
                                 # move, as trained. 13 Nov: Galarian Slowking's head gave Ice Punch 12-23%, no build has it.
-max_decision_s: 5.0             # a decision (or team preview) taking longer than this goes to the fallback
+max_decision_s: 5.0             # a decision taking longer than this goes to the fallback
+max_preview_s: 20.0             # a team preview taking longer than this goes to the fallback (robust: ~4-13 s)
 reserve_s: 0.5                  # deadline time kept for the fallback
 threads: 1                      # torch CPU threads
 seed: null                      # preview and `sample` draws; null: fresh each run
@@ -48,7 +47,4 @@ preview_bring_max_one:                      # when their six holds one of `types
 features: checkpoint
 belief_crit_lines: false        # belief modes: the protocol prints critical hits (true only for simulator runs;
                                 # the phone's battle log does not, so any hit may have been one)
-matrix_blend: 4.0               # stage 3 (research/pcsa-belief): logits + matrix_blend x a one-turn value per action from
-                                # the belief's damage calculator (src/pcsa/rl_training/matrix.py); 0 = off, the network
-                                # alone. Research's +2 points vs gold940 were at 4.0 (simulator); live from
-                                # 12 Nov with the belief network.
+matrix_blend: 2.0               # stage 3 (research/pcsa-belief): logits + matrix_blend x a one-turn value per action from
