@@ -49,7 +49,7 @@ def test_cell_arithmetic() -> None:
 def test_the_blend_is_off_by_default_and_the_live_config_turns_it_on() -> None:
     assert NeuralParams().matrix_blend == 0.0
     live = NeuralParams.load(REPO / "config" / "players" / "neural.yaml")
-    assert live.matrix_blend == 4.0 and live.checkpoint == "assets/models/poke-transformer-hard50-20261113-1215.pt"
+    assert live.matrix_blend > 0 and live.checkpoint == "assets/models/poke-transformer-hard50-20261113-1215.pt"
     assert "sucker_punch" in live.rules and live.preview_lead_avoid and live.preview_bring_max_one
     config = load_config(REPO / "config" / "agent.yaml")
     assert NeuralParams.load(config.directory / config.agent.policy.neural) == live

@@ -114,7 +114,7 @@ def _key(active: int, name: str) -> str:
 
 def logged_rows(b: BattleRecord, member: OwnMember, t: Turn) -> tuple[MoveInfo, ...]:
     """The move list as the sheet and the log give it: names by slot, PP by the log count."""
-    mon = t.battle.team.get(f"p1: {member.name}") if t.battle is not None else None
+    mon = getattr(t.battle, "team", {}).get(f"p1: {member.name}") if t.battle is not None else None
     rows = []
     for slot, name in enumerate(member.moves):
         if not name:
@@ -146,7 +146,7 @@ def remember(b: BattleRecord, team: Team | None, t: Turn, peek: Observation, was
     member = member_of(b, team, t.active)
     if member is None or t.battle is None:
         return
-    mon = t.battle.team.get(f"p1: {member.name}")
+    mon = getattr(t.battle, "team", {}).get(f"p1: {member.name}")
     for m in peek.fields.get("moves", ()):
         name = member.moves[m.slot] if m.slot < len(member.moves) else None
         if not name or m.pp is None:

@@ -100,7 +100,9 @@ def parse(text: str) -> dict:
 
 def log_view(battle_dir: Path | None) -> dict:
     """The battle's log as turns: battle_log.txt when it is there, else the rows collected so far (log.txt)."""
-    for name in LOGS if battle_dir is not None else ():
+    if battle_dir is None:
+        return {"source": None, "format": None, "header": {}, "turns": [], "notes": [], "raw": ""}
+    for name in LOGS:
         try:
             data = (battle_dir / name).read_bytes()[-MAX_BYTES:]
         except OSError:

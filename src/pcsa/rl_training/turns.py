@@ -104,9 +104,9 @@ class _Reader:
 
     def _switch(self, parts: list[str], side: SideTurn) -> None:
         if len(parts) > 3:
-            self.hp[parts[2][:2] + ": " + parts[2].split(": ", 1)[-1]] = (
-                _fraction(parts[4]) if len(parts) > 4 else 1.0
-            )
+            hp = _fraction(parts[4]) if len(parts) > 4 else 1.0
+            if hp is not None:  # an unreadable HP leaves the last known one (as a damage line does)
+                self.hp[parts[2][:2] + ": " + parts[2].split(": ", 1)[-1]] = hp
         if not side.action and not side.fainted and self.turn > 0:  # chosen at turn start (not a faint replacement)
             side.action, side.switch_to = "switch", _species(parts[3]) if len(parts) > 3 else ""
 

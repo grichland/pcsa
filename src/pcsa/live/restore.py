@@ -173,7 +173,7 @@ def resume(s, b: BattleRecord, found: Earlier) -> None:
         try:
             rebuilt = rebuild_views(found.records, b.battle_id)
             views = len(rebuilt)
-            restored = int(restore(rebuilt))
+            restored = int(restore(rebuilt))  # pyright: ignore[reportArgumentType] - the player returns a count
         except Exception as error:
             log.exception("memory_restore_failed", battle=b.index, reason=f"{type(error).__name__}: {error}")
     log.event(

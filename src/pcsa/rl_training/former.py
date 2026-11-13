@@ -17,6 +17,7 @@ Heads:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import cast
 
 import numpy as np
 import torch
@@ -127,9 +128,10 @@ class Net(nn.Module):
         if self.training or torch.is_grad_enabled():
             self._moves = None
             return self.move_vec(self.move.weight)
-        if getattr(self, "_moves", None) is None:
-            self._moves = self.move_vec(self.move.weight)
-        return self._moves
+        moves = getattr(self, "_moves", None)
+        if moves is None:
+            moves = self._moves = self.move_vec(self.move.weight)
+        return moves
 
     def load_state_dict(self, *args, **kwargs):
         self._moves = None
@@ -197,7 +199,7 @@ class Net(nn.Module):
         moves = self.move_vectors()  # [V, d]
         scale = self.cfg.d**-0.5
         move_logits = (self.opp_move_q(r) @ moves.T) * scale  # [B, V]
-        allowed = self.learnset[ids[:, 6, 0]].clone()
+        allowed = cast(Tensor, self.learnset)[ids[:, 6, 0]].clone()
         narrowed = b.get("opp_allowed")  # pcsa (inference): their moves narrowed by builds (opponent_moves.py)
         if narrowed is not None:
             narrowed = allowed & narrowed
@@ -259,7 +261,7 @@ class Net(nn.Module):
         x = self.encode(b)[0, 0]  # [14, d]; position 0 from encode, replaced by position t
         x = x - self.position[0] + self.position[min(t, self.cfg.max_positions - 1)]
         mems = cache.setdefault("mem", [[] for _ in self.blocks])
-        for layer, block in enumerate(self.blocks):
+        for layer, block in enumerate(cast("list[Block]", self.blocks)):
             past = mems[layer][-self.cfg.memory :]
             mems[layer].append(x[0].clone())
             x = _block_step(block, x, torch.stack(past) if past else x.new_zeros(0, x.shape[-1]))
@@ -287,7 +289,7 @@ class Net(nn.Module):
         d = x.shape[-1]
         for c in caches:
             c.setdefault("mem", [[] for _ in self.blocks])
-        for layer, block in enumerate(self.blocks):
+        for layer, block in enumerate(cast("list[Block]", self.blocks)):
             past = [c["mem"][layer][-self.cfg.memory :] for c in caches]
             width = max(len(p) for p in past)
             mem, ok = x.new_zeros(n, width, d), torch.zeros(n, width, dtype=torch.bool, device=device)
