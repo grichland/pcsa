@@ -78,8 +78,7 @@ def test_the_repo_settings_turn_the_rule_on() -> None:
     params = NeuralParams.load(REPO / "config" / "players" / "neural.yaml")
     assert params.rules.index("sucker_punch") < params.rules.index("priority_ko")
     assert params.sucker_punch_passive == 0.5
-    gold940 = NeuralParams.load(REPO / "config" / "players" / "neural-gold940.yaml")
-    assert "sucker_punch" not in gold940.rules  # the rollback plays as before
+    assert "sucker_punch" not in NeuralParams().rules  # off by default
 
 
 def test_blocked_after_it_failed_against_the_same_foe(threat) -> None:

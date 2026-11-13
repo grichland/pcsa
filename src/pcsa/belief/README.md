@@ -101,5 +101,4 @@ The trial ended in promotion (user's decision). `config/players/neural.yaml` run
 `opponent_temperature: 1.0` and `opponent_top: 0`. The mode follows the checkpoint; the manifest's player params say
 `features_used: belief+mega` and `matrix_blend: 4.0`.
 
-Back to the previous live player (gold940, `base`, blend 0, opponent_temperature 1.15, opponent_top 3):
-`pcsa run --config config/agent.yaml --player neural --set policy.neural=players/neural-gold940.yaml ...`
+The gold940 rollback config (neural-gold940.yaml) was removed on 13 Nov 2026 (user); the checkpoint stays in assets/models.

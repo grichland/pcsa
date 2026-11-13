@@ -157,7 +157,7 @@ def test_dry_run_on_recorded_live_decisions(tmp_path: Path, mode: str, record_pr
         path = tmp_path / "gold940-as-belief.pt"
         torch.save(state, path)
     params = replace(
-        NeuralParams.load(REPO / "config" / "players" / "neural-gold940.yaml"), checkpoint=str(path), seed=0
+        NeuralParams.load(REPO / "config" / "players" / "neural.yaml"), checkpoint=str(path), seed=0, matrix_blend=0.0
     )
     player = NeuralPlayer(params, MaxDamagePlayer(), path)
     assert player.error is None and player.policy.features == mode

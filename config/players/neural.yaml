@@ -1,7 +1,6 @@
 # Live player from 12 Nov 2026 (user's decision after the pcsa-belief trial): the belief network
 # (poke-transformer-belief100, belief+mega columns) with the matrix blend at 4.0, opponent_temperature 1.0 and
 # opponent_top 0 (all), the setting research measured (+2 points vs gold940 in the simulator).
-# Back to the previous live player: --set policy.neural=players/neural-gold940.yaml
 # The neural player (`--player neural`, live and sim): a poke-singles-former checkpoint from the research runs
 # (research/pcsa-rl, network code in src/pcsa/rl_training). Needs torch: `uv sync --extra train`.
 # Point a run at another network without editing this file: --set policy.neural_checkpoint=<path>
@@ -48,4 +47,4 @@ belief_crit_lines: false        # belief modes: the protocol prints critical hit
 matrix_blend: 4.0               # stage 3 (research/pcsa-belief): logits + matrix_blend x a one-turn value per action from
                                 # the belief's damage calculator (src/pcsa/rl_training/matrix.py); 0 = off, the network
                                 # alone. Research's +2 points vs gold940 were at 4.0 (simulator); live from
-                                # 12 Nov with the belief network (neural.yaml); neural-gold940.yaml is the rollback.
+                                # 12 Nov with the belief network.

@@ -49,8 +49,7 @@ def kept(theirs: list[str], lead=LEAD, pair=PAIR) -> tuple[list[tuple[int, ...]]
 def test_the_repo_settings_turn_both_rules_on_and_the_rollback_leaves_them_off() -> None:
     params = NeuralParams.load(REPO / "config" / "players" / "neural.yaml")
     assert params.preview_lead_avoid == LEAD and params.preview_bring_max_one == PAIR
-    gold940 = NeuralParams.load(REPO / "config" / "players" / "neural-gold940.yaml")
-    assert not gold940.preview_lead_avoid and not gold940.preview_bring_max_one
+    assert not NeuralParams().preview_lead_avoid and not NeuralParams().preview_bring_max_one  # off by default
     assert keeper({}, []) is None
 
 
