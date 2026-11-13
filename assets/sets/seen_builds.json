@@ -387,7 +387,8 @@
   "20261112T194446-17ce7cff",
   "20261112T194959-f1cf901f",
   "20261112T195736-d3454d80",
-  "20261112T200724-5dd023ab"
+  "20261112T200724-5dd023ab",
+  "20261112T203229-a3d19679"
  ],
  "species": {
   "abomasnow": [
@@ -1756,9 +1757,9 @@
   "blastoise": [
    {
     "source": "catalog",
-    "count": 1,
+    "count": 2,
     "first": "2026-11-12",
-    "last": "2026-11-12",
+    "last": "2026-11-13",
     "species": "Blastoise",
     "item": "Blastoisinite",
     "ability": "Mega Launcher",
@@ -5555,9 +5556,9 @@
   "indeedee": [
    {
     "source": "catalog",
-    "count": 7,
+    "count": 8,
     "first": "2026-11-04",
-    "last": "2026-11-12",
+    "last": "2026-11-13",
     "species": "Indeedee",
     "item": "Terrain Extender",
     "ability": "Psychic Surge",
