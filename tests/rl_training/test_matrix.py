@@ -53,13 +53,14 @@ def test_the_blend_is_off_by_default_and_the_live_config_turns_it_on() -> None:
     assert live.matrix_blend == 4.0 and live.checkpoint == "assets/models/poke-transformer-belief100-20261112-1905.pt"
     rollback = NeuralParams.load(ROLLBACK)
     assert rollback.matrix_blend == 0.0 and "gold940" in rollback.checkpoint
-    differ = {k for k in vars(live) if getattr(live, k) != getattr(rollback, k)}
+    tuned = {"opponent_temperature", "opponent_top", "belief_crit_lines"}  # the user's to tune: not pinned here
+    differ = {k for k in vars(live) if getattr(live, k) != getattr(rollback, k)} - tuned
     rules = {
         "rules",
         "preview_lead_avoid",
         "preview_bring_max_one",
     }  # 13 Nov: sucker_punch and preview rules, live only
-    assert differ == {"checkpoint", "matrix_blend", "opponent_temperature", "opponent_top"} | rules
+    assert differ == {"checkpoint", "matrix_blend"} | rules
     assert set(live.rules) - set(rollback.rules) == {"sucker_punch"}
     config = load_config(REPO / "config" / "agent.yaml", overrides=["policy.neural=players/neural-gold940.yaml"])
     assert NeuralParams.load(config.directory / config.agent.policy.neural) == rollback

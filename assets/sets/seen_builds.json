@@ -388,7 +388,82 @@
   "20261112T194959-f1cf901f",
   "20261112T195736-d3454d80",
   "20261112T200724-5dd023ab",
-  "20261112T203229-a3d19679"
+  "20261112T203229-a3d19679",
+  "20261112T204918-48947db5",
+  "20261112T205639-3f322718",
+  "20261112T210414-7988146f",
+  "20261112T210904-1b7f831a",
+  "20261112T211621-7ea08ccf",
+  "20261112T212559-a8b2d127",
+  "20261112T213518-ffe4da5e",
+  "20261112T214306-ee581869",
+  "20261112T214657-c2931d93",
+  "20261112T215909-94eda1c6",
+  "20261112T220428-1950ac68",
+  "20261112T221912-e785b938",
+  "20261112T222324-3254d931",
+  "20261112T222715-d336296c",
+  "20261112T223549-00c17bcb",
+  "20261112T224011-da7b20c8",
+  "20261112T224548-037389cb",
+  "20261112T225026-a6d5246d",
+  "20261112T225521-e0711f01",
+  "20261112T230853-2e715da0",
+  "20261112T231600-da7e8f87",
+  "20261112T232234-e1f8eccc",
+  "20261112T233203-8323a1cd",
+  "20261112T233917-a98208b4",
+  "20261112T234651-4246ff3c",
+  "20261112T235909-7071617b",
+  "20261113T002009-e0a313c8",
+  "20261113T002734-549f88d8",
+  "20261113T003056-390d40de",
+  "20261113T003729-56befc42",
+  "20261113T004453-c9ed8103",
+  "20261113T005241-ab477184",
+  "20261113T005923-6024a056",
+  "20261113T010410-a9320052",
+  "20261113T011208-bdf73e1b",
+  "20261113T011812-eaacf3cd",
+  "20261113T012719-bce573dc",
+  "20261113T013436-bcdfad81",
+  "20261113T014517-d54b2010",
+  "20261113T014900-a73b82bc",
+  "20261113T015442-39309480",
+  "20261113T020153-b3bad5a8",
+  "20261113T020729-f3865307",
+  "20261113T021310-7dd3b412",
+  "20261113T021849-eee5a547",
+  "20261113T022735-e13656c9",
+  "20261113T023607-385337f8",
+  "20261113T024329-b87f4f72",
+  "20261113T024938-e93e605e",
+  "20261113T025440-28c0571d",
+  "20261113T025935-a9daee0c",
+  "20261113T030622-75ccea74",
+  "20261113T031309-e538ff87",
+  "20261113T031859-4d59c1a3",
+  "20261113T032818-53be0b02",
+  "20261113T033544-da0bd556",
+  "20261113T034809-e11123dc",
+  "20261113T035916-046b3ca1",
+  "20261113T040339-8dc674ba",
+  "20261113T041303-1195a6e3",
+  "20261113T042011-113a7257",
+  "20261113T042733-a9dbbb6c",
+  "20261113T043535-47f64610",
+  "20261113T044421-c46c8ae9",
+  "20261113T045237-aa1db1d2",
+  "20261113T050533-e5e98715",
+  "20261113T050811-738713b5",
+  "20261113T051605-53ded76d",
+  "20261113T051919-2360d0c3",
+  "20261113T052635-d6baa216",
+  "20261113T053401-ee9cfec8",
+  "20261113T054006-d1711c0b",
+  "20261113T054537-299f941a",
+  "20261113T055037-93821bc8",
+  "20261113T055700-21c98313"
  ],
  "species": {
   "abomasnow": [
@@ -936,9 +1011,9 @@
   "arcaninehisui": [
    {
     "source": "catalog",
-    "count": 1,
+    "count": 2,
     "first": "2026-11-03",
-    "last": "2026-11-03",
+    "last": "2026-11-13",
     "species": "Arcanine-Hisui",
     "item": "Focus Sash",
     "ability": "Rock Head",
@@ -991,6 +1066,62 @@
     ],
     "known_item": true,
     "known_ability": true
+   },
+   {
+    "source": "added",
+    "count": 2,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Archaludon",
+    "item": "Sitrus Berry",
+    "ability": "Stamina",
+    "nature": "Modest",
+    "points": {
+     "hp": 2,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Stealth Rock",
+     "Rest",
+     "Steel Beam",
+     "Thunderbolt"
+    ],
+    "known_moves": [
+     "stealthrock",
+     "rest",
+     "steelbeam",
+     "thunderbolt"
+    ],
+    "known_item": false,
+    "known_ability": true
+   },
+   {
+    "source": "catalog",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Archaludon",
+    "item": "White Herb",
+    "ability": "Stamina",
+    "nature": "Modest",
+    "points": {
+     "hp": 2,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Thunderbolt",
+     "Draco Meteor",
+     "Flash Cannon",
+     "Dark Pulse"
+    ]
    },
    {
     "source": "catalog",
@@ -1243,6 +1374,60 @@
   ],
   "armarouge": [
    {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Armarouge",
+    "item": "Focus Sash",
+    "ability": "Weak Armor",
+    "nature": "Modest",
+    "points": {
+     "hp": 2,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Armor Cannon",
+     "Dragon Pulse",
+     "Expanding Force",
+     "Aura Sphere"
+    ],
+    "known_moves": [
+     "armorcannon",
+     "dragonpulse"
+    ],
+    "known_item": false,
+    "known_ability": false
+   },
+   {
+    "source": "catalog",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Armarouge",
+    "item": "Focus Sash",
+    "ability": "Weak Armor",
+    "nature": "Modest",
+    "points": {
+     "hp": 2,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Armor Cannon",
+     "Psychic Terrain",
+     "Expanding Force",
+     "Destiny Bond"
+    ]
+   },
+   {
     "source": "catalog",
     "count": 1,
     "first": "2026-11-02",
@@ -1334,6 +1519,36 @@
   "azumarill": [
    {
     "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Azumarill",
+    "item": "Life Orb",
+    "ability": "Huge Power",
+    "nature": "Adamant",
+    "points": {
+     "hp": 32,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 2
+    },
+    "moves": [
+     "Knock Off",
+     "Play Rough",
+     "Liquidation",
+     "Aqua Jet"
+    ],
+    "known_moves": [
+     "knockoff",
+     "playrough"
+    ],
+    "known_item": true,
+    "known_ability": false
+   },
+   {
+    "source": "added",
     "count": 2,
     "first": "2026-11-04",
     "last": "2026-11-10",
@@ -1391,6 +1606,30 @@
    {
     "source": "catalog",
     "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Banette",
+    "item": "Banettite",
+    "ability": "Frisk",
+    "nature": "Adamant",
+    "points": {
+     "hp": 32,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 2
+    },
+    "moves": [
+     "Poltergeist",
+     "Encore",
+     "Will-O-Wisp",
+     "Destiny Bond"
+    ]
+   },
+   {
+    "source": "catalog",
+    "count": 1,
     "first": "2026-11-03",
     "last": "2026-11-03",
     "species": "Banette",
@@ -1416,9 +1655,9 @@
   "basculegion": [
    {
     "source": "added",
-    "count": 16,
+    "count": 18,
     "first": "2026-11-02",
-    "last": "2026-11-12",
+    "last": "2026-11-13",
     "species": "Basculegion",
     "item": "Choice Scarf",
     "ability": "Adaptability",
@@ -1505,9 +1744,9 @@
   "basculegionf": [
    {
     "source": "catalog",
-    "count": 1,
+    "count": 2,
     "first": "2026-11-05",
-    "last": "2026-11-05",
+    "last": "2026-11-13",
     "species": "Basculegion-F",
     "item": "Life Orb",
     "ability": "Adaptability",
@@ -1531,9 +1770,9 @@
   "baxcalibur": [
    {
     "source": "catalog",
-    "count": 11,
+    "count": 13,
     "first": "2026-11-02",
-    "last": "2026-11-12",
+    "last": "2026-11-13",
     "species": "Baxcalibur",
     "item": "Baxcalibrite",
     "ability": "Thermal Exchange",
@@ -1835,6 +2074,109 @@
     ]
    },
    {
+    "source": "catalog",
+    "count": 4,
+    "first": "2026-11-04",
+    "last": "2026-11-13",
+    "species": "Blaziken",
+    "item": "Blazikenite",
+    "ability": "Speed Boost",
+    "nature": "Adamant",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Thunder Punch",
+     "Swords Dance",
+     "Detect",
+     "Close Combat"
+    ]
+   },
+   {
+    "source": "added",
+    "count": 2,
+    "first": "2026-11-12",
+    "last": "2026-11-13",
+    "species": "Blaziken",
+    "item": "Blazikenite",
+    "ability": "Speed Boost",
+    "nature": "Adamant",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Flare Blitz",
+     "Detect",
+     "Close Combat",
+     "Protect"
+    ],
+    "known_moves": [
+     "flareblitz",
+     "detect",
+     "closecombat"
+    ],
+    "known_item": true,
+    "known_ability": false
+   },
+   {
+    "source": "catalog",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Blaziken",
+    "item": "Blazikenite",
+    "ability": "Speed Boost",
+    "nature": "Jolly",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Flare Blitz",
+     "Close Combat",
+     "Thunder Punch",
+     "Protect"
+    ]
+   },
+   {
+    "source": "catalog",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Blaziken",
+    "item": "Blazikenite",
+    "ability": "Speed Boost",
+    "nature": "Adamant",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Flare Blitz",
+     "Close Combat",
+     "Stone Edge",
+     "Protect"
+    ]
+   },
+   {
     "source": "added",
     "count": 1,
     "first": "2026-11-12",
@@ -1865,37 +2207,6 @@
     ],
     "known_item": false,
     "known_ability": true
-   },
-   {
-    "source": "added",
-    "count": 1,
-    "first": "2026-11-12",
-    "last": "2026-11-12",
-    "species": "Blaziken",
-    "item": "Blazikenite",
-    "ability": "Speed Boost",
-    "nature": "Adamant",
-    "points": {
-     "hp": 2,
-     "atk": 32,
-     "def": 0,
-     "spa": 0,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Flare Blitz",
-     "Detect",
-     "Close Combat",
-     "Protect"
-    ],
-    "known_moves": [
-     "flareblitz",
-     "detect",
-     "closecombat"
-    ],
-    "known_item": true,
-    "known_ability": false
    },
    {
     "source": "added",
@@ -1994,30 +2305,6 @@
     "known_ability": true
    },
    {
-    "source": "catalog",
-    "count": 3,
-    "first": "2026-11-04",
-    "last": "2026-11-09",
-    "species": "Blaziken",
-    "item": "Blazikenite",
-    "ability": "Speed Boost",
-    "nature": "Adamant",
-    "points": {
-     "hp": 2,
-     "atk": 32,
-     "def": 0,
-     "spa": 0,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Thunder Punch",
-     "Swords Dance",
-     "Detect",
-     "Close Combat"
-    ]
-   },
-   {
     "source": "added",
     "count": 1,
     "first": "2026-11-03",
@@ -2084,9 +2371,9 @@
   "ceruledge": [
    {
     "source": "added",
-    "count": 7,
+    "count": 8,
     "first": "2026-11-02",
-    "last": "2026-11-12",
+    "last": "2026-11-13",
     "species": "Ceruledge",
     "item": "Leftovers",
     "ability": "Weak Armor",
@@ -2234,34 +2521,10 @@
   ],
   "charizard": [
    {
-    "source": "catalog",
-    "count": 5,
-    "first": "2026-11-10",
-    "last": "2026-11-13",
-    "species": "Charizard",
-    "item": "Charizardite X",
-    "ability": "Blaze",
-    "nature": "Adamant",
-    "points": {
-     "hp": 2,
-     "atk": 32,
-     "def": 0,
-     "spa": 0,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Thunder Punch",
-     "Flare Blitz",
-     "Dragon Dance",
-     "Dragon Claw"
-    ]
-   },
-   {
     "source": "added",
-    "count": 7,
+    "count": 11,
     "first": "2026-11-02",
-    "last": "2026-11-12",
+    "last": "2026-11-13",
     "species": "Charizard",
     "item": "Charizardite Y",
     "ability": "Blaze",
@@ -2285,6 +2548,93 @@
      "airslash",
      "solarbeam",
      "flamethrower"
+    ],
+    "known_item": true,
+    "known_ability": false
+   },
+   {
+    "source": "catalog",
+    "count": 6,
+    "first": "2026-11-10",
+    "last": "2026-11-13",
+    "species": "Charizard",
+    "item": "Charizardite X",
+    "ability": "Blaze",
+    "nature": "Adamant",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Thunder Punch",
+     "Flare Blitz",
+     "Dragon Dance",
+     "Dragon Claw"
+    ]
+   },
+   {
+    "source": "added",
+    "count": 3,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Charizard",
+    "item": "Charizardite Y",
+    "ability": "Blaze",
+    "nature": "Modest",
+    "points": {
+     "hp": 2,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Flamethrower",
+     "Roost",
+     "Solar Beam",
+     "Fire Blast"
+    ],
+    "known_moves": [
+     "flamethrower",
+     "roost",
+     "solarbeam",
+     "fireblast"
+    ],
+    "known_item": true,
+    "known_ability": false
+   },
+   {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Charizard",
+    "item": "Charizardite Y",
+    "ability": "Blaze",
+    "nature": "Modest",
+    "points": {
+     "hp": 2,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Weather Ball",
+     "Solar Beam",
+     "Overheat",
+     "Flamethrower"
+    ],
+    "known_moves": [
+     "weatherball",
+     "solarbeam",
+     "overheat"
     ],
     "known_item": true,
     "known_ability": false
@@ -2437,7 +2787,7 @@
   "cinderace": [
    {
     "source": "catalog",
-    "count": 8,
+    "count": 14,
     "first": "2026-11-02",
     "last": "2026-11-13",
     "species": "Cinderace",
@@ -2513,7 +2863,7 @@
   "clefable": [
    {
     "source": "catalog",
-    "count": 2,
+    "count": 3,
     "first": "2026-11-05",
     "last": "2026-11-13",
     "species": "Clefable",
@@ -2623,9 +2973,9 @@
   "corviknight": [
    {
     "source": "catalog",
-    "count": 5,
+    "count": 7,
     "first": "2026-11-04",
-    "last": "2026-11-12",
+    "last": "2026-11-13",
     "species": "Corviknight",
     "item": "Rocky Helmet",
     "ability": "Pressure",
@@ -2644,6 +2994,99 @@
      "Roost",
      "U-turn"
     ]
+   },
+   {
+    "source": "added",
+    "count": 2,
+    "first": "2026-11-04",
+    "last": "2026-11-13",
+    "species": "Corviknight",
+    "item": "Rocky Helmet",
+    "ability": "Pressure",
+    "nature": "Impish",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 32,
+     "spa": 0,
+     "spd": 2,
+     "spe": 0
+    },
+    "moves": [
+     "Roost",
+     "Bulk Up",
+     "Iron Head",
+     "Curse"
+    ],
+    "known_moves": [
+     "roost",
+     "bulkup",
+     "ironhead",
+     "curse"
+    ],
+    "known_item": true,
+    "known_ability": true
+   },
+   {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Corviknight",
+    "item": "Leftovers",
+    "ability": "Pressure",
+    "nature": "Impish",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 32,
+     "spa": 0,
+     "spd": 2,
+     "spe": 0
+    },
+    "moves": [
+     "Substitute",
+     "Bulk Up",
+     "Roost",
+     "Iron Head"
+    ],
+    "known_moves": [
+     "substitute",
+     "bulkup",
+     "roost",
+     "ironhead"
+    ],
+    "known_item": true,
+    "known_ability": true
+   },
+   {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Corviknight",
+    "item": "Leftovers",
+    "ability": "Mirror Armor",
+    "nature": "Impish",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 32,
+     "spa": 0,
+     "spd": 2,
+     "spe": 0
+    },
+    "moves": [
+     "Brave Bird",
+     "Roost",
+     "Iron Defense",
+     "Body Press"
+    ],
+    "known_moves": [
+     "bravebird"
+    ],
+    "known_item": false,
+    "known_ability": true
    },
    {
     "source": "added",
@@ -2744,37 +3187,6 @@
     },
     "moves": [
      "Roost",
-     "Bulk Up",
-     "Iron Head",
-     "Body Press"
-    ],
-    "known_moves": [
-     "roost",
-     "bulkup",
-     "ironhead"
-    ],
-    "known_item": true,
-    "known_ability": false
-   },
-   {
-    "source": "added",
-    "count": 1,
-    "first": "2026-11-04",
-    "last": "2026-11-04",
-    "species": "Corviknight",
-    "item": "Rocky Helmet",
-    "ability": "Pressure",
-    "nature": "Impish",
-    "points": {
-     "hp": 32,
-     "atk": 0,
-     "def": 32,
-     "spa": 0,
-     "spd": 2,
-     "spe": 0
-    },
-    "moves": [
-     "Roost",
      "Iron Defense",
      "Iron Head",
      "Body Press"
@@ -2822,6 +3234,30 @@
    }
   ],
   "delphox": [
+   {
+    "source": "catalog",
+    "count": 2,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Delphox",
+    "item": "Delphoxite",
+    "ability": "Blaze",
+    "nature": "Timid",
+    "points": {
+     "hp": 2,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Flamethrower",
+     "Psyshock",
+     "Nasty Plot",
+     "Substitute"
+    ]
+   },
    {
     "source": "catalog",
     "count": 3,
@@ -3042,6 +3478,62 @@
   ],
   "dragapult": [
    {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Dragapult",
+    "item": "Light Clay",
+    "ability": "Cursed Body",
+    "nature": "Timid",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 0,
+     "spa": 0,
+     "spd": 9,
+     "spe": 25
+    },
+    "moves": [
+     "Will-O-Wisp",
+     "Reflect",
+     "Hex",
+     "Light Screen"
+    ],
+    "known_moves": [
+     "willowisp",
+     "reflect",
+     "hex",
+     "lightscreen"
+    ],
+    "known_item": false,
+    "known_ability": true
+   },
+   {
+    "source": "catalog",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Dragapult",
+    "item": "Life Orb",
+    "ability": "Infiltrator",
+    "nature": "Timid",
+    "points": {
+     "hp": 2,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Draco Meteor",
+     "Shadow Ball",
+     "Flamethrower",
+     "Curse"
+    ]
+   },
+   {
     "source": "catalog",
     "count": 5,
     "first": "2026-11-02",
@@ -3117,6 +3609,30 @@
   "dragonite": [
    {
     "source": "catalog",
+    "count": 6,
+    "first": "2026-11-02",
+    "last": "2026-11-13",
+    "species": "Dragonite",
+    "item": "Dragoninite",
+    "ability": "Multiscale",
+    "nature": "Modest",
+    "points": {
+     "hp": 1,
+     "atk": 0,
+     "def": 1,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Draco Meteor",
+     "Flamethrower",
+     "Thunderbolt",
+     "Roost"
+    ]
+   },
+   {
+    "source": "catalog",
     "count": 3,
     "first": "2026-11-04",
     "last": "2026-11-12",
@@ -3170,30 +3686,6 @@
     ],
     "known_item": true,
     "known_ability": false
-   },
-   {
-    "source": "catalog",
-    "count": 4,
-    "first": "2026-11-02",
-    "last": "2026-11-10",
-    "species": "Dragonite",
-    "item": "Dragoninite",
-    "ability": "Multiscale",
-    "nature": "Modest",
-    "points": {
-     "hp": 1,
-     "atk": 0,
-     "def": 1,
-     "spa": 32,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Draco Meteor",
-     "Flamethrower",
-     "Thunderbolt",
-     "Roost"
-    ]
    },
    {
     "source": "added",
@@ -3288,7 +3780,57 @@
     "known_ability": true
    }
   ],
+  "emolga": [
+   {
+    "source": "catalog",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Emolga",
+    "item": "Lum Berry",
+    "ability": "Motor Drive",
+    "nature": "Modest",
+    "points": {
+     "hp": 1,
+     "atk": 0,
+     "def": 1,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Thunderbolt",
+     "Air Slash",
+     "Volt Switch",
+     "Encore"
+    ]
+   }
+  ],
   "empoleon": [
+   {
+    "source": "catalog",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Empoleon",
+    "item": "Air Balloon",
+    "ability": "Competitive",
+    "nature": "Modest",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 0,
+     "spa": 29,
+     "spd": 4,
+     "spe": 1
+    },
+    "moves": [
+     "Surf",
+     "Ice Beam",
+     "Flash Cannon",
+     "Vacuum Wave"
+    ]
+   },
    {
     "source": "catalog",
     "count": 4,
@@ -3317,9 +3859,9 @@
   "espathra": [
    {
     "source": "catalog",
-    "count": 4,
+    "count": 6,
     "first": "2026-11-03",
-    "last": "2026-11-05",
+    "last": "2026-11-13",
     "species": "Espathra",
     "item": "Focus Sash",
     "ability": "Speed Boost",
@@ -3397,6 +3939,38 @@
   ],
   "excadrill": [
    {
+    "source": "added",
+    "count": 4,
+    "first": "2026-11-02",
+    "last": "2026-11-13",
+    "species": "Excadrill",
+    "item": "Excadrite",
+    "ability": "Mold Breaker",
+    "nature": "Adamant",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Earthquake",
+     "Horn Drill",
+     "Brick Break",
+     "Iron Head"
+    ],
+    "known_moves": [
+     "earthquake",
+     "horndrill",
+     "brickbreak",
+     "ironhead"
+    ],
+    "known_item": true,
+    "known_ability": true
+   },
+   {
     "source": "catalog",
     "count": 2,
     "first": "2026-11-03",
@@ -3467,34 +4041,34 @@
      "Rock Tomb",
      "Swords Dance"
     ]
-   },
+   }
+  ],
+  "falinks": [
    {
     "source": "added",
-    "count": 2,
-    "first": "2026-11-02",
-    "last": "2026-11-02",
-    "species": "Excadrill",
-    "item": "Excadrite",
-    "ability": "Mold Breaker",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Falinks",
+    "item": "Falinksite",
+    "ability": "Defiant",
     "nature": "Adamant",
     "points": {
-     "hp": 2,
-     "atk": 32,
+     "hp": 22,
+     "atk": 30,
      "def": 0,
      "spa": 0,
      "spd": 0,
-     "spe": 32
+     "spe": 14
     },
     "moves": [
-     "Earthquake",
-     "Horn Drill",
-     "Brick Break",
-     "Iron Head"
+     "Iron Defense",
+     "Close Combat",
+     "No Retreat",
+     "Knock Off"
     ],
     "known_moves": [
-     "earthquake",
-     "horndrill",
-     "brickbreak"
+     "irondefense"
     ],
     "known_item": true,
     "known_ability": false
@@ -3535,7 +4109,7 @@
   "feraligatr": [
    {
     "source": "added",
-    "count": 1,
+    "count": 2,
     "first": "2026-11-13",
     "last": "2026-11-13",
     "species": "Feraligatr",
@@ -3553,12 +4127,14 @@
     "moves": [
      "Earthquake",
      "Liquidation",
-     "Low Kick",
-     "Double-Edge"
+     "Aqua Jet",
+     "Trailblaze"
     ],
     "known_moves": [
      "earthquake",
-     "liquidation"
+     "liquidation",
+     "aquajet",
+     "trailblaze"
     ],
     "known_item": true,
     "known_ability": false
@@ -3659,6 +4235,32 @@
     "known_ability": false
    }
   ],
+  "forretress": [
+   {
+    "source": "catalog",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Forretress",
+    "item": "Rocky Helmet",
+    "ability": "Sturdy",
+    "nature": "Relaxed",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 32,
+     "spa": 0,
+     "spd": 2,
+     "spe": 0
+    },
+    "moves": [
+     "Volt Switch",
+     "Body Press",
+     "Stealth Rock",
+     "Rapid Spin"
+    ]
+   }
+  ],
   "gallade": [
    {
     "source": "added",
@@ -3746,118 +4348,10 @@
   ],
   "garchomp": [
    {
-    "source": "catalog",
-    "count": 1,
-    "first": "2026-11-13",
-    "last": "2026-11-13",
-    "species": "Garchomp",
-    "item": "Focus Sash",
-    "ability": "Rough Skin",
-    "nature": "Adamant",
-    "points": {
-     "hp": 2,
-     "atk": 32,
-     "def": 0,
-     "spa": 0,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Earthquake",
-     "Dragon Tail",
-     "Rock Tomb",
-     "Stealth Rock"
-    ]
-   },
-   {
     "source": "added",
-    "count": 1,
-    "first": "2026-11-13",
-    "last": "2026-11-13",
-    "species": "Garchomp",
-    "item": "Rocky Helmet",
-    "ability": "Rough Skin",
-    "nature": "Jolly",
-    "points": {
-     "hp": 2,
-     "atk": 32,
-     "def": 0,
-     "spa": 0,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Stealth Rock",
-     "Endure",
-     "Earthquake",
-     "Outrage"
-    ],
-    "known_moves": [
-     "stealthrock",
-     "endure"
-    ],
-    "known_item": true,
-    "known_ability": true
-   },
-   {
-    "source": "added",
-    "count": 1,
-    "first": "2026-11-13",
-    "last": "2026-11-13",
-    "species": "Garchomp",
-    "item": "Garchompite Z",
-    "ability": "Rough Skin",
-    "nature": "Jolly",
-    "points": {
-     "hp": 2,
-     "atk": 32,
-     "def": 0,
-     "spa": 0,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Protect",
-     "Fire Blast",
-     "Earthquake",
-     "Outrage"
-    ],
-    "known_moves": [
-     "protect",
-     "fireblast"
-    ],
-    "known_item": true,
-    "known_ability": false
-   },
-   {
-    "source": "catalog",
-    "count": 19,
-    "first": "2026-11-02",
-    "last": "2026-11-12",
-    "species": "Garchomp",
-    "item": "Choice Scarf",
-    "ability": "Rough Skin",
-    "nature": "Jolly",
-    "points": {
-     "hp": 2,
-     "atk": 32,
-     "def": 0,
-     "spa": 0,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Earthquake",
-     "Outrage",
-     "Rock Tomb",
-     "Stealth Rock"
-    ]
-   },
-   {
-    "source": "added",
-    "count": 4,
+    "count": 8,
     "first": "2026-11-04",
-    "last": "2026-11-12",
+    "last": "2026-11-13",
     "species": "Garchomp",
     "item": "Garchompite Z",
     "ability": "Rough Skin",
@@ -3883,7 +4377,172 @@
      "dragonpulse"
     ],
     "known_item": true,
+    "known_ability": true
+   },
+   {
+    "source": "added",
+    "count": 4,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Garchomp",
+    "item": "Rocky Helmet",
+    "ability": "Rough Skin",
+    "nature": "Jolly",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Stealth Rock",
+     "Endure",
+     "Outrage",
+     "Earthquake"
+    ],
+    "known_moves": [
+     "stealthrock",
+     "endure",
+     "outrage"
+    ],
+    "known_item": true,
+    "known_ability": true
+   },
+   {
+    "source": "catalog",
+    "count": 3,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Garchomp",
+    "item": "Focus Sash",
+    "ability": "Rough Skin",
+    "nature": "Adamant",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Earthquake",
+     "Dragon Tail",
+     "Rock Tomb",
+     "Stealth Rock"
+    ]
+   },
+   {
+    "source": "added",
+    "count": 3,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Garchomp",
+    "item": "Garchompite Z",
+    "ability": "Rough Skin",
+    "nature": "Jolly",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Protect",
+     "Fire Blast",
+     "Earthquake",
+     "Outrage"
+    ],
+    "known_moves": [
+     "protect",
+     "fireblast",
+     "earthquake"
+    ],
+    "known_item": true,
     "known_ability": false
+   },
+   {
+    "source": "catalog",
+    "count": 3,
+    "first": "2026-11-10",
+    "last": "2026-11-13",
+    "species": "Garchomp",
+    "item": "Focus Sash",
+    "ability": "Rough Skin",
+    "nature": "Jolly",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Scale Shot",
+     "Earthquake",
+     "Rock Tomb",
+     "Stealth Rock"
+    ]
+   },
+   {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Garchomp",
+    "item": "Focus Sash",
+    "ability": "Rough Skin",
+    "nature": "Adamant",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Dragon Tail",
+     "Stealth Rock",
+     "Spikes",
+     "Earthquake"
+    ],
+    "known_moves": [
+     "dragontail",
+     "stealthrock",
+     "spikes"
+    ],
+    "known_item": false,
+    "known_ability": false
+   },
+   {
+    "source": "catalog",
+    "count": 19,
+    "first": "2026-11-02",
+    "last": "2026-11-12",
+    "species": "Garchomp",
+    "item": "Choice Scarf",
+    "ability": "Rough Skin",
+    "nature": "Jolly",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Earthquake",
+     "Outrage",
+     "Rock Tomb",
+     "Stealth Rock"
+    ]
    },
    {
     "source": "added",
@@ -3994,30 +4653,6 @@
      "Outrage",
      "Earthquake",
      "Rock Slide",
-     "Stealth Rock"
-    ]
-   },
-   {
-    "source": "catalog",
-    "count": 1,
-    "first": "2026-11-10",
-    "last": "2026-11-10",
-    "species": "Garchomp",
-    "item": "Focus Sash",
-    "ability": "Rough Skin",
-    "nature": "Jolly",
-    "points": {
-     "hp": 2,
-     "atk": 32,
-     "def": 0,
-     "spa": 0,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Scale Shot",
-     "Earthquake",
-     "Rock Tomb",
      "Stealth Rock"
     ]
    },
@@ -4170,6 +4805,60 @@
   "gengar": [
    {
     "source": "catalog",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Gengar",
+    "item": "Focus Sash",
+    "ability": "Cursed Body",
+    "nature": "Timid",
+    "points": {
+     "hp": 2,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Sludge Bomb",
+     "Shadow Ball",
+     "Icy Wind",
+     "Toxic Spikes"
+    ]
+   },
+   {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Gengar",
+    "item": "Gengarite",
+    "ability": "Cursed Body",
+    "nature": "Modest",
+    "points": {
+     "hp": 2,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Shadow Ball",
+     "Destiny Bond",
+     "Sludge Wave",
+     "Icy Wind"
+    ],
+    "known_moves": [
+     "shadowball",
+     "destinybond"
+    ],
+    "known_item": true,
+    "known_ability": false
+   },
+   {
+    "source": "catalog",
     "count": 3,
     "first": "2026-11-02",
     "last": "2026-11-08",
@@ -4194,6 +4883,30 @@
    }
   ],
   "gholdengo": [
+   {
+    "source": "catalog",
+    "count": 4,
+    "first": "2026-11-04",
+    "last": "2026-11-13",
+    "species": "Gholdengo",
+    "item": "Air Balloon",
+    "ability": "Good as Gold",
+    "nature": "Timid",
+    "points": {
+     "hp": 1,
+     "atk": 0,
+     "def": 1,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Shadow Ball",
+     "Make It Rain",
+     "Recover",
+     "Nasty Plot"
+    ]
+   },
    {
     "source": "added",
     "count": 13,
@@ -4225,30 +4938,6 @@
     ],
     "known_item": true,
     "known_ability": true
-   },
-   {
-    "source": "catalog",
-    "count": 3,
-    "first": "2026-11-04",
-    "last": "2026-11-10",
-    "species": "Gholdengo",
-    "item": "Air Balloon",
-    "ability": "Good as Gold",
-    "nature": "Timid",
-    "points": {
-     "hp": 1,
-     "atk": 0,
-     "def": 1,
-     "spa": 32,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Shadow Ball",
-     "Make It Rain",
-     "Recover",
-     "Nasty Plot"
-    ]
    }
   ],
   "glaceon": [
@@ -4315,34 +5004,10 @@
   ],
   "glimmora": [
    {
-    "source": "catalog",
-    "count": 2,
-    "first": "2026-11-12",
-    "last": "2026-11-12",
-    "species": "Glimmora",
-    "item": "Focus Sash",
-    "ability": "Toxic Debris",
-    "nature": "Timid",
-    "points": {
-     "hp": 1,
-     "atk": 0,
-     "def": 0,
-     "spa": 32,
-     "spd": 1,
-     "spe": 32
-    },
-    "moves": [
-     "Sludge Wave",
-     "Energy Ball",
-     "Mud Shot",
-     "Stealth Rock"
-    ]
-   },
-   {
     "source": "added",
-    "count": 2,
+    "count": 5,
     "first": "2026-11-12",
-    "last": "2026-11-12",
+    "last": "2026-11-13",
     "species": "Glimmora",
     "item": "Glimmoranite",
     "ability": "Toxic Debris",
@@ -4368,7 +5033,31 @@
      "powergem"
     ],
     "known_item": true,
-    "known_ability": false
+    "known_ability": true
+   },
+   {
+    "source": "catalog",
+    "count": 2,
+    "first": "2026-11-12",
+    "last": "2026-11-12",
+    "species": "Glimmora",
+    "item": "Focus Sash",
+    "ability": "Toxic Debris",
+    "nature": "Timid",
+    "points": {
+     "hp": 1,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 1,
+     "spe": 32
+    },
+    "moves": [
+     "Sludge Wave",
+     "Energy Ball",
+     "Mud Shot",
+     "Stealth Rock"
+    ]
    },
    {
     "source": "added",
@@ -4462,9 +5151,9 @@
   "golisopod": [
    {
     "source": "catalog",
-    "count": 14,
+    "count": 17,
     "first": "2026-11-02",
-    "last": "2026-11-12",
+    "last": "2026-11-13",
     "species": "Golisopod",
     "item": "Golisopite",
     "ability": "Emergency Exit",
@@ -4485,34 +5174,10 @@
     ]
    },
    {
-    "source": "catalog",
-    "count": 3,
-    "first": "2026-11-04",
-    "last": "2026-11-12",
-    "species": "Golisopod",
-    "item": "Golisopite",
-    "ability": "Emergency Exit",
-    "nature": "Adamant",
-    "points": {
-     "hp": 32,
-     "atk": 32,
-     "def": 0,
-     "spa": 0,
-     "spd": 2,
-     "spe": 0
-    },
-    "moves": [
-     "Bulk Up",
-     "Leech Life",
-     "Iron Head",
-     "Sucker Punch"
-    ]
-   },
-   {
     "source": "added",
-    "count": 4,
+    "count": 5,
     "first": "2026-11-03",
-    "last": "2026-11-10",
+    "last": "2026-11-13",
     "species": "Golisopod",
     "item": "Golisopite",
     "ability": "Emergency Exit",
@@ -4541,10 +5206,66 @@
     "known_ability": false
    },
    {
+    "source": "added",
+    "count": 4,
+    "first": "2026-11-02",
+    "last": "2026-11-13",
+    "species": "Golisopod",
+    "item": "Golisopite",
+    "ability": "Emergency Exit",
+    "nature": "Adamant",
+    "points": {
+     "hp": 32,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 2,
+     "spe": 0
+    },
+    "moves": [
+     "Swords Dance",
+     "Sucker Punch",
+     "Leech Life",
+     "Drill Run"
+    ],
+    "known_moves": [
+     "swordsdance",
+     "suckerpunch",
+     "leechlife",
+     "drillrun"
+    ],
+    "known_item": true,
+    "known_ability": false
+   },
+   {
     "source": "catalog",
-    "count": 1,
+    "count": 3,
+    "first": "2026-11-04",
+    "last": "2026-11-13",
+    "species": "Golisopod",
+    "item": "Golisopite",
+    "ability": "Emergency Exit",
+    "nature": "Adamant",
+    "points": {
+     "hp": 32,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 2,
+     "spe": 0
+    },
+    "moves": [
+     "First Impression",
+     "Leech Life",
+     "U-turn",
+     "Close Combat"
+    ]
+   },
+   {
+    "source": "catalog",
+    "count": 2,
     "first": "2026-11-08",
-    "last": "2026-11-08",
+    "last": "2026-11-13",
     "species": "Golisopod",
     "item": "Golisopite",
     "ability": "Emergency Exit",
@@ -4565,41 +5286,10 @@
     ]
    },
    {
-    "source": "added",
-    "count": 3,
-    "first": "2026-11-02",
-    "last": "2026-11-04",
-    "species": "Golisopod",
-    "item": "Golisopite",
-    "ability": "Emergency Exit",
-    "nature": "Adamant",
-    "points": {
-     "hp": 32,
-     "atk": 32,
-     "def": 0,
-     "spa": 0,
-     "spd": 2,
-     "spe": 0
-    },
-    "moves": [
-     "Swords Dance",
-     "Sucker Punch",
-     "Leech Life",
-     "First Impression"
-    ],
-    "known_moves": [
-     "swordsdance",
-     "suckerpunch",
-     "leechlife"
-    ],
-    "known_item": true,
-    "known_ability": false
-   },
-   {
     "source": "catalog",
-    "count": 2,
+    "count": 3,
     "first": "2026-11-04",
-    "last": "2026-11-04",
+    "last": "2026-11-12",
     "species": "Golisopod",
     "item": "Golisopite",
     "ability": "Emergency Exit",
@@ -4613,10 +5303,10 @@
      "spe": 0
     },
     "moves": [
-     "First Impression",
+     "Bulk Up",
      "Leech Life",
-     "U-turn",
-     "Close Combat"
+     "Iron Head",
+     "Sucker Punch"
     ]
    },
    {
@@ -4678,9 +5368,9 @@
   "goodrahisui": [
    {
     "source": "added",
-    "count": 1,
+    "count": 2,
     "first": "2026-11-10",
-    "last": "2026-11-10",
+    "last": "2026-11-13",
     "species": "Goodra-Hisui",
     "item": "Shuca Berry",
     "ability": "Gooey",
@@ -4695,15 +5385,16 @@
     },
     "moves": [
      "Thunder",
+     "Flamethrower",
      "Flash Cannon",
-     "Thunderbolt",
-     "Flamethrower"
+     "Thunderbolt"
     ],
     "known_moves": [
-     "thunder"
+     "thunder",
+     "flamethrower"
     ],
     "known_item": false,
-    "known_ability": false
+    "known_ability": true
    },
    {
     "source": "catalog",
@@ -4781,9 +5472,9 @@
   "grapploct": [
    {
     "source": "added",
-    "count": 2,
+    "count": 3,
     "first": "2026-11-04",
-    "last": "2026-11-10",
+    "last": "2026-11-13",
     "species": "Grapploct",
     "item": "Leftovers",
     "ability": "Technician",
@@ -4800,12 +5491,13 @@
      "Drain Punch",
      "Bulk Up",
      "Mach Punch",
-     "Storm Throw"
+     "Brutal Swing"
     ],
     "known_moves": [
      "drainpunch",
      "bulkup",
-     "machpunch"
+     "machpunch",
+     "brutalswing"
     ],
     "known_item": true,
     "known_ability": false
@@ -4814,9 +5506,9 @@
   "greninja": [
    {
     "source": "added",
-    "count": 1,
+    "count": 2,
     "first": "2026-11-12",
-    "last": "2026-11-12",
+    "last": "2026-11-13",
     "species": "Greninja",
     "item": "Life Orb",
     "ability": "Protean",
@@ -5026,6 +5718,99 @@
    }
   ],
   "gyarados": [
+   {
+    "source": "added",
+    "count": 2,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Gyarados",
+    "item": "Leftovers",
+    "ability": "Intimidate",
+    "nature": "Impish",
+    "points": {
+     "hp": 32,
+     "atk": 2,
+     "def": 32,
+     "spa": 0,
+     "spd": 0,
+     "spe": 0
+    },
+    "moves": [
+     "Power Whip",
+     "Temper Flare",
+     "Earthquake",
+     "Dragon Dance"
+    ],
+    "known_moves": [
+     "powerwhip",
+     "temperflare",
+     "earthquake"
+    ],
+    "known_item": true,
+    "known_ability": true
+   },
+   {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Gyarados",
+    "item": "Life Orb",
+    "ability": "Intimidate",
+    "nature": "Impish",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 32,
+     "spa": 0,
+     "spd": 0,
+     "spe": 2
+    },
+    "moves": [
+     "Waterfall",
+     "Earthquake",
+     "Power Whip",
+     "Avalanche"
+    ],
+    "known_moves": [
+     "waterfall",
+     "earthquake"
+    ],
+    "known_item": true,
+    "known_ability": false
+   },
+   {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Gyarados",
+    "item": "Gyaradosite",
+    "ability": "Intimidate",
+    "nature": "Impish",
+    "points": {
+     "hp": 32,
+     "atk": 2,
+     "def": 32,
+     "spa": 0,
+     "spd": 0,
+     "spe": 0
+    },
+    "moves": [
+     "Ice Fang",
+     "Dragon Dance",
+     "Earthquake",
+     "Crunch"
+    ],
+    "known_moves": [
+     "icefang",
+     "dragondance",
+     "earthquake",
+     "crunch"
+    ],
+    "known_item": true,
+    "known_ability": false
+   },
    {
     "source": "added",
     "count": 7,
@@ -5279,9 +6064,9 @@
   "hippowdon": [
    {
     "source": "catalog",
-    "count": 7,
+    "count": 10,
     "first": "2026-11-02",
-    "last": "2026-11-12",
+    "last": "2026-11-13",
     "species": "Hippowdon",
     "item": "Leftovers",
     "ability": "Sand Stream",
@@ -5300,6 +6085,38 @@
      "Stealth Rock",
      "Slack Off"
     ]
+   },
+   {
+    "source": "added",
+    "count": 3,
+    "first": "2026-11-03",
+    "last": "2026-11-13",
+    "species": "Hippowdon",
+    "item": "Leftovers",
+    "ability": "Sand Stream",
+    "nature": "Impish",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 32,
+     "spa": 0,
+     "spd": 2,
+     "spe": 0
+    },
+    "moves": [
+     "Whirlwind",
+     "Stealth Rock",
+     "Yawn",
+     "Protect"
+    ],
+    "known_moves": [
+     "whirlwind",
+     "stealthrock",
+     "yawn",
+     "protect"
+    ],
+    "known_item": true,
+    "known_ability": true
    },
    {
     "source": "catalog",
@@ -5404,36 +6221,6 @@
     ],
     "known_item": false,
     "known_ability": true
-   },
-   {
-    "source": "added",
-    "count": 1,
-    "first": "2026-11-03",
-    "last": "2026-11-03",
-    "species": "Hippowdon",
-    "item": "Leftovers",
-    "ability": "Sand Stream",
-    "nature": "Impish",
-    "points": {
-     "hp": 32,
-     "atk": 0,
-     "def": 32,
-     "spa": 0,
-     "spd": 2,
-     "spe": 0
-    },
-    "moves": [
-     "Whirlwind",
-     "Stealth Rock",
-     "Yawn",
-     "Earthquake"
-    ],
-    "known_moves": [
-     "whirlwind",
-     "stealthrock"
-    ],
-    "known_item": true,
-    "known_ability": true
    }
   ],
   "houndoom": [
@@ -5496,9 +6283,9 @@
   "hydreigon": [
    {
     "source": "catalog",
-    "count": 6,
+    "count": 7,
     "first": "2026-11-03",
-    "last": "2026-11-12",
+    "last": "2026-11-13",
     "species": "Hydreigon",
     "item": "Choice Scarf",
     "ability": "Levitate",
@@ -5556,7 +6343,7 @@
   "indeedee": [
    {
     "source": "catalog",
-    "count": 8,
+    "count": 12,
     "first": "2026-11-04",
     "last": "2026-11-13",
     "species": "Indeedee",
@@ -5804,6 +6591,36 @@
   ],
   "kingambit": [
    {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Kingambit",
+    "item": "Quick Claw",
+    "ability": "Supreme Overlord",
+    "nature": "Adamant",
+    "points": {
+     "hp": 32,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 2,
+     "spe": 0
+    },
+    "moves": [
+     "Swords Dance",
+     "Iron Head",
+     "Sucker Punch",
+     "Kowtow Cleave"
+    ],
+    "known_moves": [
+     "swordsdance",
+     "ironhead"
+    ],
+    "known_item": true,
+    "known_ability": true
+   },
+   {
     "source": "catalog",
     "count": 8,
     "first": "2026-11-02",
@@ -5863,9 +6680,9 @@
   "kleavor": [
    {
     "source": "catalog",
-    "count": 5,
+    "count": 6,
     "first": "2026-11-02",
-    "last": "2026-11-10",
+    "last": "2026-11-13",
     "species": "Kleavor",
     "item": "Choice Scarf",
     "ability": "Sharpness",
@@ -5887,6 +6704,30 @@
    }
   ],
   "lopunny": [
+   {
+    "source": "catalog",
+    "count": 3,
+    "first": "2026-11-04",
+    "last": "2026-11-13",
+    "species": "Lopunny",
+    "item": "Lopunnite",
+    "ability": "Limber",
+    "nature": "Jolly",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Fake Out",
+     "Close Combat",
+     "Triple Axel",
+     "U-turn"
+    ]
+   },
    {
     "source": "added",
     "count": 3,
@@ -5918,30 +6759,6 @@
     ],
     "known_item": true,
     "known_ability": false
-   },
-   {
-    "source": "catalog",
-    "count": 2,
-    "first": "2026-11-04",
-    "last": "2026-11-09",
-    "species": "Lopunny",
-    "item": "Lopunnite",
-    "ability": "Limber",
-    "nature": "Jolly",
-    "points": {
-     "hp": 2,
-     "atk": 32,
-     "def": 0,
-     "spa": 0,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Fake Out",
-     "Close Combat",
-     "Triple Axel",
-     "U-turn"
-    ]
    },
    {
     "source": "added",
@@ -5978,9 +6795,9 @@
   "lucario": [
    {
     "source": "added",
-    "count": 12,
+    "count": 13,
     "first": "2026-11-03",
-    "last": "2026-11-12",
+    "last": "2026-11-13",
     "species": "Lucario",
     "item": "Lucarionite Z",
     "ability": "Justified",
@@ -6007,6 +6824,54 @@
     ],
     "known_item": true,
     "known_ability": false
+   },
+   {
+    "source": "catalog",
+    "count": 6,
+    "first": "2026-11-03",
+    "last": "2026-11-13",
+    "species": "Lucario",
+    "item": "Lucarionite Z",
+    "ability": "Justified",
+    "nature": "Timid",
+    "points": {
+     "hp": 2,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Aura Sphere",
+     "Dark Pulse",
+     "Flash Cannon",
+     "Nasty Plot"
+    ]
+   },
+   {
+    "source": "catalog",
+    "count": 3,
+    "first": "2026-11-04",
+    "last": "2026-11-13",
+    "species": "Lucario",
+    "item": "Lucarionite",
+    "ability": "Inner Focus",
+    "nature": "Jolly",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Close Combat",
+     "Meteor Mash",
+     "Swords Dance",
+     "Bullet Punch"
+    ]
    },
    {
     "source": "added",
@@ -6039,54 +6904,6 @@
     ],
     "known_item": true,
     "known_ability": false
-   },
-   {
-    "source": "catalog",
-    "count": 2,
-    "first": "2026-11-04",
-    "last": "2026-11-12",
-    "species": "Lucario",
-    "item": "Lucarionite",
-    "ability": "Inner Focus",
-    "nature": "Jolly",
-    "points": {
-     "hp": 2,
-     "atk": 32,
-     "def": 0,
-     "spa": 0,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Close Combat",
-     "Meteor Mash",
-     "Swords Dance",
-     "Bullet Punch"
-    ]
-   },
-   {
-    "source": "catalog",
-    "count": 4,
-    "first": "2026-11-03",
-    "last": "2026-11-08",
-    "species": "Lucario",
-    "item": "Lucarionite Z",
-    "ability": "Justified",
-    "nature": "Timid",
-    "points": {
-     "hp": 2,
-     "atk": 0,
-     "def": 0,
-     "spa": 32,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Aura Sphere",
-     "Dark Pulse",
-     "Flash Cannon",
-     "Nasty Plot"
-    ]
    },
    {
     "source": "added",
@@ -6178,9 +6995,9 @@
   "mamoswine": [
    {
     "source": "added",
-    "count": 2,
+    "count": 3,
     "first": "2026-11-03",
-    "last": "2026-11-12",
+    "last": "2026-11-13",
     "species": "Mamoswine",
     "item": "Focus Sash",
     "ability": "Oblivious",
@@ -6196,12 +7013,13 @@
     "moves": [
      "Stealth Rock",
      "Endeavor",
-     "Icicle Spear",
-     "Earthquake"
+     "Earthquake",
+     "Icicle Spear"
     ],
     "known_moves": [
      "stealthrock",
-     "endeavor"
+     "endeavor",
+     "earthquake"
     ],
     "known_item": false,
     "known_ability": false
@@ -6234,9 +7052,9 @@
   "maushold": [
    {
     "source": "added",
-    "count": 2,
+    "count": 3,
     "first": "2026-11-02",
-    "last": "2026-11-02",
+    "last": "2026-11-13",
     "species": "Maushold",
     "item": "shellbell",
     "ability": "",
@@ -6250,10 +7068,12 @@
      "spe": 11
     },
     "moves": [
-     "Population Bomb"
+     "Population Bomb",
+     "Bullet Seed"
     ],
     "known_moves": [
-     "populationbomb"
+     "populationbomb",
+     "bulletseed"
     ],
     "known_item": true,
     "known_ability": false
@@ -6312,9 +7132,9 @@
   "meganium": [
    {
     "source": "catalog",
-    "count": 2,
+    "count": 3,
     "first": "2026-11-03",
-    "last": "2026-11-03",
+    "last": "2026-11-13",
     "species": "Meganium",
     "item": "Meganiumite",
     "ability": "Leaf Guard",
@@ -6336,6 +7156,38 @@
    }
   ],
   "meowscarada": [
+   {
+    "source": "added",
+    "count": 4,
+    "first": "2026-11-02",
+    "last": "2026-11-13",
+    "species": "Meowscarada",
+    "item": "Life Orb",
+    "ability": "Protean",
+    "nature": "Jolly",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Thunder Punch",
+     "Flower Trick",
+     "Toxic Spikes",
+     "Sucker Punch"
+    ],
+    "known_moves": [
+     "thunderpunch",
+     "flowertrick",
+     "toxicspikes",
+     "suckerpunch"
+    ],
+    "known_item": true,
+    "known_ability": true
+   },
    {
     "source": "added",
     "count": 11,
@@ -6415,16 +7267,18 @@
      "Triple Axel",
      "U-turn"
     ]
-   },
+   }
+  ],
+  "metagross": [
    {
-    "source": "added",
-    "count": 2,
-    "first": "2026-11-02",
-    "last": "2026-11-03",
-    "species": "Meowscarada",
-    "item": "Life Orb",
-    "ability": "Protean",
-    "nature": "Jolly",
+    "source": "catalog",
+    "count": 5,
+    "first": "2026-11-03",
+    "last": "2026-11-13",
+    "species": "Metagross",
+    "item": "Metagrossite",
+    "ability": "Clear Body",
+    "nature": "Adamant",
     "points": {
      "hp": 2,
      "atk": 32,
@@ -6434,19 +7288,12 @@
      "spe": 32
     },
     "moves": [
+     "Psychic Fangs",
+     "Ice Punch",
      "Thunder Punch",
-     "Flower Trick",
-     "Knock Off",
-     "Triple Axel"
-    ],
-    "known_moves": [
-     "thunderpunch"
-    ],
-    "known_item": true,
-    "known_ability": true
-   }
-  ],
-  "metagross": [
+     "Bullet Punch"
+    ]
+   },
    {
     "source": "added",
     "count": 4,
@@ -6477,30 +7324,6 @@
     ],
     "known_item": true,
     "known_ability": false
-   },
-   {
-    "source": "catalog",
-    "count": 4,
-    "first": "2026-11-03",
-    "last": "2026-11-10",
-    "species": "Metagross",
-    "item": "Metagrossite",
-    "ability": "Clear Body",
-    "nature": "Adamant",
-    "points": {
-     "hp": 2,
-     "atk": 32,
-     "def": 0,
-     "spa": 0,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Psychic Fangs",
-     "Ice Punch",
-     "Thunder Punch",
-     "Bullet Punch"
-    ]
    },
    {
     "source": "catalog",
@@ -6560,6 +7383,30 @@
   ],
   "milotic": [
    {
+    "source": "catalog",
+    "count": 5,
+    "first": "2026-11-03",
+    "last": "2026-11-13",
+    "species": "Milotic",
+    "item": "Leftovers",
+    "ability": "Cute Charm",
+    "nature": "Bold",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 32,
+     "spa": 2,
+     "spd": 0,
+     "spe": 0
+    },
+    "moves": [
+     "Ice Beam",
+     "Recover",
+     "Mirror Coat",
+     "Scald"
+    ]
+   },
+   {
     "source": "added",
     "count": 3,
     "first": "2026-11-03",
@@ -6613,36 +7460,12 @@
      "Scald",
      "Recover"
     ]
-   },
-   {
-    "source": "catalog",
-    "count": 3,
-    "first": "2026-11-03",
-    "last": "2026-11-03",
-    "species": "Milotic",
-    "item": "Leftovers",
-    "ability": "Cute Charm",
-    "nature": "Bold",
-    "points": {
-     "hp": 32,
-     "atk": 0,
-     "def": 32,
-     "spa": 2,
-     "spd": 0,
-     "spe": 0
-    },
-    "moves": [
-     "Ice Beam",
-     "Recover",
-     "Mirror Coat",
-     "Scald"
-    ]
    }
   ],
   "mimikyu": [
    {
     "source": "added",
-    "count": 4,
+    "count": 5,
     "first": "2026-11-02",
     "last": "2026-11-13",
     "species": "Mimikyu",
@@ -6674,7 +7497,7 @@
    },
    {
     "source": "catalog",
-    "count": 2,
+    "count": 3,
     "first": "2026-11-04",
     "last": "2026-11-13",
     "species": "Mimikyu",
@@ -6695,6 +7518,36 @@
      "Shadow Sneak",
      "Swords Dance"
     ]
+   },
+   {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Mimikyu",
+    "item": "Life Orb",
+    "ability": "Disguise",
+    "nature": "Adamant",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Will-O-Wisp",
+     "Destiny Bond",
+     "Shadow Claw",
+     "Play Rough"
+    ],
+    "known_moves": [
+     "willowisp",
+     "destinybond"
+    ],
+    "known_item": false,
+    "known_ability": true
    },
    {
     "source": "catalog",
@@ -6814,9 +7667,9 @@
   "ninetalesalola": [
    {
     "source": "catalog",
-    "count": 7,
+    "count": 10,
     "first": "2026-11-03",
-    "last": "2026-11-12",
+    "last": "2026-11-13",
     "species": "Ninetales-Alola",
     "item": "Light Clay",
     "ability": "Snow Warning",
@@ -6834,6 +7687,30 @@
      "Freeze-Dry",
      "Moonblast",
      "Encore"
+    ]
+   },
+   {
+    "source": "catalog",
+    "count": 3,
+    "first": "2026-11-04",
+    "last": "2026-11-13",
+    "species": "Ninetales-Alola",
+    "item": "Light Clay",
+    "ability": "Snow Warning",
+    "nature": "Timid",
+    "points": {
+     "hp": 2,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Aurora Veil",
+     "Freeze-Dry",
+     "Encore",
+     "Blizzard"
     ]
    },
    {
@@ -6858,30 +7735,6 @@
      "Freeze-Dry",
      "Moonblast",
      "Aurora Veil"
-    ]
-   },
-   {
-    "source": "catalog",
-    "count": 2,
-    "first": "2026-11-04",
-    "last": "2026-11-10",
-    "species": "Ninetales-Alola",
-    "item": "Light Clay",
-    "ability": "Snow Warning",
-    "nature": "Timid",
-    "points": {
-     "hp": 2,
-     "atk": 0,
-     "def": 0,
-     "spa": 32,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Aurora Veil",
-     "Freeze-Dry",
-     "Encore",
-     "Blizzard"
     ]
    }
   ],
@@ -6912,6 +7765,30 @@
    }
   ],
   "overqwil": [
+   {
+    "source": "catalog",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Overqwil",
+    "item": "Black Belt",
+    "ability": "Swift Swim",
+    "nature": "Adamant",
+    "points": {
+     "hp": 6,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 28
+    },
+    "moves": [
+     "Swords Dance",
+     "Crunch",
+     "Poison Jab",
+     "Liquidation"
+    ]
+   },
    {
     "source": "added",
     "count": 1,
@@ -6944,7 +7821,61 @@
     "known_ability": true
    }
   ],
+  "palafin": [
+   {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Palafin",
+    "item": "",
+    "ability": "Zero to Hero",
+    "nature": "Hardy",
+    "points": {
+     "hp": 11,
+     "atk": 11,
+     "def": 11,
+     "spa": 11,
+     "spd": 11,
+     "spe": 11
+    },
+    "moves": [
+     "Flip Turn",
+     "Wave Crash"
+    ],
+    "known_moves": [
+     "flipturn",
+     "wavecrash"
+    ],
+    "known_item": false,
+    "known_ability": true
+   }
+  ],
   "pawmot": [
+   {
+    "source": "catalog",
+    "count": 6,
+    "first": "2026-11-03",
+    "last": "2026-11-13",
+    "species": "Pawmot",
+    "item": "Focus Sash",
+    "ability": "Iron Fist",
+    "nature": "Jolly",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Double Shock",
+     "Close Combat",
+     "Nuzzle",
+     "Revival Blessing"
+    ]
+   },
    {
     "source": "catalog",
     "count": 2,
@@ -6966,30 +7897,6 @@
      "Double Shock",
      "Mach Punch",
      "Ice Punch",
-     "Revival Blessing"
-    ]
-   },
-   {
-    "source": "catalog",
-    "count": 4,
-    "first": "2026-11-03",
-    "last": "2026-11-12",
-    "species": "Pawmot",
-    "item": "Focus Sash",
-    "ability": "Iron Fist",
-    "nature": "Jolly",
-    "points": {
-     "hp": 2,
-     "atk": 32,
-     "def": 0,
-     "spa": 0,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Double Shock",
-     "Close Combat",
-     "Nuzzle",
      "Revival Blessing"
     ]
    },
@@ -7021,9 +7928,9 @@
   "pelipper": [
    {
     "source": "catalog",
-    "count": 3,
+    "count": 5,
     "first": "2026-11-04",
-    "last": "2026-11-10",
+    "last": "2026-11-13",
     "species": "Pelipper",
     "item": "Damp Rock",
     "ability": "Drizzle",
@@ -7102,7 +8009,7 @@
   "politoed": [
    {
     "source": "catalog",
-    "count": 1,
+    "count": 2,
     "first": "2026-11-13",
     "last": "2026-11-13",
     "species": "Politoed",
@@ -7210,9 +8117,9 @@
   "primarina": [
    {
     "source": "added",
-    "count": 16,
+    "count": 17,
     "first": "2026-11-03",
-    "last": "2026-11-12",
+    "last": "2026-11-13",
     "species": "Primarina",
     "item": "Sitrus Berry",
     "ability": "Torrent",
@@ -7242,9 +8149,9 @@
    },
    {
     "source": "catalog",
-    "count": 8,
+    "count": 9,
     "first": "2026-11-03",
-    "last": "2026-11-12",
+    "last": "2026-11-13",
     "species": "Primarina",
     "item": "Leftovers",
     "ability": "Torrent",
@@ -7266,9 +8173,9 @@
    },
    {
     "source": "added",
-    "count": 2,
+    "count": 3,
     "first": "2026-11-03",
-    "last": "2026-11-10",
+    "last": "2026-11-13",
     "species": "Primarina",
     "item": "Leftovers",
     "ability": "Torrent",
@@ -7295,6 +8202,62 @@
     ],
     "known_item": true,
     "known_ability": false
+   },
+   {
+    "source": "added",
+    "count": 2,
+    "first": "2026-11-04",
+    "last": "2026-11-13",
+    "species": "Primarina",
+    "item": "Sitrus Berry",
+    "ability": "Torrent",
+    "nature": "Modest",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 20,
+     "spa": 14,
+     "spd": 0,
+     "spe": 0
+    },
+    "moves": [
+     "Moonblast",
+     "Rest",
+     "Encore",
+     "Calm Mind"
+    ],
+    "known_moves": [
+     "moonblast",
+     "rest",
+     "encore",
+     "calmmind"
+    ],
+    "known_item": false,
+    "known_ability": false
+   },
+   {
+    "source": "catalog",
+    "count": 2,
+    "first": "2026-11-04",
+    "last": "2026-11-13",
+    "species": "Primarina",
+    "item": "Sitrus Berry",
+    "ability": "Torrent",
+    "nature": "Modest",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 2,
+     "spa": 32,
+     "spd": 0,
+     "spe": 0
+    },
+    "moves": [
+     "Moonblast",
+     "Sparkling Aria",
+     "Aqua Jet",
+     "Calm Mind"
+    ]
    },
    {
     "source": "added",
@@ -7327,63 +8290,66 @@
     ],
     "known_item": false,
     "known_ability": false
-   },
+   }
+  ],
+  "quaquaval": [
    {
     "source": "catalog",
     "count": 1,
-    "first": "2026-11-04",
-    "last": "2026-11-04",
-    "species": "Primarina",
-    "item": "Sitrus Berry",
-    "ability": "Torrent",
-    "nature": "Modest",
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Quaquaval",
+    "item": "Focus Sash",
+    "ability": "Moxie",
+    "nature": "Jolly",
     "points": {
-     "hp": 32,
-     "atk": 0,
-     "def": 2,
-     "spa": 32,
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
      "spd": 0,
-     "spe": 0
+     "spe": 32
     },
     "moves": [
-     "Moonblast",
-     "Sparkling Aria",
-     "Aqua Jet",
-     "Calm Mind"
+     "Swords Dance",
+     "Close Combat",
+     "Aqua Step",
+     "U-turn"
     ]
-   },
-   {
-    "source": "added",
-    "count": 1,
-    "first": "2026-11-04",
-    "last": "2026-11-04",
-    "species": "Primarina",
-    "item": "Sitrus Berry",
-    "ability": "Torrent",
-    "nature": "Modest",
-    "points": {
-     "hp": 32,
-     "atk": 0,
-     "def": 20,
-     "spa": 14,
-     "spd": 0,
-     "spe": 0
-    },
-    "moves": [
-     "Moonblast",
-     "Rest",
-     "Sparkling Aria",
-     "Aqua Jet"
-    ],
-    "known_moves": [
-     "moonblast",
-     "rest"
-    ],
-    "known_item": false,
-    "known_ability": false
    }
   ],
   "raichu": [
+   {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Raichu",
+    "item": "Raichunite Y",
+    "ability": "Static",
+    "nature": "Timid",
+    "points": {
+     "hp": 2,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Encore",
+     "Zap Cannon",
+     "Alluring Voice",
+     "Focus Blast"
+    ],
+    "known_moves": [
+     "encore",
+     "zapcannon",
+     "alluringvoice"
+    ],
+    "known_item": true,
+    "known_ability": false
+   },
    {
     "source": "catalog",
     "count": 5,
@@ -7473,9 +8439,9 @@
   "rillaboom": [
    {
     "source": "catalog",
-    "count": 13,
+    "count": 14,
     "first": "2026-11-03",
-    "last": "2026-11-12",
+    "last": "2026-11-13",
     "species": "Rillaboom",
     "item": "Life Orb",
     "ability": "Grassy Surge",
@@ -7668,9 +8634,9 @@
   "rotomheat": [
    {
     "source": "catalog",
-    "count": 2,
+    "count": 3,
     "first": "2026-11-04",
-    "last": "2026-11-10",
+    "last": "2026-11-13",
     "species": "Rotom-Heat",
     "item": "Rocky Helmet",
     "ability": "Levitate",
@@ -7689,9 +8655,118 @@
      "Pain Split",
      "Overheat"
     ]
+   },
+   {
+    "source": "catalog",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Rotom-Heat",
+    "item": "Choice Scarf",
+    "ability": "Levitate",
+    "nature": "Timid",
+    "points": {
+     "hp": 2,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Overheat",
+     "Thunderbolt",
+     "Will-O-Wisp",
+     "Volt Switch"
+    ]
+   },
+   {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Rotom-Heat",
+    "item": "Choice Scarf",
+    "ability": "Levitate",
+    "nature": "Timid",
+    "points": {
+     "hp": 2,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Discharge",
+     "Will-O-Wisp",
+     "Overheat",
+     "Thunderbolt"
+    ],
+    "known_moves": [
+     "discharge",
+     "willowisp"
+    ],
+    "known_item": false,
+    "known_ability": true
    }
   ],
   "rotomwash": [
+   {
+    "source": "catalog",
+    "count": 3,
+    "first": "2026-11-04",
+    "last": "2026-11-13",
+    "species": "Rotom-Wash",
+    "item": "Rocky Helmet",
+    "ability": "Levitate",
+    "nature": "Bold",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 32,
+     "spa": 0,
+     "spd": 0,
+     "spe": 2
+    },
+    "moves": [
+     "Volt Switch",
+     "Hydro Pump",
+     "Pain Split",
+     "Will-O-Wisp"
+    ]
+   },
+   {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Rotom-Wash",
+    "item": "Leftovers",
+    "ability": "Levitate",
+    "nature": "Bold",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 32,
+     "spa": 0,
+     "spd": 2,
+     "spe": 0
+    },
+    "moves": [
+     "Hydro Pump",
+     "Foul Play",
+     "Will-O-Wisp",
+     "Volt Switch"
+    ],
+    "known_moves": [
+     "hydropump",
+     "foulplay",
+     "willowisp"
+    ],
+    "known_item": true,
+    "known_ability": true
+   },
    {
     "source": "catalog",
     "count": 2,
@@ -7802,30 +8877,6 @@
      "Hydro Pump",
      "Will-O-Wisp"
     ]
-   },
-   {
-    "source": "catalog",
-    "count": 1,
-    "first": "2026-11-04",
-    "last": "2026-11-04",
-    "species": "Rotom-Wash",
-    "item": "Rocky Helmet",
-    "ability": "Levitate",
-    "nature": "Bold",
-    "points": {
-     "hp": 32,
-     "atk": 0,
-     "def": 32,
-     "spa": 0,
-     "spd": 0,
-     "spe": 2
-    },
-    "moves": [
-     "Volt Switch",
-     "Hydro Pump",
-     "Pain Split",
-     "Will-O-Wisp"
-    ]
    }
   ],
   "runerigus": [
@@ -7862,6 +8913,36 @@
   ],
   "sableye": [
    {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Sableye",
+    "item": "Leftovers",
+    "ability": "Keen Eye",
+    "nature": "Bold",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 32,
+     "spa": 0,
+     "spd": 2,
+     "spe": 0
+    },
+    "moves": [
+     "Will-O-Wisp",
+     "Encore",
+     "Foul Play",
+     "Recover"
+    ],
+    "known_moves": [
+     "willowisp",
+     "encore"
+    ],
+    "known_item": true,
+    "known_ability": false
+   },
+   {
     "source": "catalog",
     "count": 2,
     "first": "2026-11-03",
@@ -7889,7 +8970,7 @@
   "salamence": [
    {
     "source": "catalog",
-    "count": 11,
+    "count": 14,
     "first": "2026-11-03",
     "last": "2026-11-13",
     "species": "Salamence",
@@ -7910,6 +8991,69 @@
      "Roost",
      "Dragon Dance"
     ]
+   },
+   {
+    "source": "added",
+    "count": 3,
+    "first": "2026-11-12",
+    "last": "2026-11-13",
+    "species": "Salamence",
+    "item": "Salamencite",
+    "ability": "Intimidate",
+    "nature": "Adamant",
+    "points": {
+     "hp": 1,
+     "atk": 32,
+     "def": 1,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Earthquake",
+     "Fire Blast",
+     "Draco Meteor",
+     "Body Slam"
+    ],
+    "known_moves": [
+     "earthquake",
+     "fireblast",
+     "dracometeor",
+     "bodyslam"
+    ],
+    "known_item": true,
+    "known_ability": true
+   },
+   {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Salamence",
+    "item": "Salamencite",
+    "ability": "Intimidate",
+    "nature": "Adamant",
+    "points": {
+     "hp": 1,
+     "atk": 32,
+     "def": 1,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Dragon Dance",
+     "Roost",
+     "Flamethrower",
+     "Double-Edge"
+    ],
+    "known_moves": [
+     "dragondance",
+     "roost",
+     "flamethrower"
+    ],
+    "known_item": true,
+    "known_ability": true
    },
    {
     "source": "catalog",
@@ -7934,36 +9078,6 @@
      "Dual Wingbeat",
      "Temper Flare"
     ]
-   },
-   {
-    "source": "added",
-    "count": 1,
-    "first": "2026-11-12",
-    "last": "2026-11-12",
-    "species": "Salamence",
-    "item": "Salamencite",
-    "ability": "Intimidate",
-    "nature": "Adamant",
-    "points": {
-     "hp": 1,
-     "atk": 32,
-     "def": 1,
-     "spa": 0,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Earthquake",
-     "Fire Blast",
-     "Double-Edge",
-     "Roost"
-    ],
-    "known_moves": [
-     "earthquake",
-     "fireblast"
-    ],
-    "known_item": true,
-    "known_ability": true
    },
    {
     "source": "added",
@@ -8197,6 +9311,30 @@
   "scizor": [
    {
     "source": "catalog",
+    "count": 2,
+    "first": "2026-11-04",
+    "last": "2026-11-13",
+    "species": "Scizor",
+    "item": "Scizorite",
+    "ability": "Technician",
+    "nature": "Adamant",
+    "points": {
+     "hp": 32,
+     "atk": 32,
+     "def": 2,
+     "spa": 0,
+     "spd": 0,
+     "spe": 0
+    },
+    "moves": [
+     "Bullet Punch",
+     "Knock Off",
+     "Close Combat",
+     "Swords Dance"
+    ]
+   },
+   {
+    "source": "catalog",
     "count": 1,
     "first": "2026-11-09",
     "last": "2026-11-09",
@@ -8218,36 +9356,12 @@
      "Curse",
      "Roost"
     ]
-   },
-   {
-    "source": "catalog",
-    "count": 1,
-    "first": "2026-11-04",
-    "last": "2026-11-04",
-    "species": "Scizor",
-    "item": "Scizorite",
-    "ability": "Technician",
-    "nature": "Adamant",
-    "points": {
-     "hp": 32,
-     "atk": 32,
-     "def": 2,
-     "spa": 0,
-     "spd": 0,
-     "spe": 0
-    },
-    "moves": [
-     "Bullet Punch",
-     "Knock Off",
-     "Close Combat",
-     "Swords Dance"
-    ]
    }
   ],
   "scolipede": [
    {
     "source": "catalog",
-    "count": 1,
+    "count": 2,
     "first": "2026-11-13",
     "last": "2026-11-13",
     "species": "Scolipede",
@@ -8271,6 +9385,30 @@
    }
   ],
   "scovillain": [
+   {
+    "source": "catalog",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Scovillain",
+    "item": "Scovillainite",
+    "ability": "Insomnia",
+    "nature": "Modest",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 2,
+     "spe": 0
+    },
+    "moves": [
+     "Leaf Storm",
+     "Leech Seed",
+     "Overheat",
+     "Protect"
+    ]
+   },
    {
     "source": "catalog",
     "count": 1,
@@ -8351,12 +9489,12 @@
   "sharpedo": [
    {
     "source": "added",
-    "count": 1,
+    "count": 2,
     "first": "2026-11-03",
-    "last": "2026-11-03",
+    "last": "2026-11-13",
     "species": "Sharpedo",
     "item": "Sharpedonite",
-    "ability": "",
+    "ability": "Speed Boost",
     "nature": "Hardy",
     "points": {
      "hp": 11,
@@ -8369,15 +9507,17 @@
     "moves": [
      "Protect",
      "Crunch",
-     "Ice Fang"
+     "Ice Fang",
+     "Ice Beam"
     ],
     "known_moves": [
      "protect",
      "crunch",
-     "icefang"
+     "icefang",
+     "icebeam"
     ],
     "known_item": true,
-    "known_ability": false
+    "known_ability": true
    },
    {
     "source": "added",
@@ -8444,6 +9584,38 @@
   "skarmory": [
    {
     "source": "added",
+    "count": 2,
+    "first": "2026-11-04",
+    "last": "2026-11-13",
+    "species": "Skarmory",
+    "item": "Rocky Helmet",
+    "ability": "Sturdy",
+    "nature": "Bold",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 32,
+     "spa": 0,
+     "spd": 2,
+     "spe": 0
+    },
+    "moves": [
+     "Stealth Rock",
+     "Whirlwind",
+     "Iron Defense",
+     "Body Press"
+    ],
+    "known_moves": [
+     "stealthrock",
+     "whirlwind",
+     "irondefense",
+     "bodypress"
+    ],
+    "known_item": true,
+    "known_ability": false
+   },
+   {
+    "source": "added",
     "count": 1,
     "first": "2026-11-10",
     "last": "2026-11-10",
@@ -8471,41 +9643,96 @@
     ],
     "known_item": true,
     "known_ability": false
+   }
+  ],
+  "skeledirge": [
+   {
+    "source": "catalog",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Skeledirge",
+    "item": "Leftovers",
+    "ability": "Unaware",
+    "nature": "Calm",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 2,
+     "spa": 0,
+     "spd": 32,
+     "spe": 0
+    },
+    "moves": [
+     "Will-O-Wisp",
+     "Torch Song",
+     "Shadow Ball",
+     "Slack Off"
+    ]
    },
    {
     "source": "added",
     "count": 1,
-    "first": "2026-11-04",
-    "last": "2026-11-04",
-    "species": "Skarmory",
-    "item": "Rocky Helmet",
-    "ability": "Sturdy",
-    "nature": "Bold",
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Skeledirge",
+    "item": "Leftovers",
+    "ability": "Unaware",
+    "nature": "Calm",
     "points": {
      "hp": 32,
      "atk": 0,
-     "def": 32,
+     "def": 2,
      "spa": 0,
-     "spd": 2,
+     "spd": 32,
      "spe": 0
     },
     "moves": [
-     "Stealth Rock",
-     "Whirlwind",
-     "Iron Defense",
-     "Body Press"
+     "Will-O-Wisp",
+     "Protect",
+     "Torch Song",
+     "Slack Off"
     ],
     "known_moves": [
-     "stealthrock",
-     "whirlwind",
-     "irondefense",
-     "bodypress"
+     "willowisp",
+     "protect",
+     "torchsong",
+     "slackoff"
     ],
     "known_item": true,
     "known_ability": false
-   }
-  ],
-  "skeledirge": [
+   },
+   {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Skeledirge",
+    "item": "Leftovers",
+    "ability": "Unaware",
+    "nature": "Calm",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 2,
+     "spa": 0,
+     "spd": 32,
+     "spe": 0
+    },
+    "moves": [
+     "Burn Up",
+     "Slack Off",
+     "Roar",
+     "Will-O-Wisp"
+    ],
+    "known_moves": [
+     "burnup",
+     "slackoff",
+     "roar"
+    ],
+    "known_item": true,
+    "known_ability": false
+   },
    {
     "source": "catalog",
     "count": 3,
@@ -8532,6 +9759,35 @@
    }
   ],
   "slowbro": [
+   {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Slowbro",
+    "item": "Quick Claw",
+    "ability": "Regenerator",
+    "nature": "Calm",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 2,
+     "spe": 0
+    },
+    "moves": [
+     "Fire Blast",
+     "Scald",
+     "Ice Beam",
+     "Slack Off"
+    ],
+    "known_moves": [
+     "fireblast"
+    ],
+    "known_item": true,
+    "known_ability": false
+   },
    {
     "source": "added",
     "count": 2,
@@ -8567,6 +9823,30 @@
   "slowkinggalar": [
    {
     "source": "catalog",
+    "count": 3,
+    "first": "2026-11-04",
+    "last": "2026-11-13",
+    "species": "Slowking-Galar",
+    "item": "Shuca Berry",
+    "ability": "Regenerator",
+    "nature": "Modest",
+    "points": {
+     "hp": 31,
+     "atk": 0,
+     "def": 0,
+     "spa": 21,
+     "spd": 14,
+     "spe": 0
+    },
+    "moves": [
+     "Sludge Bomb",
+     "Flamethrower",
+     "Ice Beam",
+     "Trick Room"
+    ]
+   },
+   {
+    "source": "catalog",
     "count": 1,
     "first": "2026-11-11",
     "last": "2026-11-11",
@@ -8587,30 +9867,6 @@
      "Sludge Bomb",
      "Flamethrower",
      "Slack Off"
-    ]
-   },
-   {
-    "source": "catalog",
-    "count": 2,
-    "first": "2026-11-04",
-    "last": "2026-11-04",
-    "species": "Slowking-Galar",
-    "item": "Shuca Berry",
-    "ability": "Regenerator",
-    "nature": "Modest",
-    "points": {
-     "hp": 31,
-     "atk": 0,
-     "def": 0,
-     "spa": 21,
-     "spd": 14,
-     "spe": 0
-    },
-    "moves": [
-     "Sludge Bomb",
-     "Flamethrower",
-     "Ice Beam",
-     "Trick Room"
     ]
    }
   ],
@@ -8861,7 +10117,7 @@
   "staraptor": [
    {
     "source": "catalog",
-    "count": 7,
+    "count": 9,
     "first": "2026-11-03",
     "last": "2026-11-13",
     "species": "Staraptor",
@@ -8881,6 +10137,30 @@
      "Close Combat",
      "Blaze Kick",
      "Roost"
+    ]
+   },
+   {
+    "source": "catalog",
+    "count": 2,
+    "first": "2026-11-03",
+    "last": "2026-11-13",
+    "species": "Staraptor",
+    "item": "Staraptite",
+    "ability": "Intimidate",
+    "nature": "Jolly",
+    "points": {
+     "hp": 32,
+     "atk": 2,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Close Combat",
+     "Blaze Kick",
+     "Roost",
+     "Final Gambit"
     ]
    },
    {
@@ -8913,38 +10193,14 @@
     ],
     "known_item": true,
     "known_ability": true
-   },
-   {
-    "source": "catalog",
-    "count": 1,
-    "first": "2026-11-03",
-    "last": "2026-11-03",
-    "species": "Staraptor",
-    "item": "Staraptite",
-    "ability": "Intimidate",
-    "nature": "Jolly",
-    "points": {
-     "hp": 32,
-     "atk": 2,
-     "def": 0,
-     "spa": 0,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Close Combat",
-     "Blaze Kick",
-     "Roost",
-     "Final Gambit"
-    ]
    }
   ],
   "starmie": [
    {
     "source": "catalog",
-    "count": 2,
+    "count": 3,
     "first": "2026-11-04",
-    "last": "2026-11-11",
+    "last": "2026-11-13",
     "species": "Starmie",
     "item": "Starminite",
     "ability": "Illuminate",
@@ -8962,6 +10218,30 @@
      "Liquidation",
      "Ice Spinner",
      "Zen Headbutt"
+    ]
+   },
+   {
+    "source": "catalog",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Starmie",
+    "item": "Starminite",
+    "ability": "Illuminate",
+    "nature": "Adamant",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Aqua Jet",
+     "Liquidation",
+     "Flip Turn",
+     "Ice Spinner"
     ]
    },
    {
@@ -9064,9 +10344,41 @@
   "swampert": [
    {
     "source": "added",
-    "count": 1,
+    "count": 7,
+    "first": "2026-11-03",
+    "last": "2026-11-13",
+    "species": "Swampert",
+    "item": "Swampertite",
+    "ability": "Torrent",
+    "nature": "Sassy",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 2,
+     "spa": 0,
+     "spd": 32,
+     "spe": 0
+    },
+    "moves": [
+     "Earthquake",
+     "Wave Crash",
+     "Flip Turn",
+     "Poison Jab"
+    ],
+    "known_moves": [
+     "earthquake",
+     "wavecrash",
+     "flipturn",
+     "poisonjab"
+    ],
+    "known_item": true,
+    "known_ability": false
+   },
+   {
+    "source": "added",
+    "count": 2,
     "first": "2026-11-12",
-    "last": "2026-11-12",
+    "last": "2026-11-13",
     "species": "Swampert",
     "item": "Leftovers",
     "ability": "Torrent",
@@ -9096,9 +10408,9 @@
    },
    {
     "source": "added",
-    "count": 5,
-    "first": "2026-11-03",
-    "last": "2026-11-10",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
     "species": "Swampert",
     "item": "Swampertite",
     "ability": "Torrent",
@@ -9112,16 +10424,14 @@
      "spe": 0
     },
     "moves": [
+     "Liquidation",
      "Earthquake",
-     "Wave Crash",
      "Flip Turn",
-     "Poison Jab"
+     "Stealth Rock"
     ],
     "known_moves": [
-     "earthquake",
-     "wavecrash",
-     "flipturn",
-     "poisonjab"
+     "liquidation",
+     "earthquake"
     ],
     "known_item": true,
     "known_ability": false
@@ -9154,6 +10464,30 @@
   "sylveon": [
    {
     "source": "catalog",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Sylveon",
+    "item": "Leftovers",
+    "ability": "Pixilate",
+    "nature": "Bold",
+    "points": {
+     "hp": 31,
+     "atk": 0,
+     "def": 25,
+     "spa": 10,
+     "spd": 0,
+     "spe": 0
+    },
+    "moves": [
+     "Hyper Voice",
+     "Protect",
+     "Mystical Fire",
+     "Yawn"
+    ]
+   },
+   {
+    "source": "catalog",
     "count": 3,
     "first": "2026-11-03",
     "last": "2026-11-12",
@@ -9178,6 +10512,36 @@
    }
   ],
   "talonflame": [
+   {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Talonflame",
+    "item": "shellbell",
+    "ability": "Flame Body",
+    "nature": "Jolly",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Brave Bird",
+     "Roost",
+     "Tailwind",
+     "Taunt"
+    ],
+    "known_moves": [
+     "bravebird",
+     "roost"
+    ],
+    "known_item": true,
+    "known_ability": true
+   },
    {
     "source": "catalog",
     "count": 1,
@@ -9334,9 +10698,9 @@
   "toxapex": [
    {
     "source": "catalog",
-    "count": 3,
+    "count": 5,
     "first": "2026-11-02",
-    "last": "2026-11-12",
+    "last": "2026-11-13",
     "species": "Toxapex",
     "item": "Leftovers",
     "ability": "Regenerator",
@@ -9355,6 +10719,35 @@
      "Haze",
      "Recover"
     ]
+   },
+   {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Toxapex",
+    "item": "Leftovers",
+    "ability": "Regenerator",
+    "nature": "Careful",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 2,
+     "spa": 0,
+     "spd": 32,
+     "spe": 0
+    },
+    "moves": [
+     "Icy Wind",
+     "Baneful Bunker",
+     "Recover",
+     "Toxic"
+    ],
+    "known_moves": [
+     "icywind"
+    ],
+    "known_item": false,
+    "known_ability": false
    },
    {
     "source": "added",
@@ -9473,9 +10866,9 @@
   "tyranitar": [
    {
     "source": "catalog",
-    "count": 1,
+    "count": 2,
     "first": "2026-11-12",
-    "last": "2026-11-12",
+    "last": "2026-11-13",
     "species": "Tyranitar",
     "item": "Smooth Rock",
     "ability": "Sand Stream",
@@ -9610,6 +11003,30 @@
   ],
   "umbreon": [
    {
+    "source": "catalog",
+    "count": 3,
+    "first": "2026-11-04",
+    "last": "2026-11-13",
+    "species": "Umbreon",
+    "item": "Leftovers",
+    "ability": "Inner Focus",
+    "nature": "Bold",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 32,
+     "spa": 0,
+     "spd": 2,
+     "spe": 0
+    },
+    "moves": [
+     "Foul Play",
+     "Yawn",
+     "Protect",
+     "Wish"
+    ]
+   },
+   {
     "source": "added",
     "count": 2,
     "first": "2026-11-12",
@@ -9638,6 +11055,38 @@
      "batonpass"
     ],
     "known_item": true,
+    "known_ability": false
+   },
+   {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Umbreon",
+    "item": "Leftovers",
+    "ability": "Inner Focus",
+    "nature": "Bold",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 32,
+     "spa": 0,
+     "spd": 2,
+     "spe": 0
+    },
+    "moves": [
+     "Calm Mind",
+     "Baton Pass",
+     "Moonlight",
+     "Substitute"
+    ],
+    "known_moves": [
+     "calmmind",
+     "batonpass",
+     "moonlight",
+     "substitute"
+    ],
+    "known_item": false,
     "known_ability": false
    },
    {
@@ -9671,30 +11120,6 @@
     ],
     "known_item": true,
     "known_ability": false
-   },
-   {
-    "source": "catalog",
-    "count": 2,
-    "first": "2026-11-04",
-    "last": "2026-11-04",
-    "species": "Umbreon",
-    "item": "Leftovers",
-    "ability": "Inner Focus",
-    "nature": "Bold",
-    "points": {
-     "hp": 32,
-     "atk": 0,
-     "def": 32,
-     "spa": 0,
-     "spd": 2,
-     "spe": 0
-    },
-    "moves": [
-     "Foul Play",
-     "Yawn",
-     "Protect",
-     "Wish"
-    ]
    }
   ],
   "vanilluxe": [
@@ -9724,6 +11149,61 @@
    }
   ],
   "venusaur": [
+   {
+    "source": "catalog",
+    "count": 2,
+    "first": "2026-11-04",
+    "last": "2026-11-13",
+    "species": "Venusaur",
+    "item": "Venusaurite",
+    "ability": "Overgrow",
+    "nature": "Bold",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 32,
+     "spa": 0,
+     "spd": 2,
+     "spe": 0
+    },
+    "moves": [
+     "Earth Power",
+     "Synthesis",
+     "Giga Drain",
+     "Sludge Bomb"
+    ]
+   },
+   {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Venusaur",
+    "item": "Venusaurite",
+    "ability": "Overgrow",
+    "nature": "Bold",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 32,
+     "spa": 0,
+     "spd": 2,
+     "spe": 0
+    },
+    "moves": [
+     "Leech Seed",
+     "Earth Power",
+     "Giga Drain",
+     "Synthesis"
+    ],
+    "known_moves": [
+     "leechseed",
+     "earthpower",
+     "gigadrain"
+    ],
+    "known_item": true,
+    "known_ability": false
+   },
    {
     "source": "added",
     "count": 3,
@@ -9755,30 +11235,6 @@
     ],
     "known_item": true,
     "known_ability": false
-   },
-   {
-    "source": "catalog",
-    "count": 1,
-    "first": "2026-11-04",
-    "last": "2026-11-04",
-    "species": "Venusaur",
-    "item": "Venusaurite",
-    "ability": "Overgrow",
-    "nature": "Bold",
-    "points": {
-     "hp": 32,
-     "atk": 0,
-     "def": 32,
-     "spa": 0,
-     "spd": 2,
-     "spe": 0
-    },
-    "moves": [
-     "Earth Power",
-     "Synthesis",
-     "Giga Drain",
-     "Sludge Bomb"
-    ]
    },
    {
     "source": "added",
@@ -9887,6 +11343,38 @@
   ],
   "vileplume": [
    {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Vileplume",
+    "item": "Leftovers",
+    "ability": "Effect Spore",
+    "nature": "Bold",
+    "points": {
+     "hp": 31,
+     "atk": 0,
+     "def": 31,
+     "spa": 0,
+     "spd": 4,
+     "spe": 0
+    },
+    "moves": [
+     "Sleep Powder",
+     "Strength Sap",
+     "Leech Seed",
+     "Giga Drain"
+    ],
+    "known_moves": [
+     "sleeppowder",
+     "strengthsap",
+     "leechseed",
+     "gigadrain"
+    ],
+    "known_item": false,
+    "known_ability": false
+   },
+   {
     "source": "catalog",
     "count": 1,
     "first": "2026-11-03",
@@ -9972,6 +11460,38 @@
    {
     "source": "added",
     "count": 3,
+    "first": "2026-11-12",
+    "last": "2026-11-13",
+    "species": "Volcarona",
+    "item": "Leftovers",
+    "ability": "Flame Body",
+    "nature": "Timid",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 23,
+     "spa": 0,
+     "spd": 0,
+     "spe": 11
+    },
+    "moves": [
+     "Quiver Dance",
+     "Morning Sun",
+     "Giga Drain",
+     "Fiery Dance"
+    ],
+    "known_moves": [
+     "quiverdance",
+     "morningsun",
+     "gigadrain",
+     "fierydance"
+    ],
+    "known_item": true,
+    "known_ability": true
+   },
+   {
+    "source": "added",
+    "count": 3,
     "first": "2026-11-03",
     "last": "2026-11-12",
     "species": "Volcarona",
@@ -10023,38 +11543,6 @@
      "Giga Drain",
      "Quiver Dance"
     ]
-   },
-   {
-    "source": "added",
-    "count": 1,
-    "first": "2026-11-12",
-    "last": "2026-11-12",
-    "species": "Volcarona",
-    "item": "Leftovers",
-    "ability": "Flame Body",
-    "nature": "Timid",
-    "points": {
-     "hp": 32,
-     "atk": 0,
-     "def": 23,
-     "spa": 0,
-     "spd": 0,
-     "spe": 11
-    },
-    "moves": [
-     "Quiver Dance",
-     "Morning Sun",
-     "Giga Drain",
-     "Fiery Dance"
-    ],
-    "known_moves": [
-     "quiverdance",
-     "morningsun",
-     "gigadrain",
-     "fierydance"
-    ],
-    "known_item": true,
-    "known_ability": true
    },
    {
     "source": "catalog",
@@ -10141,6 +11629,30 @@
    {
     "source": "catalog",
     "count": 1,
+    "first": "2026-11-13",
+    "last": "2026-11-13",
+    "species": "Whimsicott",
+    "item": "Focus Sash",
+    "ability": "Prankster",
+    "nature": "Timid",
+    "points": {
+     "hp": 2,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Tailwind",
+     "Memento",
+     "Moonblast",
+     "Endeavor"
+    ]
+   },
+   {
+    "source": "catalog",
+    "count": 1,
     "first": "2026-11-10",
     "last": "2026-11-10",
     "species": "Whimsicott",
@@ -10194,9 +11706,9 @@
   "zoroarkhisui": [
    {
     "source": "added",
-    "count": 6,
+    "count": 7,
     "first": "2026-11-01",
-    "last": "2026-11-04",
+    "last": "2026-11-13",
     "species": "Zoroark-Hisui",
     "item": "Life Orb",
     "ability": "Illusion",
