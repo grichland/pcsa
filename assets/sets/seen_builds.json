@@ -599,7 +599,18 @@
   "20261114T144533-0a82ffb1",
   "20261114T145624-4ad99427",
   "20261114T150939-48c3c747",
-  "20261114T151932-ef029535"
+  "20261114T151932-ef029535",
+  "20261114T152938-65205c15",
+  "20261114T153740-4cfa9609",
+  "20261114T154344-6003a934",
+  "20261114T154642-3af99f0d",
+  "20261114T155647-5bfb2267",
+  "20261114T160713-f67f5279",
+  "20261114T161917-a7e3dffd",
+  "20261114T162715-14944d1d",
+  "20261114T163449-3897f4fb",
+  "20261114T164924-f3340d55",
+  "20261114T165815-6a88c279"
  ],
  "species": {
   "abomasnow": [
@@ -2904,6 +2915,38 @@
   ],
   "charizard": [
    {
+    "source": "added",
+    "count": 13,
+    "first": "2026-11-02",
+    "last": "2026-11-14",
+    "species": "Charizard",
+    "item": "Charizardite Y",
+    "ability": "Blaze",
+    "nature": "Modest",
+    "points": {
+     "hp": 2,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Weather Ball",
+     "Air Slash",
+     "Solar Beam",
+     "Flamethrower"
+    ],
+    "known_moves": [
+     "weatherball",
+     "airslash",
+     "solarbeam",
+     "flamethrower"
+    ],
+    "known_item": true,
+    "known_ability": false
+   },
+   {
     "source": "catalog",
     "count": 8,
     "first": "2026-11-10",
@@ -2979,38 +3022,6 @@
      "flamethrower",
      "solarbeam",
      "substitute"
-    ],
-    "known_item": true,
-    "known_ability": false
-   },
-   {
-    "source": "added",
-    "count": 12,
-    "first": "2026-11-02",
-    "last": "2026-11-13",
-    "species": "Charizard",
-    "item": "Charizardite Y",
-    "ability": "Blaze",
-    "nature": "Modest",
-    "points": {
-     "hp": 2,
-     "atk": 0,
-     "def": 0,
-     "spa": 32,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Weather Ball",
-     "Air Slash",
-     "Solar Beam",
-     "Flamethrower"
-    ],
-    "known_moves": [
-     "weatherball",
-     "airslash",
-     "solarbeam",
-     "flamethrower"
     ],
     "known_item": true,
     "known_ability": false
@@ -3388,7 +3399,7 @@
   "corviknight": [
    {
     "source": "catalog",
-    "count": 11,
+    "count": 12,
     "first": "2026-11-04",
     "last": "2026-11-14",
     "species": "Corviknight",
@@ -4113,7 +4124,7 @@
   "dragonite": [
    {
     "source": "catalog",
-    "count": 9,
+    "count": 11,
     "first": "2026-11-04",
     "last": "2026-11-14",
     "species": "Dragonite",
@@ -4433,6 +4444,30 @@
   ],
   "empoleon": [
    {
+    "source": "catalog",
+    "count": 2,
+    "first": "2026-11-13",
+    "last": "2026-11-14",
+    "species": "Empoleon",
+    "item": "Air Balloon",
+    "ability": "Competitive",
+    "nature": "Modest",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 0,
+     "spa": 29,
+     "spd": 4,
+     "spe": 1
+    },
+    "moves": [
+     "Surf",
+     "Ice Beam",
+     "Flash Cannon",
+     "Vacuum Wave"
+    ]
+   },
+   {
     "source": "added",
     "count": 1,
     "first": "2026-11-14",
@@ -4462,30 +4497,6 @@
     ],
     "known_item": true,
     "known_ability": false
-   },
-   {
-    "source": "catalog",
-    "count": 1,
-    "first": "2026-11-13",
-    "last": "2026-11-13",
-    "species": "Empoleon",
-    "item": "Air Balloon",
-    "ability": "Competitive",
-    "nature": "Modest",
-    "points": {
-     "hp": 32,
-     "atk": 0,
-     "def": 0,
-     "spa": 29,
-     "spd": 4,
-     "spe": 1
-    },
-    "moves": [
-     "Surf",
-     "Ice Beam",
-     "Flash Cannon",
-     "Vacuum Wave"
-    ]
    },
    {
     "source": "catalog",
@@ -5089,6 +5100,38 @@
    },
    {
     "source": "added",
+    "count": 11,
+    "first": "2026-11-13",
+    "last": "2026-11-14",
+    "species": "Garchomp",
+    "item": "Garchompite Z",
+    "ability": "Rough Skin",
+    "nature": "Jolly",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Protect",
+     "Fire Blast",
+     "Earthquake",
+     "Swords Dance"
+    ],
+    "known_moves": [
+     "protect",
+     "fireblast",
+     "earthquake",
+     "swordsdance"
+    ],
+    "known_item": true,
+    "known_ability": true
+   },
+   {
+    "source": "added",
     "count": 10,
     "first": "2026-11-04",
     "last": "2026-11-14",
@@ -5115,37 +5158,6 @@
      "dracometeor",
      "flamethrower",
      "dragonpulse"
-    ],
-    "known_item": true,
-    "known_ability": true
-   },
-   {
-    "source": "added",
-    "count": 9,
-    "first": "2026-11-13",
-    "last": "2026-11-14",
-    "species": "Garchomp",
-    "item": "Garchompite Z",
-    "ability": "Rough Skin",
-    "nature": "Jolly",
-    "points": {
-     "hp": 2,
-     "atk": 32,
-     "def": 0,
-     "spa": 0,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Protect",
-     "Fire Blast",
-     "Earthquake",
-     "Outrage"
-    ],
-    "known_moves": [
-     "protect",
-     "fireblast",
-     "earthquake"
     ],
     "known_item": true,
     "known_ability": true
@@ -5240,7 +5252,7 @@
    },
    {
     "source": "added",
-    "count": 1,
+    "count": 2,
     "first": "2026-11-14",
     "last": "2026-11-14",
     "species": "Garchomp",
@@ -5258,12 +5270,14 @@
     "moves": [
      "Earth Power",
      "Power Gem",
-     "Earthquake",
-     "Outrage"
+     "Outrage",
+     "Earthquake"
     ],
     "known_moves": [
      "earthpower",
-     "powergem"
+     "powergem",
+     "outrage",
+     "earthquake"
     ],
     "known_item": true,
     "known_ability": true
@@ -6069,6 +6083,30 @@
     ],
     "known_item": true,
     "known_ability": false
+   },
+   {
+    "source": "catalog",
+    "count": 1,
+    "first": "2026-11-14",
+    "last": "2026-11-14",
+    "species": "Golisopod",
+    "item": "Golisopite",
+    "ability": "Emergency Exit",
+    "nature": "Adamant",
+    "points": {
+     "hp": 32,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 2,
+     "spe": 0
+    },
+    "moves": [
+     "Swords Dance",
+     "First Impression",
+     "Iron Head",
+     "Sucker Punch"
+    ]
    },
    {
     "source": "added",
@@ -7021,7 +7059,7 @@
   "hippowdon": [
    {
     "source": "catalog",
-    "count": 18,
+    "count": 19,
     "first": "2026-11-02",
     "last": "2026-11-14",
     "species": "Hippowdon",
@@ -7270,7 +7308,7 @@
   "hydreigon": [
    {
     "source": "catalog",
-    "count": 10,
+    "count": 11,
     "first": "2026-11-03",
     "last": "2026-11-14",
     "species": "Hydreigon",
@@ -7668,9 +7706,9 @@
   "kleavor": [
    {
     "source": "catalog",
-    "count": 6,
+    "count": 7,
     "first": "2026-11-02",
-    "last": "2026-11-13",
+    "last": "2026-11-14",
     "species": "Kleavor",
     "item": "Choice Scarf",
     "ability": "Sharpness",
@@ -8441,6 +8479,30 @@
     "known_ability": false
    },
    {
+    "source": "catalog",
+    "count": 1,
+    "first": "2026-11-14",
+    "last": "2026-11-14",
+    "species": "Metagross",
+    "item": "Metagrossite",
+    "ability": "Clear Body",
+    "nature": "Jolly",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Earthquake",
+     "Bullet Punch",
+     "Psychic Fangs",
+     "Thunder Punch"
+    ]
+   },
+   {
     "source": "added",
     "count": 4,
     "first": "2026-11-03",
@@ -8499,7 +8561,7 @@
   "milotic": [
    {
     "source": "added",
-    "count": 1,
+    "count": 2,
     "first": "2026-11-14",
     "last": "2026-11-14",
     "species": "Milotic",
@@ -8610,6 +8672,30 @@
   ],
   "mimikyu": [
    {
+    "source": "catalog",
+    "count": 8,
+    "first": "2026-11-04",
+    "last": "2026-11-14",
+    "species": "Mimikyu",
+    "item": "Life Orb",
+    "ability": "Disguise",
+    "nature": "Adamant",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Shadow Claw",
+     "Play Rough",
+     "Shadow Sneak",
+     "Swords Dance"
+    ]
+   },
+   {
     "source": "added",
     "count": 7,
     "first": "2026-11-02",
@@ -8640,30 +8726,6 @@
     ],
     "known_item": true,
     "known_ability": true
-   },
-   {
-    "source": "catalog",
-    "count": 7,
-    "first": "2026-11-04",
-    "last": "2026-11-14",
-    "species": "Mimikyu",
-    "item": "Life Orb",
-    "ability": "Disguise",
-    "nature": "Adamant",
-    "points": {
-     "hp": 2,
-     "atk": 32,
-     "def": 0,
-     "spa": 0,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Shadow Claw",
-     "Play Rough",
-     "Shadow Sneak",
-     "Swords Dance"
-    ]
    },
    {
     "source": "added",
@@ -8869,6 +8931,30 @@
    },
    {
     "source": "catalog",
+    "count": 2,
+    "first": "2026-11-11",
+    "last": "2026-11-14",
+    "species": "Ninetales-Alola",
+    "item": "Light Clay",
+    "ability": "Snow Warning",
+    "nature": "Timid",
+    "points": {
+     "hp": 2,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Blizzard",
+     "Freeze-Dry",
+     "Moonblast",
+     "Aurora Veil"
+    ]
+   },
+   {
+    "source": "catalog",
     "count": 11,
     "first": "2026-11-03",
     "last": "2026-11-13",
@@ -8889,30 +8975,6 @@
      "Freeze-Dry",
      "Moonblast",
      "Encore"
-    ]
-   },
-   {
-    "source": "catalog",
-    "count": 1,
-    "first": "2026-11-11",
-    "last": "2026-11-11",
-    "species": "Ninetales-Alola",
-    "item": "Light Clay",
-    "ability": "Snow Warning",
-    "nature": "Timid",
-    "points": {
-     "hp": 2,
-     "atk": 0,
-     "def": 0,
-     "spa": 32,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Blizzard",
-     "Freeze-Dry",
-     "Moonblast",
-     "Aurora Veil"
     ]
    }
   ],
@@ -9161,6 +9223,30 @@
     ]
    },
    {
+    "source": "catalog",
+    "count": 2,
+    "first": "2026-11-03",
+    "last": "2026-11-14",
+    "species": "Pelipper",
+    "item": "Damp Rock",
+    "ability": "Drizzle",
+    "nature": "Modest",
+    "points": {
+     "hp": 2,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Hurricane",
+     "Weather Ball",
+     "Ice Beam",
+     "U-turn"
+    ]
+   },
+   {
     "source": "added",
     "count": 1,
     "first": "2026-11-14",
@@ -9188,30 +9274,6 @@
     ],
     "known_item": true,
     "known_ability": true
-   },
-   {
-    "source": "catalog",
-    "count": 1,
-    "first": "2026-11-03",
-    "last": "2026-11-03",
-    "species": "Pelipper",
-    "item": "Damp Rock",
-    "ability": "Drizzle",
-    "nature": "Modest",
-    "points": {
-     "hp": 2,
-     "atk": 0,
-     "def": 0,
-     "spa": 32,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Hurricane",
-     "Weather Ball",
-     "Ice Beam",
-     "U-turn"
-    ]
    }
   ],
   "pidgeot": [
@@ -9272,7 +9334,7 @@
    },
    {
     "source": "added",
-    "count": 1,
+    "count": 2,
     "first": "2026-11-14",
     "last": "2026-11-14",
     "species": "Politoed",
@@ -9410,7 +9472,7 @@
   "primarina": [
    {
     "source": "added",
-    "count": 20,
+    "count": 22,
     "first": "2026-11-03",
     "last": "2026-11-14",
     "species": "Primarina",
@@ -9442,7 +9504,7 @@
    },
    {
     "source": "catalog",
-    "count": 14,
+    "count": 15,
     "first": "2026-11-03",
     "last": "2026-11-14",
     "species": "Primarina",
@@ -10154,7 +10216,7 @@
   "rotomwash": [
    {
     "source": "catalog",
-    "count": 6,
+    "count": 7,
     "first": "2026-11-13",
     "last": "2026-11-14",
     "species": "Rotom-Wash",
@@ -10174,6 +10236,30 @@
      "Will-O-Wisp",
      "Hydro Pump",
      "Pain Split"
+    ]
+   },
+   {
+    "source": "catalog",
+    "count": 3,
+    "first": "2026-11-10",
+    "last": "2026-11-14",
+    "species": "Rotom-Wash",
+    "item": "Choice Scarf",
+    "ability": "Levitate",
+    "nature": "Timid",
+    "points": {
+     "hp": 2,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Thunderbolt",
+     "Hydro Pump",
+     "Volt Switch",
+     "Trick"
     ]
    },
    {
@@ -10230,30 +10316,6 @@
     ],
     "known_item": true,
     "known_ability": true
-   },
-   {
-    "source": "catalog",
-    "count": 2,
-    "first": "2026-11-10",
-    "last": "2026-11-12",
-    "species": "Rotom-Wash",
-    "item": "Choice Scarf",
-    "ability": "Levitate",
-    "nature": "Timid",
-    "points": {
-     "hp": 2,
-     "atk": 0,
-     "def": 0,
-     "spa": 32,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Thunderbolt",
-     "Hydro Pump",
-     "Volt Switch",
-     "Trick"
-    ]
    },
    {
     "source": "added",
@@ -11022,6 +11084,30 @@
   "scovillain": [
    {
     "source": "catalog",
+    "count": 2,
+    "first": "2026-11-10",
+    "last": "2026-11-14",
+    "species": "Scovillain",
+    "item": "Scovillainite",
+    "ability": "Chlorophyll",
+    "nature": "Modest",
+    "points": {
+     "hp": 31,
+     "atk": 0,
+     "def": 13,
+     "spa": 22,
+     "spd": 0,
+     "spe": 0
+    },
+    "moves": [
+     "Flamethrower",
+     "Leech Seed",
+     "Protect",
+     "Giga Drain"
+    ]
+   },
+   {
+    "source": "catalog",
     "count": 1,
     "first": "2026-11-14",
     "last": "2026-11-14",
@@ -11066,30 +11152,6 @@
      "Leech Seed",
      "Overheat",
      "Protect"
-    ]
-   },
-   {
-    "source": "catalog",
-    "count": 1,
-    "first": "2026-11-10",
-    "last": "2026-11-10",
-    "species": "Scovillain",
-    "item": "Scovillainite",
-    "ability": "Chlorophyll",
-    "nature": "Modest",
-    "points": {
-     "hp": 31,
-     "atk": 0,
-     "def": 13,
-     "spa": 22,
-     "spd": 0,
-     "spe": 0
-    },
-    "moves": [
-     "Flamethrower",
-     "Leech Seed",
-     "Protect",
-     "Giga Drain"
     ]
    }
   ],
@@ -11338,7 +11400,7 @@
   "skeledirge": [
    {
     "source": "catalog",
-    "count": 3,
+    "count": 4,
     "first": "2026-11-13",
     "last": "2026-11-14",
     "species": "Skeledirge",
@@ -12090,7 +12152,7 @@
   "swampert": [
    {
     "source": "added",
-    "count": 10,
+    "count": 12,
     "first": "2026-11-03",
     "last": "2026-11-14",
     "species": "Swampert",
