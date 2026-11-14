@@ -122,3 +122,11 @@ def test_missing_final_exclamation_does_not_hide_a_mega() -> None:
 def test_priority_label_is_kept() -> None:
     event = parse("Move +1 Priority: Garchomp used Protect!")
     assert event.kind == "move" and event.data["priority"] == "+1"
+
+
+def test_ribbon_title_without_its_space_is_split_off() -> None:
+    # battle 47 on 14 Nov: OCR dropped the space before the title
+    for text in ("sent out Mimikyuthe Sociable!", "Opponent sent out Mimikyu the Sociable!"):
+        e = parse(text)
+        assert (e.kind, e.side, e.name, e.data["title"]) == ("send_out", "p2", "Mimikyu", "the Sociable")
+    assert parse("Opponent sent out Mimikyu!").data["title"] is None

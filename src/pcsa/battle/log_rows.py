@@ -134,9 +134,9 @@ def _switch_rows(msg: str, ev: Maker) -> Event | None:
         return ev("send_out", "p1", m[1].strip(), trainer=None, title=None)
     if m := re.fullmatch(r"(.*?)\s*sent out (.+?)!?", msg):
         name, title = m[2].strip(), None
-        if " the " in name:  # ribbon title: "Mimikyu the Sociable"
-            name, title = name.split(" the ", 1)
-            title = "the " + title
+        # ribbon title: "Mimikyu the Sociable"; OCR can drop the space before it ("Mimikyuthe Sociable")
+        if t := re.fullmatch(r"(.+?) ?the ([A-Z].*)", name):
+            name, title = t[1], "the " + t[2]
         return ev("send_out", "p2", name, trainer=m[1].strip() or None, title=title)
     if m := re.fullmatch(r"(.+?), come back!", msg):
         return ev("withdraw", "p1", m[1].strip(), trainer=None)
