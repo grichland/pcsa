@@ -511,9 +511,20 @@ function mxSetOpp(opp) {
   mxRedraw();
 }
 
+/** How the lineup was chosen when the preview played games out (preview: playout): the games, the finalists with
+    their wins, and whether the robust pick was kept; or why it fell back to the robust pick. */
+function mxPlayoutLine(preview) {
+  const rest = Object.fromEntries((preview?.notes?.rest || []).map((r) => [r.key, r.value]));
+  if (rest.preview !== "playout") return "";
+  if (rest.playout_fallback) return ` Playout preview: fell back to the robust pick (${rest.playout_fallback}).`;
+  const stopped = rest.playout_stop && rest.playout_stop !== "done" ? `, stopped: ${rest.playout_stop}` : "";
+  const kept = String(rest.playout_changed) === "true" ? `replaced the robust pick ${rest.playout_robust}` : "the robust pick was kept";
+  return ` Playout preview: ${rest.playout_done} games in ${rest.playout_s} s${stopped}; finalists ${rest.playout_finalists}; ${kept}.`;
+}
+
 function renderMatrix(state, isPinned) {
   const decision = state.decision;
-  const picked = state.preview?.names?.length ? `Team picked: ${state.preview.names.join(", ")}. The matrix appears with the first decision of the battle.` : null;
+  const picked = state.preview?.names?.length ? `Team picked: ${state.preview.names.join(", ")}.${mxPlayoutLine(state.preview)} The matrix appears with the first decision of the battle.` : null;
   const waiting = picked || (state.battle ? "Waiting for this battle's first decision" : "Waiting for the first decision");
   tile("t-matrix", Boolean(decision), waiting, "mx-empty");
   el("mx-legend").hidden = !decision?.notes?.matrix;

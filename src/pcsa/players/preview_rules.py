@@ -138,3 +138,14 @@ def check_robust_worst(w, where: str) -> None:
     of theirs are averaged, 1 (maximin) to 6 (the plain mean)."""
     if isinstance(w, bool) or not isinstance(w, int) or not 1 <= w <= THEIR_SIX:
         raise ConfigError(f"{where}: preview_robust_worst must be a whole number from 1 to {THEIR_SIX}, not {w!r}")
+
+
+def check_playout(mode: str, settings: dict, max_preview_s: float, where: str) -> None:
+    """The playout preview's settings (pcsa.players.preview_playout, read only when it is asked for): valid, and
+    the whole preview (the robust scores first, about 5-15 s) allowed to take long enough."""
+    if mode != "playout" and not settings:
+        return
+    from pcsa.players.preview_playout import ROBUST_S, PlayoutParams
+
+    if PlayoutParams.load(settings, where).budget_s + ROBUST_S > max_preview_s:
+        raise ConfigError(f"{where}: preview playout needs max_preview_s >= its budget_s + {ROBUST_S:.0f}")

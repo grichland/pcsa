@@ -16,6 +16,11 @@ opponent_temperature: 1  # user's setting (14 Nov)
 preview: robust                 # robust (13 Nov): each pick scored against each of their six leads (turn-1 views),
                                 # the best mean over its preview_robust_worst worst leads; critic: training's
                                 # softmax(value / 0.1), top-p 0.9 nucleus; greedy: the best value
+                                # playout (14 Nov, pcsa.players.preview_playout): the robust scores choose 16
+                                # lineups, full simulated games (sequential halving) choose among them. It needs
+                                # max_preview_s >= its budget_s + 15 (e.g. 50) and `preview_playout: {workers: 4,
+                                # budget_s: 30}` (defaults; also schedule, min_playouts, margin); the lead rates:
+                                # scripts/build_lead_prior.py -> assets/sets/lead_prior.json
 preview_robust_worst: 2         # robust: how many of a pick's worst leads of theirs are averaged (1 = maximin)
 fallback: disciplined           # decides when the network cannot: no or bad checkpoint, no Battle, an error, too slow
 opponent_top: 3                 # weigh our options against only their k likeliest actions (0 = all of them, as
