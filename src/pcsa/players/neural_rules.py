@@ -20,6 +20,10 @@ that fires decides, and the decision's notes carry `override: <rule>`, the reaso
   encore_switch   their active used Encore on us since it came in and the protocol shows for sure that it moves
                   before our active (earlier turns, same speed state): the network's best switch, encored or not
                   (pcsa.players.encore_switch; the user's rule, 14 Nov 2026)
+  mega_weakness   Mega Evolving into a form that is 4x weak to an attack they are likely to use (the base form is
+                  not), when our move does not KO first: the same move without Mega Evolution
+  weak4x_switch   our active is 4x weak to a likely attack that lands first and KOs it, and we cannot KO first: the
+                  network's best switch that takes it at most neutrally (both: pcsa.players.mega_weakness, 14 Nov)
 
 Damage and speed are pcsa.players.threat's estimates on the sets pcsa.players.opponent assumes.
 """
@@ -34,6 +38,7 @@ from poke_env.data.normalize import to_id_str
 
 from pcsa.common.errors import ConfigError
 from pcsa.players import encore_switch as encore
+from pcsa.players import mega_weakness as weak
 from pcsa.players import no_effect as nothing
 from pcsa.players import sucker_punch as sucker
 from pcsa.players import threat
@@ -95,6 +100,10 @@ class Spot:
 
     def hit(self, move) -> float:
         return threat.hit_fraction(self.battle, self.mine, self.theirs, move, self.catalog, self.tracker)  # type: ignore[arg-type]
+
+    def taken(self, move) -> float:
+        """Their `move` on our active, as a share of our max HP."""
+        return threat.hit_fraction(self.battle, self.theirs, self.mine, move, self.catalog, self.tracker)  # type: ignore[arg-type]
 
     def outspeeds(self) -> bool:
         return threat.outspeeds(self.battle, self.mine, self.theirs, self.catalog, tracker=self.tracker)  # type: ignore[arg-type]
@@ -189,6 +198,30 @@ def encore_switch(s: Spot) -> Outcome:
     return (switch, reason) if switch else None
 
 
+def mega_weakness(s: Spot) -> Outcome:
+    move = _move(s.chosen)
+    if move is None or not s.chosen.action.mega:
+        return None
+    reason = weak.mega_reason(s, move)
+    if reason is None:
+        return None
+    plain = s.best(lambda a: (m := _move(a)) is not None and m.id == move.id and not a.action.mega)
+    other = plain or s.best(lambda a: not a.action.mega)
+    return (other, reason) if other else None
+
+
+def weak4x_switch(s: Spot) -> Outcome:
+    if _is_switch(s.chosen):
+        return None
+    found = weak.doomed_by(s)
+    if found is None:
+        return None
+    attack, p = found
+    switch = s.best(lambda a: _is_switch(a) and weak.safe_against(a.order.order, attack))  # type: ignore[union-attr]
+    said = f"{p:.0%} likely" if p is not None else "shown"
+    return (switch, f"{attack.id} ({said}) hits {s.mine.species} 4x first and KOs it") if switch else None
+
+
 RULES: dict[str, Callable[[Spot], Outcome]] = {
     "no_effect": no_effect,
     "no_full_heal": no_full_heal,
@@ -197,6 +230,8 @@ RULES: dict[str, Callable[[Spot], Outcome]] = {
     "sucker_punch": sucker_punch,
     "priority_ko": priority_ko,
     "encore_switch": encore_switch,
+    "mega_weakness": mega_weakness,
+    "weak4x_switch": weak4x_switch,
 }
 
 

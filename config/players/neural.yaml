@@ -1,6 +1,5 @@
-# version neural-20261114-1527: hard50 (poke-transformer-hard50-20261113-1215.pt) + opponent head only on 343 pcsa live games
-# (lr 1e-3, 7 epochs; top-1 0.603, top-3 0.863, in-sample; research/pcsa-rl runs/live-finetune/opp-20261114-1509);
-# policy and value heads are hard50's (bit-identical); opponent_temperature 1 (user's setting)
+# version neural-20261114-1842: neural-20261114-1527 (same model and settings) + guard rules weak4x_switch and mega_weakness
+# (pcsa.players.mega_weakness); preview, matrix and opponent settings unchanged
 # fitted: {"checkpoint": "assets/models/poke-transformer-live-20261114-1527.pt"}
 # Live player from 12 Nov 2026 (user's decision after the pcsa-belief trial): the belief network
 # (poke-transformer-belief100, belief+mega columns) with the matrix blend at 4.0, opponent_temperature 1.0 and
@@ -33,7 +32,10 @@ threads: 1                      # torch CPU threads
 seed: null                      # preview and `sample` draws; null: fresh each run
 # Guard rules: stop plainly wasted actions; the network's best other action is played instead ([] = the network
 # alone; one run: --set policy.neural_rules=none, or names separated by commas). See src/pcsa/players/neural_rules.py.
-rules: [encore_switch, no_effect, no_full_heal, useless_status, locked_futile, sucker_punch, priority_ko]
+rules: [encore_switch, no_effect, no_full_heal, useless_status, locked_futile, sucker_punch, weak4x_switch,
+        mega_weakness, priority_ko]
+# weak4x_switch / mega_weakness (14 Nov, from the labelled live losses: Mega Golisopod is Bug/Steel, 4x weak to Fire):
+# no Mega Evolution into a 4x weakness to a likely or shown attack; switch out of a 4x hit that lands first and KOs
 # encore_switch (user's rule, 14 Nov): their active used Encore on us since it came in and earlier turns show for sure
 # that it moves before our active (same pair, same-priority moves, same speed state; two such turns unless a tie and
 # Quick Claw are ruled out, none the other way): switch, the network picks which. First, so it decides before the
