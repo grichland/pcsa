@@ -14,6 +14,17 @@ from pcsa.battle.moves import observed_form
 from pcsa.battle.names import showdown_species
 from pcsa.battle.regenerator import on_switch_out
 from pcsa.battle.translate import CONSUMED_IDS, INFORMATIONAL_KINDS, LEVEL, Member, Translator, has_illusion, letters
+from pcsa.battle.translate_mechanics import (
+    activate,
+    clear_all_boost,
+    field_activate,
+    full_heal,
+    item_reveal_or_end,
+    prepare,
+    revive,
+    single,
+    typechange,
+)
 from pcsa.battle.translate_megas import mega, mega_reacting, resolve_pending_mega
 
 Handler = Callable[[Translator, RawRow, Event], None]
@@ -158,6 +169,8 @@ def _ability(t: Translator, row: RawRow, e: Event) -> None:
     ident = t.ident(side, member)
     changed = "|[from] observed ability change" if e.kind == "ability_change" else ""
     t.apply(f"|-ability|{ident}|{normalized}{changed}")
+    if e.data.get("start"):  # Flash Fire: the boost is a volatile of its own
+        t.apply(f"|-start|{ident}|{e.data['start']}")
     if e.kind == "ability" and letters(normalized) == "hungerswitch":
         mon = t.tracked(side, member)
         current = observed_form(t.battle, mon) if mon is not None else None
@@ -178,17 +191,14 @@ def _item(t: Translator, row: RawRow, e: Event) -> None:
     t.apply(f"|-item|{t.ident(side, member)}|{item}")
 
 
-def _item_reveal_or_end(t: Translator, row: RawRow, e: Event) -> None:
-    if (member := _need(t, row, e)) is None or e.side is None:
-        return
-    verb = "-item" if e.kind == "item_reveal" else "-enditem"
-    t.apply(f"|{verb}|{t.ident(e.side, member)}|{e.data['item']}")
-
-
 def _boost(t: Translator, row: RawRow, e: Event) -> None:
     member = t.member(e.side, e.name)
     if member is None or not e.data.get("stats") or e.side is None:
         return t.unmapped(row, f"unknown Pokemon {e.name!r} or stats")
+    if e.data.get("ocr_repaired"):
+        t.out.inferred.append(
+            {"kind": "boost_ocr_repair", "row": row.row_id, "text": row.text, "name": member.name, "side": e.side}
+        )
     if e.data["amount"]:
         verb = "-boost" if e.data["sign"] > 0 else "-unboost"
         for stat in e.data["stats"]:
@@ -205,10 +215,10 @@ def _status_like(t: Translator, row: RawRow, e: Event) -> None:
     if e.kind == "cure" and d.get("item"):
         t.apply(f"|-enditem|{ident}|{d['item']}|[eat]")
     line = {
-        "status": f"|-status|{ident}|{d.get('status')}",
+        "status": f"|-status|{ident}|{d.get('status')}" + (f"|[from] {d['source']}" if d.get("source") else ""),
         "cure": f"|-curestatus|{ident}|{d.get('status')}",
         "cant": f"|cant|{ident}|{d.get('reason')}",
-        "volatile": f"|-start|{ident}|{d.get('effect')}",
+        "volatile": f"|-start|{ident}|{d.get('effect')}" + (f"|{d['detail']}" if d.get("detail") else ""),
     }[e.kind]
     if e.kind == "volatile" and to_id_str(d.get("effect")) == "attract":
         source = t.active(t.other(e.side))
@@ -218,10 +228,6 @@ def _status_like(t: Translator, row: RawRow, e: Event) -> None:
     if e.kind == "volatile" and d.get("passes"):
         t.passed_substitute.add(e.side)
     t.apply(line)
-
-
-def _typechange(t: Translator, row: RawRow, e: Event) -> None:
-    _simple(t, row, e, "|-start|{ident}|typechange|{type}")
 
 
 def _clear_negative(t: Translator, row: RawRow, e: Event) -> None:
@@ -253,6 +259,8 @@ def _form_change(t: Translator, row: RawRow, e: Event) -> None:
     t.out.revealed_abilities[f"{e.side}: {member.name}"] = e.data["ability"]
     t.apply(f"|-activate|{ident}|ability: {e.data['ability']}")
     t.apply(f"|detailschange|{ident}|{e.data['form']}, L{LEVEL}")
+    if e.data.get("keeps"):  # Palafin-Hero stays Hero for the rest of the battle, switch-ins included
+        member.species = e.data["form"]
 
 
 def _steal_eat(t: Translator, row: RawRow, e: Event) -> None:
@@ -319,17 +327,6 @@ def _hitcount(t: Translator, row: RawRow, e: Event) -> None:
     t.apply(f"|-hitcount|{move[4]}|{e.data['count']}")
 
 
-def _prepare(t: Translator, row: RawRow, e: Event) -> None:
-    member = t.member(e.side, e.name) if e.side else None
-    if member is None or e.side is None:
-        return
-    ident = t.ident(e.side, member)
-    move = next((line.split("|")[3] for line in reversed(t.out.lines) if line.startswith(f"|move|{ident}|")), None)
-    if move is None:
-        return t.unmapped(row, "charge turn without its move")
-    t.apply(f"|-prepare|{ident}|{move}")
-
-
 HANDLERS: dict[str, Handler] = {
     "confusion_damage": _confusion_damage,
     "volatile_active": _volatile_active,
@@ -343,8 +340,8 @@ HANDLERS: dict[str, Handler] = {
     "ability": _ability,
     "ability_change": _ability,
     "item": _item,
-    "item_reveal": _item_reveal_or_end,
-    "item_end": _item_reveal_or_end,
+    "item_reveal": item_reveal_or_end,
+    "item_end": item_reveal_or_end,
     "mega_reacting": mega_reacting,
     "mega": mega,
     "boost": _boost,
@@ -353,7 +350,7 @@ HANDLERS: dict[str, Handler] = {
     "cure": _status_like,
     "cant": _status_like,
     "volatile": _status_like,
-    "typechange": _typechange,
+    "typechange": typechange,
     "transform": _transform,
     "form_change": _form_change,
     "steal_eat": _steal_eat,
@@ -363,9 +360,15 @@ HANDLERS: dict[str, Handler] = {
     "hazard": _hazard,
     "knock_off": _knock_off,
     "copyboost": _copyboost,
-    "prepare": _prepare,
+    "prepare": prepare,
     "miss": _miss,
     "hitcount": _hitcount,
+    "revive": revive,
+    "full_heal": full_heal,
+    "single": single,
+    "activate": activate,
+    "field_activate": field_activate,
+    "clearallboost": clear_all_boost,
 }
 
 

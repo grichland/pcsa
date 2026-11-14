@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 APOS = "[’']"
+BOOST_WORDS = {"": 1, "sharply": 2, "harshly": 2, "drastically": 3, "severely": 3}
 STAT_IDS = {
     "Attack": "atk",
     "Defense": "def",
@@ -41,7 +42,12 @@ HAZARD_START = [
     (r"^Pointed stones float in the air on (the opposing side|your side)!$", "move: Stealth Rock"),
     (r"^Spikes were scattered on the ground all around (the opposing team|your team)!$", "Spikes"),
     (r"^Poison spikes were scattered on the ground all around (the opposing team|your team)!$", "move: Toxic Spikes"),
-    (r"^A sticky web has been laid out on the ground around (the opposing team|your team)!$", "move: Sticky Web"),
+    (
+        r"^A sticky web has been laid out on the ground (?:around|on) "
+        r"(the opposing team|your team|the opposing side|your side)!$",
+        "move: Sticky Web",
+    ),
+    (r"^A tailwind started blowing on (the opposing side|your side|the opposing team|your team)!$", "move: Tailwind"),
     (rf"^(?:{SCREENS}) made (the opposing side|the opposing team|your side|your team) stronger.*$", None),
 ]
 HAZARD_END = [
@@ -51,6 +57,10 @@ HAZARD_END = [
     (r"^The poison spikes disappeared from the ground around (the opposing team|your team)!$", "move: Toxic Spikes"),
     (r"^The sticky web has disappeared from the ground around (the opposing team|your team)!$", "move: Sticky Web"),
     (rf"^(The opposing side|The opposing team|Your side|Your team){APOS}s (?:{SCREENS}) wore off!$", None),
+    (
+        rf"^(The opposing side|The opposing team|Your side|Your team){APOS}s [Tt]ailwind petered out!$",
+        "move: Tailwind",
+    ),
 ]
 # "<who> ..." sentences: (regex on the remainder after the name, kind, data)
 SUBJECT_PATTERNS = [
@@ -99,6 +109,11 @@ SUBJECT_PATTERNS = [
     (r"hung on using its .+!", "trailing", {"what": "focus_sash"}),
     (r"endured the hit!", "trailing", {"what": "endure"}),
     (r"ended its encore!", "volatile_end", {"effect": "Encore"}),
+    # Rows that restate something other rows carry (Yawn already pending, Struggle forced, contact damage whose HP
+    # row is next to it: Rough Skin, Rocky Helmet, Spiky Shield, Innards Out).
+    (r"is already drowsy[.!]?", "trailing", {"what": "yawn_already"}),
+    (r"has no moves left(?: that it can use)?!", "trailing", {"what": "struggle"}),
+    (r"was hurt!", "trailing", {"what": "hurt"}),
 ]
 # What a recognized Showdown template does, keyed by (effect, message key).
 TEMPLATE_EVENTS = {
@@ -134,10 +149,49 @@ TEMPLATE_EVENTS = {
     ("destinybond", "activate"): ("trailing", {"what": "destiny_bond"}),
     ("frisk", "activate"): ("ability", {"ability": "Frisk"}),
     ("supremeoverlord", "activate"): ("ability", {"ability": "Supreme Overlord"}),
+    # String values with {GROUP} are filled from the template's matched placeholders.
+    ("redcard", "end"): ("item_end", {"item": "Red Card"}),
+    ("ejectbutton", "end"): ("item_end", {"item": "Eject Button"}),
+    ("revivalblessing", "heal"): ("revive", {}),
+    ("disable", "start"): ("volatile", {"effect": "Disable", "detail": "{MOVE}"}),
+    ("perishsong", "start"): ("field_activate", {"effect": "move: Perish Song"}),
+    ("perishsong", "activate"): ("volatile", {"effect": "perish{NUMBER}"}),
+    ("poltergeist", "activate"): ("item_reveal", {}),
+    ("healblock", "end"): ("volatile_end", {"effect": "move: Heal Block"}),
+    ("destinybond", "start"): ("single", {"verb": "-singlemove", "effect": "Destiny Bond"}),
+    ("beakblast", "start"): ("single", {"verb": "-singleturn", "effect": "move: Beak Blast"}),
+    ("curse", "start"): ("volatile", {"effect": "Curse"}),
+    ("curse", "damage"): ("cause", {"cause": "Curse", "applies_to": "self", "hp": "lost"}),
+    ("frz", "endFromItem"): ("cure", {"status": "frz"}),
+    ("stickyweb", "activate"): ("activate", {"effect": "move: Sticky Web"}),
+    ("stickyweb", "start"): ("hazard", {"condition": "move: Sticky Web", "action": "start"}),
+    ("tailwind", "start"): ("hazard", {"condition": "move: Tailwind", "action": "start"}),
+    ("tailwind", "end"): ("hazard", {"condition": "move: Tailwind", "action": "end"}),
+    ("rest", "start"): ("status", {"status": "slp", "source": "move: Rest"}),
+    ("unboost", "failNoStat"): ("trailing", {"what": "stats_not_lowered"}),
+    ("default", "end"): ("volatile_end", {"effect": "move: {EFFECT}"}),  # "X was freed from Infestation!"
+    ("zerotohero", "activate"): ("form_change", {"form": "Palafin-Hero", "ability": "Zero to Hero", "keeps": True}),
+    ("substitute", "alreadyStarted"): ("trailing", {"what": "substitute_already"}),
+    ("shedtail", "alreadyStarted"): ("trailing", {"what": "substitute_already"}),
+    ("painsplit", "activate"): ("trailing", {"what": "pain_split"}),  # both HP rows follow it
+    ("healingwish", "heal"): ("full_heal", {"source": "move: Healing Wish"}),
+    ("haze", "activate"): ("clearallboost", {}),
+    ("default", "clearAllBoost"): ("clearallboost", {}),
+    ("flashfire", "start"): ("ability", {"ability": "Flash Fire", "start": "ability: Flash Fire"}),
+    ("fairyaura", "start"): ("ability", {"ability": "Fairy Aura"}),
+    ("electroshot", "prepare"): ("prepare", {}),
+    ("solarbeam", "prepare"): ("prepare", {}),
+    ("solarblade", "prepare"): ("prepare", {}),
+    ("burnup", "typeChange"): ("typechange", {"lose": "Fire", "source": "move: Burn Up"}),
+    ("harvest", "addItem"): ("item_reveal", {"ability": "Harvest"}),
+    ("struggle", "activate"): ("trailing", {"what": "struggle"}),
 }
+# Battle-screen overlays the log reader can capture as a row (the battle timer's caption): not log rows.
+OVERLAY_TEXTS = frozenset({"until battle ends", "move time"})
 EVENT_KINDS = frozenset(
     "send_out withdraw drag move hp faint ability ability_change item mega_reacting mega boost clearnegativeboost "
     "boost_blocked effectiveness fail miss status cant cure volatile prepare hitcount knock_off weather hazard cause "
     "trailing copyboost item_reveal item_end typechange transform form_change field steal_eat volatile_end "
-    "volatile_active confusion_damage illusion_end unknown".split()
+    "volatile_active confusion_damage illusion_end revive field_activate single activate full_heal clearallboost "
+    "overlay unknown".split()
 )

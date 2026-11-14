@@ -11,11 +11,14 @@ from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 
 from pcsa.battle import battle_text
+from pcsa.battle.log_ocr import ocr_boost_row
 from pcsa.battle.log_patterns import (
     APOS,
+    BOOST_WORDS,
     EVENT_KINDS,
     HAZARD_END,
     HAZARD_START,
+    OVERLAY_TEXTS,
     SCREENS,
     STAT_IDS,
     SUBJECT_PATTERNS,
@@ -30,7 +33,14 @@ CATEGORY_RE = re.compile(
     r"^(?:Move(?:\s.*)?|HP Lost|HP Restored|Held Item|Ability Changed|Ability|Fainted|Mega Evolution)$"
 )
 PRIORITY_RE = re.compile(r"^Move\s*([+\-—–])\s*(\d+)\s*Priority$")
-BOOST_WORDS = {"": 1, "sharply": 2, "harshly": 2, "drastically": 3, "severely": 3}
+# Champions writes some items with a quantity ("obtained a serving of Leftovers", "harvested a Sitrus Berry").
+ITEM_ARTICLE_RE = re.compile(
+    r"^(?:(?:an?|the|one|some)\s+)?(?:(?:serving|piece|bunch|pair)s?\s+of\s+)?", re.IGNORECASE
+)
+
+
+def item_name(text: str) -> str:
+    return ITEM_ARTICLE_RE.sub("", text.strip()).strip()
 
 
 @dataclass
@@ -323,7 +333,8 @@ def _template_rows(msg: str, ev: Maker) -> Event | None:
         if kind == "hazard":
             side, name = ("p2" if "opposing" in match.groups["TEAM"].lower() else "p1"), None
         if kind in ("item", "item_reveal", "cure") and "ITEM" in match.groups:
-            data["item"] = re.sub(r"^(?:an?|the) ", "", match.groups["ITEM"])
+            data["item"] = item_name(match.groups["ITEM"])
+        data = {k: v.format(**match.groups) if isinstance(v, str) and "{" in v else v for k, v in data.items()}
         events.append((kind, side, name, tuple(sorted(data.items()))))
     if len(set(events)) != 1:
         return ev("unknown", reason="ambiguous_template")
@@ -337,6 +348,9 @@ def parse_row(row: RawRow) -> Event:
 
     def ev(kind: str, side: str | None = None, name: str | None = None, **data) -> Event:
         return Event(kind, row, side, name, data)
+
+    if not category and msg.lower().rstrip(".!") in OVERLAY_TEXTS:
+        return ev("overlay")
 
     matchers = (
         lambda: _category_rows(category, msg, ev),
@@ -355,11 +369,14 @@ def parse_row(row: RawRow) -> Event:
         event = matcher()
         if event is not None:
             return event
-    if msg.endswith("l"):  # OCR drops a final "!" or reads it as "l"; moves keep their own complete-name check
-        for repaired in (msg + "!", msg[:-1] + "!"):
-            retried = parse_row(replace(row, message=repaired))
-            if retried.kind not in ("unknown", "move"):
-                return replace(retried, row=row)
+    # OCR drops a final "!" or reads it as "l"; moves keep their own complete-name check
+    repairs = (msg + "!", msg[:-1] + "!") if msg.endswith("l") else (msg + "!",) if msg[-1:].isalnum() else ()
+    for repaired in repairs:
+        retried = parse_row(replace(row, message=repaired))
+        if retried.kind not in ("unknown", "move"):
+            return replace(retried, row=row)
+    if (boost := ocr_boost_row(msg, ev)) is not None:
+        return boost
     return ev("unknown", reason="no_pattern")
 
 

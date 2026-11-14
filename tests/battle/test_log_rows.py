@@ -62,10 +62,7 @@ SAVED_ROWS = [
     ("Garchomp’s Attack rose sharply!", "boost", "p1", {"stats": ["atk"], "amount": 2, "sign": 1}),
 ]
 UNSUPPORTED_ROWS = [
-    ("The opposing Snorlax slept and restored its HP!", "Rest"),
-    ("The opposing Froslass is hoping to take its attacker down with it!", "Destiny Bond"),
     ("The opposing Inteleon is getting pumped!", "Focus Energy"),
-    ("The opposing Salamence was revived and is ready to fight again!", "Revival Blessing"),
 ]
 
 
@@ -82,7 +79,9 @@ def test_recognized_mechanics_without_engine_support_stay_unknown(text, name) ->
     assert event.kind == "unknown" and name in event.data["reason"]
 
 
-@pytest.mark.parametrize("text", ["Garchomp was hurt!", "MoveC: Yefan Thanks! Good night!", "The opposing Garchomp"])
+@pytest.mark.parametrize(
+    "text", ["Theoin eTiE S. Dan Spee!", "Gho", "MoveC: Yefan Thanks! Good night!", "The opposing Garchomp"]
+)
 def test_unrecognized_rows_stay_unknown(text) -> None:
     assert parse(text).kind == "unknown"
 

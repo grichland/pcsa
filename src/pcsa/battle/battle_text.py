@@ -30,6 +30,7 @@ CHAMPIONS_TEXT = [
     ("default", "par", "Paralysis", "cant", "{POKEMON} couldn't move because it's paralyzed!"),
     ("moves", "rest", "Rest", "start", "{POKEMON} slept and restored its HP!"),
     ("moves", "toxicspikes", "Toxic Spikes", "start", "Toxic spikes were scattered on the ground all around {TEAM}!"),
+    ("abilities", "harvest", "Harvest", "addItem", "{POKEMON} harvested {ITEM}!"),  # "harvested a Sitrus Berry!"
 ]
 
 

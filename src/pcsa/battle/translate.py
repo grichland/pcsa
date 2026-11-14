@@ -25,7 +25,7 @@ TURN_ACTION_KINDS = frozenset(
     """move withdraw mega_reacting mega item cant trailing fail miss effectiveness hitcount knock_off prepare
     faint drag copyboost""".split()
 )
-INFORMATIONAL_KINDS = frozenset("effectiveness fail prepare cause trailing boost_blocked withdraw".split())
+INFORMATIONAL_KINDS = frozenset("effectiveness fail prepare cause trailing boost_blocked withdraw overlay".split())
 CONSUMED_ITEMS = frozenset(
     "Focus Sash|White Herb|Mental Herb|Power Herb|Mirror Herb|Weakness Policy|Booster Energy|Throat Spray|"
     "Room Service|Eject Button|Eject Pack|Red Card|Adrenaline Orb|Blunder Policy|Absorb Bulb|Cell Battery|"
@@ -251,6 +251,11 @@ class Translator:
             self.out.warnings.append(f"{row.row_id}: ignored sprite {sprite['name']!r}, on neither roster")
             return None
         found = self._sprite_candidates(sprite, [e.side] if e.side is not None else ["p1", "p2"])
+        if not found and e.side is not None:
+            # The text says whose row it is and that side has no such species: the icon is the other side's
+            # (a drain row shows the drainer) or misread (an empty slot read as Ditto). The text decides.
+            self.out.warnings.append(f"{row.row_id}: ignored sprite {sprite['name']!r}, not on {e.side}'s roster")
+            return None
         if len(found) != 1:
             self.unmapped(row, f"cannot assign sprite {sprite['name']!r} to one roster member")
             return "skip"  # type: ignore[return-value]
@@ -259,7 +264,7 @@ class Translator:
         if (mon := self.tracked(side, member)) is not None:
             form = reconcile_form(observed_form(self.battle, mon), name)
             name = game.species_entry(form).get("name", name)
-        if e.kind == "form_change" and e.data.get("ability") == "Disguise":
+        if e.kind == "form_change":  # the text names the new form (Mimikyu-Busted, Palafin-Hero)
             name = e.data["form"]
         self.out.inferred.append(
             {
