@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 
 from poke_env.battle import Battle, Field
+from poke_env.battle.move import Move, MoveSet
 from poke_env.data.normalize import to_id_str
 
 from pcsa.battle import game
@@ -23,6 +24,23 @@ class ChampionsBattle(Battle):
         super().__init__(*args, **kwargs)
         self.compatibility_repairs = []
         self.replay_errors = []
+        self._transforms: dict[str, str] = {}  # transformed mon's ident -> the ident it copied
+
+    def _refresh_transforms(self) -> None:
+        """Bring every copied move set up to the copied mon's full set. The live tracker replays the log before our
+        request, so a Ditto that copied one of ours took only the moves the log had shown by then (none, on a fresh
+        switch-in); the request fills in our moves, and the copy has to follow (14 Nov battle 43). Moves already
+        copied keep their objects (PP used); boosts are left alone."""
+        for ident, into in self._transforms.items():
+            mon, target = self._mon(ident), self._mon(into)
+            if mon is None or target is None or not mon.transformed:
+                continue
+            copied = mon._moves._transform_moves
+            have = dict(copied.base_moves) if copied is not None else {}
+            for move_id in target.moves:
+                if move_id not in have:
+                    have[move_id] = Move(move_id, mon.gen, from_transform=True)
+            mon._moves._transform_moves = MoveSet(have)
 
     def _normalize(self, split_message: list[str]) -> list[str] | None:
         """The message as poke-env should see it, or None to drop it."""
@@ -67,6 +85,8 @@ class ChampionsBattle(Battle):
             form = mega_form_for_stone(normalized[3], normalized[4])
             if form:
                 super().parse_message(["", "detailschange", normalized[2], form + ", L50"])
+        if len(normalized) > 3 and normalized[1] == "-transform" and ": " in normalized[2] and ": " in normalized[3]:
+            self._transforms[normalized[2]] = normalized[3]
         super().parse_message(normalized)
         if (
             len(normalized) < 4
@@ -89,6 +109,7 @@ class ChampionsBattle(Battle):
     def parse_request(self, request: dict) -> None:
         normalized = current_request(self, request)
         super().parse_request(normalized)
+        self._refresh_transforms()
         for member in normalized.get("side", {}).get("pokemon", []):
             mon = self.team.get(member["ident"])
             if mon is None or mon.transformed:
