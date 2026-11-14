@@ -82,7 +82,8 @@ class ArenaPlayer(PokeEnvPlayer):
         if chosen:
             battle._max_team_size = chosen
         roster = tuple(key.split(": ", 1)[1] for key in battle.team)
-        preview = TeamPreviewView(battle, roster, self.rng)  # type: ignore[arg-type]
+        export = self.teams.history[-1] if self.teams.history else None
+        preview = TeamPreviewView(battle, roster, self.rng, export)  # type: ignore[arg-type]
         picks = self.inner.choose_team(preview, Deadline.after(self.clock, 30.0))
         self.picks[battle.battle_tag] = [roster[i] for i in picks]
         notes = self.inner.notes()

@@ -101,6 +101,7 @@ def robust_team(policy, battle, picks) -> list[int]:
     keep, rules = policy.preview_keep(battle, picks) if policy.preview_keep else ([True] * len(picks), {})
     rows = [i for i, k in enumerate(keep) if k] or list(range(len(picks)))
     scores = robust_scores(table, policy.preview_robust_worst)
+    policy.preview_scores = (scores, rows)  # every pick's score and the kept picks (the playout preview's start)
     index = rows[int(np.argmax(scores[rows]))]
     mean = table.mean(axis=1)
     policy._notes = {

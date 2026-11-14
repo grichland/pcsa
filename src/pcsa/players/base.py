@@ -54,6 +54,7 @@ class TeamPreviewView:
     battle: Battle | None
     roster: tuple[str | None, ...]  # six names as the selection screen shows them
     rng: random.Random
+    export: str | None = None  # our six as a team export, in roster order (the playout preview plays it)
 
 
 class Player(Protocol):

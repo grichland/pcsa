@@ -114,7 +114,8 @@ def on_team_select(s, obs: Observation, frame, t0: float) -> None:
                 battle, _ = tracking.build(f"{b.battle_id}-preview", s.team, b.opponent_preview)
             except Exception as error:
                 log.warning("tracking_failed", battle=b.index, kind="team", reason=str(error))
-        view = TeamPreviewView(battle, b.roster, s.rng)
+        export = tracking_export(s.team) if s.team is not None else None
+        view = TeamPreviewView(battle, b.roster, s.rng, export)
         try:
             team = list(s.player.choose_team(view, deadline))
             if len(team) != 3 or len(set(team)) != 3 or any(not 0 <= i < 6 for i in team):

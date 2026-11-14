@@ -3,7 +3,8 @@
 Settings in config/players/neural.yaml (NeuralParams). The network decides team preview and every move or switch
 from the Battle the loop gives it; the fallback kind decides (reason in the notes) when it cannot: no or a bad
 checkpoint, no Battle, an exception, or no answer within min(max_decision_s, or max_preview_s at team preview;
-the deadline's remaining time - reserve_s). Preview `robust`: pcsa.rl_training.preview_leads.
+the deadline's remaining time - reserve_s). Preview `robust`: pcsa.rl_training.preview_leads; `playout`: the robust
+scores, then full simulated games on worker processes (pcsa.players.preview_playout, `preview_playout`).
 
 Guard rules (pcsa.players.neural_rules, the `rules` list) stop plainly wasted actions (a heal at full HP, Stealth
 Rock already up, a status move on a statused foe, a lock into moves that do nothing, a missed sure priority KO): the
@@ -44,10 +45,11 @@ from pcsa.common.config import Config
 from pcsa.common.errors import ConfigError
 from pcsa.players import neural_rules, preview_rules
 from pcsa.players.base import DecisionView, LegalAction, Player, TeamPreviewView
+from pcsa.players.neural_modes import feature_mode
 
 NETWORKS_ENV = "PCSA_NETWORKS"  # a folder relative checkpoint paths are looked up in first
 SAMPLING = ("greedy", "sample")
-PREVIEW = ("critic", "greedy", "robust")
+PREVIEW = ("critic", "greedy", "robust", "playout")  # playout: robust, then pcsa.players.preview_playout
 FEATURES = ("checkpoint", "base", "belief", "belief+mega")  # checkpoint: the mode the network was trained with
 TORCH_HINT = "the neural player needs torch: run `uv sync --extra train` (or `uv sync --inexact --extra train`)"
 
@@ -79,6 +81,7 @@ class NeuralParams:
     sucker_punch_passive: float = 0.5  # sucker_punch rule: block above this P(their active does not attack)
     preview_lead_avoid: dict = field(default_factory=dict)  # species -> types in their six that forbid leading it
     preview_bring_max_one: list = field(default_factory=list)  # [{types, species}]: bring at most one of species
+    preview_playout: dict = field(default_factory=dict)  # preview playout: pcsa.players.preview_playout.PlayoutParams
 
     @classmethod
     def load(cls, path: Path) -> NeuralParams:
@@ -100,6 +103,7 @@ class NeuralParams:
         if self.preview not in PREVIEW:
             raise ConfigError(f"{where}: preview must be one of {PREVIEW}, not {self.preview!r}")
         preview_rules.check_robust_worst(self.preview_robust_worst, where)
+        preview_rules.check_playout(self.preview, self.preview_playout, self.max_preview_s, where)
         if self.features not in FEATURES:
             raise ConfigError(f"{where}: features must be one of {FEATURES}, not {self.features!r}")
         blend = self.matrix_blend
@@ -131,20 +135,6 @@ def resolve_checkpoint(raw: str, environ: Mapping[str, str] | None = None) -> Pa
     if folder and (Path(folder).expanduser() / path).is_file():
         return Path(folder).expanduser() / path
     return paths.repo_root() / path
-
-
-def feature_mode(setting: str, trained: str, checkpoint: str = "the checkpoint") -> str:
-    """The feature mode to play with: the checkpoint's (`trained`) unless `setting` names another. ConfigError when
-    that would feed belief columns to a network trained without them."""
-    if setting in ("checkpoint", trained):
-        return trained
-    if trained == "base":
-        raise ConfigError(
-            f"features: {setting} asked for, but {checkpoint} was trained with feature mode base: an old network "
-            "cannot read belief columns (set features: checkpoint, or point policy.neural_checkpoint at a belief one)"
-        )
-    log.warning("neural_features_override", trained=trained, used=setting, checkpoint=checkpoint)
-    return setting
 
 
 def load_policy(params: NeuralParams, path: Path) -> tuple[Any, dict]:
@@ -186,7 +176,7 @@ def load_policy(params: NeuralParams, path: Path) -> tuple[Any, dict]:
         values = matrix.action_values if params.matrix_depth == 1 else matrix2.action_values
         policy.matrix_blend, policy.matrix_values = float(params.matrix_blend), values
     policy.preview_keep = preview_rules.keeper(params.preview_lead_avoid, params.preview_bring_max_one)
-    policy.preview_robust_worst = int(params.preview_robust_worst) if params.preview == "robust" else 0
+    policy.preview_robust_worst = int(params.preview_robust_worst) if params.preview in ("robust", "playout") else 0
     facts = {"update": state.get("update"), "run": (state.get("config") or {}).get("name")}
     return policy, {**facts, "d": cfg.d, "layers": cfg.layers, "columns": cfg.top_k + 5, "memory": cfg.memory}
 
@@ -231,6 +221,10 @@ class NeuralPlayer:
                 self.error = f"checkpoint {checkpoint.name} not loaded: {type(error).__name__}: {error}"
         if self.error:
             log.warning("neural_unavailable", reason=self.error, fallback=fallback.name)
+        elif params.preview == "playout":  # the workers load in the background from now
+            from pcsa.players import preview_playout
+
+            self.playout = preview_playout.start(self)
 
     def params(self) -> dict:
         out = {
@@ -269,6 +263,8 @@ class NeuralPlayer:
         notes = self.policy.notes()
         if notes.get("rule") != "rl":
             raise RuntimeError(notes.get("why", "preview failed"))
+        if self.p.preview == "playout":
+            return self.playout.refine(self.policy, view, deadline.minus(self.p.reserve_s), team, notes)
         return team, notes
 
     def choose_action(self, view: DecisionView, deadline: Deadline) -> LegalAction:
