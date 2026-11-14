@@ -1,5 +1,5 @@
-# version neural-20261114-1842: neural-20261114-1527 (same model and settings) + guard rules weak4x_switch and mega_weakness
-# (pcsa.players.mega_weakness); preview, matrix and opponent settings unchanged
+# version neural-20261114-1853: neural-20261114-1842 (same model and settings) + guard rule yawn_switch
+# (pcsa.players.neural_rules.yawn_switch); preview, matrix and opponent settings unchanged
 # fitted: {"checkpoint": "assets/models/poke-transformer-live-20261114-1527.pt"}
 # Live player from 12 Nov 2026 (user's decision after the pcsa-belief trial): the belief network
 # (poke-transformer-belief100, belief+mega columns) with the matrix blend at 4.0, opponent_temperature 1.0 and
@@ -33,7 +33,9 @@ seed: null                      # preview and `sample` draws; null: fresh each r
 # Guard rules: stop plainly wasted actions; the network's best other action is played instead ([] = the network
 # alone; one run: --set policy.neural_rules=none, or names separated by commas). See src/pcsa/players/neural_rules.py.
 rules: [encore_switch, no_effect, no_full_heal, useless_status, locked_futile, sucker_punch, weak4x_switch,
-        mega_weakness, priority_ko]
+        yawn_switch, mega_weakness, priority_ko]
+# yawn_switch (14 Nov, the labelled Yawn loops): drowsy, able to fall asleep, no KO this turn: switch (not on the
+# first turn in)
 # weak4x_switch / mega_weakness (14 Nov, from the labelled live losses: Mega Golisopod is Bug/Steel, 4x weak to Fire):
 # no Mega Evolution into a 4x weakness to a likely or shown attack; switch out of a 4x hit that lands first and KOs
 # encore_switch (user's rule, 14 Nov): their active used Encore on us since it came in and earlier turns show for sure

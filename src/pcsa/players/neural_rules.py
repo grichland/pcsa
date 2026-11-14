@@ -24,6 +24,10 @@ that fires decides, and the decision's notes carry `override: <rule>`, the reaso
                   not), when our move does not KO first: the same move without Mega Evolution
   weak4x_switch   our active is 4x weak to a likely attack that lands first and KOs it, and we cannot KO first: the
                   network's best switch that takes it at most neutrally (both: pcsa.players.mega_weakness, 14 Nov)
+  yawn_switch     our active is drowsy (Yawn: it falls asleep at the end of the turn), can fall asleep (no status,
+                  no Insomnia / Vital Spirit / Sweet Veil / Comatose, no Electric or Misty Terrain under it), and no
+                  legal move KOs their active this turn: the network's best switch (14 Nov, the labelled Yawn loops);
+                  not on its first turn in (Yawned on the way in: another switch restarts the loop)
 
 Damage and speed are pcsa.players.threat's estimates on the sets pcsa.players.opponent assumes.
 """
@@ -33,7 +37,7 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 
-from poke_env.battle import Effect, Move, SideCondition
+from poke_env.battle import Effect, Field, Move, SideCondition
 from poke_env.data.normalize import to_id_str
 
 from pcsa.common.errors import ConfigError
@@ -222,6 +226,30 @@ def weak4x_switch(s: Spot) -> Outcome:
     return (switch, f"{attack.id} ({said}) hits {s.mine.species} 4x first and KOs it") if switch else None
 
 
+NO_SLEEP_ABILITIES = frozenset({"insomnia", "vitalspirit", "sweetveil", "comatose"})
+
+
+def can_fall_asleep(s: Spot) -> bool:
+    mine = s.mine
+    if mine.status is not None or to_id_str(mine.ability or "") in NO_SLEEP_ABILITIES:
+        return False
+    terrain = Field.ELECTRIC_TERRAIN in s.battle.fields or Field.MISTY_TERRAIN in s.battle.fields  # type: ignore[attr-defined]
+    return not (terrain and s.battle.is_grounded(mine))  # type: ignore[attr-defined]
+
+
+def yawn_switch(s: Spot) -> Outcome:
+    if _is_switch(s.chosen) or Effect.YAWN not in s.mine.effects or not can_fall_asleep(s):
+        return None
+    if s.mine.first_turn:
+        return None  # Yawned as it came in: switching again only restarts the loop; it attacks instead
+    hp = s.theirs.current_hp_fraction
+    if any(s.hit(_move(a)) >= hp for a in s.moves()):
+        return None  # a KO this turn is worth the sleep
+    switch = s.best(_is_switch)
+    reason = f"{s.mine.species} is drowsy and no move KOs {s.theirs.species}: switch before it falls asleep"
+    return (switch, reason) if switch else None
+
+
 RULES: dict[str, Callable[[Spot], Outcome]] = {
     "no_effect": no_effect,
     "no_full_heal": no_full_heal,
@@ -232,6 +260,7 @@ RULES: dict[str, Callable[[Spot], Outcome]] = {
     "encore_switch": encore_switch,
     "mega_weakness": mega_weakness,
     "weak4x_switch": weak4x_switch,
+    "yawn_switch": yawn_switch,
 }
 
 
