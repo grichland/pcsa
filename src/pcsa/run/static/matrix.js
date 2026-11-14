@@ -123,9 +123,42 @@ function mxStats(decision) {
   }
   if (isNum(m?.mega_p)) stats.push(mxStat("They Mega", pct(m.mega_p), `The network's chance that they Mega Evolve this turn: ${pct(m.mega_p)}`, m.mega_p, "opp"));
   if (isNum(n.p) && !m) stats.push(mxStat("Confidence", pct(n.p), "Probability the network gave the action it chose"));
+  const look = mxLookStat(m?.blend);
+  if (look) stats.push(look);
   if (isNum(n.ms)) stats.push(mxStat("Decided in", n.ms >= 1000 ? `${(n.ms / 1000).toFixed(1)} s` : `${n.ms.toFixed(0)} ms`, "Time the player took to decide"));
   (n.rest || []).filter((r) => r.key === "retry").forEach(() => stats.push(mxStat("Retry", "same turn", "The same turn was asked again (a re-read screen or a rejected tap): this decision replaced the earlier one")));
   return stats;
+}
+
+/** The lookahead (matrix_blend, the damage calculator's value per action added to the network's logits): which
+    depth ran. depth_set 1: one turn; 2: the two-turn search, or one turn when it hit its time cap. */
+function mxLookStat(b) {
+  if (!b) return null;
+  const w = isNum(b.weight) ? ` at weight ${mxT(b.weight)}` : "";
+  if (b.error) return mxStat("Lookahead", "error", `The lookahead failed (${b.error}): the network decided alone`, null, "down");
+  const ms = isNum(b.ms2) ? (b.ms2 >= 1000 ? `${(b.ms2 / 1000).toFixed(1)} s` : `${b.ms2.toFixed(0)} ms`) : "";
+  if (b.depth_set === 2 && b.depth === 2) return mxStat("Lookahead", `2 turns${ms ? ` · ${ms}` : ""}`, `Two-turn search${w}: each action's value is this turn plus the turn after (the LOOK column; hover a row for the split)${ms ? `, computed in ${ms}` : ""}`, null, "up");
+  if (b.depth_set === 2) return mxStat("Lookahead", "1 turn (cap)", `The two-turn search passed its time cap${ms ? ` (${ms})` : ""}, so this decision used the one-turn values${w}`, null, "down");
+  return mxStat("Lookahead", "1 turn", `One-turn lookahead${w}: each action's damage-calculator value for this turn (the LOOK column)`);
+}
+
+/** The row's LOOK value: what the lookahead adds to the network's logits for it (× its weight); at depth 2 the
+    turn-1 value and the turn-2 part as well. */
+function mxLook(m, i, rowOrder) {
+  const b = m.blend;
+  const cell = node("b", "mx-lk");
+  cell.setAttribute("role", "cell");
+  cell.style.setProperty("--d", `${MX_T.bars + rowOrder * MX_T.bar}ms`);
+  if (!m.legal[i] || !b?.q) return cell;
+  const legal = b.q.filter((_, k) => m.legal[k] && m.rows[k]);
+  const best = legal.length && b.q[i] === Math.max(...legal);
+  cell.classList.toggle("is-best", Boolean(best));
+  cell.append(node("span", "", mxNum(b.q[i])));
+  const two = b.depth === 2 && b.q1 && b.cont;
+  if (two) cell.append(node("small", "", `t2 ${mxNum(b.cont[i])}`));
+  const net = b.network_index === i ? " · the network alone would pick this" : "";
+  const split = two ? ` = this turn ${mxNum(b.q1[i])} + the turn after ${mxNum(b.cont[i])}` : "";
+  return tip(cell, `${m.row_labels[i]}: lookahead ${mxNum(b.q[i])}${split}, added ×${isNum(b.weight) ? mxT(b.weight) : "?"} to the network's logit${best ? " · the highest lookahead" : ""}${net}`);
 }
 
 /** The line under the hero on an override or a fallback: what happened and why. */
@@ -265,7 +298,9 @@ function mxRow(m, i, rowOrder, g, groupStart) {
     if (at > 0 && m.col_kind[j] !== m.col_kind[g.cols[at - 1]]) row.append(node("span", "mx-div"));
     row.append(mxCell(m, i, j, g.ranks[j], rowOrder, g.what));
   });
-  row.append(mxScore(m, i, rowOrder, g.what), mxPolicy(m, i, rowOrder, g));
+  row.append(mxScore(m, i, rowOrder, g.what));
+  if (m.blend?.q) row.append(mxLook(m, i, rowOrder));
+  row.append(mxPolicy(m, i, rowOrder, g));
   return row;
 }
 
@@ -299,7 +334,7 @@ function mxFoot(m, g, rowOrder) {
     }
     return row.append(tip(cell, `${m.col_labels[j]} ${mxNum(v)}: if they do this, how it turns out for them on average over what we are likely to do · plain average over our ${g.what.legal.length} legal actions: ${mxNum(them.mean[j])}${j === them.best ? " · their best action" : ""}${j === them.likely ? " · the one we think most likely" : ""}`));
   });
-  row.append(node("span", "mx-sc"), node("span", "mx-rp"));
+  row.append(node("span", "mx-sc"), ...(m.blend?.q ? [node("span", "mx-lk")] : []), node("span", "mx-rp"));
   return row;
 }
 
@@ -311,12 +346,12 @@ function mxTemplate(m, cols) {
   if (moves) parts.push(`repeat(${moves}, minmax(0, 1fr))`);
   if (moves && switches) parts.push("var(--mx-gap)");
   if (switches) parts.push(`repeat(${switches}, minmax(0, 1fr))`);
-  parts.push("var(--mx-score)", "var(--mx-prob)");
+  parts.push("var(--mx-score)", ...(m.blend?.q ? ["var(--mx-look)"] : []), "var(--mx-prob)");
   return parts.join(" ");
 }
 
 /** The headings of the two columns after the grid: SCORE and our policy (with the key of its two bars). */
-function mxTotalsHead(what) {
+function mxTotalsHead(what, m) {
   const score = tip(node("span", "mx-shead", "SCORE"), `Each cell of the row times the probability of its column, added up over ${mxScope(what)}: what this action is worth on average against what we expect them to do. The highest is marked.`);
   const policy = node("span", "mx-phead");
   policy.append(node("span", "", "Our policy"));
@@ -332,7 +367,14 @@ function mxTotalsHead(what) {
   const alt = !what.policy ? "" : what.differs
     ? ` The thin bar and the second number: the policy it would have weighing ${mxScope(what)}.`
     : " The thin bar and the second number: the same policy worked out again from the SCORE column (it should match closely).";
-  return [score, tip(policy, `The probability the network gives each of our actions after weighing every column: the action played is outlined.${alt}`)];
+  const heads = [score];
+  if (m?.blend?.q) {
+    const two = m.blend.depth === 2;
+    heads.push(tip(node("span", "mx-shead", "LOOK"), two
+      ? "Two-turn lookahead from the damage calculator: this turn's value plus the turn after (the small t2 number), added × the blend weight to the network's logits before the policy. The highest is marked."
+      : "One-turn lookahead from the damage calculator: each action's value this turn, added × the blend weight to the network's logits before the policy. The highest is marked."));
+  }
+  return [...heads, tip(policy, `The probability the network gives each of our actions after weighing every column: the action played is outlined.${alt}`)];
 }
 
 function mxGrid(m) {
@@ -363,7 +405,7 @@ function mxGrid(m) {
     if (at > 0 && m.col_kind[j] !== m.col_kind[cols[at - 1]]) head.append(node("span", "mx-div"));
     head.append(mxColumn(m, j, at, topCol, what));
   });
-  head.append(...mxTotalsHead(what));
+  head.append(...mxTotalsHead(what, m));
   const body = node("div", "mx-rows");
   rows.forEach((i, at) => body.append(mxRow(m, i, at, g, at > 0 && rowKind(i) !== rowKind(rows[at - 1]))));
   body.append(mxFoot(m, g, rows.length));

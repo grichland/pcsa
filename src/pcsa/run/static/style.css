@@ -184,7 +184,7 @@ button[data-tip], summary[data-tip] { cursor: pointer; }
 .tip { position: fixed; z-index: 50; max-width: 23rem; padding: 0.6rem 0.85rem; border-radius: 0.6rem; pointer-events: none; background: color-mix(in srgb, var(--ink) 94%, var(--page)); color: var(--page); font-size: 0.86rem; line-height: 1.45; box-shadow: 0 0.6rem 1.85rem -8px rgba(0, 0, 0, .45); animation: fade .12s var(--ease); }
 
 /* Decision matrix ----------------------------------------------------------------------------------- */
-.t-matrix { --mx-label: minmax(6.2rem, 11.5rem); --mx-gap: 0.8rem; --mx-score: 3.9rem; --mx-prob: minmax(5.6rem, 9.5rem); }
+.t-matrix { --mx-label: minmax(6.2rem, 11.5rem); --mx-gap: 0.8rem; --mx-score: 3.9rem; --mx-prob: minmax(5.6rem, 9.5rem); --mx-look: 4.4rem; }
 .mx-grid.has-alt { --mx-prob: minmax(8rem, 12rem); }
 .t-matrix .tile-head { margin-bottom: 0.35rem; flex-wrap: wrap; row-gap: 0.3rem; }
 /* Their actions considered: the control, and what the matrix would pick under it */
@@ -280,6 +280,11 @@ button[data-tip], summary[data-tip] { cursor: pointer; }
 /* SCORE: the row weighed by their probabilities */
 .mx-sc { display: grid; place-items: center end; min-width: 0; padding: 0 0.4rem 0 0; border-radius: 0.3rem; font-size: 0.82rem; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink-2); }
 .mx-sc.is-best { color: var(--you-ink); font-weight: 800; background: var(--you-soft); box-shadow: inset 0 0 0 1.5px var(--you-edge); }
+/* LOOK: the lookahead's value per row (matrix_blend); at depth 2 the turn-2 part underneath */
+.mx-lk { display: grid; place-content: center end; justify-items: end; min-width: 0; padding: 0 0.4rem 0 0; border-radius: 0.3rem; font-size: 0.82rem; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink-2); line-height: 1.05; }
+.mx-lk small { color: var(--muted); font-size: 0.62rem; font-weight: 550; }
+.mx-lk.is-best { color: var(--you-ink); font-weight: 800; background: var(--you-soft); box-shadow: inset 0 0 0 1.5px var(--you-edge); }
+.is-playing .mx-lk { animation: fade .3s ease-out both; animation-delay: var(--d); }
 .mx-rp { display: grid; grid-template-columns: minmax(0, 1fr) 2.7em; align-items: center; gap: 0.4rem; padding: 0 0.45rem 0 0.6rem; min-width: 0; }
 .has-alt .mx-rp { grid-template-columns: minmax(0, 1fr) 2.5em 2.5em; gap: 0.3rem; }
 .mx-rbars { align-self: stretch; display: flex; flex-direction: column; justify-content: center; gap: 2px; min-width: 0; }
@@ -474,10 +479,10 @@ body.is-pinned .t-win { border-color: color-mix(in srgb, var(--accent) 55%, var(
 }
 @media (max-width: 1500px) {
   .mx-key, .run-name { display: none; }
-  .t-matrix { --mx-label: minmax(5.5rem, 9.6rem); --mx-score: 3.2rem; --mx-prob: minmax(4.6rem, 6.5rem); }
+  .t-matrix { --mx-label: minmax(5.5rem, 9.6rem); --mx-score: 3.2rem; --mx-prob: minmax(4.6rem, 6.5rem); --mx-look: 3.6rem; }
   .mx-grid.has-alt { --mx-prob: minmax(6.6rem, 7.6rem); }
   .has-alt .mx-rp { grid-template-columns: minmax(0, 1fr) 2.3em 2.3em; padding: 0 0.3rem 0 0.4rem; }
-  .mx-rp b, .mx-sc, .mx-fc { font-size: 0.78rem; }
+  .mx-rp b, .mx-sc, .mx-fc, .mx-lk { font-size: 0.78rem; }
   .mx-fnote span, .mx-tag.is-pick { display: none; }
   .mx-cname { font-size: 0.68rem; letter-spacing: -.01em; }
   .mx-col { position: relative; }

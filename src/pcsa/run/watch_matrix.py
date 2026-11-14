@@ -136,4 +136,31 @@ def matrix_view(raw, names: dict[str, str] | None = None, order=None, network=No
         "tau": _positive(raw.get("tau")),
         "opp_top": raw.get("opp_top") if type(raw.get("opp_top")) is int and raw["opp_top"] >= 0 else None,
         "opp_temperature": _positive(raw.get("opp_temperature")),
+        "blend": blend_view(raw.get("blend")),
+    }
+
+
+def blend_view(raw) -> dict | None:
+    """The matrix blend's note (the damage-calculator lookahead added to the network's logits): its weight, the
+    value per row, the depth set and used (2: two turns, with the turn-1 value q1 and the turn-2 part cont), the
+    search time, and whether it fell back to one turn at its time cap. None without a blend; {error} on an error."""
+    if not isinstance(raw, dict):
+        return None
+    if "error" in raw:
+        return {"error": str(raw["error"])[:200], "weight": _number(raw.get("blend"))}
+    q = _numbers(raw.get("q"), ROWS)
+    if q is None:
+        return None
+    depth_set = raw.get("depth_set") if raw.get("depth_set") in (1, 2) else 1
+    index = raw.get("network_index")
+    return {
+        "weight": _number(raw.get("blend")),
+        "q": q,
+        "depth_set": depth_set,
+        "depth": raw.get("depth") if raw.get("depth") in (1, 2) else 1,
+        "capped": raw.get("depth2") == "time cap",
+        "q1": _numbers(raw.get("q1"), ROWS),
+        "cont": _numbers(raw.get("cont"), ROWS),
+        "ms2": _number(raw.get("ms2")),
+        "network_index": index if type(index) is int and 0 <= index < ROWS else None,
     }

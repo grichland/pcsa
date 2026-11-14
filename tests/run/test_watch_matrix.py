@@ -340,3 +340,52 @@ def test_col_legal_passes_through_and_the_page_hides_columns_they_cannot_take() 
     bad = {**notes, "matrix": {**notes["matrix"], "col_legal": "yes"}}
     assert notes_view(bad)["matrix"]["col_legal"] is None
     assert "col_legal" in (STATIC / "matrix.js").read_text(encoding="utf-8")
+
+
+def test_the_lookahead_is_shown_by_the_depth_that_ran() -> None:
+    # matrix_depth (14 Nov): the blend note says the depth set and used; the page draws LOOK and its stat from it
+    good = notes_of("0003-action.json")["matrix"]
+    q = [0.1 * i for i in range(11)]
+    one = matrix_view({**good, "blend": {"blend": 2.0, "q": q, "network_index": 3, "depth_set": 1, "depth": 1}})
+    assert one["blend"] == {
+        "weight": 2.0,
+        "q": q,
+        "depth_set": 1,
+        "depth": 1,
+        "capped": False,
+        "q1": None,
+        "cont": None,
+        "ms2": None,
+        "network_index": 3,
+    }  # type: ignore[index]
+    cont = [0.05] * 11
+    two = matrix_view(
+        {
+            **good,
+            "blend": {
+                "blend": 2.0,
+                "q": q,
+                "q1": q,
+                "cont": cont,
+                "ms2": 189.4,
+                "depth_set": 2,
+                "depth": 2,
+                "network_index": 0,
+            },
+        }
+    )["blend"]  # type: ignore[index]
+    assert two["depth"] == 2 and two["cont"] == cont and two["ms2"] == 189.4 and not two["capped"]
+    capped = matrix_view(
+        {**good, "blend": {"blend": 2.0, "q": q, "depth_set": 2, "depth": 1, "depth2": "time cap", "ms2": 1501.0}}
+    )["blend"]  # type: ignore[index]
+    assert capped["depth_set"] == 2 and capped["depth"] == 1 and capped["capped"] and capped["cont"] is None
+    old = matrix_view({**good, "blend": {"blend": 4.0, "q": q, "network_index": 1}})["blend"]  # before the depth
+    assert old["depth_set"] == 1 and old["depth"] == 1  # type: ignore[index]
+    assert matrix_view({**good, "blend": {"blend": 2.0, "error": "boom"}})["blend"] == {
+        "error": "boom",
+        "weight": 2.0,
+    }
+    assert matrix_view(good)["blend"] is None and matrix_view({**good, "blend": {"q": [1]}})["blend"] is None
+    assert matrix_view({**good, "blend": {"q": q, "depth": 7, "network_index": 99}})["blend"]["network_index"] is None
+    page = (STATIC / "matrix.js").read_text(encoding="utf-8")
+    assert "mxLookStat" in page and '"LOOK"' in page and "1 turn (cap)" in page
