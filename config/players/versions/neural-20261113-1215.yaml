@@ -1,0 +1,51 @@
+# version neural-20261113-1215: the live config on 14 Nov 2026 before versioning began (the first version)
+# Live player from 12 Nov 2026 (user's decision after the pcsa-belief trial): the belief network
+# (poke-transformer-belief100, belief+mega columns) with the matrix blend at 4.0, opponent_temperature 1.0 and
+# opponent_top 0 (all), the setting research measured (+2 points vs gold940 in the simulator).
+# The neural player (`--player neural`, live and sim): a poke-singles-former checkpoint from the research runs
+# (research/pcsa-rl, network code in src/pcsa/rl_training). Needs torch: `uv sync --extra train`.
+# Point a run at another network without editing this file: --set policy.neural_checkpoint=<path>
+# (or the environment variable PCSA__policy__neural_checkpoint=<path>).
+checkpoint: assets/models/poke-transformer-hard50-20261113-1215.pt  # 13 Nov: v2-belief-hard u50 (hard stall/sweeper bots) + policy head fine-tuned on the last 100 live games + opponent head fit to 441 live games (top-1 67%); sim tower 90.8%, stall_hard 81.8%, sweeper_hard 81.2%. Fallback: poke-transformer-belief100-20261112-1905.pt
+device: cpu
+sampling: greedy                # greedy: the most likely action; sample: training's capped (0.99) distribution
+temperature: 1.0                # of `sample`
+opponent_temperature: 1.0         # how much to trust the prediction of their action when weighing our options:
+preview: robust                 # robust (13 Nov): each pick scored against each of their six leads (turn-1 views),
+                                # the best mean over its preview_robust_worst worst leads; critic: training's
+                                # softmax(value / 0.1), top-p 0.9 nucleus; greedy: the best value
+preview_robust_worst: 2         # robust: how many of a pick's worst leads of theirs are averaged (1 = maximin)
+fallback: disciplined           # decides when the network cannot: no or bad checkpoint, no Battle, an error, too slow
+opponent_top: 3                 # weigh our options against only their k likeliest actions (0 = all of them, as
+                                # trained, the setting research's matrix-blend comparison used). 3 here (user, 13 Nov; 5 on
+                                # 12 Nov); not measured in the simulator.
+opponent_moves_from_builds: true  # their active's move options: only moves of its builds seen on the ladder (else its
+                                # listed builds) that agree with its revealed moves, plus those; the opponent head's
+                                # move probabilities renormalised over them (inference only). false = every learnable
+                                # move, as trained. 13 Nov: Galarian Slowking's head gave Ice Punch 12-23%, no build has it.
+max_decision_s: 5.0             # a decision taking longer than this goes to the fallback
+max_preview_s: 20.0             # a team preview taking longer than this goes to the fallback (robust: ~4-13 s)
+reserve_s: 0.5                  # deadline time kept for the fallback
+threads: 1                      # torch CPU threads
+seed: null                      # preview and `sample` draws; null: fresh each run
+# Guard rules: stop plainly wasted actions; the network's best other action is played instead ([] = the network
+# alone; one run: --set policy.neural_rules=none, or names separated by commas). See src/pcsa/players/neural_rules.py.
+rules: [no_effect, no_full_heal, useless_status, locked_futile, sucker_punch, priority_ko]
+sucker_punch_passive: 0.5       # sucker_punch rule (13 Nov): Sucker Punch / Thunderclap are blocked when they already
+                                # failed against that foe this battle, or when the opponent head's status moves plus
+                                # switches (the matrix's p_cols) exceed this; 19 of 42 live Sucker Punches failed
+# Team preview rules (13 Nov): they remove picks, the critic chooses among the rest (all of them when none is left).
+# Last 100 live battles: a Golisopod lead went 3-21 into a six with a Fire type (7-5 without); Fire moves caused 29%
+# of our faints (Golisopod 18 of 32, Gholdengo 12 of 20). {} / [] = off. See src/pcsa/players/preview_rules.py.
+preview_lead_avoid: {golisopod: [Fire]}     # species -> types in their six that forbid leading it
+preview_bring_max_one:                      # when their six holds one of `types`, bring at most one of `species`
+  - {types: [Fire], species: [golisopod, gholdengo]}
+# Feature mode: which observation columns the network reads. checkpoint (default): the mode the network was trained
+# with (its run config's `features`; none = base, as every network before the belief tracker, gold940 included).
+# base | belief | belief+mega force one; a base network refuses the belief modes. In the belief modes the player
+# keeps a belief tracker per battle (src/pcsa/belief/README.md). One run: --set policy.neural_checkpoint=<belief
+# network> is enough, the mode follows it.
+features: checkpoint
+belief_crit_lines: false        # belief modes: the protocol prints critical hits (true only for simulator runs;
+                                # the phone's battle log does not, so any hit may have been one)
+matrix_blend: 2.0               # stage 3 (research/pcsa-belief): logits + matrix_blend x a one-turn value per action from
