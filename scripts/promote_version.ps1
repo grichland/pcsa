@@ -27,7 +27,7 @@ if ($Version) {
     if (-not (Test-Path (Join-Path $pcsa $model))) { throw "the version's model $model is not in the repository" }
     Copy-Item $source $target -Force
     $files = @($target)
-    $what = "Live player: roll back to $Version"
+    $what = "Live player: switch back to version $Version"
 } else {
     if (-not $Job -or -not (Test-Path (Join-Path $Job "version.yaml"))) { throw "give a job folder that holds version.yaml" }
     $state = Get-Content (Join-Path $Job "job.json") -Raw | ConvertFrom-Json
