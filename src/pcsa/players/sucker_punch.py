@@ -85,8 +85,25 @@ def passive_share(their_actions: Sequence[TheirAction]) -> float:
     return total
 
 
+def last_one_each(battle) -> bool:
+    """One Pokemon left on each side: ours by the team we hold, theirs by the team size the battle announced
+    (|teamsize|) minus their fainted. Unknown team size: False."""
+    ours, theirs = _sides(battle)
+    size = getattr(battle, "_team_size", {}).get(theirs)
+    if not size:
+        return False
+    their_left = size - sum(1 for mon in battle.opponent_team.values() if mon.fainted)
+    our_left = sum(1 for mon in battle.team.values() if not mon.fainted)
+    return their_left == 1 and our_left == 1
+
+
 def why(battle, theirs, their_actions: Sequence[TheirAction] | None, passive_max: float = PASSIVE_MAX) -> str | None:
-    """Why a move that fails unless the target attacks should not be played into `theirs` now, or None."""
+    """Why a move that fails unless the target attacks should not be played into `theirs` now, or None.
+
+    In a 1v1 (one Pokemon left on each side) the chance they do not attack is taken as 0: never blocked (the
+    user's rule, 14 Nov 2026)."""
+    if last_one_each(battle):
+        return None
     key = key_of(battle, theirs)
     if key is not None and key in failed_against(battle):
         return f"already failed against {theirs.species} this battle"

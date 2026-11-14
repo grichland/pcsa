@@ -9,6 +9,7 @@ import pytest
 
 from pcsa.battle.state import replay
 from pcsa.players import mirror, neural_rules
+from pcsa.players import sucker_punch as sucker
 from pcsa.players.neural import NeuralParams
 from pcsa.players.neural_rules import Spot
 from pcsa.players.sucker_punch import failed_against, passive_share
@@ -112,6 +113,25 @@ def test_blocked_when_their_status_moves_and_switches_are_likely(threat) -> None
     assert (message, rule) == (LEECH, "sucker_punch") and "0.70 > 0.5" in why
     assert decide(spot(battle(), their=ATTACKS)) is None
     assert decide(spot(battle(), their=None)) is None  # no opponent head: only the failed-before check
+
+
+def test_never_blocked_one_against_one(threat) -> None:
+    # the user's rule (14 Nov): with one Pokemon left on each side, the chance they do not attack is 0
+    threat()
+    gone = [
+        "|switch|p2a: Snorlax|Snorlax, L50|100/100",
+        "|faint|p2a: Snorlax",
+        "|switch|p2a: Gengar|Gengar, L50|100/100",
+        "|faint|p2a: Gengar",
+        "|switch|p2a: Dragonite|Dragonite, L50|100/100",
+    ]
+    b = battle([FAILED, gone])
+    for name in ("Gholdengo", "Garchomp"):
+        b.team[f"p1: {name}"].faint()
+    assert sucker.last_one_each(b)
+    assert decide(spot(b, their=STALLS)) is None  # neither the failed-before nor the passive check blocks
+    alive = battle([FAILED, gone])  # their last one, but we still have three
+    assert not sucker.last_one_each(alive) and decide(spot(alive, their=STALLS))[1] == "sucker_punch"
 
 
 def test_not_blocked_when_it_is_the_only_legal_action(threat) -> None:
