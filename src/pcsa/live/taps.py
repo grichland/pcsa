@@ -35,7 +35,7 @@ ALLOWED: dict[Screen, frozenset[str]] = {
     Screen.TEAM_STATS: frozenset({"team_details_back"}),
     Screen.TEAM_SELECT: frozenset({"team_rows", "team_done"}),
     Screen.ACTION: frozenset({"fight", "pokemon", "view_log", "mega", "move_rows", "party_rows", "switch_in"}),
-    Screen.MOVES: frozenset({"move_rows", "mega", "move_back"}),
+    Screen.MOVES: frozenset({"move_rows", "mega", "move_back", "move_info", "info_close"}),
     Screen.LOG: frozenset({"log_back"}),
     Screen.PARTY: frozenset({"party_rows", "switch_in", "party_back"}),
     Screen.SWITCH_POPUP: frozenset({"switch_in", "cancel"}),

@@ -61,6 +61,8 @@ class TurnPipeline:
                 break
             self.clock.sleep(0.4)
         if obs is not None and obs.screen == Screen.MOVES:
+            if self.phone.navigator.close_move_info(obs).screen != Screen.MOVES:
+                return obs  # the moves were read; whatever the panel's taps left, it is not the moves screen
             executor.execute([executor.point("move_back")], Screen.MOVES, device, self.clock, 0.0)
             self.clock.sleep(self.cfg.timing.back_settle_s)
             return obs

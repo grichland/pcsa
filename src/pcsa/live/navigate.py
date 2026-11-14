@@ -128,10 +128,26 @@ class Navigator:
 
     def back_out(self, obs: Observation) -> None:
         """One back edge from a stray in-battle surface (moves, log, party, popup)."""
+        obs = self.close_move_info(obs)
         edge = GRAPH.get(obs.screen)
         if edge is not None:
             self.follow(obs, edge)
             self.clock.sleep(self.config.edge_settle_s)
+
+    def close_move_info(self, obs: Observation) -> Observation:
+        """The moves screen with its Move Info view off. With the view on (13 Nov), the panel covered the screen
+        and neither Back nor a move tap took: the turn timed out. The toggle is tapped first, then the panel's
+        Close; returns the screen after, or `obs` when the view was not on."""
+        for tap in ("move_info", "info_close"):
+            if obs.screen != Screen.MOVES or not obs.fields.get("info_open"):
+                return obs
+            log.event("move_info_close", tap=tap)
+            self.executor.execute([self.executor.point(tap)], Screen.MOVES, self.device, self.clock, 0.0)
+            self.clock.sleep(self.config.edge_settle_s)
+            obs, _ = self.observe("info")
+        if obs.screen == Screen.MOVES and obs.fields.get("info_open"):
+            log.warning("move_info_still_open")
+        return obs
 
 
 def _box_from_field(obs: Observation, name: str) -> TextBox | None:

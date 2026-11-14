@@ -56,6 +56,26 @@ def test_options_and_stray_surfaces(config: Config, fake_clock: FakeClock) -> No
     assert device.step.screen == Screen.ACTION
 
 
+def test_the_move_info_view_is_turned_off_before_back(config: Config, fake_clock: FakeClock) -> None:
+    steps = [
+        Step(Screen.MOVES, {"info_open": True}, accept=("move_info",)),
+        Step(Screen.MOVES, {"info_open": False}, accept=("move_back",)),
+        Step(Screen.ACTION),
+    ]
+    navigator, device = make(config, fake_clock, steps)
+    navigator.back_out(navigator.observe("t")[0])
+    assert device.step.screen == Screen.ACTION and device.rejected == []
+    steps = [  # the toggle did nothing: the panel's Close
+        Step(Screen.MOVES, {"info_open": True}, accept=("move_info", "info_close"), advance_on=("info_close",)),
+        Step(Screen.MOVES, {"info_open": False}, accept=("move_back",)),
+        Step(Screen.ACTION),
+    ]
+    navigator, device = make(config, fake_clock, steps)
+    navigator.back_out(navigator.observe("t")[0])
+    assert device.step.screen == Screen.ACTION
+    assert [name for _, name in device.taps] == ["move_info", "info_close", "move_back"]
+
+
 def test_unknown_screen_is_dismissed_then_gives_up(config: Config, fake_clock: FakeClock) -> None:
     steps = [Step(Screen.UNKNOWN, {"dismiss": BOX}, accept=("@dismiss",)), Step(Screen.LOBBY)]
     navigator, device = make(config, fake_clock, steps)
