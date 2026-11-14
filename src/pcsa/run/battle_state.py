@@ -85,6 +85,7 @@ class BattleRecord:
     preview_frame: str = ""
     rank_before: dict | None = None
     rank_after: dict | None = None
+    rating_waits: int = 0  # live/handlers: rewards polls spent waiting for the rating to change
     degrade_counts: dict[str, int] = field(default_factory=dict)
 
     def current_turn(self) -> int:

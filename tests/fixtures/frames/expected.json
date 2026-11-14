@@ -322,18 +322,20 @@
   "source": "run-20261027-133448\\frames\\00036-poll-transition.jpg"
  },
  "unknown-00.jpg": {
-  "screen": "unknown",
-  "reason": "no rule matched",
+  "screen": "wait",
+  "reason": "HP plates without menus",
   "old_label": "unknown",
   "agrees": true,
-  "source": "run-20261029-000311\\frames\\00029-poll-unknown.jpg"
+  "source": "run-20261029-000311\\frames\\00029-poll-unknown.jpg",
+  "note": "battle scene with HP plates and an item banner, no menu: a wait since 14 Nov (no disconnect taps)"
  },
  "unknown-01.jpg": {
-  "screen": "unknown",
-  "reason": "no rule matched",
+  "screen": "wait",
+  "reason": "HP plates without menus",
   "old_label": "unknown",
   "agrees": true,
-  "source": "run-20261028-160158\\frames\\00332-poll-unknown.jpg"
+  "source": "run-20261028-160158\\frames\\00332-poll-unknown.jpg",
+  "note": "battle scene with HP plates and an item banner, no menu: a wait since 14 Nov (no disconnect taps)"
  },
  "unknown-02.jpg": {
   "screen": "comm_error",

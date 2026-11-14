@@ -90,3 +90,47 @@ def test_synthetic_frames_match_one_rule_each() -> None:
     ]
     for boxes in cases:
         assert len(matching_rules(boxes, frame(), 0.8)) == 1, [b.text for b in boxes]
+
+
+def plates(*extra: TextBox) -> list[TextBox]:
+    """14 Nov frame 02247: the opposing plate, an item banner and our plate, no menus (boxes as OCR read them)."""
+    boxes = [
+        TextBox("Cinderace", 1.0, (1911, 51, 2047, 93)),
+        TextBox("50 %", 0.895, (2058, 118, 2158, 173)),
+        TextBox("Cinderace's", 1.0, (1920, 394, 2087, 438)),
+        TextBox("Life Orb", 1.0, (1960, 438, 2088, 482)),
+        TextBox("Golisopod", 1.0, (260, 969, 402, 1016)),
+        TextBox("123", 1.0, (365, 1040, 445, 1079)),
+        TextBox("/182", 0.994, (440, 1053, 507, 1079)),
+    ]
+    return boxes + list(extra)
+
+
+def test_battle_scene_with_hp_plates_is_a_wait() -> None:
+    obs = classify(plates(), frame(), 0.8)
+    assert obs.screen == Screen.WAIT and obs.reason == "HP plates without menus"
+    assert obs.fields["opponent_name"] == "Cinderace" and obs.fields["active_name"] == "Golisopod"
+    ours_only = [b for b in plates() if b.center[1] > 900] + [box("Sitrus Berry", 2000, 460), box("x", 100, 100)]
+    assert classify(ours_only, frame(), 0.8).screen == Screen.WAIT
+    assert not matching_rules(plates(), frame(), 0.8)  # a fallback: never competes with a named screen
+
+
+def test_hp_plates_never_hide_an_interruption_or_a_control() -> None:
+    comm = plates(box("Communication was interrupted.", 1170, 450, w=700))
+    assert classify(comm, frame(), 0.8).screen == Screen.COMM_ERROR
+    assert classify(plates(box("OK", 1170, 800, w=120)), frame(), 0.8).screen == Screen.DIALOG
+    assert classify(plates(box("Communicating...", 1170, 300, w=400)), frame(), 0.8).screen == Screen.WAIT
+    many = plates(*(box(f"word{i}", 1170, 300 + 20 * i, w=60) for i in range(8)), box("Forfeit", 1170, 800))
+    assert classify(many, frame(), 0.8).screen == Screen.FORFEIT_MSG
+    quit_ = plates(*(box(f"word{i}", 600, 300 + 20 * i, w=60) for i in range(8)), box("Quit", 1170, 800))
+    assert classify(quit_, frame(), 0.8).screen == Screen.UNKNOWN  # an unsafe control is never waited on
+
+
+def test_trainer_cards_on_a_split_screen_are_a_transition() -> None:
+    image = frame()
+    image[:, 1155:1185] = 0
+    boxes = [box("Gamer", 646, 947), box("Gamer", 1694, 947), box("pcsa", 675, 1010), box("Niji", 1665, 1008)]
+    boxes += [box("888", 1946, 1011, w=90), box("L", 1595, 50, w=90)]
+    obs = classify(boxes, image, 0.8)
+    assert obs.screen == Screen.TRANSITION and obs.reason == "trainer cards split screen"
+    assert classify(boxes, frame(), 0.8).screen == Screen.UNKNOWN  # no divider: not the cards

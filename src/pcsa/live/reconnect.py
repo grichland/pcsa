@@ -117,3 +117,7 @@ def resolved(s, obs: Observation, rounds: int, seconds: float) -> None:
     )
     if outcome == "left_battle":
         handlers.finalize(s, None)
+    elif obs.screen == Screen.RESULT:  # read the banner now: the next poll may already be past it (battle 15, 14 Nov)
+        handlers.finalize(s, obs.fields.get("outcome"))
+    elif obs.screen == Screen.FORFEIT_MSG:
+        handlers.on_forfeit(s, obs)

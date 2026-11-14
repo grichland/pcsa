@@ -30,6 +30,10 @@ FEW_BOXES = 4
 RESULT_YELLOW = 0.2
 RESULT_OTHER_HALF = 0.05
 BLACK_MEAN = 18
+OPPONENT_PLATE_NAME, OPPONENT_PLATE_HP = (1880, 30, 2200, 110), (2030, 100, 2200, 190)
+OWN_PLATE_NAME, OWN_PLATE_HP = (240, 950, 560, 1030), (300, 1010, 600, 1080)
+OWN_HP = r"\d{0,3}\s*/\s*\d{2,3}|7\d{3}"  # "149/182", "/182" (thin numerator missed), "7182" (slash read as 7)
+OWN_TRAINER_PLATE, OPPONENT_TRAINER_PLATE = (450, 900, 950, 1060), (1450, 900, 1950, 1060)
 
 
 @dataclass
@@ -224,6 +228,29 @@ def _auto_notice(c: Ctx) -> dict | None:
     return {} if Flag.AUTO_NOTICE in c.flags else None
 
 
+def _hp_plates(c: Ctx) -> dict | None:
+    """The battle scene between menus (attack and ability/item animations, a banner such as "Cinderace's Life
+    Orb"): an HP plate shows (theirs top right: name and "41%", or ours bottom left: name and "149/182") and
+    nothing else on the frame names a control. Polled like any wait; a frozen scene still meets the WAIT
+    screen timeout, and a real interruption is read earlier (dialog text, Communicating, a dismiss control)."""
+    t = c.t
+    if t.has(f.SAFE_CONTROL) or t.has(f.UNSAFE_CONTROL) or c.flags & {Flag.COMM_ERROR, Flag.DATE_CHANGED}:
+        return None
+    theirs = f.name_in(t, OPPONENT_PLATE_NAME) and t.has(r"\d{0,3}\s*%", OPPONENT_PLATE_HP)
+    ours = f.name_in(t, OWN_PLATE_NAME) and t.has(OWN_HP, OWN_PLATE_HP)
+    if not (theirs or ours):
+        return None
+    return {"opponent_name": f.name_in(t, OPPONENT_PLATE_NAME), "active_name": f.name_in(t, OWN_PLATE_NAME)}
+
+
+def _trainer_cards(c: Ctx) -> dict | None:
+    """The split screen with both trainers' name plates (the end of a battle, before the result banner)."""
+    t = c.t
+    if t.has(f.SAFE_CONTROL) or t.has(f.UNSAFE_CONTROL) or not split_screen(c.image):
+        return None
+    return {} if t.any_text(OWN_TRAINER_PLATE) and t.any_text(OPPONENT_TRAINER_PLATE) else None
+
+
 def _dialog(c: Ctx) -> dict | None:
     """A popup with one safe dismiss control and few other words; only after every named screen failed."""
     control = f.safe_control(c.t, (300, 150, 2040, 1000))
@@ -269,6 +296,8 @@ RULES: tuple[Rule, ...] = (
     Rule("automatic choice notice", Screen.WAIT, _auto_notice, fallback=True),
     Rule("single safe control", Screen.DIALOG, _dialog, fallback=True),
     Rule("sparse text", Screen.TRANSITION, _sparse, fallback=True),
+    Rule("HP plates without menus", Screen.WAIT, _hp_plates, fallback=True),
+    Rule("trainer cards split screen", Screen.TRANSITION, _trainer_cards, fallback=True),
 )
 RANK_SCREENS = {Screen.LOBBY, Screen.REWARDS, Screen.OPTIONS}
 

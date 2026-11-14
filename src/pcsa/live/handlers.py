@@ -25,6 +25,8 @@ from pcsa.run.battle_state import BattleRecord, reconcile_roster
 MAX_BEGIN_TAPS = 2
 MAX_TEAM_REPAIRS = 2
 MAX_CONTINUE_TAPS = 3
+MAX_RATING_WAITS = 3  # rewards polls a battle without an outcome waits for its rating to change
+MAX_RATING_STEP = 100.0  # a larger rating change than this is a misread, not one battle
 LOBBY_SETTLE_S = 2.0
 
 
@@ -165,14 +167,7 @@ def finalize(s, outcome: str | None) -> None:
     b = s.battle
     if b is None or b.finished:
         return
-    if outcome == "win" and b.outcome is None and not b.turns:
-        b.outcome, b.outcome_source = "opponent_forfeit", "win before any turn was played"
-    elif b.outcome == "opponent_forfeit":
-        b.outcome_source = "forfeit message"
-    elif outcome:
-        b.outcome, b.outcome_source = outcome, "result screen"
-    elif b.outcome_hint:
-        b.outcome, b.outcome_source = b.outcome_hint, "final battle message"
+    _settle_outcome(b, outcome)
     if b.outcome is None:
         b.outcome, b.outcome_source = "unknown", "battle ended without a readable result"
         b.log.note(
@@ -217,6 +212,43 @@ def finalize(s, outcome: str | None) -> None:
         played=s.state.played,
         degrade=b.degrade_counts,
     )
+
+
+def _settle_outcome(b: BattleRecord, outcome: str | None) -> None:
+    """The outcome from the best source seen: result screen, forfeit, final message, then the rating change."""
+    if outcome == "win" and b.outcome is None and not b.turns:
+        b.outcome, b.outcome_source = "opponent_forfeit", "win before any turn was played"
+    elif b.outcome == "opponent_forfeit":
+        b.outcome_source = "forfeit message"
+    elif outcome:
+        b.outcome, b.outcome_source = outcome, "result screen"
+    elif b.outcome_hint:
+        b.outcome, b.outcome_source = b.outcome_hint, "final battle message"
+    elif b.outcome is None and (rated := rating_outcome(b)) is not None:
+        change = f"{(b.rank_before or {}).get('rating')} -> {(b.rank_after or {}).get('rating')}"
+        b.outcome, b.outcome_source = rated, f"rating change {change}"
+
+
+def rating_outcome(b: BattleRecord) -> str | None:
+    """Win or loss from the rating on the rewards/options screen against the rating before the battle; None when
+    either is unknown, unchanged, or the change is too large to be one battle (an OCR misread)."""
+    before = (b.rank_before or {}).get("rating")
+    after = (b.rank_after or {}).get("rating")
+    if before is None or after is None or after == before or abs(after - before) > MAX_RATING_STEP:
+        return None
+    return "win" if after > before else "loss"
+
+
+def awaiting_rating(s) -> bool:
+    """On the rewards screen with no outcome yet but the rating before the battle known: the rating animates from
+    the old value to the new one, so finalizing waits a few polls for the change (the options screen settles it)."""
+    b = s.battle
+    if b is None or b.finished or b.outcome is not None or b.outcome_hint or rating_outcome(b) is not None:
+        return False
+    if (b.rank_before or {}).get("rating") is None:
+        return False
+    b.rating_waits += 1
+    return b.rating_waits <= MAX_RATING_WAITS
 
 
 def _learn_builds(s, b: BattleRecord, battle, abilities: dict[str, str]) -> None:
@@ -271,10 +303,12 @@ def on_waiting(s, obs: Observation) -> None:
 
 def on_rank_change(s, obs: Observation) -> None:
     """Rewards, rank-up popups, dialogs, menus after a promotion: finalize, then walk back to the lobby."""
-    finalize(s, None)
     if obs.screen == Screen.REWARDS:
+        if not awaiting_rating(s):
+            finalize(s, None)
         s.clock.sleep(s.agent.timing.poll_interval_s)
         return
+    finalize(s, None)
     if obs.screen == Screen.RANK_UP and obs.fields.get("stage") != "reward_popup":
         s.clock.sleep(s.agent.timing.poll_interval_s)  # cutscene or moving popup: wait
         return
@@ -291,5 +325,11 @@ def on_interruption(s, obs: Observation) -> None:
 
 
 def on_stray(s, obs: Observation) -> None:
+    if obs.screen == Screen.PARTY and obs.fields.get("no_back"):
+        # No Back to tap: a pivot (U-turn) or a replacement nothing marked fainted. Poll again; the session treats
+        # it as forced when it is still there (Session.persistent_party_without_back).
+        log.event("party_without_back", focused_row=obs.fields.get("focused_row"))
+        s.clock.sleep(s.agent.timing.poll_interval_s)
+        return
     log.warning("stray_surface", screen=str(obs.screen))
     s.phone.navigator.back_out(obs)

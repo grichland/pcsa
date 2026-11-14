@@ -303,3 +303,92 @@ def test_disconnect_past_the_bound_restarts_the_session(tmp_path: Path) -> None:
     restart = next(e for e in log if e["event"] == "session_restart")
     assert "disconnect not recovered" in restart["reason"]
     assert state.outcomes == ["win"]  # the restarted session found the lobby and played the next battle
+
+
+def test_party_without_back_is_polled_not_backed_out(config: Config, tmp_path: Path) -> None:
+    """14 Nov: a U-turn pivot shows party rows, no Back, nothing fainted. The first poll tapped party_back (a stray
+    surface); now it waits one poll and the second sees it as the forced replacement."""
+    alive = (PartyMember(0, "Garchomp", (90, 180)), PARTY[1], PARTY[2])
+    steps = (
+        lobby_to_team_select()
+        + one_turn(1, TURN1)
+        + [
+            Step(
+                Screen.PARTY,
+                {"party": alive, "focused_row": None, "no_back": True},
+                accept=("party_rows", "switch_in"),
+                advance_on=("switch_in",),
+                log_rows=TURN2,
+                log_turn=2,
+            ),
+            Step(Screen.WAIT, {}, after_s=3),
+        ]
+        + end_of_battle("win")
+    )
+    state, device, recorder = run_script(config, steps, tmp_path)
+    assert state.outcomes == ["win"] and device.rejected == [], device.rejected
+    log = events(recorder)
+    assert not [e for e in log if e["event"] == "stray_surface"]
+    assert [e["event"] for e in log].count("party_without_back") == 1
+    assert "party_back" not in [name for _, name in device.taps]
+    assert (recorder.dir / "battle-1" / "decisions" / "0001-forced.json").is_file()
+
+
+def rated(rating: float) -> dict:
+    return {"own_rank": {"tier": "Master Ball", "rank": 3, "placement": 900, "rating": rating}}
+
+
+def test_unknown_outcome_is_read_from_the_rating_change(config: Config, tmp_path: Path) -> None:
+    """14 Nov battles 15 and 36: no result banner was read. The rewards screen first shows the old rating, then
+    the new one; a rise is a win."""
+    steps = (
+        [Step(Screen.LOBBY, {"team_label": "Team 1", **rated(1652.626)}, accept=("begin_matchmaking",))]
+        + lobby_to_team_select()[1:]
+        + one_turn(1, TURN1)
+        + [
+            Step(Screen.REWARDS, rated(1652.626), after_s=2),
+            Step(Screen.REWARDS, rated(1669.362), after_s=2),
+            Step(Screen.OPTIONS, rated(1669.362), accept=("continue_battling",)),
+            Step(Screen.LOBBY, {"team_label": "Team 1", **rated(1669.362)}),
+        ]
+    )
+    state, device, recorder = run_script(config, steps, tmp_path)
+    assert state.outcomes == ["win"] and state.completed == 1 and device.rejected == []
+    battle = json.loads((recorder.dir / "battle-1" / "battle.json").read_text(encoding="utf-8"))
+    assert battle["outcome"] == "win"
+    assert battle["outcome_source"] == "rating change 1652.626 -> 1669.362"
+
+
+def test_no_rating_before_the_battle_leaves_the_outcome_unknown(config: Config, tmp_path: Path) -> None:
+    steps = (
+        lobby_to_team_select()
+        + one_turn(1, TURN1)
+        + [
+            Step(Screen.REWARDS, rated(1640.0), after_s=2),
+            Step(Screen.OPTIONS, rated(1640.0), accept=("continue_battling",)),
+        ]
+        + lobby_to_team_select()
+        + one_turn(1, TURN1)
+        + end_of_battle("win")
+    )
+    state, device, recorder = run_script(config, steps, tmp_path)
+    assert state.outcomes == ["unknown", "win"] and device.rejected == []
+
+
+def test_a_result_banner_ending_a_disconnect_is_read(monkeypatch) -> None:
+    """14 Nov battle 15: the disconnect taps ended on the WON banner and the next poll was already past it, so the
+    banner the recovery saw is the outcome."""
+    from types import SimpleNamespace
+
+    from pcsa.common.types import Observation
+    from pcsa.live import handlers, reconnect
+    from pcsa.phone.ocr import REFERENCE
+
+    seen = []
+    monkeypatch.setattr(handlers, "finalize", lambda s, outcome: seen.append(outcome))
+    session = SimpleNamespace(battle=SimpleNamespace(index=15))
+    banner = Observation(Screen.RESULT, REFERENCE, frozenset(), {"outcome": "win"}, "WON/LOST banner")
+    reconnect.resolved(session, banner, 3, 13.7)
+    assert seen == ["win"]
+    reconnect.resolved(session, Observation(Screen.ACTION, REFERENCE, frozenset(), {}, "Fight and Pokemon"), 1, 4.0)
+    assert seen == ["win"]  # a resumed battle is not finalized
