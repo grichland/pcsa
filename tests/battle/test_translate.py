@@ -70,6 +70,18 @@ def test_rough_skin_of_a_pokemon_just_knocked_out_in_a_mirror_is_ours() -> None:
     assert "|-ability|p1a: Garchomp|Rough Skin" in t.out.lines
 
 
+def test_a_sprite_of_a_species_on_neither_roster_is_ignored(garchomp_vs_snorlax) -> None:
+    # 14 Nov: a row whose icon slot was empty matched Ditto (0.74) and the row was dropped as unassignable
+    t = garchomp_vs_snorlax
+    text = "The opposing Snorlax’s Attack fell!"
+    category, message = split_category(text)
+    sprite = {"status": "matched", "name": "Ditto", "base_name": "Ditto"}
+    t.row(RawRow("T1#0", 1, 0, text, category, message, sprite=sprite))
+    assert t.out.unmapped == []
+    assert t.out.lines[-1] == "|-unboost|p2a: Snorlax|atk|1"
+    assert any("ignored sprite 'Ditto'" in w for w in t.out.warnings)
+
+
 def test_send_out_of_a_pokemon_the_preview_missed_adds_it(garchomp_vs_snorlax) -> None:
     t = garchomp_vs_snorlax
     t.turns({1: ["opponent sent out Weavile!", "Move: The opposing Weavile used Knock Off!"]}, 2)

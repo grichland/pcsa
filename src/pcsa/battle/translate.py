@@ -245,6 +245,11 @@ class Translator:
             sprite = None  # the disguise's icon; the name resolves to the Illusion user
         if not (sprite and sprite.get("status") == "matched" and e.name):
             return None
+        if not self._sprite_candidates(sprite, ["p1", "p2"]):
+            # A species on neither roster: a misread icon (14 Nov: rows with an empty icon slot matched Ditto at
+            # 0.65-0.74 and were dropped). The row's own name decides, as it does without a sprite.
+            self.out.warnings.append(f"{row.row_id}: ignored sprite {sprite['name']!r}, on neither roster")
+            return None
         found = self._sprite_candidates(sprite, [e.side] if e.side is not None else ["p1", "p2"])
         if len(found) != 1:
             self.unmapped(row, f"cannot assign sprite {sprite['name']!r} to one roster member")
