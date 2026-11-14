@@ -592,7 +592,14 @@
   "20261114T105028-27747dde",
   "20261114T105632-e0b4d271",
   "20261114T110404-90576cd2",
-  "20261114T112300-d726e025"
+  "20261114T112300-d726e025",
+  "20261114T142147-a40cd3c3",
+  "20261114T143040-d0a8eb72",
+  "20261114T143704-24460da1",
+  "20261114T144533-0a82ffb1",
+  "20261114T145624-4ad99427",
+  "20261114T150939-48c3c747",
+  "20261114T151932-ef029535"
  ],
  "species": {
   "abomasnow": [
@@ -1102,6 +1109,37 @@
     ]
    },
    {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-14",
+    "last": "2026-11-14",
+    "species": "Araquanid",
+    "item": "Mystic Water",
+    "ability": "Water Bubble",
+    "nature": "Modest",
+    "points": {
+     "hp": 28,
+     "atk": 0,
+     "def": 0,
+     "spa": 30,
+     "spd": 0,
+     "spe": 8
+    },
+    "moves": [
+     "Ice Beam",
+     "Hydro Pump",
+     "Sticky Web",
+     "Chilling Water"
+    ],
+    "known_moves": [
+     "icebeam",
+     "hydropump",
+     "stickyweb"
+    ],
+    "known_item": false,
+    "known_ability": false
+   },
+   {
     "source": "catalog",
     "count": 1,
     "first": "2026-11-02",
@@ -1269,7 +1307,7 @@
   "archaludon": [
    {
     "source": "catalog",
-    "count": 12,
+    "count": 13,
     "first": "2026-11-04",
     "last": "2026-11-14",
     "species": "Archaludon",
@@ -1996,6 +2034,36 @@
      "Flip Turn",
      "Last Respects"
     ]
+   },
+   {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-14",
+    "last": "2026-11-14",
+    "species": "Basculegion",
+    "item": "Life Orb",
+    "ability": "Adaptability",
+    "nature": "Jolly",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Aqua Jet",
+     "Wave Crash",
+     "Flip Turn",
+     "Last Respects"
+    ],
+    "known_moves": [
+     "aquajet",
+     "wavecrash"
+    ],
+    "known_item": true,
+    "known_ability": false
    },
    {
     "source": "added",
@@ -3608,6 +3676,30 @@
     ]
    },
    {
+    "source": "catalog",
+    "count": 4,
+    "first": "2026-11-04",
+    "last": "2026-11-14",
+    "species": "Delphox",
+    "item": "Delphoxite",
+    "ability": "Blaze",
+    "nature": "Timid",
+    "points": {
+     "hp": 2,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Dazzling Gleam",
+     "Psychic",
+     "Flamethrower",
+     "Nasty Plot"
+    ]
+   },
+   {
     "source": "added",
     "count": 2,
     "first": "2026-11-14",
@@ -3669,30 +3761,6 @@
     ],
     "known_item": true,
     "known_ability": false
-   },
-   {
-    "source": "catalog",
-    "count": 3,
-    "first": "2026-11-04",
-    "last": "2026-11-12",
-    "species": "Delphox",
-    "item": "Delphoxite",
-    "ability": "Blaze",
-    "nature": "Timid",
-    "points": {
-     "hp": 2,
-     "atk": 0,
-     "def": 0,
-     "spa": 32,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Dazzling Gleam",
-     "Psychic",
-     "Flamethrower",
-     "Nasty Plot"
-    ]
    },
    {
     "source": "catalog",
@@ -4120,6 +4188,36 @@
      "roost"
     ],
     "known_item": true,
+    "known_ability": false
+   },
+   {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-14",
+    "last": "2026-11-14",
+    "species": "Dragonite",
+    "item": "Dragoninite",
+    "ability": "Multiscale",
+    "nature": "Modest",
+    "points": {
+     "hp": 1,
+     "atk": 0,
+     "def": 1,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Iron Head",
+     "Earthquake",
+     "Draco Meteor",
+     "Flamethrower"
+    ],
+    "known_moves": [
+     "ironhead",
+     "earthquake"
+    ],
+    "known_item": false,
     "known_ability": false
    },
    {
@@ -5589,7 +5687,7 @@
   "gholdengo": [
    {
     "source": "catalog",
-    "count": 8,
+    "count": 9,
     "first": "2026-11-04",
     "last": "2026-11-14",
     "species": "Gholdengo",
@@ -8168,6 +8266,38 @@
    },
    {
     "source": "added",
+    "count": 6,
+    "first": "2026-11-02",
+    "last": "2026-11-14",
+    "species": "Meowscarada",
+    "item": "Life Orb",
+    "ability": "Protean",
+    "nature": "Jolly",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Thunder Punch",
+     "Flower Trick",
+     "Toxic Spikes",
+     "Sucker Punch"
+    ],
+    "known_moves": [
+     "thunderpunch",
+     "flowertrick",
+     "toxicspikes",
+     "suckerpunch"
+    ],
+    "known_item": true,
+    "known_ability": true
+   },
+   {
+    "source": "added",
     "count": 1,
     "first": "2026-11-14",
     "last": "2026-11-14",
@@ -8194,38 +8324,6 @@
      "brickbreak"
     ],
     "known_item": false,
-    "known_ability": true
-   },
-   {
-    "source": "added",
-    "count": 5,
-    "first": "2026-11-02",
-    "last": "2026-11-13",
-    "species": "Meowscarada",
-    "item": "Life Orb",
-    "ability": "Protean",
-    "nature": "Jolly",
-    "points": {
-     "hp": 2,
-     "atk": 32,
-     "def": 0,
-     "spa": 0,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Thunder Punch",
-     "Flower Trick",
-     "Toxic Spikes",
-     "Sucker Punch"
-    ],
-    "known_moves": [
-     "thunderpunch",
-     "flowertrick",
-     "toxicspikes",
-     "suckerpunch"
-    ],
-    "known_item": true,
     "known_ability": true
    },
    {
@@ -8287,6 +8385,30 @@
   ],
   "metagross": [
    {
+    "source": "catalog",
+    "count": 6,
+    "first": "2026-11-03",
+    "last": "2026-11-14",
+    "species": "Metagross",
+    "item": "Metagrossite",
+    "ability": "Clear Body",
+    "nature": "Adamant",
+    "points": {
+     "hp": 2,
+     "atk": 32,
+     "def": 0,
+     "spa": 0,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Psychic Fangs",
+     "Ice Punch",
+     "Thunder Punch",
+     "Bullet Punch"
+    ]
+   },
+   {
     "source": "added",
     "count": 3,
     "first": "2026-11-03",
@@ -8317,30 +8439,6 @@
     ],
     "known_item": true,
     "known_ability": false
-   },
-   {
-    "source": "catalog",
-    "count": 5,
-    "first": "2026-11-03",
-    "last": "2026-11-13",
-    "species": "Metagross",
-    "item": "Metagrossite",
-    "ability": "Clear Body",
-    "nature": "Adamant",
-    "points": {
-     "hp": 2,
-     "atk": 32,
-     "def": 0,
-     "spa": 0,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Psychic Fangs",
-     "Ice Punch",
-     "Thunder Punch",
-     "Bullet Punch"
-    ]
    },
    {
     "source": "added",
@@ -9150,9 +9248,9 @@
   "politoed": [
    {
     "source": "catalog",
-    "count": 2,
+    "count": 3,
     "first": "2026-11-13",
-    "last": "2026-11-13",
+    "last": "2026-11-14",
     "species": "Politoed",
     "item": "Life Orb",
     "ability": "Drizzle",
@@ -9171,6 +9269,36 @@
      "Ice Beam",
      "Encore"
     ]
+   },
+   {
+    "source": "added",
+    "count": 1,
+    "first": "2026-11-14",
+    "last": "2026-11-14",
+    "species": "Politoed",
+    "item": "Eject Button",
+    "ability": "Drizzle",
+    "nature": "Calm",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 32,
+     "spa": 0,
+     "spd": 2,
+     "spe": 0
+    },
+    "moves": [
+     "Surf",
+     "Earth Power",
+     "Protect",
+     "Encore"
+    ],
+    "known_moves": [
+     "surf",
+     "earthpower"
+    ],
+    "known_item": false,
+    "known_ability": true
    },
    {
     "source": "catalog",
@@ -9608,9 +9736,9 @@
   "raichu": [
    {
     "source": "catalog",
-    "count": 7,
+    "count": 8,
     "first": "2026-11-02",
-    "last": "2026-11-13",
+    "last": "2026-11-14",
     "species": "Raichu",
     "item": "Raichunite Y",
     "ability": "Static",
@@ -9922,7 +10050,7 @@
   "rotomheat": [
    {
     "source": "catalog",
-    "count": 6,
+    "count": 7,
     "first": "2026-11-04",
     "last": "2026-11-14",
     "species": "Rotom-Heat",
@@ -10026,7 +10154,7 @@
   "rotomwash": [
    {
     "source": "catalog",
-    "count": 5,
+    "count": 6,
     "first": "2026-11-13",
     "last": "2026-11-14",
     "species": "Rotom-Wash",
@@ -11994,7 +12122,7 @@
    },
    {
     "source": "added",
-    "count": 2,
+    "count": 3,
     "first": "2026-11-13",
     "last": "2026-11-14",
     "species": "Swampert",
@@ -12013,12 +12141,13 @@
      "Liquidation",
      "Earthquake",
      "Ice Punch",
-     "Flip Turn"
+     "Wave Crash"
     ],
     "known_moves": [
      "liquidation",
      "earthquake",
-     "icepunch"
+     "icepunch",
+     "wavecrash"
     ],
     "known_item": true,
     "known_ability": false
@@ -13286,9 +13415,9 @@
   "vivillon": [
    {
     "source": "catalog",
-    "count": 3,
+    "count": 4,
     "first": "2026-11-03",
-    "last": "2026-11-10",
+    "last": "2026-11-14",
     "species": "Vivillon",
     "item": "Leftovers",
     "ability": "Compound Eyes",
@@ -13343,6 +13472,38 @@
   "volcarona": [
    {
     "source": "added",
+    "count": 4,
+    "first": "2026-11-12",
+    "last": "2026-11-14",
+    "species": "Volcarona",
+    "item": "Leftovers",
+    "ability": "Flame Body",
+    "nature": "Timid",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 23,
+     "spa": 0,
+     "spd": 0,
+     "spe": 11
+    },
+    "moves": [
+     "Quiver Dance",
+     "Morning Sun",
+     "Giga Drain",
+     "Fiery Dance"
+    ],
+    "known_moves": [
+     "quiverdance",
+     "morningsun",
+     "gigadrain",
+     "fierydance"
+    ],
+    "known_item": true,
+    "known_ability": true
+   },
+   {
+    "source": "added",
     "count": 2,
     "first": "2026-11-14",
     "last": "2026-11-14",
@@ -13371,38 +13532,6 @@
      "morningsun"
     ],
     "known_item": false,
-    "known_ability": true
-   },
-   {
-    "source": "added",
-    "count": 3,
-    "first": "2026-11-12",
-    "last": "2026-11-13",
-    "species": "Volcarona",
-    "item": "Leftovers",
-    "ability": "Flame Body",
-    "nature": "Timid",
-    "points": {
-     "hp": 32,
-     "atk": 0,
-     "def": 23,
-     "spa": 0,
-     "spd": 0,
-     "spe": 11
-    },
-    "moves": [
-     "Quiver Dance",
-     "Morning Sun",
-     "Giga Drain",
-     "Fiery Dance"
-    ],
-    "known_moves": [
-     "quiverdance",
-     "morningsun",
-     "gigadrain",
-     "fierydance"
-    ],
-    "known_item": true,
     "known_ability": true
    },
    {
