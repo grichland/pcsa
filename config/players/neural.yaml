@@ -1,3 +1,7 @@
+# version neural-20261114-0559: made by research/pcsa-rl rl2/scripts/live_finetune_job.py
+# base model poke-transformer-hard50-20261113-1215.pt; policy on the last 100 gold-team games; opponent head on all live games; value head refit; pcsa 545f690
+# job folder C:\Users\geral\Code\research\pcsa-rl\runs\live-finetune\job-20261114-0559
+# fitted: {"checkpoint": "assets/models/poke-transformer-live-20261114-0559.pt", "opponent_temperature": 0.65}
 # version neural-20261114-0514: made by research/pcsa-rl rl2/scripts/live_finetune_job.py
 # base model poke-transformer-hard50-20261113-1215.pt; policy on the last 100 gold-team games; opponent head on all live games; value head refit; pcsa dde6fe2
 # job folder C:\Users\geral\Code\research\pcsa-rl\runs\live-finetune\job-20261114-0514
@@ -9,11 +13,11 @@
 # (research/pcsa-rl, network code in src/pcsa/rl_training). Needs torch: `uv sync --extra train`.
 # Point a run at another network without editing this file: --set policy.neural_checkpoint=<path>
 # (or the environment variable PCSA__policy__neural_checkpoint=<path>).
-checkpoint: assets/models/poke-transformer-live-20261114-0514.pt  # 20261114-0514: poke-transformer-hard50-20261113-1215.pt + policy head on the last 100 gold-team games + opponent head on 238 live games (top-1 0.6551, in-sample); value head refit (live_finetune_job)
+checkpoint: assets/models/poke-transformer-live-20261114-0559.pt  # 20261114-0559: poke-transformer-hard50-20261113-1215.pt + policy head on the last 100 gold-team games + opponent head on 301 live games (top-1 0.7134, in-sample); value head refit (live_finetune_job)
 device: cpu
 sampling: greedy                # greedy: the most likely action; sample: training's capped (0.99) distribution
 temperature: 1.0                # of `sample`
-opponent_temperature: 1.0         # how much to trust the prediction of their action when weighing our options:
+opponent_temperature: 0.65  # 20261114-0559: fitted by live_finetune_job (was 1.0); see its report.md
 preview: robust                 # robust (13 Nov): each pick scored against each of their six leads (turn-1 views),
                                 # the best mean over its preview_robust_worst worst leads; critic: training's
                                 # softmax(value / 0.1), top-p 0.9 nucleus; greedy: the best value
