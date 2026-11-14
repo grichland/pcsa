@@ -239,6 +239,13 @@ class TurnPipeline:
         if action.kind != "switch" or action.slot is None:
             switches = [a for a in decision.legal if a.action.kind == "switch"]
             action = switches[0].action if switches else action
+        if action.kind != "switch" or action.slot is None:
+            # 14 Nov 2026: a replacement screen with nobody to send in (the last member goes in by itself; the
+            # party rows were read as all fainted) crashed the session here. Nothing is tapped or recorded: the
+            # next observation decides.
+            log.warning("forced_without_switch", battle=b.index, turn=b.current_turn(), reason=decision.reason)
+            self.clock.sleep(self.cfg.timing.post_action_wait_s)
+            return
         b.forced_choice.update(action=action)
         self._save_decision(
             b, "forced", battle, out, request, decision, pivot=leaving is not None, attempt=b.forced_attempts
@@ -384,6 +391,9 @@ class TurnPipeline:
             if slots != b.visible_order:
                 log.event("order_resync", battle=b.index, before=list(b.visible_order), after=slots)
             b.visible_order = slots  # type: ignore[assignment]
+        if party and all(m.fainted for m in party):
+            log.warning("party_all_fainted_ignored", battle=b.index)  # a battle still going has a member standing
+            return
         for m in party:
             if m.fainted and m.row < len(b.visible_order):
                 b.fainted.add(b.visible_order[m.row])

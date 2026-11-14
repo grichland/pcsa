@@ -27,7 +27,7 @@ from pcsa.battle.adapter import ChampionsBattle
 from pcsa.common import log
 from pcsa.players import mirror
 from pcsa.players.base import DecisionView, Degrade, ScreenFacts
-from pcsa.run.battle_state import BattleRecord
+from pcsa.run.battle_state import BattleRecord, same_name
 
 SCHEMAS = ("pcsa-decision/1", "pcsa-decision/2")
 SHOWN_BATTLE = (str(Degrade.FULL), str(Degrade.TRACKED))  # the rungs at which the player is given the Battle
@@ -164,9 +164,66 @@ def rebuild_views(records: list[dict], battle_id: str) -> list[DecisionView]:
     return views
 
 
+TEAM_SIZE = 3
+GOOD_RUNGS = ("full", "tracked")  # records whose request shows our side as the tracked Battle had it
+
+
+def _side_names(record: dict) -> list[str]:
+    side = ((record.get("request") or {}).get("side") or {}).get("pokemon") or []
+    return [str(p.get("ident", "")).partition(": ")[2] for p in side if isinstance(p, dict)]
+
+
+def lineup(records: list[dict], roster: tuple) -> dict | None:
+    """Our brought trio as the earlier records show it (14 Nov 2026: a restart mid-battle fell back to the first
+    three of the roster and played Mamoswine as Gholdengo): `requested` = roster rows in the order of the first
+    record's side (lead first), `visible_order` and `fainted` from the last record at a good rung, `mega_used` from
+    any of our members shown in a Mega form. None when the records do not name three roster members."""
+    good = [r for r in records if r.get("degrade") in GOOD_RUNGS and len(_side_names(r)) == TEAM_SIZE]
+    if not good:
+        return None
+    first, last = _side_names(good[0]), good[-1]
+
+    def row(name: str) -> int | None:
+        rows = [i for i, n in enumerate(roster) if same_name(n, name)]
+        return rows[0] if len(rows) == 1 else None
+
+    requested = [row(n) for n in first]
+    if None in requested or len(set(requested)) != TEAM_SIZE:
+        return None
+    slots = [requested.index(row(n)) if row(n) in requested else None for n in _side_names(last)]
+    if None in slots or sorted(slots) != list(range(TEAM_SIZE)):  # type: ignore[type-var]
+        return None
+    side = last["request"]["side"]["pokemon"]
+    fainted = {slot for slot, p in zip(slots, side, strict=True) if str(p.get("condition", "")).endswith("fnt")}
+    mega = any("mega" in str(p.get("details", "")).lower() for r in good for p in r["request"]["side"]["pokemon"])
+    return {"requested": requested, "visible_order": slots, "fainted": fainted, "mega_used": mega}
+
+
+def _restore_lineup(b: BattleRecord, records: list[dict]) -> None:
+    try:
+        found = lineup(records, b.roster)
+    except Exception as error:  # never stops a resume
+        log.warning("lineup_restore_failed", battle=b.index, reason=f"{type(error).__name__}: {error}")
+        return
+    if found is None:
+        return
+    b.requested, b.visible_order = found["requested"], found["visible_order"]
+    b.fainted, b.mega_used = set(found["fainted"]), bool(found["mega_used"])
+    log.event(
+        "lineup_restored",
+        battle=b.index,
+        names=list(b.names),
+        order=list(b.visible_order),
+        fainted=sorted(b.fainted),
+        mega_used=b.mega_used,
+    )
+
+
 def resume(s, b: BattleRecord, found: Earlier) -> None:
-    """Continue the numbering of the battle's records and give the player its memory back. Never raises."""
+    """Continue the numbering of the battle's records, put our lineup back and give the player its memory back.
+    Never raises."""
     b.decisions = list(found.kinds)
+    _restore_lineup(b, found.records)
     restore = getattr(s.player, "restore", None)
     views, restored = 0, 0
     if found.records and callable(restore):
