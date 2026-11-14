@@ -20,11 +20,25 @@ from pcsa.live.decide import Decider, event_notes
 from pcsa.live.log_reader import LogReader, LogVisit
 from pcsa.live.log_save import LogSaver
 from pcsa.players.base import ScreenFacts
-from pcsa.run.battle_state import PIVOT_MOVES, BattleRecord, action_detail, same_name, same_name_in
+from pcsa.run.battle_state import BattleRecord, action_detail, same_name, same_name_in
 from pcsa.run.recorder import Recorder
 
 MIN_NEW_TURN_MOVE_TIME = 15  # a lower reading on a fresh action screen is an OCR drop of the first digit
 FORCED_RETRY_DEADLINE_S = 40.0
+
+
+def leaving_slot(b: BattleRecord, party: tuple) -> int | None:
+    """The slot of our active when it leaves the field alive (else None: a faint replacement).
+
+    A replacement screen while our active is still standing means it is leaving and cannot be picked: a pivot move
+    (U-turn and the like), or anything else that pulls it out mid-turn (Emergency Exit, Wimp Out, Eject Button, Eject
+    Pack), which the log has not shown yet when the screen comes up. The active is the mon this turn put in
+    (visible_order[0]); it counts only when the party screen shows it unfainted."""
+    if not b.names:
+        return None
+    active = b.visible_order[0]
+    alive = any(same_name(m.name, b.names[active]) and not m.fainted for m in party)
+    return active if alive else None
 
 
 class TurnPipeline:
@@ -192,15 +206,7 @@ class TurnPipeline:
     ) -> tuple[tuple, int | None, Deadline]:
         """Party rows, the slot leaving on a pivot (else None), and the replacement deadline."""
         party = tuple(obs.fields.get("party", ()))
-        leaving = b.visible_order[0] if b.names else None
-        last = b.last_action or {}
-        pivot = last.get("turn") == b.current_turn() and last.get("move_name") in PIVOT_MOVES
-        if not (
-            pivot
-            and leaving is not None
-            and any(same_name(m.name, b.names[leaving]) and not m.fainted for m in party)
-        ):
-            leaving = None
+        leaving = leaving_slot(b, party)
         self._resync_party(b, party)
         repeated = previous_forced and b.forced_choice is not None and b.forced_choice.get("turn") == b.current_turn()
         b.forced_attempts = b.forced_attempts + 1 if repeated else 1
