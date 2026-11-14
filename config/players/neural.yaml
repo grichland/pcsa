@@ -1,3 +1,4 @@
+# version neural-20261114-0513: the live config on 14 Nov before promoting fine-tune job 20261114-0514 (hard50 model + encore_switch rule)
 # Live player from 12 Nov 2026 (user's decision after the pcsa-belief trial): the belief network
 # (poke-transformer-belief100, belief+mega columns) with the matrix blend at 4.0, opponent_temperature 1.0 and
 # opponent_top 0 (all), the setting research measured (+2 points vs gold940 in the simulator).
