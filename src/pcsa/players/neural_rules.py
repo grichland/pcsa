@@ -17,6 +17,9 @@ that fires decides, and the decision's notes carry `override: <rule>`, the reaso
                   more than `sucker_punch_passive` (neural.yaml) of its probability (pcsa.players.sucker_punch)
   priority_ko     a priority move surely KOs the foe and the network's pick does not KO it first (with sucker_punch
                   on, never a Sucker Punch that rule blocks)
+  encore_switch   their active used Encore on us since it came in and the protocol shows for sure that it moves
+                  before our active (earlier turns, same speed state): the network's best switch, encored or not
+                  (pcsa.players.encore_switch; the user's rule, 14 Nov 2026)
 
 Damage and speed are pcsa.players.threat's estimates on the sets pcsa.players.opponent assumes.
 """
@@ -30,6 +33,7 @@ from poke_env.battle import Effect, Move, SideCondition
 from poke_env.data.normalize import to_id_str
 
 from pcsa.common.errors import ConfigError
+from pcsa.players import encore_switch as encore
 from pcsa.players import no_effect as nothing
 from pcsa.players import sucker_punch as sucker
 from pcsa.players import threat
@@ -177,6 +181,14 @@ def priority_ko(s: Spot) -> Outcome:
     return action, f"{pk} KOs {s.theirs.species} first"
 
 
+def encore_switch(s: Spot) -> Outcome:
+    if _is_switch(s.chosen):
+        return None
+    reason = encore.why(s.battle)
+    switch = s.best(_is_switch) if reason is not None else None
+    return (switch, reason) if switch else None
+
+
 RULES: dict[str, Callable[[Spot], Outcome]] = {
     "no_effect": no_effect,
     "no_full_heal": no_full_heal,
@@ -184,6 +196,7 @@ RULES: dict[str, Callable[[Spot], Outcome]] = {
     "locked_futile": locked_futile,
     "sucker_punch": sucker_punch,
     "priority_ko": priority_ko,
+    "encore_switch": encore_switch,
 }
 
 

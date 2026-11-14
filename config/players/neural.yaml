@@ -29,7 +29,12 @@ threads: 1                      # torch CPU threads
 seed: null                      # preview and `sample` draws; null: fresh each run
 # Guard rules: stop plainly wasted actions; the network's best other action is played instead ([] = the network
 # alone; one run: --set policy.neural_rules=none, or names separated by commas). See src/pcsa/players/neural_rules.py.
-rules: [no_effect, no_full_heal, useless_status, locked_futile, sucker_punch, priority_ko]
+rules: [encore_switch, no_effect, no_full_heal, useless_status, locked_futile, sucker_punch, priority_ko]
+# encore_switch (user's rule, 14 Nov): their active used Encore on us since it came in and earlier turns show for sure
+# that it moves before our active (same pair, same-priority moves, same speed state; two such turns unless a tie and
+# Quick Claw are ruled out, none the other way): switch, the network picks which. First, so it decides before the
+# others; remove it from this list to turn it off. Live battles 14 and 35 of 13 Nov: a faster Primarina Encored our
+# Calm Mind every 3 turns and we never switched (pcsa.players.encore_switch).
 sucker_punch_passive: 0.5       # sucker_punch rule (13 Nov): Sucker Punch / Thunderclap are blocked when they already
                                 # failed against that foe this battle, or when the opponent head's status moves plus
                                 # switches (the matrix's p_cols) exceed this; 19 of 42 live Sucker Punches failed
