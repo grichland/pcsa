@@ -153,20 +153,21 @@ touches the phone), is picked once at start (start it again for a later run) and
 `runs/<run>/ckpt/*.pt`; the model's size is read from the checkpoint). It needs torch (`uv sync --inexact --extra train`; `pcsa setup --with
 train` installs it too) and runs on the CPU. Point it at a network with one override (or set `checkpoint` in
 `config/players/neural.yaml`; relative paths are looked up in `$PCSA_NETWORKS`, then in the repo). Keep the
-checkpoints in `assets/models/` (create the folder; its `.pt` files are not committed):
+checkpoints in `assets/models/` (committed with git):
 
 ```
-uv run pcsa sim play --a neural --b disciplined --battles 100 --set policy.neural_checkpoint=assets/models/poke-transformer-general-800.pt
-uv run pcsa run --player neural --battles 10 --set policy.neural_checkpoint=assets/models/poke-transformer-teams-20261112-0013.pt
+uv run pcsa sim play --a neural --b disciplined --battles 100 --set policy.neural_checkpoint=assets/models/poke-transformer-live-20261114-1527.pt
 ```
 
-`poke-transformer-general-800.pt` is the general network (update 800 of the training run, any team).
-`poke-transformer-teams-20261112-0013.pt` is the one `config/players/neural.yaml` names: the same network trained
-50 updates further with the account's three teams on its side (one drawn per battle), then trained on the
-opponents' actions in every recorded live battle (opponent head only, learning rate 1e-3) until the opponent's real
-action is among its top three guesses 80% of the time on those battles (8 epochs). One file covers all three teams. `scripts
-un_agent.ps1` runs the
-neural player unless `$Player` is changed.
+| model | what it is | used by |
+|---|---|---|
+| `poke-transformer-live-20261114-1527.pt` | hard50 + the opponent head fitted to 343 live games | the live model (`config/players/neural.yaml`) |
+| `poke-transformer-hard50-20261113-1215.pt` | belief100 trained 50 updates against the hard stall/sweeper bots, policy and opponent heads fitted to live games | live-1527's parent; versions `neural-20261113-1215`, `neural-20261114-0513` |
+| `poke-transformer-belief100-20261112-1905.pt` | the first network with the belief + Mega inputs | `tests/rl_training/test_matrix.py`; hard50's fallback |
+| `poke-transformer-gold940-20261112-1319.pt` | the network fine-tuned on the gold team | `tests/rl_training/test_neural_features.py` |
+
+Older models (general-800, live-0514, live-0559, live-1415) were removed on 15 Nov 2026; they stay in git history.
+`scriptsun_agent.ps1` runs the neural player unless `$Player` is changed.
 
 ![The neural player's network: 12 Pokémon, the field and the last turn become 14 tokens per decision; a transformer with a memory of earlier decisions feeds three readouts; the network first predicts the opponent's action, then scores each of its own actions against each predicted one in a matrix, and a value head estimates the win chance](docs/images/network.svg)
 
