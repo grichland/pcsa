@@ -17,6 +17,9 @@ layers =
 # player basics: pcsa.players.opponent); nothing else in pcsa.players reaches pcsa.belief
 ignore_imports =
     pcsa.players.neural -> pcsa.rl_training.*
+    # the playout team preview (14 Nov 2026) is the neural player's preview: it loads the network's preview code
+    # lazily, only when the neural player uses `preview: playout`
+    pcsa.players.preview_playout -> pcsa.rl_training.*
 
 [importlinter:contract:sprite-training-is-a-leaf]
 name = Nothing at runtime imports the sprite trainer (only the `pcsa train` commands do: cli and train_cli)
@@ -50,6 +53,9 @@ forbidden_modules =
     pcsa.rl_training
 ignore_imports =
     pcsa.players.neural -> pcsa.rl_training.*
+    # the playout team preview (14 Nov 2026) is the neural player's preview: it loads the network's preview code
+    # lazily, only when the neural player uses `preview: playout`
+    pcsa.players.preview_playout -> pcsa.rl_training.*
 allow_indirect_imports = False
 
 [importlinter:contract:rl-training-imports-down]
