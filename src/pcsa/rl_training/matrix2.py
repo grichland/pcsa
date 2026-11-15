@@ -31,6 +31,7 @@ from pcsa.players import opponent as opp
 from pcsa.rl_training import features as f1
 from pcsa.rl_training import matrix2_parts as P
 from pcsa.rl_training.matrix import Lookahead
+from pcsa.rl_training.matrix2_fast import MemoLookahead, regret_matching_batch
 from pcsa.rl_training.matrix_cells import (
     ACTIONS,
     KO_BONUS,
@@ -66,30 +67,38 @@ class TwoTurn:
         time_cap_s: float = P.TIME_CAP_S,
     ) -> None:
         self.la = Lookahead(bb, ko_bonus, p_min)  # depth 1, exactly pcsa.rl_training.matrix
-        self.la2 = Lookahead(P.StageAware(bb), ko_bonus, p_min)  # turn 2: stage-aware reads
+        self.la1 = MemoLookahead(bb, ko_bonus, p_min)  # the same reads, memoised, for the turn-1 branches
+        self.la2 = MemoLookahead(P.StageAware(bb), ko_bonus, p_min)  # turn 2: stage-aware reads, memoised
         self.bb, self.kb, self.gamma, self.lam, self.cap = bb, ko_bonus, gamma, lam, time_cap_s
         self.clock = SystemClock()
         self.memo: dict = {}
+        self.pending: dict | None = None  # collect pass: line key -> (V, prior) of its turn-2 game, or None
+        self.reading = False  # read pass: every value is memoised; counts were taken in the collect pass
         self.counts = {"lines": 0, "memo": 0, "matrices": 0}
 
     # turn-2 value of a line -------------------------------------------------------------------------------------
     def value2(self, battle, line: Line) -> float:
         k = line.key()
-        if k in self.memo:
-            self.counts["memo"] += 1
-            return self.memo[k]
+        if k in self.memo or (self.pending is not None and k in self.pending):
+            self.counts["memo"] += 0 if self.reading else 1
+            return self.memo.get(k, 0.0)
         self.counts["lines"] += 1
         if self.clock.now() > self.deadline:
             raise Timeout
-        v = self._value2(battle, line)
+        game = self._game(battle, line)
+        if self.pending is not None:  # collect pass: solved with all the others in _flush
+            self.pending[k] = game
+            return 0.0
+        v = 0.0 if game is None else self._solve([game])[0]
         self.memo[k] = v
         return v
 
-    def _value2(self, battle, line: Line) -> float:
+    def _game(self, battle, line: Line):
+        """(V, prior) of the line's turn-2 matrix game, or None (no rows or columns: value 0)."""
         rows = self._our_rows(battle, line)
         cols, prior = self._their_cols(battle, line)
         if not rows or not cols:
-            return 0.0
+            return None
         V = np.zeros((len(rows), len(cols)))
         with P.patched(
             (line.ours, dict(line.our_boosts), line.our_new), (line.theirs, dict(line.their_boosts), line.their_new)
@@ -100,9 +109,22 @@ class TwoTurn:
         self.counts["matrices"] += 1
         if not np.isfinite(V).all():
             V = np.nan_to_num(V)
-        _, y_eq = P.regret_matching(V)
-        y = (1.0 - self.lam) * prior + self.lam * y_eq
-        return float((V @ y).max())
+        return V, prior
+
+    def _solve(self, games: list) -> list[float]:
+        """Values of turn-2 games: the best response to (1 - lam) x prior + lam x the regret-matching mix."""
+        ys = regret_matching_batch([V for V, _ in games])
+        return [
+            float((V @ ((1.0 - self.lam) * prior + self.lam * y_eq)).max())
+            for (V, prior), y_eq in zip(games, ys, strict=True)
+        ]
+
+    def _flush(self) -> None:
+        """End of the collect pass: every collected game solved in one batch, the values memoised."""
+        pending, self.pending = self.pending or {}, None
+        keys = [k for k, g in pending.items() if g is not None]
+        self.memo.update(zip(keys, self._solve([pending[k] for k in keys]), strict=True))
+        self.memo.update({k: 0.0 for k, g in pending.items() if g is None})
 
     @staticmethod
     def _our_rows(battle, line: Line) -> list:
@@ -222,7 +244,7 @@ class TwoTurn:
     # turn-1 branches ------------------------------------------------------------------------------------------
     def _move_branches(self, battle, col, move_id, form) -> list:
         """Our move `move_id` against their column `col`."""
-        la, ours, theirs = self.la, self.ours0, self.theirs0
+        la, ours, theirs = self.la1, self.ours0, self.theirs0
         h_us, h_them = hp_of(ours), hp_of(theirs)
         b_us, b_them = dict(ours.boosts), dict(theirs.boosts)
         mo = _move(move_id)
@@ -255,7 +277,7 @@ class TwoTurn:
         hin = max(0.0, hp_of(target) - hazard(battle, target, True))
         if col in self.their_moves:
             theirs_after = P.after(_move(self.their_moves[col]), dict(theirs.boosts))
-            th = self.la.hit(
+            th = self.la1.hit(
                 battle, target, theirs, self.their_moves[col], True, coming=True, our_form=None, defender_hp=hin
             )
             if th.sucker:
@@ -308,6 +330,20 @@ class TwoTurn:
         self.their_moves, self.their_switch, self.p = self.la._their_actions(battle, out, self.theirs0)
         self.p_tot = sum(self.p.values())
 
+    def _todo(self, battle, legal, info: dict) -> list:
+        """(action, index, Mega form, move id) of each legal action with a turn-1 row."""
+        todo = []
+        for a in legal:
+            i = f1.action_index(a, battle)
+            if i < 0 or i >= ACTIONS or i not in info["cells"]:
+                continue
+            move_id, form = None, None
+            if a.action.kind == "move":
+                move_id = a.order.order.id if hasattr(a.order.order, "id") else str(a.order.order)
+                form = our_mega_form(battle, self.ours0) if a.action.mega else None
+            todo.append((a, i, form, move_id))
+        return todo
+
     def values(self, battle, legal, out: dict) -> tuple[np.ndarray, dict]:
         t0 = self.clock.now()
         q1, info = self.la.values(battle, legal, out)
@@ -316,15 +352,16 @@ class TwoTurn:
         self.deadline = t0 + self.cap
         self._setup(battle, out, info)
         cont = np.zeros(ACTIONS, np.float32)
+        todo = self._todo(battle, legal, info)
         try:
-            for a in legal:
-                i = f1.action_index(a, battle)
-                if i < 0 or i >= ACTIONS or i not in info["cells"]:
-                    continue
-                move_id, form = None, None
-                if a.action.kind == "move":
-                    move_id = a.order.order.id if hasattr(a.order.order, "id") else str(a.order.order)
-                    form = our_mega_form(battle, self.ours0) if a.action.mega else None
+            # pass 1 collects every line's turn-2 game (no turn-2 value feeds another game), one batched solve,
+            # pass 2 reads the memoised values: the same values as one game at a time (15 Nov 2026)
+            self.pending = {}
+            for a, _, form, move_id in todo:
+                self.continuation(battle, a, form, move_id)
+            self._flush()
+            self.reading = True
+            for a, i, form, move_id in todo:
                 c = self.continuation(battle, a, form, move_id)
                 cont[i] = c if math.isfinite(c) else 0.0
         except Timeout:

@@ -5,6 +5,7 @@ rl2/matrix2.py on archived simulator decisions."""
 from __future__ import annotations
 
 import sys
+import types
 from dataclasses import replace
 
 import numpy as np
@@ -127,3 +128,29 @@ def test_the_notes_say_which_depth_ran() -> None:
     assert two["depth_set"] == 2 and two["depth"] == 2 and two["cont"] == [0.1] * 11 and two["ms2"] == 12.5
     cap = blend_notes({**base, "matrix_info": {"depth": 1, "depth2": "time cap", "ms2": 1500.0}}, 2.0)
     assert cap["depth_set"] == 2 and cap["depth"] == 1 and cap["depth2"] == "time cap"
+
+
+def test_the_batched_solver_matches_one_game_at_a_time() -> None:
+    from pcsa.rl_training.matrix2_fast import regret_matching_batch
+
+    rng = np.random.default_rng(0)
+    games = [rng.normal(size=(r, c)) for r, c in ((3, 9), (6, 9), (1, 4), (5, 2), (4, 4))]
+    batched = regret_matching_batch(games)
+    for V, y in zip(games, batched, strict=True):
+        assert y.shape == (V.shape[1],) and np.allclose(y, P.regret_matching(V)[1], atol=1e-9)
+    assert regret_matching_batch([]) == []
+
+
+def test_the_memo_returns_the_first_result_until_the_stages_change(monkeypatch) -> None:
+    from pcsa.rl_training.matrix import Lookahead
+    from pcsa.rl_training.matrix2_fast import MemoLookahead
+
+    calls: list = []
+    monkeypatch.setattr(Lookahead, "p_first", lambda self, *args: calls.append(args) or 0.5)
+    a, b = Pokemon(gen=9, species="garchomp"), Pokemon(gen=9, species="dragonite")
+    la = MemoLookahead(types.SimpleNamespace(_matrix_across={}), 0.0, 0.0)
+    assert la.p_first(None, a, b, None, 0, 0) == 0.5 and la.p_first(None, a, b, None, 0, 0) == 0.5
+    assert len(calls) == 1
+    with P.patched((a, {"spe": 1}, False)):
+        la.p_first(None, a, b, None, 0, 0)
+    assert len(calls) == 2  # a stage change is a new key
