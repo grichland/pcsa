@@ -199,7 +199,7 @@ def encore_switch(s: Spot) -> Outcome:
         return None
     reason = encore.why(s.battle)
     switch = s.best(_is_switch) if reason is not None else None
-    return (switch, reason) if switch else None
+    return (switch, reason) if switch is not None and reason is not None else None
 
 
 def mega_weakness(s: Spot) -> Outcome:

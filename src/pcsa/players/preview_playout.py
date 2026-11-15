@@ -26,6 +26,7 @@ import queue
 from collections import deque
 from dataclasses import asdict, dataclass, field, fields
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -33,6 +34,10 @@ from pcsa.common import log, paths
 from pcsa.common.clock import Deadline, SystemClock
 from pcsa.common.errors import ConfigError
 from pcsa.players import preview_sampler as sampler
+
+if TYPE_CHECKING:
+    from pcsa.battle.builds import Catalog
+    from pcsa.players.preview_pool import Pool
 
 FIRST_GUESS_S = 1.0  # a playout's length before any has finished (measured: about 0.65 s)
 WAIT_S = 0.2
@@ -113,17 +118,19 @@ class PlayoutPreview:
         self.p, self.clock = params, parts.get("clock") or SystemClock()
         self.rng = parts.get("rng") or np.random.default_rng()
         self.prior = parts.get("prior") or sampler.LeadPrior.load()
-        self.catalog = parts.get("catalog")
-        if self.catalog is None:
+        catalog = parts.get("catalog")
+        if catalog is None:
             from pcsa.battle.builds import Catalog
 
-            self.catalog = Catalog.load(seen=True)
+            catalog = Catalog.load(seen=True)
+        self.catalog: Catalog = catalog
         self.count = 0
-        self.pool = parts.get("pool")
-        if self.pool is None:
+        pool = parts.get("pool")
+        if pool is None:
             from pcsa.players.preview_pool import Pool
 
-            self.pool = Pool(params.workers, spec, paths.output_dir() / "preview-workers")
+            pool = Pool(params.workers, spec, paths.output_dir() / "preview-workers")
+        self.pool: Pool = pool
 
     # the search ------------------------------------------------------------------------------------------------
     def candidates(self, scores: np.ndarray, rows: list[int], robust: int) -> list[int]:

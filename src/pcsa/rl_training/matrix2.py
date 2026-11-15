@@ -124,7 +124,7 @@ class TwoTurn:
                 moves += [mv for mv, pr in m.move_probs().items() if pr >= P.REVEAL_P and mv not in moves]
         return moves[: P.MAX_COLUMNS_NEW]
 
-    def _their_cols(self, battle, line: Line):
+    def _their_cols(self, battle, line: Line) -> tuple[list, np.ndarray]:
         cols, w = [], []
         move_mass = sum(self.p[c] for c in self.their_moves) / self.p_tot
         if not line.their_new and line.theirs is self.theirs0:
@@ -141,7 +141,7 @@ class TwoTurn:
                 cols.append(("switch", mon))
                 w.append(self.p[c] / self.p_tot)
         if not cols:
-            return [], None
+            return [], np.zeros(0)
         w = np.asarray(w, float)
         w = w / w.sum() if w.sum() > 0 else np.full(len(w), 1.0 / len(w))
         return cols, w

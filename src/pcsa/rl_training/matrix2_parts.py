@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import contextlib
 from dataclasses import dataclass, replace
+from typing import Any
 
 import numpy as np
 
@@ -91,13 +92,13 @@ def bt(boosts: dict) -> tuple:
 class Line:
     """The board after turn 1 (what turn 2 starts from)."""
 
-    ours: object
+    ours: Any  # poke_env Pokemon
     our_hp: float
     our_boosts: tuple
     our_new: bool
     form: str | None
     lock: str | None
-    theirs: object
+    theirs: Any
     their_hp: float
     their_boosts: tuple
     their_new: bool
