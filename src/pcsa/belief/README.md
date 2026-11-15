@@ -74,30 +74,14 @@ equals research rl2's bit for bit in all three modes (1,579 decisions, 111 team 
 u00848 and research's own belief+mega rollouts v2-belief u00002), and pcsa's `base` equals pcsa main's. A short
 version runs in the tests (`tests/rl_training/test_belief_parity.py`, skipped without the research folders).
 
-## Stage 3: the matrix blend
+## Stage 3: the matrix blend (removed 15 Nov 2026)
 
-`pcsa.rl_training.matrix` (with `matrix_cells`) is research's `rl2/matrix.py` (split for the file and function
-limits, same arithmetic in the same order): per decision a one-turn value V(i, j) for each of our legal actions i
-against each of the opponent head's kept actions j (p_j >= 0.01), from the belief's damage calculator, speed and
-item / ability probabilities, and Q_i = sum_j p_j V(i, j). With `matrix_blend` > 0 (config/players/neural.yaml,
-default 0.0: off, nothing imported) the logits become logits + matrix_blend x Q (`FormerPlayer._blend`, as research's
-`Player2._blend`): never on a forced switch, the network's logits on any error (`matrix_error` in the notes). In
-feature mode `base` the player keeps a belief for the matrix only (live settings). The decision notes carry
-`matrix.blend`: the weight, Q per action row and the action the network alone would have played. The matrix reads
-the head's `kept_p`, so `opponent_temperature` (1.15 live) changes Q's weights; research measured it at 1.0.
-
-Equivalence (research/pcsa-belief/stage4/equiv_matrix.py): research Player2 and pcsa FormerPlayer playing the same
-archived simulator episodes at blend 4, research's settings on both sides: observation, network logits, Q, cells,
-blended logits and choice bit-identical on 781 decisions (714 with a matrix; belief+mega on v2-belief u00002 /
-u00150 with belief100, base on v2-teams-1111 u00845 / v2-gold u00975 with gold940); blend 0 = pcsa main's
-FormerPlayer (index, probabilities, value) on all of them. On 3,044 recorded live decisions research's and pcsa's
-lookahead give the same Q and cells bit for bit (129 belief rebuilds). `tests/rl_training/test_matrix.py` runs a
-short version.
+The damage-calculator matrix blend and the two-turn search (`pcsa.rl_training.matrix`, `matrix2`, `matrix_cells`; `matrix_blend` / `matrix_depth` in neural.yaml) were removed from pcsa on 15 Nov 2026 (user's call). The code stays in git history and in research/pcsa-rl (`rl2/matrix.py`, `rl2/matrix2.py`). The dashboard still shows the `matrix.blend` notes of older recorded decisions.
 
 ## The live player (from 12 Nov 2026)
 
 The trial ended in promotion (user's decision). `config/players/neural.yaml` runs `poke-transformer-belief100-20261112-1905.pt`
-(research v2-belief update 100, belief+mega columns, its opponent head fit to the live games) with `matrix_blend: 4.0`,
+(research v2-belief update 100, belief+mega columns, its opponent head fit to the live games) with (then) `matrix_blend: 4.0`,
 `opponent_temperature: 1.0` and `opponent_top: 0`. The mode follows the checkpoint; the manifest's player params say
 `features_used: belief+mega` and `matrix_blend: 4.0`.
 

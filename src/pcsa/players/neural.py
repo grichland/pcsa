@@ -21,15 +21,11 @@ In the belief modes the player keeps one belief tracker per battle (pcsa.belief)
 the protocol prints critical hits (false on the phone: a hit may then have been one), and empty items / abilities
 of seen builds count as unknown. See src/pcsa/belief/README.md.
 
-Matrix blend (`matrix_blend`, 0 = off): logits + matrix_blend x a value per action from the belief's damage
-calculator: one turn (`matrix_depth` 1, pcsa.rl_training.matrix) or two (2, matrix2). Mode base keeps a belief for it.
-
 torch is imported only when a checkpoint is loaded; it comes with the `train` extra (`uv sync --extra train`).
 """
 
 from __future__ import annotations
 
-import math
 import os
 import threading
 from collections.abc import Callable, Iterable, Mapping
@@ -79,8 +75,6 @@ class NeuralParams:
     rule_mode: str = "override"  # override: replace the network's pick; mask: mask the forbidden actions first
     features: str = "checkpoint"  # the observation's feature mode; checkpoint: the one the network was trained with
     belief_crit_lines: bool = False  # belief modes: the protocol shows critical hits (the simulator does; live: no)
-    matrix_blend: float = 0.0  # logits + matrix_blend x the belief's matrix values (rl_training.matrix); 0 = off
-    matrix_depth: int = 1  # 1: one turn (rl_training.matrix); 2: two turns (rl_training.matrix2, 14 Nov 2026)
     sucker_punch_passive: float = 0.5  # sucker_punch rule: block above this P(their active does not attack)
     preview_lead_avoid: dict = field(default_factory=dict)  # species -> types in their six that forbid leading it
     preview_bring_max_one: list = field(default_factory=list)  # [{types, species}]: bring at most one of species
@@ -111,11 +105,6 @@ class NeuralParams:
         value_calibration.check(self.value_calibration, where)
         if self.features not in FEATURES:
             raise ConfigError(f"{where}: features must be one of {FEATURES}, not {self.features!r}")
-        blend = self.matrix_blend
-        if isinstance(blend, bool) or not isinstance(blend, int | float) or not math.isfinite(blend) or blend < 0:
-            raise ConfigError(f"{where}: matrix_blend must be a number, 0 (off) or more")
-        if self.matrix_depth not in (1, 2) or isinstance(self.matrix_depth, bool):
-            raise ConfigError(f"{where}: matrix_depth must be 1 or 2")
         if not isinstance(self.opponent_top, int) or isinstance(self.opponent_top, bool) or self.opponent_top < 0:
             raise ConfigError(f"{where}: opponent_top must be a whole number, 0 (all) or more")
         if self.fallback == "neural":
@@ -169,11 +158,6 @@ def load_policy(params: NeuralParams, path: Path) -> tuple[Any, dict]:
     )
     policy.load_state_dict(state["net"])
     policy.opponent_moves_from_builds = bool(params.opponent_moves_from_builds)
-    if params.matrix_blend:
-        from pcsa.rl_training import matrix, matrix2
-
-        values = matrix.action_values if params.matrix_depth == 1 else matrix2.action_values
-        policy.matrix_blend, policy.matrix_values = float(params.matrix_blend), values
     policy.preview_keep = preview_rules.keeper(params.preview_lead_avoid, params.preview_bring_max_one)
     policy.preview_robust_worst = int(params.preview_robust_worst) if params.preview in ("robust", "playout") else 0
     policy.value_map = value_calibration.mapper(params.value_calibration)

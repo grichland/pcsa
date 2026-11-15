@@ -72,7 +72,4 @@ preview_bring_max_one:                      # when their six holds one of `types
 features: checkpoint
 belief_crit_lines: false        # belief modes: the protocol prints critical hits (true only for simulator runs;
                                 # the phone's battle log does not, so any hit may have been one)
-matrix_blend: 2.0               # stage 3 (research/pcsa-belief): logits + matrix_blend x a one-turn value per action from
-matrix_depth: 2                 # 1: the one-turn lookahead; 2: the two-turn search (pcsa.rl_training.matrix2,
-                                # research/pcsa-search; 1.5 s cap, then one turn); the dashboard's LOOK column shows it
 preview_playout: {workers: 6, budget_s: 30}  # 14 Nov: 6 workers measured at a median 24 s per preview (max 36 s)

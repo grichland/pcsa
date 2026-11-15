@@ -48,4 +48,3 @@ preview_bring_max_one:                      # when their six holds one of `types
 features: checkpoint
 belief_crit_lines: false        # belief modes: the protocol prints critical hits (true only for simulator runs;
                                 # the phone's battle log does not, so any hit may have been one)
-matrix_blend: 2.0               # stage 3 (research/pcsa-belief): logits + matrix_blend x a one-turn value per action from

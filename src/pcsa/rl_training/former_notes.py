@@ -58,31 +58,6 @@ def belief_notes(belief) -> dict:
     }
 
 
-def blend_notes(out: dict, blend: float) -> dict:
-    """The matrix blend of one decision (stage 3): its weight, Q per action row, and the action the network alone
-    would have taken (greedy over its own logits; `chosen` in the matrix notes is the blended one)."""
-    if "matrix_error" in out:
-        return {"blend": blend, "error": out["matrix_error"]}
-    if "matrix_q" not in out:
-        return {}
-    info = out.get("matrix_info") or {}
-    notes = {
-        "blend": blend,
-        "q": [round(float(x), 4) for x in out["matrix_q"].tolist()],
-        "network_index": int(torch.argmax(out["network_logits"])),
-        "computed": {k: int(v) for k, v in (info.get("counts") or {}).items()},
-        # matrix_depth (14 Nov): the depth set (2 when the two-turn search ran, matrix2 notes its "depth") and used
-        "depth_set": 2 if "depth" in info else 1,
-        "depth": int(info.get("depth", 1)),
-    }
-    if info.get("depth2"):
-        notes["depth2"] = str(info["depth2"])  # "time cap": the one-turn values were used
-    for key in ("q1", "cont", "ms2"):
-        if key in info:
-            notes[key] = info[key]
-    return notes
-
-
 def their_actions(out: dict) -> tuple[tuple[str, str, float], ...]:
     """Their kept actions as the matrix weighs them (the notes' cols / col_kind / p_cols): (kind "move" or "switch",
     move id or "", probability), for the neural player's sucker_punch guard rule."""

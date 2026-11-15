@@ -94,39 +94,6 @@ def test_a_belief_checkpoint_keeps_one_belief_per_battle(tmp_path: Path) -> None
     assert player.policy.game.belief is not first
 
 
-@pytest.mark.torch
-def test_the_stage3_hook_is_off_and_adds_to_the_logits(tmp_path: Path) -> None:
-    import torch
-
-    player = NeuralPlayer(NeuralParams(seed=0), MaxDamagePlayer(), checkpoint(tmp_path, None))
-    policy = player.policy
-    assert not policy.matrix_blend and policy.matrix_values is None
-    view = view_of(decision_battle("Azumarill"))
-    plain = policy.propose(view)
-    seen = []
-
-    def values(battle, legal, out, belief):
-        seen.append(belief)
-        return [1.0] * len(out["logits"]), {"cells": 0}
-
-    policy.matrix_values = values
-    assert torch.equal(policy.propose(view).out["logits"], plain.out["logits"])  # weight 0: off
-    policy.matrix_blend = 0.5
-    shifted = policy.propose(view).out
-    # base mode: the hook gets a belief kept for the matrix only (research Player2._matrix_belief), live settings
-    assert len(seen) == 1 and seen[0] is not None and not seen[0].tracker.crit_reported
-    assert torch.allclose(shifted["logits"], plain.out["logits"] + 0.5)
-    assert torch.equal(shifted["network_logits"], plain.out["logits"]) and shifted["matrix_info"] == {"cells": 0}
-
-    def broken(battle, legal, out, belief):
-        raise RuntimeError("no cells")
-
-    policy.matrix_values = broken
-    failed = policy.propose(view).out
-    assert torch.equal(failed["logits"], plain.out["logits"]) and policy.matrix_errors == 1
-    assert failed["matrix_error"] == "RuntimeError: no cells"
-
-
 def _live_battles(count: int) -> list[Path]:
     runs = sorted(LIVE_RUNS.glob("*-run")) if LIVE_RUNS.is_dir() else []
     for run in reversed(runs):
@@ -156,9 +123,7 @@ def test_dry_run_on_recorded_live_decisions(tmp_path: Path, mode: str, record_pr
         state["config"] = {**(state.get("config") or {}), "features": mode}
         path = tmp_path / "gold940-as-belief.pt"
         torch.save(state, path)
-    params = replace(
-        NeuralParams.load(REPO / "config" / "players" / "neural.yaml"), checkpoint=str(path), seed=0, matrix_blend=0.0
-    )
+    params = replace(NeuralParams.load(REPO / "config" / "players" / "neural.yaml"), checkpoint=str(path), seed=0)
     player = NeuralPlayer(params, MaxDamagePlayer(), path)
     assert player.error is None and player.policy.features == mode
     n = 0
