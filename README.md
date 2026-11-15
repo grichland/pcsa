@@ -167,7 +167,7 @@ uv run pcsa sim play --a neural --b disciplined --battles 100 --set policy.neura
 | `poke-transformer-gold940-20261112-1319.pt` | the network fine-tuned on the gold team | `tests/rl_training/test_neural_features.py` |
 
 Older models (general-800, live-0514, live-0559, live-1415) were removed on 15 Nov 2026; they stay in git history.
-`scriptsun_agent.ps1` runs the neural player unless `$Player` is changed.
+`scripts\run_agent.ps1` runs the neural player unless `$Player` is changed.
 
 ![The neural player's network: 12 Pokémon, the field and the last turn become 14 tokens per decision; a transformer with a memory of earlier decisions feeds three readouts; the network first predicts the opponent's action, then scores each of its own actions against each predicted one in a matrix, and a value head estimates the win chance](docs/images/network.svg)
 
