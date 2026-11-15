@@ -17,9 +17,9 @@ The Showdown engine doubles as the simulator the players are measured in.
 
 *Click the image to watch on YouTube (1:50): the neural player plays a ranked battle on the phone while `pcsa watch` shows each decision, its confidence, the critic's value and the tracked battle state (recorded with the first dashboard and network; the current ones are described below). Trainer names and session identifiers are blurred.*
 
-![Season M-7 singles result: Master Ball tier, rank 4, final rating 1,561](docs/images/master-ball-tier.jpg)
+![Single Battle result after a ranked game: Master Ball tier, rank 2, placement No. 4,190, rating 1,825.079](docs/images/master-ball-rank2.jpg)
 
-*Season M-7, Single Battle: the account the agent played on finished in the Master Ball tier (trainer name and ID masked).*
+*Single Battle, 15 Nov 2026: the post-game screen after one of the agent's ranked wins. The bot reached Master Ball tier rank 2 (placement No. 4,190, rating 1,825), in the top 0.5% of the ladder.*
 
 ## What is here
 

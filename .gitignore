@@ -24,7 +24,7 @@ output/
 *.webp
 *.bmp
 # The one exception: the README's screenshot of this project's own ranked result (trainer name and ID masked).
-!docs/images/master-ball-tier.jpg
+!docs/images/master-ball-rank2.jpg
 !docs/images/demo-poster.jpg
 # The demo video is on YouTube (linked from the README); local recordings stay out of the repo.
 docs/media/
