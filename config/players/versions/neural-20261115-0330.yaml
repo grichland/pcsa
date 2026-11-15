@@ -1,0 +1,82 @@
+# version neural-20261115-0330 (promoted 15 Nov, user): league run 1 update 50 (lr 2e-4 branch; validation 72% vs
+# frozen live-1527, 71% on the teams we lost to live) + the live fit (research job-20261115-0330): policy and value
+# heads on the last 100 gold games, opponent head on all live games (top-1 0.43 -> 0.68, top-3 0.74 -> 0.93 on 374
+# battles). Value calibration refit for this model (a 2.217, b 0.180). opponent_temperature kept at the user's 1
+# (the job's NLL fit was 0.65).
+# fitted: {"checkpoint": "assets/models/poke-transformer-live-20261115-0330.pt", "opponent_temperature": 0.65}
+# version neural-20261115-0049: neural-20261115-0024 without the damage-calculator search (matrix_blend /
+# matrix_depth removed from the player, user's call 15 Nov 2026): moves are the network's policy with the guard
+# rule masks only. Model, preview, rules and value calibration unchanged.
+# fitted: {"checkpoint": "assets/models/poke-transformer-live-20261114-1527.pt"}
+# Live player from 12 Nov 2026 (user's decision after the pcsa-belief trial): the belief network
+# (poke-transformer-belief100, belief+mega columns) with the matrix blend at 4.0, opponent_temperature 1.0 and
+# opponent_top 0 (all), the setting research measured (+2 points vs gold940 in the simulator).
+# The neural player (`--player neural`, live and sim): a poke-singles-former checkpoint from the research runs
+# (research/pcsa-rl, network code in src/pcsa/rl_training). Needs torch: `uv sync --extra train`.
+# Point a run at another network without editing this file: --set policy.neural_checkpoint=<path>
+# (or the environment variable PCSA__policy__neural_checkpoint=<path>).
+checkpoint: assets/models/poke-transformer-live-20261115-0330.pt  # 20261115-0330: league-1115-u50-lr2e-4.pt + policy head on the last 100 gold-team games + opponent head on 374 live games (top-1 0.6774, in-sample); value head refit (live_finetune_job)
+device: cpu
+sampling: greedy                # greedy: the most likely action; sample: training's capped (0.99) distribution
+temperature: 1.0                # of `sample`
+opponent_temperature: 1  # user's setting (14 Nov); the 15 Nov job fitted 0.65
+preview: playout                 # robust (13 Nov): each pick scored against each of their six leads (turn-1 views),
+                                # the best mean over its preview_robust_worst worst leads; critic: training's
+                                # softmax(value / 0.1), top-p 0.9 nucleus; greedy: the best value
+                                # playout (14 Nov, pcsa.players.preview_playout): the robust scores choose 16
+                                # lineups, full simulated games (sequential halving) choose among them. It needs
+                                # max_preview_s >= its budget_s + 15 (e.g. 50) and `preview_playout: {workers: 4,
+                                # budget_s: 30}` (defaults; also schedule, min_playouts, margin); the lead rates:
+                                # scripts/build_lead_prior.py -> assets/sets/lead_prior.json
+preview_robust_worst: 2         # robust: how many of a pick's worst leads of theirs are averaged (1 = maximin)
+fallback: disciplined           # decides when the network cannot: no or bad checkpoint, no Battle, an error, too slow
+opponent_top: 3                 # weigh our options against only their k likeliest actions (0 = all of them, as
+                                # trained, the setting research's matrix-blend comparison used). 3 here (user, 13 Nov; 5 on
+                                # 12 Nov); not measured in the simulator.
+opponent_moves_from_builds: true  # their active's move options: only moves of its builds seen on the ladder (else its
+                                # listed builds) that agree with its revealed moves, plus those; the opponent head's
+                                # move probabilities renormalised over them (inference only). false = every learnable
+                                # move, as trained. 13 Nov: Galarian Slowking's head gave Ice Punch 12-23%, no build has it.
+max_decision_s: 5.0             # a decision taking longer than this goes to the fallback
+max_preview_s: 50.0             # playout preview: robust scores (~4-13 s) + playouts (budget_s 30) + margin
+reserve_s: 0.5                  # deadline time kept for the fallback
+threads: 1                      # torch CPU threads
+seed: null                      # preview and `sample` draws; null: fresh each run
+# Guard rules: stop plainly wasted actions ([] = the network alone; one run: --set policy.neural_rules=none, or names
+# separated by commas). See src/pcsa/players/neural_rules.py.
+rules: [encore_switch, no_effect, no_full_heal, useless_status, locked_futile, sucker_punch, yawn_switch,
+        mega_weakness, priority_ko]
+rule_mode: mask                 # mask (14 Nov, user): every legal action is put to the rules and the forbidden ones are
+                                # masked before the matrix blend and the softmax; the network chooses among the rest
+                                # (notes matrix.masked; the dashboard strikes the rows). override: the rules replace the
+                                # network's pick with its best other action (up to neural-20261114-1902).
+# weak4x_switch (off from neural-20261114-2110): 4 of 4 live fires on 14 Nov were bad - it ignores what the switch-in
+# takes from their other likely moves, fires at low HP and loops against Volt Switch pivots; to be fixed first
+# yawn_switch (14 Nov, the labelled Yawn loops): drowsy, able to fall asleep, no KO this turn: switch (not on the
+# first turn in)
+# mega_weakness (14 Nov, from the labelled live losses: Mega Golisopod is Bug/Steel, 4x weak to Fire): no Mega
+# Evolution into a 4x weakness to a likely or shown attack
+# encore_switch (user's rule, 14 Nov): their active used Encore on us since it came in and earlier turns show for sure
+# that it moves before our active (same pair, same-priority moves, same speed state; two such turns unless a tie and
+# Quick Claw are ruled out, none the other way): switch, the network picks which. First, so it decides before the
+# others; remove it from this list to turn it off. Live battles 14 and 35 of 13 Nov: a faster Primarina Encored our
+# Calm Mind every 3 turns and we never switched (pcsa.players.encore_switch).
+sucker_punch_passive: 0.5       # sucker_punch rule (13 Nov): Sucker Punch / Thunderclap are blocked when they already
+                                # failed against that foe this battle, or when the opponent head's status moves plus
+                                # switches (the matrix's p_cols) exceed this; 19 of 42 live Sucker Punches failed
+# Team preview rules (13 Nov): they remove picks, the critic chooses among the rest (all of them when none is left).
+# Last 100 live battles: a Golisopod lead went 3-21 into a six with a Fire type (7-5 without); Fire moves caused 29%
+# of our faints (Golisopod 18 of 32, Gholdengo 12 of 20). {} / [] = off. See src/pcsa/players/preview_rules.py.
+preview_lead_avoid: {golisopod: [Fire]}     # species -> types in their six that forbid leading it
+preview_bring_max_one:                      # when their six holds one of `types`, bring at most one of `species`
+  - {types: [Fire], species: [golisopod, gholdengo]}
+# Feature mode: which observation columns the network reads. checkpoint (default): the mode the network was trained
+# with (its run config's `features`; none = base, as every network before the belief tracker, gold940 included).
+# base | belief | belief+mega force one; a base network refuses the belief modes. In the belief modes the player
+# keeps a belief tracker per battle (src/pcsa/belief/README.md). One run: --set policy.neural_checkpoint=<belief
+# network> is enough, the mode follows it.
+features: checkpoint
+belief_crit_lines: false        # belief modes: the protocol prints critical hits (true only for simulator runs;
+                                # the phone's battle log does not, so any hit may have been one)
+preview_playout: {workers: 6, budget_s: 30}  # 14 Nov: 6 workers measured at a median 24 s per preview (max 36 s)
+value_calibration: {a: 2.21689, b: 0.17963}  # fitted for poke-transformer-live-20261115-0330.pt (research runs/value-calibration/20261115-0330)
