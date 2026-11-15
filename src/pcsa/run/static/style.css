@@ -310,6 +310,10 @@ button[data-tip], summary[data-tip] { cursor: pointer; }
 .mx-row.is-illegal .mx-cell { background: repeating-linear-gradient(135deg, transparent 0 4px, var(--line) 4px 5px); }
 .mx-row.is-illegal .mx-cell:hover { outline: 0; }
 .mx-row.is-illegal .mx-rbar { background: transparent; }
+.mx-row.is-masked .mx-rl { color: var(--muted); }
+.mx-row.is-masked .mx-rl .nm { text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--warn) 70%, transparent); }
+.mx-row.is-masked .mx-cell, .mx-row.is-masked .mx-sc, .mx-row.is-masked .mx-lk { opacity: 0.45; }
+.mx-tag.is-mask { color: var(--warn); background: var(--warn-soft); }
 .mx-row.is-illegal .mx-rbar i, .mx-row.is-illegal .mx-ralt { display: none; }
 .mx-row.is-illegal .mx-rp b { color: var(--muted); font-weight: 400; }
 .mx-row.is-played::after { border-color: var(--you); box-shadow: 0 0 0 3px var(--you-fade); }

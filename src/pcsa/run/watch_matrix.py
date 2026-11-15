@@ -100,7 +100,8 @@ def row_of_order(order, rows: list[str]) -> int | None:
 
 def matrix_view(raw, names: dict[str, str] | None = None, order=None, network=None) -> dict | None:
     """The matrix note as the page draws it: the note's own lists, the written names of its rows and columns, the
-    row the network chose (`chosen`) and the row that was played (`played`: another one after an override)."""
+    row the network chose (`chosen`), the row that was played (`played`: another one after an override or a mask)
+    and the rows the guard rules masked (`masked`: [rule, reason] per row)."""
     if not isinstance(raw, dict):
         return None
     rows, cols = _strings(raw.get("rows"), ROWS), _strings(raw.get("cols"), COLS)
@@ -137,7 +138,20 @@ def matrix_view(raw, names: dict[str, str] | None = None, order=None, network=No
         "opp_top": raw.get("opp_top") if type(raw.get("opp_top")) is int and raw["opp_top"] >= 0 else None,
         "opp_temperature": _positive(raw.get("opp_temperature")),
         "blend": blend_view(raw.get("blend")),
+        "masked": masked_view(raw.get("masked")),
     }
+
+
+def masked_view(raw) -> list | None:
+    """The guard-rule masks (rule_mode: mask): per row None or [rule, reason]; None when no row was masked."""
+    if not isinstance(raw, dict) or not raw:
+        return None
+    out: list = [None] * ROWS
+    for key, value in raw.items():
+        index = int(key) if isinstance(key, str) and key.isdigit() else None
+        if index is not None and index < ROWS and isinstance(value, list) and len(value) == ORDER_PARTS:
+            out[index] = [str(value[0]), str(value[1])[:200]]
+    return out if any(out) else None
 
 
 def blend_view(raw) -> dict | None:

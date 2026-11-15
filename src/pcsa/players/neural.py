@@ -6,10 +6,10 @@ checkpoint, no Battle, an exception, or no answer within min(max_decision_s, or 
 the deadline's remaining time - reserve_s). Preview `robust`: pcsa.rl_training.preview_leads; `playout`: the robust
 scores, then full simulated games on worker processes (pcsa.players.preview_playout, `preview_playout`).
 
-Guard rules (pcsa.players.neural_rules, the `rules` list) stop plainly wasted actions (a heal at full HP, Stealth
-Rock already up, a status move on a statused foe, a lock into moves that do nothing, a missed sure priority KO): the
-network's best other action is played and the notes say so (`override`, `override_why`, `network`). The
-sucker_punch rule also reads the opponent head's kept actions (the matrix's p_cols; `sucker_punch_passive`).
+Guard rules (pcsa.players.neural_rules, the `rules` list) stop plainly wasted actions. `rule_mode: override`: the
+network's best other action replaces its pick (notes `override`, `override_why`, `network`); `mask`: the forbidden
+actions are masked before the matrix blend and the softmax (pcsa.rl_training.rule_masks; notes matrix.masked,
+`mask_rules`, `network` when its own pick was masked). The opponent head's kept actions feed sucker_punch.
 Preview rules (`preview_lead_avoid`, `preview_bring_max_one`; pcsa.players.preview_rules) remove team-preview picks
 before the critic chooses among the rest (notes: `preview_rules`).
 
@@ -45,10 +45,11 @@ from pcsa.common.config import Config
 from pcsa.common.errors import ConfigError
 from pcsa.players import neural_rules, preview_rules
 from pcsa.players.base import DecisionView, LegalAction, Player, TeamPreviewView
-from pcsa.players.neural_modes import feature_mode
+from pcsa.players.neural_modes import feature_mode, load_threat
 
 NETWORKS_ENV = "PCSA_NETWORKS"  # a folder relative checkpoint paths are looked up in first
 SAMPLING = ("greedy", "sample")
+RULE_MODES = ("override", "mask")  # mask (14 Nov 2026): forbidden actions leave the mask before the softmax
 PREVIEW = ("critic", "greedy", "robust", "playout")  # playout: robust, then pcsa.players.preview_playout
 FEATURES = ("checkpoint", "base", "belief", "belief+mega")  # checkpoint: the mode the network was trained with
 TORCH_HINT = "the neural player needs torch: run `uv sync --extra train` (or `uv sync --inexact --extra train`)"
@@ -74,6 +75,7 @@ class NeuralParams:
     threads: int = 1  # torch CPU threads
     seed: int | None = None  # preview and `sample` draws; None: fresh each run
     rules: list[str] = field(default_factory=list)  # guard rules (pcsa.players.neural_rules); [] = the network alone
+    rule_mode: str = "override"  # override: replace the network's pick; mask: mask the forbidden actions first
     features: str = "checkpoint"  # the observation's feature mode; checkpoint: the one the network was trained with
     belief_crit_lines: bool = False  # belief modes: the protocol shows critical hits (the simulator does; live: no)
     matrix_blend: float = 0.0  # logits + matrix_blend x the belief's matrix values (rl_training.matrix); 0 = off
@@ -98,8 +100,8 @@ class NeuralParams:
         preview_rules.check(self.preview_lead_avoid, self.preview_bring_max_one, where)
         if not isinstance(self.sucker_punch_passive, int | float) or not 0 <= self.sucker_punch_passive <= 1:
             raise ConfigError(f"{where}: sucker_punch_passive must be a probability (0 to 1)")
-        if self.sampling not in SAMPLING:
-            raise ConfigError(f"{where}: sampling must be one of {SAMPLING}, not {self.sampling!r}")
+        if self.sampling not in SAMPLING or self.rule_mode not in RULE_MODES:
+            raise ConfigError(f"{where}: sampling must be one of {SAMPLING} and rule_mode one of {RULE_MODES}")
         if self.preview not in PREVIEW:
             raise ConfigError(f"{where}: preview must be one of {PREVIEW}, not {self.preview!r}")
         preview_rules.check_robust_worst(self.preview_robust_worst, where)
@@ -181,15 +183,6 @@ def load_policy(params: NeuralParams, path: Path) -> tuple[Any, dict]:
     return policy, {**facts, "d": cfg.d, "layers": cfg.layers, "columns": cfg.top_k + 5, "memory": cfg.memory}
 
 
-def load_threat() -> tuple[Any, Any]:
-    """(build catalog with the builds seen on the live ladder first, opponent tracker), for the guard rules."""
-    from pcsa.battle.builds import Catalog
-    from pcsa.players.opponent import Tracker
-
-    catalog = Catalog.load(seen=True)
-    return catalog, Tracker(catalog)
-
-
 class NeuralPlayer:
     name = "neural"
 
@@ -221,7 +214,11 @@ class NeuralPlayer:
                 self.error = f"checkpoint {checkpoint.name} not loaded: {type(error).__name__}: {error}"
         if self.error:
             log.warning("neural_unavailable", reason=self.error, fallback=fallback.name)
-        elif params.preview == "playout":  # the workers load in the background from now
+            return
+        if params.rules and params.rule_mode == "mask":  # the masks run in the timed decision: load the threat now
+            self._threat = self._load_threat()
+            self.policy.rule_mask = self._rule_masks
+        if params.preview == "playout":  # the workers load in the background from now
             from pcsa.players import preview_playout
 
             self.playout = preview_playout.start(self)
@@ -274,7 +271,8 @@ class NeuralPlayer:
         if why is None:
             proposal, why, ms = self._timed(lambda: self.policy.propose(view), deadline)
             if why is None:
-                proposal, override = self._override(view, proposal)
+                masked = self.p.rule_mode == "mask"  # the policy masked the forbidden actions already
+                proposal, override = (proposal, {}) if masked else self._override(view, proposal)
                 chosen = self.policy.commit(proposal)
                 self._notes = {**self.policy.notes(), "rule": "neural", "ms": ms, **override}
                 return chosen
@@ -288,15 +286,7 @@ class NeuralPlayer:
         if not self.p.rules:
             return proposal, {}
         try:
-            if self._threat is None:
-                self._threat = self._load_threat()
-            catalog, tracker = self._threat
-            tracker.observe(view.battle)
-            ranked = self._ranked(view, proposal)
-            their, passive = self._their(proposal), float(self.p.sucker_punch_passive)
-            spot = neural_rules.Spot(
-                view.battle, view.legal, proposal.chosen, ranked, catalog, tracker, their, passive
-            )
+            spot = self._spot(view, proposal.chosen, proposal.probs[0].tolist(), getattr(proposal, "out", None))
             out = neural_rules.apply(self.p.rules, spot)
         except Exception as error:
             return proposal, {"override_error": f"{type(error).__name__}: {error}"}
@@ -306,10 +296,24 @@ class NeuralPlayer:
         notes = {"override": rule, "override_why": reason, "network": proposal.chosen.message}
         return replace(proposal, chosen=action), notes
 
+    def _spot(self, view: DecisionView, chosen: LegalAction, scores: list, out: Any) -> neural_rules.Spot:
+        """The decision as the rules see it (the threat estimates are loaded on first use)."""
+        if self._threat is None:
+            self._threat = self._load_threat()
+        catalog, tracker = self._threat
+        tracker.observe(view.battle)
+        their, passive = self._their(out), float(self.p.sucker_punch_passive)
+        ranked = self._ranked(view, scores)
+        return neural_rules.Spot(view.battle, view.legal, chosen, ranked, catalog, tracker, their, passive)
+
+    def _rule_masks(self, view: DecisionView, out: dict) -> dict[str, tuple[str, str]]:
+        """rule_mode mask (FormerPlayer.rule_mask): the forbidden actions, ranked by the network's own logits."""
+        spot = self._spot(view, view.legal[0], out["logits"].reshape(-1).tolist(), out)
+        return neural_rules.masks(self.p.rules, spot)
+
     @staticmethod
-    def _their(proposal: Any) -> tuple | None:
+    def _their(out: Any) -> tuple | None:
         """The opponent head's kept actions with their probabilities (sucker_punch), None when unknown."""
-        out = getattr(proposal, "out", None)
         if not isinstance(out, dict) or "kept_idx" not in out or "kept_p" not in out:
             return None
         from pcsa.rl_training.former_notes import their_actions
@@ -317,11 +321,10 @@ class NeuralPlayer:
         return their_actions(out)
 
     @staticmethod
-    def _ranked(view: DecisionView, proposal: Any) -> list[LegalAction]:
-        """The legal actions, the network's most likely first."""
+    def _ranked(view: DecisionView, probs: list) -> list[LegalAction]:
+        """The legal actions, the network's most likely (highest score) first."""
         from pcsa.rl_training import features
 
-        probs = proposal.probs[0].tolist()
         out: list[LegalAction] = []
         for index in sorted(range(len(probs)), key=lambda i: -probs[i]):
             try:

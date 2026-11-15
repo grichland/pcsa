@@ -4,7 +4,8 @@ Each record (schema pcsa-decision/2) carries the choice, the order sent, the leg
 the player's own notes. Notes are shown as they are: the rule name and whatever numbers the player wrote. The
 neural player's are named (`p` the probability of the chosen action, `h` the normalised entropy, `v` the critic
 value, `ms`, `why` under the rule `neural:fallback`, the `matrix` of the decision, and on a guard-rule override
-`override`, `override_why` and `network`, the order the network wanted). A record that is missing, half written or
+`override`, `override_why` and `network`, the order the network wanted; with rule masks `network` is its own pick
+when a rule masked it). A record that is missing, half written or
 of an older shape is skipped. This module only reads.
 """
 

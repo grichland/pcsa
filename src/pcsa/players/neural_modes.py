@@ -1,6 +1,9 @@
-"""The neural player's feature mode (moved out of pcsa.players.neural for its length limit)."""
+"""The neural player's feature mode and the guard rules' threat estimates (moved out of pcsa.players.neural for its
+length limit)."""
 
 from __future__ import annotations
+
+from typing import Any
 
 from pcsa.common import log
 from pcsa.common.errors import ConfigError
@@ -18,3 +21,12 @@ def feature_mode(setting: str, trained: str, checkpoint: str = "the checkpoint")
         )
     log.warning("neural_features_override", trained=trained, used=setting, checkpoint=checkpoint)
     return setting
+
+
+def load_threat() -> tuple[Any, Any]:
+    """(build catalog with the builds seen on the live ladder first, opponent tracker), for the guard rules."""
+    from pcsa.battle.builds import Catalog
+    from pcsa.players.opponent import Tracker
+
+    catalog = Catalog.load(seen=True)
+    return catalog, Tracker(catalog)

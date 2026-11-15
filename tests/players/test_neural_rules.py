@@ -41,7 +41,8 @@ def decide(rules, s: Spot) -> tuple[str, str] | None:
 
 def test_the_repo_settings_turn_on_every_guard_and_bad_names_are_rejected() -> None:
     params = NeuralParams.load(REPO / "config" / "players" / "neural.yaml")
-    assert sorted(params.rules) == sorted(ALL)
+    off = {"weak4x_switch"}  # off from neural-20261114-2110 until it is fixed (4 of 4 live fires bad on 14 Nov)
+    assert sorted(params.rules) == sorted(set(ALL) - off) and params.rule_mode == "mask"
     with pytest.raises(ConfigError):
         neural_rules.check(["no_full_heal", "roost_spam"], "test")
 

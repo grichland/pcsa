@@ -311,7 +311,7 @@ def test_the_sucker_punch_rule_reads_the_opponent_heads_kept_actions(tmp_path: P
     player = neural(synthetic_checkpoint(tmp_path), rules=["sucker_punch"])
     player.choose_team(preview_view(), soon())
     view = view_of(decision_battle("Azumarill"))
-    their = NeuralPlayer._their(player.policy.propose(view))
+    their = NeuralPlayer._their(player.policy.propose(view).out)
     assert their and len(their) == 9 and {kind for kind, _, _ in their} == {"move", "switch"}
     assert abs(sum(p for _, _, p in their) - 1.0) < 1e-4
     player.choose_action(view, soon())

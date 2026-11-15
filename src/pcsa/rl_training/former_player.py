@@ -11,19 +11,17 @@ with the same observation (a re-read screen, a rejected tap) replaces the last d
 so the memory holds one entry per decision, as in training. `restore` rebuilds the memory of a battle that is
 resumed in a new process from the views of its earlier decisions.
 
-The notes of a decision carry the whole pair matrix (`matrix`: our 11 actions against their kept actions) for
-the run records and the dashboard. Research's training player (rl2/player.py: episodes, rewards, exploration)
-is not copied.
+The notes carry the pair matrix (`matrix`: our 11 actions against their kept actions); research's training player
+(rl2/player.py: episodes, rewards, exploration) is not copied.
 
 Feature modes (`features`, research rl2/player.py): "base" is the observation the network was trained on before
 the belief tracker; "belief" and "belief+mega" (pcsa.rl_training.belief_features) replace some columns with what
 one belief per battle (pcsa.belief.fast.BattleBelief, kept with the game's memory) says. The mode must be the one
 the checkpoint was trained with (checkpoint_features); pcsa.players.neural enforces it.
 
-Matrix blend (stage 3 of research/pcsa-belief, research rl2/player.py `matrix_blend`): with `matrix_blend` > 0 and
-`matrix_values` set (pcsa.rl_training.matrix.action_values), the logits become logits + matrix_blend x Q, a
-one-turn value per our action from the battle's belief; in feature mode "base" the player keeps a belief for the
-matrix only (same options, updated on every decision that is not a forced switch).
+Matrix blend (research rl2/player.py `matrix_blend`): logits + matrix_blend x Q from `matrix_values` (a value per
+our action from the battle's belief; mode "base" keeps a belief for it). Rule masks (`rule_mask`, rule_masks.py):
+the guard rules' forbidden actions leave the legality mask before the blend and the softmax.
 """
 
 from __future__ import annotations
@@ -39,7 +37,7 @@ import torch
 
 from pcsa.common.clock import Deadline
 from pcsa.players.base import DecisionView, LegalAction, TeamPreviewView, random_team
-from pcsa.rl_training import entropy, features, preview
+from pcsa.rl_training import entropy, features, preview, rule_masks
 from pcsa.rl_training import former_features as fx
 from pcsa.rl_training.former import Config, Net, stack
 from pcsa.rl_training.former_notes import belief_notes, blend_notes, matrix_notes
@@ -148,6 +146,7 @@ class FormerPlayer:
         self.matrix_blend = 0.0
         self.matrix_values: Any = None
         self.matrix_errors = 0
+        self.rule_mask: Any = None  # (view, out) -> {message: (rule, reason)} of forbidden actions (rule_masks.py)
         # the temperature of their predicted actions where they weight the matrix (1 = as trained)
         self.net.opp_temperature = float(opponent_temperature)
         self.net.opp_top = int(opponent_top)  # weigh only their N likeliest kept actions (0 = all, as trained)
@@ -313,8 +312,8 @@ class FormerPlayer:
     def propose(self, view: DecisionView) -> Proposal:
         """The decision for this view; changes nothing (the game's memory is stepped on a copy)."""
         obs, turn, replaces, base, cache, out, belief = self._step(view)
-        out = self._blend(view, obs, out, belief)
-        mask = torch.as_tensor(np.asarray(obs.mask, bool), device=out["logits"].device)
+        out = self._blend(view, obs, rule_masks.apply(self.rule_mask, view, obs, out), belief)
+        mask = torch.as_tensor(rule_masks.legal(obs, out), device=out["logits"].device)
         index, probs = self._sample(out["logits"][None], mask[None])
         chosen = features.legal_action(index, view.legal, view.battle)
         tag = getattr(view.battle, "battle_tag", None)
@@ -329,7 +328,7 @@ class FormerPlayer:
         if not self.matrix_blend or self.matrix_values is None or obs.forced:
             return out
         try:
-            q, info = self.matrix_values(view.battle, view.legal, out, belief)
+            q, info = self.matrix_values(view.battle, rule_masks.kept(view, out), out, belief)
             with torch.no_grad():
                 q = torch.as_tensor(np.asarray(q, np.float32), dtype=out["logits"].dtype, device=out["logits"].device)
                 logits = out["logits"] + float(self.matrix_blend) * q
@@ -341,7 +340,7 @@ class FormerPlayer:
     def commit(self, p: Proposal) -> LegalAction:
         """Make a proposal the game's latest decision (later decisions remember it) and return its action."""
         self.game = _Game(turn=p.turn, tag=p.tag, cache=p.cache, before=p.base, last=p.obs, belief=p.belief)
-        mask = torch.as_tensor(np.asarray(p.obs.mask, bool), device=p.probs.device)
+        mask = torch.as_tensor(rule_masks.legal(p.obs, p.out), device=p.probs.device)
         h = float(entropy.normalised_entropy(p.probs, mask[None])[0])
         # v: the critic's value of this position (expected return: +1 win / -1 loss, +-0.1 per faint)
         self._notes = {"rule": "rl", "p": round(float(p.probs.max()), 4), "h": round(h, 4), "v": round(p.value, 4)}
@@ -360,6 +359,7 @@ class FormerPlayer:
         blended = blend_notes(p.out, float(self.matrix_blend))
         if blended:
             self._notes["matrix"]["blend"] = blended
+        rule_masks.notes(self._notes, p.out)
         if p.replaces:
             self._notes["retry"] = True
         return p.chosen

@@ -1,5 +1,6 @@
-# version neural-20261114-1902: neural-20261114-1853 + preview: playout (6 workers, 30 s budget, max_preview_s 50) + matrix_depth: 2
-# (pcsa.players.preview_playout, pcsa.rl_training.matrix2); model, rules and opponent settings unchanged
+# version neural-20261114-2110: neural-20261114-1902 + rule_mode: mask (the guard rules mask forbidden actions before
+# the matrix blend and the softmax, pcsa.rl_training.rule_masks) and weak4x_switch removed from the rules (4 of 4
+# live fires bad on 14 Nov); model, preview, matrix and opponent settings unchanged
 # fitted: {"checkpoint": "assets/models/poke-transformer-live-20261114-1527.pt"}
 # Live player from 12 Nov 2026 (user's decision after the pcsa-belief trial): the belief network
 # (poke-transformer-belief100, belief+mega columns) with the matrix blend at 4.0, opponent_temperature 1.0 and
@@ -35,14 +36,20 @@ max_preview_s: 50.0             # playout preview: robust scores (~4-13 s) + pla
 reserve_s: 0.5                  # deadline time kept for the fallback
 threads: 1                      # torch CPU threads
 seed: null                      # preview and `sample` draws; null: fresh each run
-# Guard rules: stop plainly wasted actions; the network's best other action is played instead ([] = the network
-# alone; one run: --set policy.neural_rules=none, or names separated by commas). See src/pcsa/players/neural_rules.py.
-rules: [encore_switch, no_effect, no_full_heal, useless_status, locked_futile, sucker_punch, weak4x_switch,
-        yawn_switch, mega_weakness, priority_ko]
+# Guard rules: stop plainly wasted actions ([] = the network alone; one run: --set policy.neural_rules=none, or names
+# separated by commas). See src/pcsa/players/neural_rules.py.
+rules: [encore_switch, no_effect, no_full_heal, useless_status, locked_futile, sucker_punch, yawn_switch,
+        mega_weakness, priority_ko]
+rule_mode: mask                 # mask (14 Nov, user): every legal action is put to the rules and the forbidden ones are
+                                # masked before the matrix blend and the softmax; the network chooses among the rest
+                                # (notes matrix.masked; the dashboard strikes the rows). override: the rules replace the
+                                # network's pick with its best other action (up to neural-20261114-1902).
+# weak4x_switch (off from neural-20261114-2110): 4 of 4 live fires on 14 Nov were bad - it ignores what the switch-in
+# takes from their other likely moves, fires at low HP and loops against Volt Switch pivots; to be fixed first
 # yawn_switch (14 Nov, the labelled Yawn loops): drowsy, able to fall asleep, no KO this turn: switch (not on the
 # first turn in)
-# weak4x_switch / mega_weakness (14 Nov, from the labelled live losses: Mega Golisopod is Bug/Steel, 4x weak to Fire):
-# no Mega Evolution into a 4x weakness to a likely or shown attack; switch out of a 4x hit that lands first and KOs
+# mega_weakness (14 Nov, from the labelled live losses: Mega Golisopod is Bug/Steel, 4x weak to Fire): no Mega
+# Evolution into a 4x weakness to a likely or shown attack
 # encore_switch (user's rule, 14 Nov): their active used Encore on us since it came in and earlier turns show for sure
 # that it moves before our active (same pair, same-priority moves, same speed state; two such turns unless a tie and
 # Quick Claw are ruled out, none the other way): switch, the network picks which. First, so it decides before the

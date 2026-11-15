@@ -1,8 +1,17 @@
 """Guard rules over the neural player's choice: they stop plainly wasted actions and nothing else.
 
-The network proposes an action and ranks every legal action (its capped probabilities). Each enabled rule looks at
-the position and may replace the proposal with the network's best action that is not the mistake; the first rule
-that fires decides, and the decision's notes carry `override: <rule>`, the reason and the network's own choice.
+The network proposes an action and ranks every legal action (its capped probabilities). Two modes (neural.yaml
+`rule_mode`):
+
+  override  each enabled rule looks at the position and may replace the proposal with the network's best action
+            that is not the mistake; the first rule that fires decides, and the decision's notes carry
+            `override: <rule>`, the reason and the network's own choice (apply)
+  mask      every legal action is put to the rules as if the network had chosen it; an action a rule would replace
+            is masked (the first such rule and its reason are noted), before the network's softmax and the matrix
+            blend, and the network chooses among the rest (masks). A prohibition masks exactly its action
+            (mega_weakness: only the Mega variant); the switch rules (locked_futile, encore_switch, weak4x_switch,
+            yawn_switch) mask the moves and leave every switch open; priority_ko masks the switches and the moves
+            that do not KO first, never the priority move itself with or without Mega Evolution
 
   no_effect       a move that surely does nothing to the foe: an immune type or ability (Earthquake into Levitate,
                   Electric into Volt Absorb), priority into Psychic Terrain, a status it cannot get, Fake Out after
@@ -35,7 +44,7 @@ Damage and speed are pcsa.players.threat's estimates on the sets pcsa.players.op
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from poke_env.battle import Effect, Field, Move, SideCondition
 from poke_env.data.normalize import to_id_str
@@ -280,6 +289,34 @@ def apply(rules: Sequence[str], spot: Spot) -> tuple[LegalAction, str, str] | No
         if out is not None and out[0] != spot.chosen:
             return out[0], name, out[1]
     return None
+
+
+SAME_MOVE_OK = frozenset({"priority_ko"})  # mask mode: the rule's move with or without Mega Evolution is allowed
+
+
+def masks(rules: Sequence[str], spot: Spot) -> dict[str, tuple[str, str]]:
+    """Mask mode: {legal action's message: (rule, reason)} for every legal action an enabled rule would replace
+    were it the network's choice (the first such rule); {} when the rules do not apply (as `apply`)."""
+    if spot.mine is None or spot.theirs is None or not spot.moves():
+        return {}
+    spot.enabled = frozenset(rules)
+    out: dict[str, tuple[str, str]] = {}
+    for action in spot.legal:
+        trial = replace(spot, chosen=action)
+        for name in rules:
+            res = RULES[name](trial)
+            if res is None or res[0] == action:
+                continue
+            if name in SAME_MOVE_OK and _same_move(res[0], action):
+                continue
+            out[action.message] = (name, res[1])
+            break
+    return out
+
+
+def _same_move(a: LegalAction, b: LegalAction) -> bool:
+    ma, mb = _move(a), _move(b)
+    return ma is not None and mb is not None and ma.id == mb.id
 
 
 def their_side(battle) -> str:

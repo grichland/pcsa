@@ -28,6 +28,8 @@ const mxTrec = (m) => (isNum(m.opp_temperature) && m.opp_temperature > 0 ? m.opp
 const whatName = (what) => (what.reweighted ? `${what.top ? `${topName(what.top)} at trust` : "Trust"} ×${mxT(what.opp)}` : topName(what.top));
 const mxNum = (v, digits = 2) => signed(Number(v.toFixed(digits)), digits); // never "−0.00"
 const mxBest = (keys, of) => keys.reduce((best, k) => (best === null || of[k] > of[best] ? k : best), null);
+/** [rule, reason] when a guard rule masked row i (rule_mode: mask), else null. */
+const mxMasked = (m, i) => (Array.isArray(m.masked) && Array.isArray(m.masked[i]) ? m.masked[i] : null);
 
 /** The choice of "their actions considered": ?top=N in the address, else the one remembered, else all. */
 function mxReadTop() {
@@ -67,7 +69,7 @@ function mxWhatIf(m, cols, top, opp = null) {
   const mass = used.reduce((sum, j) => sum + base[j], 0);
   const weight = {};
   used.forEach((j) => { weight[j] = !top ? base[j] : mass > 0 ? base[j] / mass : 1 / used.length; });
-  const legal = m.legal.map((ok, i) => (ok && m.rows[i] ? i : -1)).filter((i) => i >= 0);
+  const legal = m.legal.map((ok, i) => (ok && m.rows[i] && !mxMasked(m, i) ? i : -1)).filter((i) => i >= 0);
   const score = {};
   legal.forEach((i) => { score[i] = used.reduce((sum, j) => sum + weight[j] * m.cells[i][j], 0); });
   const best = mxBest(legal, score);
@@ -125,6 +127,8 @@ function mxStats(decision) {
   if (isNum(n.p) && !m) stats.push(mxStat("Confidence", pct(n.p), "Probability the network gave the action it chose"));
   const look = mxLookStat(m?.blend);
   if (look) stats.push(look);
+  const masked = (m?.masked || []).map((x, i) => (x ? `${m.row_labels[i]}: ${x[0]} (${x[1]})` : null)).filter(Boolean);
+  if (masked.length) stats.push(mxStat("Rule masks", `${masked.length} row${masked.length > 1 ? "s" : ""}`, `The guard rules took these actions out before the network chose: ${masked.join(" · ")}`));
   if (isNum(n.ms)) stats.push(mxStat("Decided in", n.ms >= 1000 ? `${(n.ms / 1000).toFixed(1)} s` : `${n.ms.toFixed(0)} ms`, "Time the player took to decide"));
   (n.rest || []).filter((r) => r.key === "retry").forEach(() => stats.push(mxStat("Retry", "same turn", "The same turn was asked again (a re-read screen or a rejected tap): this decision replaced the earlier one")));
   return stats;
@@ -161,11 +165,13 @@ function mxLook(m, i, rowOrder) {
   return tip(cell, `${m.row_labels[i]}: lookahead ${mxNum(b.q[i])}${split}, added ×${isNum(b.weight) ? mxT(b.weight) : "?"} to the network's logit${best ? " · the highest lookahead" : ""}${net}`);
 }
 
-/** The line under the hero on an override or a fallback: what happened and why. */
+/** The line under the hero on an override, a masked network pick or a fallback: what happened and why. */
 function mxBanner(decision) {
   const n = decision.notes || {};
+  const m = n.matrix;
   const banner = el("mx-banner");
-  banner.hidden = !(n.override || n.fallback);
+  const maskedPick = !n.override && !n.fallback && m && isNum(m.chosen) ? mxMasked(m, m.chosen) : null;
+  banner.hidden = !(n.override || n.fallback || maskedPick);
   banner.className = `mx-banner${n.fallback ? " is-fallback" : " is-override"}`;
   if (n.fallback) {
     const by = (n.rest || []).filter((r) => r.key === "fallback" || r.key === "fallback_rule").map((r) => r.value).join(" · ");
@@ -175,6 +181,10 @@ function mxBanner(decision) {
     const wanted = n.network ? orderLabel(n.network.kind, n.network.label) : "another action";
     banner.replaceChildren(node("b", "", "GUARD RULE"), node("strong", "", n.override), node("span", "", n.override_why || ""), node("em", "", `network wanted ${wanted}`));
     tip(banner, `The guard rule "${n.override}" replaced the network's action (${wanted}) with the one played`);
+  } else if (maskedPick) {
+    const wanted = n.network ? orderLabel(n.network.kind, n.network.label) : rowName(m, m.chosen);
+    banner.replaceChildren(node("b", "", "RULE MASK"), node("strong", "", maskedPick[0]), node("span", "", maskedPick[1]), node("em", "", `network wanted ${wanted}`));
+    tip(banner, `The guard rule "${maskedPick[0]}" masked the network's own first choice (${wanted}) before it chose; it chose among the rest`);
   }
 }
 
@@ -285,14 +295,17 @@ function mxRow(m, i, rowOrder, g, groupStart) {
   const kind = rowKind(i);
   const overridden = m.played !== m.chosen;
   const pick = g.differs && i === g.what.best;
-  const row = node("div", `mx-row is-${kind}${m.legal[i] ? "" : " is-illegal"}${i === m.played ? " is-played" : ""}${overridden && i === m.chosen ? " is-network" : ""}${pick ? " is-pick" : ""}${groupStart ? " is-group" : ""}`);
+  const masked = mxMasked(m, i);
+  const row = node("div", `mx-row is-${kind}${m.legal[i] ? "" : " is-illegal"}${masked ? " is-masked" : ""}${i === m.played ? " is-played" : ""}${overridden && i === m.chosen ? " is-network" : ""}${pick ? " is-pick" : ""}${groupStart ? " is-group" : ""}`);
   row.setAttribute("role", "row");
   const label = node("span", "mx-rl");
   label.append(node("span", "nm", rowName(m, i)));
   if (pick && i !== m.played) label.append(node("span", "mx-tag is-pick", "would pick")); // the played row keeps its one tag
   if (overridden && i === m.chosen) label.append(node("span", "mx-tag is-net", "network"));
   if (overridden && i === m.played) label.append(node("span", "mx-tag", "played"));
-  tip(label, `${kind === "switch" ? `Switch to ${m.row_labels[i]}` : m.row_labels[i]}: ${m.legal[i] ? `our policy gives it ${pct(m.probs[i])}` : "not legal this turn"}${i === m.played ? " · the action played" : ""}${overridden && i === m.chosen ? " · the network's choice, replaced by a guard rule" : ""}${pick ? ` · the highest SCORE under ${whatName(g.what)}: what we would pick` : ""}`);
+  if (masked && !(overridden && i === m.chosen)) label.append(node("span", "mx-tag is-mask", "masked"));
+  const why = masked ? ` · masked by the guard rule ${masked[0]}: ${masked[1]}` : "";
+  tip(label, `${kind === "switch" ? `Switch to ${m.row_labels[i]}` : m.row_labels[i]}: ${m.legal[i] ? `our policy gives it ${pct(m.probs[i])}${why}` : "not legal this turn"}${i === m.played ? " · the action played" : ""}${overridden && i === m.chosen ? " · the network's choice, replaced by a guard rule" : ""}${pick ? ` · the highest SCORE under ${whatName(g.what)}: what we would pick` : ""}`);
   row.append(label);
   g.cols.forEach((j, at) => {
     if (at > 0 && m.col_kind[j] !== m.col_kind[g.cols[at - 1]]) row.append(node("span", "mx-div"));
