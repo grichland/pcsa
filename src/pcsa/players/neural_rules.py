@@ -96,6 +96,14 @@ class Spot:
     their: tuple[sucker.TheirAction, ...] | None = None  # the opponent head's kept actions; None: unknown
     passive_max: float = sucker.PASSIVE_MAX  # sucker_punch: the largest share of their non-attacking actions
     enabled: frozenset[str] = field(default_factory=frozenset)  # the rules on (set by apply)
+    # this decision's facts that do not depend on the chosen action (shared by `replace` copies: mask mode asks
+    # every rule once per legal action)
+    memo: dict = field(default_factory=dict)
+
+    def once(self, key, work: Callable[[], object]):
+        if key not in self.memo:
+            self.memo[key] = work()
+        return self.memo[key]
 
     @property
     def mine(self):
@@ -112,14 +120,23 @@ class Spot:
         return next((a for a in self.ranked if keep(a)), None)
 
     def hit(self, move) -> float:
-        return threat.hit_fraction(self.battle, self.mine, self.theirs, move, self.catalog, self.tracker)  # type: ignore[arg-type]
+        return self.once(
+            ("hit", getattr(move, "id", move)),
+            lambda: threat.hit_fraction(self.battle, self.mine, self.theirs, move, self.catalog, self.tracker),  # type: ignore[arg-type]
+        )
 
     def taken(self, move) -> float:
         """Their `move` on our active, as a share of our max HP."""
-        return threat.hit_fraction(self.battle, self.theirs, self.mine, move, self.catalog, self.tracker)  # type: ignore[arg-type]
+        return self.once(
+            ("taken", getattr(move, "id", move)),
+            lambda: threat.hit_fraction(self.battle, self.theirs, self.mine, move, self.catalog, self.tracker),  # type: ignore[arg-type]
+        )
 
     def outspeeds(self) -> bool:
-        return threat.outspeeds(self.battle, self.mine, self.theirs, self.catalog, tracker=self.tracker)  # type: ignore[arg-type]
+        return self.once(
+            "outspeeds",
+            lambda: threat.outspeeds(self.battle, self.mine, self.theirs, self.catalog, tracker=self.tracker),  # type: ignore[arg-type]
+        )
 
 
 Outcome = tuple[LegalAction, str] | None
@@ -187,7 +204,7 @@ def sucker_punch(s: Spot) -> Outcome:
 
 
 def priority_ko(s: Spot) -> Outcome:
-    pk = threat.priority_ko(s.battle, s.mine, s.theirs, s.catalog, s.tracker)  # type: ignore[arg-type]
+    pk = s.once("priority_ko", lambda: threat.priority_ko(s.battle, s.mine, s.theirs, s.catalog, s.tracker))  # type: ignore[arg-type]
     if pk is None or (pk == "suckerpunch" and not foe_attacked(s.battle)):
         return None  # Sucker Punch fails unless they attack
     if "sucker_punch" in s.enabled and sucker_blocked(s, move_object(to_id_str(pk))) is not None:
@@ -206,7 +223,7 @@ def priority_ko(s: Spot) -> Outcome:
 def encore_switch(s: Spot) -> Outcome:
     if _is_switch(s.chosen):
         return None
-    reason = encore.why(s.battle)
+    reason = s.once("encore_why", lambda: encore.why(s.battle))
     switch = s.best(_is_switch) if reason is not None else None
     return (switch, reason) if switch is not None and reason is not None else None
 
