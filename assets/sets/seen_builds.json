@@ -610,7 +610,12 @@
   "20261114T162715-14944d1d",
   "20261114T163449-3897f4fb",
   "20261114T164924-f3340d55",
-  "20261114T165815-6a88c279"
+  "20261114T165815-6a88c279",
+  "20261114T173816-86bcdd71",
+  "20261114T174822-8eac56c0",
+  "20261114T180055-6976e08c",
+  "20261114T180755-df56f507",
+  "20261114T181533-42eedec0"
  ],
  "species": {
   "abomasnow": [
@@ -1373,6 +1378,30 @@
     "known_ability": true
    },
    {
+    "source": "catalog",
+    "count": 2,
+    "first": "2026-11-14",
+    "last": "2026-11-14",
+    "species": "Archaludon",
+    "item": "Choice Scarf",
+    "ability": "Sturdy",
+    "nature": "Modest",
+    "points": {
+     "hp": 2,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Thunderbolt",
+     "Draco Meteor",
+     "Flash Cannon",
+     "Aura Sphere"
+    ]
+   },
+   {
     "source": "added",
     "count": 1,
     "first": "2026-11-14",
@@ -1401,30 +1430,6 @@
     ],
     "known_item": false,
     "known_ability": true
-   },
-   {
-    "source": "catalog",
-    "count": 1,
-    "first": "2026-11-14",
-    "last": "2026-11-14",
-    "species": "Archaludon",
-    "item": "Choice Scarf",
-    "ability": "Sturdy",
-    "nature": "Modest",
-    "points": {
-     "hp": 2,
-     "atk": 0,
-     "def": 0,
-     "spa": 32,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Thunderbolt",
-     "Draco Meteor",
-     "Flash Cannon",
-     "Aura Sphere"
-    ]
    },
    {
     "source": "added",
@@ -2048,7 +2053,7 @@
    },
    {
     "source": "added",
-    "count": 1,
+    "count": 2,
     "first": "2026-11-14",
     "last": "2026-11-14",
     "species": "Basculegion",
@@ -2066,12 +2071,14 @@
     "moves": [
      "Aqua Jet",
      "Wave Crash",
-     "Flip Turn",
+     "Agility",
      "Last Respects"
     ],
     "known_moves": [
      "aquajet",
-     "wavecrash"
+     "wavecrash",
+     "agility",
+     "lastrespects"
     ],
     "known_item": true,
     "known_ability": false
@@ -3289,7 +3296,7 @@
   "clefable": [
    {
     "source": "catalog",
-    "count": 2,
+    "count": 3,
     "first": "2026-11-04",
     "last": "2026-11-14",
     "species": "Clefable",
@@ -3664,6 +3671,30 @@
   "delphox": [
    {
     "source": "catalog",
+    "count": 5,
+    "first": "2026-11-04",
+    "last": "2026-11-14",
+    "species": "Delphox",
+    "item": "Delphoxite",
+    "ability": "Blaze",
+    "nature": "Timid",
+    "points": {
+     "hp": 2,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Dazzling Gleam",
+     "Psychic",
+     "Flamethrower",
+     "Nasty Plot"
+    ]
+   },
+   {
+    "source": "catalog",
     "count": 4,
     "first": "2026-11-13",
     "last": "2026-11-14",
@@ -3684,30 +3715,6 @@
      "Psyshock",
      "Nasty Plot",
      "Substitute"
-    ]
-   },
-   {
-    "source": "catalog",
-    "count": 4,
-    "first": "2026-11-04",
-    "last": "2026-11-14",
-    "species": "Delphox",
-    "item": "Delphoxite",
-    "ability": "Blaze",
-    "nature": "Timid",
-    "points": {
-     "hp": 2,
-     "atk": 0,
-     "def": 0,
-     "spa": 32,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Dazzling Gleam",
-     "Psychic",
-     "Flamethrower",
-     "Nasty Plot"
     ]
    },
    {
@@ -8560,6 +8567,30 @@
   ],
   "milotic": [
    {
+    "source": "catalog",
+    "count": 6,
+    "first": "2026-11-03",
+    "last": "2026-11-14",
+    "species": "Milotic",
+    "item": "Leftovers",
+    "ability": "Cute Charm",
+    "nature": "Bold",
+    "points": {
+     "hp": 32,
+     "atk": 0,
+     "def": 32,
+     "spa": 2,
+     "spd": 0,
+     "spe": 0
+    },
+    "moves": [
+     "Ice Beam",
+     "Recover",
+     "Mirror Coat",
+     "Scald"
+    ]
+   },
+   {
     "source": "added",
     "count": 2,
     "first": "2026-11-14",
@@ -8589,30 +8620,6 @@
     ],
     "known_item": false,
     "known_ability": false
-   },
-   {
-    "source": "catalog",
-    "count": 5,
-    "first": "2026-11-03",
-    "last": "2026-11-13",
-    "species": "Milotic",
-    "item": "Leftovers",
-    "ability": "Cute Charm",
-    "nature": "Bold",
-    "points": {
-     "hp": 32,
-     "atk": 0,
-     "def": 32,
-     "spa": 2,
-     "spd": 0,
-     "spe": 0
-    },
-    "moves": [
-     "Ice Beam",
-     "Recover",
-     "Mirror Coat",
-     "Scald"
-    ]
    },
    {
     "source": "added",
@@ -8673,7 +8680,7 @@
   "mimikyu": [
    {
     "source": "catalog",
-    "count": 8,
+    "count": 9,
     "first": "2026-11-04",
     "last": "2026-11-14",
     "species": "Mimikyu",
@@ -9119,7 +9126,7 @@
    },
    {
     "source": "added",
-    "count": 1,
+    "count": 2,
     "first": "2026-11-14",
     "last": "2026-11-14",
     "species": "Pawmot",
@@ -9472,7 +9479,7 @@
   "primarina": [
    {
     "source": "added",
-    "count": 22,
+    "count": 23,
     "first": "2026-11-03",
     "last": "2026-11-14",
     "species": "Primarina",
@@ -10136,6 +10143,30 @@
    },
    {
     "source": "catalog",
+    "count": 2,
+    "first": "2026-11-13",
+    "last": "2026-11-14",
+    "species": "Rotom-Heat",
+    "item": "Choice Scarf",
+    "ability": "Levitate",
+    "nature": "Timid",
+    "points": {
+     "hp": 2,
+     "atk": 0,
+     "def": 0,
+     "spa": 32,
+     "spd": 0,
+     "spe": 32
+    },
+    "moves": [
+     "Overheat",
+     "Thunderbolt",
+     "Will-O-Wisp",
+     "Volt Switch"
+    ]
+   },
+   {
+    "source": "catalog",
     "count": 1,
     "first": "2026-11-14",
     "last": "2026-11-14",
@@ -10156,30 +10187,6 @@
      "Overheat",
      "Volt Switch",
      "Pain Split"
-    ]
-   },
-   {
-    "source": "catalog",
-    "count": 1,
-    "first": "2026-11-13",
-    "last": "2026-11-13",
-    "species": "Rotom-Heat",
-    "item": "Choice Scarf",
-    "ability": "Levitate",
-    "nature": "Timid",
-    "points": {
-     "hp": 2,
-     "atk": 0,
-     "def": 0,
-     "spa": 32,
-     "spd": 0,
-     "spe": 32
-    },
-    "moves": [
-     "Overheat",
-     "Thunderbolt",
-     "Will-O-Wisp",
-     "Volt Switch"
     ]
    },
    {
@@ -11925,7 +11932,7 @@
   "staraptor": [
    {
     "source": "catalog",
-    "count": 12,
+    "count": 13,
     "first": "2026-11-03",
     "last": "2026-11-14",
     "species": "Staraptor",
@@ -13144,9 +13151,9 @@
   "vanilluxe": [
    {
     "source": "added",
-    "count": 2,
+    "count": 3,
     "first": "2026-11-13",
-    "last": "2026-11-13",
+    "last": "2026-11-14",
     "species": "Vanilluxe",
     "item": "Never-Melt Ice",
     "ability": "Snow Warning",
@@ -13162,12 +13169,14 @@
     "moves": [
      "Aurora Veil",
      "Sheer Cold",
-     "Blizzard",
-     "Freeze-Dry"
+     "Taunt",
+     "Blizzard"
     ],
     "known_moves": [
      "auroraveil",
-     "sheercold"
+     "sheercold",
+     "taunt",
+     "blizzard"
     ],
     "known_item": false,
     "known_ability": true
