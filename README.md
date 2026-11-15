@@ -162,7 +162,7 @@ uv run pcsa sim play --a neural --b disciplined --battles 100 --set policy.neura
 | model | what it is | used by |
 |---|---|---|
 | `poke-transformer-live-20261114-1527.pt` | hard50 + the opponent head fitted to 343 live games | the live model (`config/players/neural.yaml`) |
-| `poke-transformer-hard50-20261113-1215.pt` | belief100 trained 50 updates against the hard stall/sweeper bots, policy and opponent heads fitted to live games | live-1527's parent; versions `neural-20261113-1215`, `neural-20261114-0513` |
+| `poke-transformer-hard50-20261113-1215.pt` | belief100 trained 50 updates against the hard stall/sweeper bots, policy and opponent heads fitted to live games | live-1527's parent; version `neural-20261114-0513` |
 | `poke-transformer-belief100-20261112-1905.pt` | the first network with the belief + Mega inputs | `tests/rl_training/test_matrix.py`; hard50's fallback |
 | `poke-transformer-gold940-20261112-1319.pt` | the network fine-tuned on the gold team | `tests/rl_training/test_neural_features.py` |
 

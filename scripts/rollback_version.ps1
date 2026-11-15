@@ -2,7 +2,7 @@
 #
 #   scripts\rollback_version.ps1            back one version: the one before the live one
 #   scripts\rollback_version.ps1 -List      every version, the live one marked
-#   scripts\rollback_version.ps1 -To neural-20261113-1215
+#   scripts\rollback_version.ps1 -To neural-20261114-0513
 #
 # The live config's first line names its version (promote_version.ps1 writes it); a live config without one is the
 # first version. The rollback is promote_version.ps1 -Version (it refuses during a live session, commits, never pushes).
