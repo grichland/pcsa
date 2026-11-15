@@ -41,12 +41,8 @@ def soon(seconds: float = 30.0) -> Deadline:
 def test_neural_is_a_live_kind_and_reads_its_file(config: Config) -> None:
     assert "neural" in LIVE_KINDS
     params = NeuralParams.load(config.directory / config.agent.policy.neural)
-    assert (params.sampling, params.preview, params.fallback, params.device) == (
-        "greedy",
-        "robust",
-        "disciplined",
-        "cpu",
-    )
+    assert (params.sampling, params.fallback, params.device) == ("greedy", "disciplined", "cpu")
+    assert params.preview in ("robust", "playout")  # the live version picks; playout from 14 Nov (neural-1902)
 
 
 def test_bad_settings_are_rejected(tmp_path: Path) -> None:

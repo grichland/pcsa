@@ -1,5 +1,5 @@
-# version neural-20261114-1853: neural-20261114-1842 (same model and settings) + guard rule yawn_switch
-# (pcsa.players.neural_rules.yawn_switch); preview, matrix and opponent settings unchanged
+# version neural-20261114-1902: neural-20261114-1853 + preview: playout (6 workers, 30 s budget, max_preview_s 50) + matrix_depth: 2
+# (pcsa.players.preview_playout, pcsa.rl_training.matrix2); model, rules and opponent settings unchanged
 # fitted: {"checkpoint": "assets/models/poke-transformer-live-20261114-1527.pt"}
 # Live player from 12 Nov 2026 (user's decision after the pcsa-belief trial): the belief network
 # (poke-transformer-belief100, belief+mega columns) with the matrix blend at 4.0, opponent_temperature 1.0 and
@@ -13,7 +13,7 @@ device: cpu
 sampling: greedy                # greedy: the most likely action; sample: training's capped (0.99) distribution
 temperature: 1.0                # of `sample`
 opponent_temperature: 1  # user's setting (14 Nov)
-preview: robust                 # robust (13 Nov): each pick scored against each of their six leads (turn-1 views),
+preview: playout                 # robust (13 Nov): each pick scored against each of their six leads (turn-1 views),
                                 # the best mean over its preview_robust_worst worst leads; critic: training's
                                 # softmax(value / 0.1), top-p 0.9 nucleus; greedy: the best value
                                 # playout (14 Nov, pcsa.players.preview_playout): the robust scores choose 16
@@ -31,7 +31,7 @@ opponent_moves_from_builds: true  # their active's move options: only moves of i
                                 # move probabilities renormalised over them (inference only). false = every learnable
                                 # move, as trained. 13 Nov: Galarian Slowking's head gave Ice Punch 12-23%, no build has it.
 max_decision_s: 5.0             # a decision taking longer than this goes to the fallback
-max_preview_s: 20.0             # a team preview taking longer than this goes to the fallback (robust: ~4-13 s)
+max_preview_s: 50.0             # playout preview: robust scores (~4-13 s) + playouts (budget_s 30) + margin
 reserve_s: 0.5                  # deadline time kept for the fallback
 threads: 1                      # torch CPU threads
 seed: null                      # preview and `sample` draws; null: fresh each run
@@ -66,5 +66,6 @@ features: checkpoint
 belief_crit_lines: false        # belief modes: the protocol prints critical hits (true only for simulator runs;
                                 # the phone's battle log does not, so any hit may have been one)
 matrix_blend: 2.0               # stage 3 (research/pcsa-belief): logits + matrix_blend x a one-turn value per action from
-matrix_depth: 1                 # 1: the one-turn lookahead; 2: the two-turn search (pcsa.rl_training.matrix2,
+matrix_depth: 2                 # 1: the one-turn lookahead; 2: the two-turn search (pcsa.rl_training.matrix2,
                                 # research/pcsa-search; 1.5 s cap, then one turn); the dashboard's LOOK column shows it
+preview_playout: {workers: 6, budget_s: 30}  # 14 Nov: 6 workers measured at a median 24 s per preview (max 36 s)
