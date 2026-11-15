@@ -37,7 +37,7 @@ import torch
 
 from pcsa.common.clock import Deadline
 from pcsa.players.base import DecisionView, LegalAction, TeamPreviewView, random_team
-from pcsa.rl_training import entropy, features, preview, rule_masks
+from pcsa.rl_training import entropy, features, preview, rule_masks, value_calibration
 from pcsa.rl_training import former_features as fx
 from pcsa.rl_training.former import Config, Net, stack
 from pcsa.rl_training.former_notes import belief_notes, blend_notes, matrix_notes
@@ -159,6 +159,7 @@ class FormerPlayer:
         # robust preview (pcsa.rl_training.preview_leads): > 0 = score each pick by the mean of its N worst values
         # over their six possible leads (turn-1 views), and take the best; 0 = the critic's turn-0 values
         self.preview_robust_worst = 0
+        self.value_map: Any = None  # pcsa.rl_training.value_calibration.mapper; None = the raw value
         self.name = f"rl:{tag}"
         self.game = _Game()
         self.fallbacks = 0
@@ -263,7 +264,7 @@ class FormerPlayer:
         """The value of each pick's turn-0 observation, each pick its own one-decision game."""
         obs = self._preview_observations(battle, picks)
         out = self.net(stack([[o] for o in obs], self.device))
-        return out["value"][:, 0].float().cpu().numpy()
+        return value_calibration.apply(self.value_map, out["value"][:, 0].float().cpu().numpy())
 
     def _team_fallback(self, view: TeamPreviewView, why: str) -> list[int]:
         self.fallbacks += 1
@@ -343,7 +344,8 @@ class FormerPlayer:
         mask = torch.as_tensor(rule_masks.legal(p.obs, p.out), device=p.probs.device)
         h = float(entropy.normalised_entropy(p.probs, mask[None])[0])
         # v: the critic's value of this position (expected return: +1 win / -1 loss, +-0.1 per faint)
-        self._notes = {"rule": "rl", "p": round(float(p.probs.max()), 4), "h": round(h, 4), "v": round(p.value, 4)}
+        self._notes = {"rule": "rl", "p": round(float(p.probs.max()), 4), "h": round(h, 4)}
+        self._notes.update(value_calibration.notes(self.value_map, p.value))  # v (calibrated when set), v_raw
         self._notes["matrix"] = matrix_notes(p.obs, p.out, p.probs, p.index)
         # tau: `probs` is softmax over legal rows of (sum_j p_cols[j] * cells[i][j]) / tau. It is the network's
         # learned temperature times the player's sampling temperature (1 when it plays greedy).

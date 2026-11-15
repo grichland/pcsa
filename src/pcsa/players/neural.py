@@ -46,6 +46,7 @@ from pcsa.common.errors import ConfigError
 from pcsa.players import neural_rules, preview_rules
 from pcsa.players.base import DecisionView, LegalAction, Player, TeamPreviewView
 from pcsa.players.neural_modes import feature_mode, load_threat
+from pcsa.rl_training import value_calibration
 
 NETWORKS_ENV = "PCSA_NETWORKS"  # a folder relative checkpoint paths are looked up in first
 SAMPLING = ("greedy", "sample")
@@ -84,6 +85,7 @@ class NeuralParams:
     preview_lead_avoid: dict = field(default_factory=dict)  # species -> types in their six that forbid leading it
     preview_bring_max_one: list = field(default_factory=list)  # [{types, species}]: bring at most one of species
     preview_playout: dict = field(default_factory=dict)  # preview playout: pcsa.players.preview_playout.PlayoutParams
+    value_calibration: dict = field(default_factory=dict)  # {a, b}: rl_training.value_calibration; {} = raw value
 
     @classmethod
     def load(cls, path: Path) -> NeuralParams:
@@ -106,6 +108,7 @@ class NeuralParams:
             raise ConfigError(f"{where}: preview must be one of {PREVIEW}, not {self.preview!r}")
         preview_rules.check_robust_worst(self.preview_robust_worst, where)
         preview_rules.check_playout(self.preview, self.preview_playout, self.max_preview_s, where)
+        value_calibration.check(self.value_calibration, where)
         if self.features not in FEATURES:
             raise ConfigError(f"{where}: features must be one of {FEATURES}, not {self.features!r}")
         blend = self.matrix_blend
@@ -117,15 +120,9 @@ class NeuralParams:
             raise ConfigError(f"{where}: opponent_top must be a whole number, 0 (all) or more")
         if self.fallback == "neural":
             raise ConfigError(f"{where}: the fallback cannot be the neural player itself")
-        if (
-            self.temperature <= 0
-            or min(self.max_decision_s, self.max_preview_s) <= 0
-            or self.threads < 1
-            or self.opponent_temperature <= 0
-        ):
-            raise ConfigError(
-                f"{where}: temperature, opponent_temperature, max_decision_s and threads must be positive"
-            )
+        positive = (self.temperature, self.max_decision_s, self.max_preview_s, self.opponent_temperature)
+        if min(positive) <= 0 or self.threads < 1:
+            raise ConfigError(f"{where}: temperature, opponent_temperature, max_*_s and threads must be positive")
 
 
 def resolve_checkpoint(raw: str, environ: Mapping[str, str] | None = None) -> Path:
@@ -179,6 +176,7 @@ def load_policy(params: NeuralParams, path: Path) -> tuple[Any, dict]:
         policy.matrix_blend, policy.matrix_values = float(params.matrix_blend), values
     policy.preview_keep = preview_rules.keeper(params.preview_lead_avoid, params.preview_bring_max_one)
     policy.preview_robust_worst = int(params.preview_robust_worst) if params.preview in ("robust", "playout") else 0
+    policy.value_map = value_calibration.mapper(params.value_calibration)
     facts = {"update": state.get("update"), "run": (state.get("config") or {}).get("name")}
     return policy, {**facts, "d": cfg.d, "layers": cfg.layers, "columns": cfg.top_k + 5, "memory": cfg.memory}
 

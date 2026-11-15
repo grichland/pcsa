@@ -21,6 +21,7 @@ from pcsa.battle import state as tracking
 from pcsa.battle.adapter import ChampionsBattle
 from pcsa.battle.moves import max_pp
 from pcsa.battle.translate import LEVEL
+from pcsa.rl_training import value_calibration
 
 MEGA_STONE_ENDINGS = ("ite", "itex", "itey", "itez")
 
@@ -91,7 +92,8 @@ def lead_values(policy, battle, picks) -> tuple[np.ndarray, list[str]]:
             b = lead_battle(battle, pick, s, species, f"{battle.battle_tag}-lead")
             obs.append(policy._observe(b, legal_actions(b), games[s]))
     out = policy.net(stack([[o] for o in obs], policy.device))
-    return out["value"][:, 0].float().cpu().numpy().reshape(len(picks), len(species)), species
+    values = value_calibration.apply(getattr(policy, "value_map", None), out["value"][:, 0].float().cpu().numpy())
+    return values.reshape(len(picks), len(species)), species
 
 
 def robust_team(policy, battle, picks) -> list[int]:

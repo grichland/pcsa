@@ -1,6 +1,8 @@
-# version neural-20261114-2110: neural-20261114-1902 + rule_mode: mask (the guard rules mask forbidden actions before
-# the matrix blend and the softmax, pcsa.rl_training.rule_masks) and weak4x_switch removed from the rules (4 of 4
-# live fires bad on 14 Nov); model, preview, matrix and opponent settings unchanged
+# version neural-20261115-0024: neural-20261114-2110 + value_calibration (the critic's value as
+# 2 * sigmoid(a * v + b) - 1, so (v + 1) / 2 reads as a live win chance; Platt fit for live-1527 on 367 live
+# battles, 5-fold CV: ECE 0.25 -> 0.02, Brier 0.261 -> 0.192; research runs/value-calibration/20261115).
+# Affects the robust preview's candidate scores and the notes' v (v_raw keeps the critic's own); moves unchanged.
+# Refit a and b whenever the checkpoint changes.
 # fitted: {"checkpoint": "assets/models/poke-transformer-live-20261114-1527.pt"}
 # Live player from 12 Nov 2026 (user's decision after the pcsa-belief trial): the belief network
 # (poke-transformer-belief100, belief+mega columns) with the matrix blend at 4.0, opponent_temperature 1.0 and
@@ -76,3 +78,4 @@ matrix_blend: 2.0               # stage 3 (research/pcsa-belief): logits + matri
 matrix_depth: 2                 # 1: the one-turn lookahead; 2: the two-turn search (pcsa.rl_training.matrix2,
                                 # research/pcsa-search; 1.5 s cap, then one turn); the dashboard's LOOK column shows it
 preview_playout: {workers: 6, budget_s: 30}  # 14 Nov: 6 workers measured at a median 24 s per preview (max 36 s)
+value_calibration: {a: 1.9287, b: -1.15785}  # fitted for poke-transformer-live-20261114-1527.pt
