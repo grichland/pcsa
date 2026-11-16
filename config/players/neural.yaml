@@ -1,3 +1,6 @@
+# version neural-20261116-1145: 0823 + league v2-league-1116 (16 updates; self/snapshots/exploiter/max damage, class PFSP,
+# random preview, opponent head frozen, label KL anchor) -> value calibration refit (a 2.019, b -1.046). Code: trapped flag,
+# priority_ko stands aside when a switch is in their top 3.
 # version neural-20261116-0823 (16 Nov, user's pipeline): league v2-league-1115 update 100 -> opponent head on 514
 # live games (top-1 0.42 -> 0.62) + value head (policy lr 0) -> memorising label SFT, policy head only, 3,840 labels:
 # good labels 98.7% matched, original mistakes repeated 4.6% (target 2% not reached; epoch 35 of 50) -> value
@@ -23,7 +26,7 @@
 # (research/pcsa-rl, network code in src/pcsa/rl_training). Needs torch: `uv sync --extra train`.
 # Point a run at another network without editing this file: --set policy.neural_checkpoint=<path>
 # (or the environment variable PCSA__policy__neural_checkpoint=<path>).
-checkpoint: assets/models/poke-transformer-live-20261116-0823.pt  # u100 + opp/value heads + memorising label SFT (policy head only), epoch 35
+checkpoint: assets/models/poke-transformer-league-20261116-1145.pt  # 0823 + league-1116 final (update 16)
 device: cpu
 sampling: greedy                # greedy: the most likely action; sample: training's capped (0.99) distribution
 temperature: 1.0                # of `sample`
@@ -87,4 +90,4 @@ features: checkpoint
 belief_crit_lines: false        # belief modes: the protocol prints critical hits (true only for simulator runs;
                                 # the phone's battle log does not, so any hit may have been one)
 preview_playout: {workers: 6, budget_s: 30}  # 14 Nov: 6 workers measured at a median 24 s per preview (max 36 s)
-value_calibration: {a: 2.03291, b: 0.06101}  # fitted for poke-transformer-live-20261116-0823.pt (research runs/value-calibration/20261116-0823)
+value_calibration: {a: 2.01866, b: -1.04564}  # fitted for poke-transformer-league-20261116-1145.pt
