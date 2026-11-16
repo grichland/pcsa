@@ -69,6 +69,10 @@ def test_no_priority_override_when_a_switch_is_in_their_top3(threat) -> None:
     staying = (("move", "dragondance", 0.5), ("move", "extremespeed", 0.3), ("move", "earthquake", 0.15),
                ("switch", "corviknight", 0.05))
     assert decide(ALL, dataclasses.replace(base, their=staying)) == ("/choose move aquajet", "priority_ko")
+    # pivot moves are moves: priority hits before the U-turn, so they do not count as switching
+    pivots = (("move", "uturn", 0.6), ("move", "voltswitch", 0.2), ("move", "extremespeed", 0.1),
+              ("switch", "corviknight", 0.1))
+    assert decide(ALL, dataclasses.replace(base, their=pivots)) == ("/choose move aquajet", "priority_ko")
 
 
 def test_no_priority_override_when_the_networks_attack_kos_first(threat) -> None:
