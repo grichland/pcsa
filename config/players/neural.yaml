@@ -1,3 +1,14 @@
+# version neural-20261116-0009 (16 Nov, user's pipeline): league run v2-league-1115 final update 103 -> opponent-action
+# head on all 456 live games (top-1 0.43 -> 0.655, in-sample) + value head on the last 100 gold games (policy lr 0) ->
+# label SFT on our actions: 3,332 expert labels over 333 live gold games (label CE 2.98 -> 1.10, mistake top-1
+# 0.32 -> 0.62; sim-anchor greedy change 8.2%) -> value calibration refit for this model (a 2.229, b -0.100).
+# opponent_temperature kept at the user's 1 (the job's NLL fit was 0.7). pcsa code with this version (14b08d8):
+# forced faint replacement lists the fainted active first (controller-check-1115 A); sucker_punch rule ignores
+# switches to opponents that cannot be in their team and has no "already failed" clause.
+# version neural-20261116-0009: made by research/pcsa-rl rl2/scripts/live_finetune_job.py
+# base model final-u103.pt; policy on the last 100 gold-team games; opponent head on all live games; value head refit; pcsa 3be87d9
+# job folder C:\Users\geral\Code\research\pcsa-rl\runs\live-finetune\job-20261116-0009
+# fitted: {"checkpoint": "assets/models/poke-transformer-live-20261116-0009.pt", "opponent_temperature": 0.7}
 # version neural-20261115-0330 (promoted 15 Nov, user): league run 1 update 50 (lr 2e-4 branch; validation 72% vs
 # frozen live-1527, 71% on the teams we lost to live) + the live fit (research job-20261115-0330): policy and value
 # heads on the last 100 gold games, opponent head on all live games (top-1 0.43 -> 0.68, top-3 0.74 -> 0.93 on 374
@@ -15,11 +26,11 @@
 # (research/pcsa-rl, network code in src/pcsa/rl_training). Needs torch: `uv sync --extra train`.
 # Point a run at another network without editing this file: --set policy.neural_checkpoint=<path>
 # (or the environment variable PCSA__policy__neural_checkpoint=<path>).
-checkpoint: assets/models/poke-transformer-live-20261115-0330.pt  # 20261115-0330: league-1115-u50-lr2e-4.pt + policy head on the last 100 gold-team games + opponent head on 374 live games (top-1 0.6774, in-sample); value head refit (live_finetune_job)
+checkpoint: assets/models/poke-transformer-live-20261116-0009.pt  # 20261116-0009: final-u103.pt + opponent head on 456 live games (top-1 0.655, in-sample) + value head refit (policy lr 0) + label SFT on 3,332 expert labels (research job-20261116-0009 model-sft.pt)
 device: cpu
 sampling: greedy                # greedy: the most likely action; sample: training's capped (0.99) distribution
 temperature: 1.0                # of `sample`
-opponent_temperature: 1  # user's setting (14 Nov); the 15 Nov job fitted 0.65
+opponent_temperature: 1.0  # kept at the user's 1 (job-20261116-0009's NLL fit was 0.7)
 preview: playout                 # robust (13 Nov): each pick scored against each of their six leads (turn-1 views),
                                 # the best mean over its preview_robust_worst worst leads; critic: training's
                                 # softmax(value / 0.1), top-p 0.9 nucleus; greedy: the best value
@@ -61,9 +72,9 @@ rule_mode: mask                 # mask (14 Nov, user): every legal action is put
 # Quick Claw are ruled out, none the other way): switch, the network picks which. First, so it decides before the
 # others; remove it from this list to turn it off. Live battles 14 and 35 of 13 Nov: a faster Primarina Encored our
 # Calm Mind every 3 turns and we never switched (pcsa.players.encore_switch).
-sucker_punch_passive: 0.5       # sucker_punch rule (13 Nov): Sucker Punch / Thunderclap are blocked when they already
-                                # failed against that foe this battle, or when the opponent head's status moves plus
-                                # switches (the matrix's p_cols) exceed this; 19 of 42 live Sucker Punches failed
+sucker_punch_passive: 0.5       # sucker_punch rule (16 Nov narrowed): Sucker Punch / Thunderclap are blocked when the
+                                # opponent head's status moves plus switches (the matrix's p_cols) exceed this; switches
+                                # to opponents that cannot be in their team are not counted; no "already failed" clause
 # Team preview rules (13 Nov): they remove picks, the critic chooses among the rest (all of them when none is left).
 # Last 100 live battles: a Golisopod lead went 3-21 into a six with a Fire type (7-5 without); Fire moves caused 29%
 # of our faints (Golisopod 18 of 32, Gholdengo 12 of 20). {} / [] = off. See src/pcsa/players/preview_rules.py.
@@ -79,4 +90,4 @@ features: checkpoint
 belief_crit_lines: false        # belief modes: the protocol prints critical hits (true only for simulator runs;
                                 # the phone's battle log does not, so any hit may have been one)
 preview_playout: {workers: 6, budget_s: 30}  # 14 Nov: 6 workers measured at a median 24 s per preview (max 36 s)
-value_calibration: {a: 2.21689, b: 0.17963}  # fitted for poke-transformer-live-20261115-0330.pt (research runs/value-calibration/20261115-0330)
+value_calibration: {a: 2.22882, b: -0.10027}  # fitted for poke-transformer-live-20261116-0009.pt (label SFT model; research runs/value-calibration/20261116-0009-sft)
