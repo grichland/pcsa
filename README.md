@@ -13,9 +13,9 @@ The Showdown engine doubles as the simulator the players are measured in.
 
 ## Demo
 
-[![The agent playing a ranked battle: the dashboard with the latest decision, the phone mirror and the tracked battle](docs/images/demo-poster.jpg)](https://www.youtube.com/watch?v=o6kFk4MY2VQ "Watch the demo on YouTube")
+[![The live dashboard after a ranked win: the phone mirror at Master Ball rank 2, the decision matrix, the win rate and rating, both teams and the battle log](docs/images/demo-poster.jpg)](https://www.youtube.com/watch?v=o6kFk4MY2VQ "Watch the demo on YouTube")
 
-*Click the image to watch on YouTube (1:50): the neural player plays a ranked battle on the phone while `pcsa watch` shows each decision, its confidence, the critic's value and the tracked battle state (recorded with the first dashboard and network; the current ones are described below). Trainer names and session identifiers are blurred.*
+*`pcsa watch` during the 15 Nov 2026 live session, right after battle 62 (a 6-win streak at Master Ball rank 2, rating 1,823): the phone mirror, the decision matrix for the last turn (our actions against their likely ones, with the network's policy and win chance), the session's record and rating, both teams and the battle log. Click it for the earlier demo video on YouTube (1:50), recorded with the first dashboard and network.*
 
 ![Single Battle result after a ranked game: Master Ball tier, rank 2, placement No. 4,190, rating 1,825.079](docs/images/master-ball-rank2.jpg)
 
