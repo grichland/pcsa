@@ -93,7 +93,7 @@ def test_synthetic_frames_match_one_rule_each() -> None:
 
 
 def plates(*extra: TextBox) -> list[TextBox]:
-    """14 Nov frame 02247: the opposing plate, an item banner and our plate, no menus (boxes as OCR read them)."""
+    """The opposing plate, an item banner and our plate, no menus (boxes as OCR read them)."""
     boxes = [
         TextBox("Cinderace", 1.0, (1911, 51, 2047, 93)),
         TextBox("50 %", 0.895, (2058, 118, 2158, 173)),
@@ -112,7 +112,7 @@ def test_battle_scene_with_hp_plates_is_a_wait() -> None:
     assert obs.fields["opponent_name"] == "Cinderace" and obs.fields["active_name"] == "Golisopod"
     ours_only = [b for b in plates() if b.center[1] > 900] + [box("Sitrus Berry", 2000, 460), box("x", 100, 100)]
     assert classify(ours_only, frame(), 0.8).screen == Screen.WAIT
-    assert not matching_rules(plates(), frame(), 0.8)  # a fallback: never competes with a named screen
+    assert not matching_rules(plates(), frame(), 0.8)
 
 
 def test_hp_plates_never_hide_an_interruption_or_a_control() -> None:
@@ -123,7 +123,7 @@ def test_hp_plates_never_hide_an_interruption_or_a_control() -> None:
     many = plates(*(box(f"word{i}", 1170, 300 + 20 * i, w=60) for i in range(8)), box("Forfeit", 1170, 800))
     assert classify(many, frame(), 0.8).screen == Screen.FORFEIT_MSG
     quit_ = plates(*(box(f"word{i}", 600, 300 + 20 * i, w=60) for i in range(8)), box("Quit", 1170, 800))
-    assert classify(quit_, frame(), 0.8).screen == Screen.UNKNOWN  # an unsafe control is never waited on
+    assert classify(quit_, frame(), 0.8).screen == Screen.UNKNOWN
 
 
 def test_trainer_cards_on_a_split_screen_are_a_transition() -> None:
@@ -133,4 +133,4 @@ def test_trainer_cards_on_a_split_screen_are_a_transition() -> None:
     boxes += [box("888", 1946, 1011, w=90), box("L", 1595, 50, w=90)]
     obs = classify(boxes, image, 0.8)
     assert obs.screen == Screen.TRANSITION and obs.reason == "trainer cards split screen"
-    assert classify(boxes, frame(), 0.8).screen == Screen.UNKNOWN  # no divider: not the cards
+    assert classify(boxes, frame(), 0.8).screen == Screen.UNKNOWN

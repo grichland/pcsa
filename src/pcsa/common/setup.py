@@ -1,7 +1,7 @@
 """`pcsa setup` and `pcsa doctor`: install and check the pinned tools, the output folder and the phone.
 
-Each step has `check()` (what doctor runs) and `install()` (what setup runs when check fails).
-Steps print one line each; the exit code is non-zero only when a required step is not satisfied.
+Each step has `check()` (doctor) and `install()` (setup, when check fails); the exit code is non-zero only when a
+required step fails.
 """
 
 from __future__ import annotations

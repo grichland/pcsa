@@ -1,4 +1,4 @@
-# From research/pcsa-rl/rl/features_rows.py (sha256 50bc9d07403e, 2026-11-08 20:13); keep diffable.
+# From research/pcsa-rl/rl/features_rows.py; keep diffable.
 """The 318-float Pokémon row: identity 24 | build 10 | condition 110 | knowledge 4 | matchup 6 | evidence 4 |
 moves 4 x 40 (27 facts, PP, disabled, locked, known, 9 damage columns vs the opposing active)."""
 
@@ -138,7 +138,7 @@ class Row:
 
     mon: Any  # a poke-env Pokemon, or None for an empty row (Any for pyright; research: object | None)
     ours: bool
-    key: str | None = None  # log key 'p1: Name'
+    key: str | None = None
     chosen: AssumedSet | None = None
     brought: float = 0.0
     not_brought: float = 0.0
@@ -146,7 +146,7 @@ class Row:
     moves: list[Move | None] = field(default_factory=list)
     known: list[bool] = field(default_factory=list)
     fighter: Any = None  # pcsa.players.threat fighter (research: object | None)
-    form: str = ""  # dex key of the current form
+    form: str = ""
     mega: bool = False
     ability: str = ""  # ours: the ability; theirs: the one the log showed ('' when not shown)
 
@@ -162,7 +162,7 @@ class Row:
         if self.mon is None:
             return 0.0
         if not self.ours and self.key is None:
-            return 1.0  # seen only at preview
+            return 1.0
         return max(0.0, min(1.0, float(self.mon.current_hp_fraction or 0.0)))
 
 

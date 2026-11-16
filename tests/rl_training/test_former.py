@@ -50,7 +50,7 @@ def test_committed_decisions_equal_the_training_pass_and_a_proposal_alone_change
     proposals = []
     for turns in GAME:
         first = p.propose(view_of(turns))
-        again = p.propose(view_of(turns))  # nothing was kept from the first proposal
+        again = p.propose(view_of(turns))
         assert torch.equal(first.out["logits"], again.out["logits"]) and not again.replaces
         proposals.append(again)
         p.commit(again)
@@ -86,12 +86,12 @@ def test_a_restored_memory_decides_as_the_player_that_never_stopped() -> None:
         p.choose_action(view_of(turns), soon())
     want = p.propose(view_of(GAME[3]))
     fresh = player()
-    views = [view_of(GAME[0]), view_of(GAME[1]), view_of(GAME[1]), view_of(GAME[2])]  # with a retry in the records
+    views = [view_of(GAME[0]), view_of(GAME[1]), view_of(GAME[1]), view_of(GAME[2])]
     assert fresh.restore(views) == 3
     got = fresh.propose(view_of(GAME[3]))
     assert torch.allclose(got.out["logits"], want.out["logits"], atol=1e-6) and got.index == want.index
     cold = player().propose(view_of(GAME[3]))
-    assert not torch.allclose(cold.out["logits"], want.out["logits"], atol=1e-6)  # the memory matters
+    assert not torch.allclose(cold.out["logits"], want.out["logits"], atol=1e-6)
 
 
 def test_a_view_that_cannot_be_replayed_keeps_what_was_rebuilt() -> None:
@@ -113,9 +113,9 @@ def test_the_notes_carry_the_matrix_with_every_revealed_move_as_a_column() -> No
         assert len(m["cols"]) == len(m["p_cols"]) == len(m["shown"]) == k + 5 and all(
             len(r) == k + 5 for r in m["cells"]
         )
-        assert len(m["col_legal"]) == k + 5 and all(m["col_legal"][:k])  # kept moves are always possible
+        assert len(m["col_legal"]) == k + 5 and all(m["col_legal"][:k])
         assert all(p == 0 for p, ok in zip(m["p_cols"], m["col_legal"], strict=True) if not ok)
-        assert m["col_kind"] == ["move"] * k + ["switch"] * 5 and m["tau"] == 1.0  # an untrained network: tau 1
+        assert m["col_kind"] == ["move"] * k + ["switch"] * 5 and m["tau"] == 1.0
         shown = {name for name, yes in zip(m["cols"], m["shown"], strict=True) if yes}
         assert shown == {"dragondance", "outrage", "extremespeed"}
         assert abs(sum(m["p_cols"]) - 1.0) < 0.01 and abs(sum(m["probs"]) - 1.0) < 0.01
@@ -213,7 +213,7 @@ def test_the_sampling_temperature_flattens_the_policy_and_is_recorded() -> None:
     greedy, hot = player(3), player(3)
     with torch.no_grad():
         for p in (greedy, hot):
-            p.net.log_tau.fill_(math.log(0.08))  # as sharp as the trained network
+            p.net.log_tau.fill_(math.log(0.08))
     hot.temperature = 2.0
     greedy.choose_action(view_of(GAME[2]), soon())
     hot.choose_action(view_of(GAME[2]), soon())
@@ -238,7 +238,7 @@ def test_the_opponent_temperature_reweights_their_columns_and_nothing_else() -> 
     want = [p ** (1 / 3.0) for p in a["p_cols"]]
     want = [w / sum(want) for w in want]
     assert all(abs(x - y) < 0.01 for x, y in zip(b["p_cols"], want, strict=True))
-    assert max(b["p_cols"]) < max(a["p_cols"])  # flatter
+    assert max(b["p_cols"]) < max(a["p_cols"])
     assert player(2).net.opp_temperature == 1.0
 
 

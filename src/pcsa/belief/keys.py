@@ -1,5 +1,4 @@
-# From research/pcsa-belief/belief/fast.py (sha256 dcd849036429, 2026-11-12 14:38), split into keys, grids, board,
-# member_state, member_grids, member_out, member, fast (pcsa's 400-line file limit); pcsa changes are marked "pcsa:".
+# Split from research/pcsa-belief/belief/fast.py (pcsa's file limit); pcsa changes are marked "pcsa:".
 """Class keys, priors and species spaces of the belief tracker (overview: pcsa.belief.fast)."""
 
 from __future__ import annotations
@@ -121,11 +120,7 @@ class Interval:
 
 @dataclass(frozen=True)
 class FastPriors(Priors):
-    """Stage 1's priors plus a floor on Choice Scarf's share of the item prior (0: stage 1's prior).
-
-    pcsa: `empty_unknown`: a listed build with an empty item or ability (seen_builds.json has a dozen: the ladder
-    never showed it) holds an unknown one (the species' item / ability prior) instead of "no item" / the species'
-    first ability. False = research's behaviour (stage 2, the equivalence tests); the live player sets True."""
+    """Stage 1's priors plus a floor on Choice Scarf's share of the item prior (0: stage 1's prior)."""
 
     scarf_floor: float = 0.0
     empty_unknown: bool = False
@@ -145,7 +140,7 @@ def wquantiles(values: np.ndarray, weights: np.ndarray, qs) -> list[float]:
     if not keep.any():
         return [0.0 for _ in qs]
     v, w = values[keep], weights[keep]
-    order = np.argsort(v)  # any order of equal values gives the same quantile value
+    order = np.argsort(v)
     v, c = v[order], np.cumsum(w[order])
     c = c / c[-1]
     n = len(v) - 1
@@ -245,10 +240,8 @@ class FastSpecies(SpeciesSpace):
         self.rep_spread = int(np.argmax(p_s))
 
     def _put_unknown(self, put, k, lb, lm, lpb, masses, all_s, all_i, log_ps) -> None:
-        """pcsa: the rows of a listed build whose item and / or ability is empty (unknown): every item (by the item
-        prior) and / or every ability (by the ability prior) instead of one. Components keep their masses: list =
-        the build's spread x the unknown parts, spread = every spread x the unknown parts, item = the build's spread x
-        every item (x the unknown abilities)."""
+        """pcsa: the rows of a listed build whose item and / or ability is empty (unknown): every item (by the item prior)
+        and / or every ability (by the ability prior) instead of one; components keep their masses."""
         log_pi, log_pa = np.log(self.p_item), np.log(self.p_ability)
         if lb.item:
             items, l_items = np.array([self.item_index[lb.item]]), np.zeros(1)

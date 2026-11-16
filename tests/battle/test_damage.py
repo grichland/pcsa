@@ -71,13 +71,13 @@ def test_type_chart_doubles_and_quarters() -> None:
 
 
 def test_attacker_abilities() -> None:
-    contact = damage(WATER, WATER, MOVE)[1]  # Body Slam makes contact
+    contact = damage(WATER, WATER, MOVE)[1]
     assert damage(replace(WATER, ability="toughclaws"), WATER, MOVE)[1] == pytest.approx(contact * 1.3, rel=0.05)
     assert damage(replace(WATER, ability="ironfist"), WATER, MOVE)[1] == pytest.approx(contact)
     weak = damage(WATER, WATER, "quickattack")[1]
     assert damage(replace(WATER, ability="technician"), WATER, "quickattack")[1] == pytest.approx(weak * 1.5, rel=0.1)
     ghost = Fighter(FLAT, ("ghost",))
-    assert damage(replace(WATER, ability="pixilate"), ghost, MOVE)[1] > 0  # Normal turned Fairy hits a Ghost
+    assert damage(replace(WATER, ability="pixilate"), ghost, MOVE)[1] > 0
 
 
 def test_defender_abilities_and_stat_swaps() -> None:

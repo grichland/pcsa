@@ -1,23 +1,8 @@
 """The disciplined player: max_damage's attacks, team preview and forced picks, plus rules from the ladder research.
 
-At each decision the first rule that applies decides (thresholds in config/players/disciplined.yaml):
-1. Sweeper denier (R2): the opposing active is boosted or has used a setup move. No voluntary switch unless the
-   incoming member takes < `denier_switch_in_max` of its HP from their best hit and can KO them; else, in order:
-   a KO now (we move first or survive), Haze/Clear Smog/Encore/Taunt/a phaze/Perish Song, a priority KO, the
-   hardest hit.
-2. Mega first (R8): when Mega Evolution is offered only the Mega versions of the moves are considered.
-3. Futile attack: our best *legal* hit is under `futile_hit` of their max HP (a Choice lock into an immunity, a
-   resisted last move): switch to the bench member that hits them hardest, back-to-back or not.
-4. Bad trade: threatened, unable to KO, and our best legal hit under `trade_hit_min`: switch to the bench member
-   taking the least share of its HP if that is under `switch_in_relaxed`.
-5. Disciplined switching (R9): switch only when threatened (their best hit >= `threat_threshold`), unable to KO,
-   and a bench member takes < `switch_in_max` of its HP and hits back for >= `switch_in_threatens`; the one
-   taking least comes in. best_matchup's back-to-back rule applies to every voluntary switch but the futile one.
-6. Recovery (R5): below `recover_below` HP, when the healed HP survives their best hit and we cannot KO them.
-7. Phase (R11): ahead in members, no non-attacking move but the denier's; recovery is off.
-8. Otherwise max_damage's best attack.
-Damage and speed estimates are pcsa.players.threat's on the sets pcsa.players.opponent assumes.
-"""
+The first rule that applies decides (thresholds in config/players/disciplined.yaml): sweeper denier (boosted foe), Mega
+first, futile attack (switch), bad trade (switch), disciplined switching (threatened and unable to KO), recovery,
+phase (ahead in members: no status moves). Otherwise max_damage's best attack. Estimates: pcsa.players.threat."""
 
 from __future__ import annotations
 
@@ -55,14 +40,14 @@ PHAZE_TARGETS = 2  # a phaze needs an opposing member left besides the active
 
 @dataclass
 class DisciplinedParams:
-    denier_switch_in_max: float = 0.25  # vs a boosted foe, a switch-in may take at most this share of its HP...
-    threat_threshold: float = 0.4  # their best hit (share of our max HP) that counts as a threat
-    switch_in_max: float = 0.25  # a voluntary switch-in takes less than this share of its HP...
-    switch_in_threatens: float = 0.3  # ...and hits them for at least this share of their max HP
-    recover_below: float = 0.6  # recovery only below this HP fraction
-    futile_hit: float = 0.05  # our best legal hit under this share of their max HP: switch regardless
-    trade_hit_min: float = 0.15  # threatened and hitting for less than this: a bad trade, switch if...
-    switch_in_relaxed: float = 0.6  # ...a bench member takes less than this share of its HP
+    denier_switch_in_max: float = 0.25
+    threat_threshold: float = 0.4
+    switch_in_max: float = 0.25
+    switch_in_threatens: float = 0.3
+    recover_below: float = 0.6
+    futile_hit: float = 0.05
+    trade_hit_min: float = 0.15
+    switch_in_relaxed: float = 0.6
 
     @classmethod
     def load(cls, path: Path) -> DisciplinedParams:

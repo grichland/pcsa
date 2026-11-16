@@ -1,9 +1,8 @@
-"""The belief feature modes against research (skipped when research/pcsa-rl or research/pcsa-belief is absent, as
-in CI): on archived simulator episodes of both seats, every decision rebuilt from the protocol (stage 0's
+"""The belief feature modes against research (skipped when research/pcsa-rl or research/pcsa-belief is absent, as in
+CI): on archived simulator episodes of both seats, every decision rebuilt from the protocol (stage 0's
 common.rebuild) once per implementation, pcsa's observation must equal research rl2's in each mode ("base",
-"belief", "belief+mega"; one belief per episode and implementation, research's settings on both sides), and
-pcsa's "base" must equal pcsa main's former_features (no belief code on that path). The full measurement
-(1,579 decisions, bit-identical) is research/pcsa-belief/stage4/equiv_pcsa.py."""
+"belief", "belief+mega"; one belief per episode and implementation.
+"""
 
 from __future__ import annotations
 
@@ -37,7 +36,7 @@ def research():
     for p in (RESEARCH, BELIEF, BELIEF / "stage0"):
         if str(p) not in sys.path:
             sys.path.append(str(p))
-    import common  # research/pcsa-belief/stage0
+    import common
     from rl2 import belief_features, features
 
     return common, features, belief_features

@@ -13,8 +13,8 @@ from pcsa.common.config import Config, load_config
 
 REPO = paths.repo_root()
 
-# The players' catalog ranks the builds seen on the live ladder first (assets/sets/seen_builds.json, which grows with
-# every live battle). Tests must not depend on it, so it points at a file that never exists (the plain catalog order).
+# the players' catalog ranks live-ladder seen builds first; tests must not depend on that file, so it points at one
+# that never exists
 os.environ["PCSA_SEEN_BUILDS"] = str(REPO / "tests" / "__no_seen_builds__.json")
 
 
@@ -35,9 +35,8 @@ def fake_clock() -> FakeClock:
     return FakeClock(start=1000.0)
 
 
-# The neural player's checkpoint in config/players/neural.yaml (assets/models/*.pt, tracked in git since 12 Nov) may be absent.
-# Tests must not depend on whether one is present, so the shared config points it at a path that never exists:
-# `neural` then plays its fallback here as it does in CI; tests of the network pass their own checkpoints.
+# the checkpoint in config/players/neural.yaml may be absent; tests point at a path that never exists (`neural` falls
+# back, as in CI)
 NO_CHECKPOINT = "policy.neural_checkpoint=assets/models/__absent_in_tests__.pt"
 
 

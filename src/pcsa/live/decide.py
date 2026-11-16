@@ -1,10 +1,7 @@
 """The degrade ladder: build the legal actions at the best rung the readings support, then ask the player.
 
-full          tracked Battle, complete log
-tracked       tracked Battle with gaps, unmapped rows or warnings
-screen        no Battle: the screen's moves and the bookkeeping's switches
-legal_random  nothing readable: every move row and every live switch
-emergency     the deadline is nearly gone: the cheapest plan
+Rungs: full (tracked Battle, complete log), tracked (gaps or warnings), screen (no Battle: the screen's moves),
+legal_random (nothing readable), emergency (deadline nearly gone: the cheapest plan).
 """
 
 from __future__ import annotations
@@ -24,8 +21,7 @@ EVENT_LIST_LIMIT = 16
 
 
 def event_notes(notes: dict) -> dict:
-    """A player's notes as they go into the flattened `decision` event: scalars and short lists. A dict or a
-    long list (the neural player's pair `matrix`) is kept in the decision record only."""
+    """A player's notes for the flattened `decision` event: scalars and short lists; dicts and long lists stay in the record."""
     return {
         key: value
         for key, value in notes.items()

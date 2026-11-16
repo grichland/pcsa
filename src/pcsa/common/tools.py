@@ -1,7 +1,4 @@
-"""Pinned external tools: the lock file, verified downloads, extraction and the install manifest.
-
-Used by `pcsa setup` and `pcsa doctor`. Standard library only, so it works before dependencies do.
-"""
+"""Pinned external tools: the lock file, verified downloads, extraction and the install manifest."""
 
 from __future__ import annotations
 

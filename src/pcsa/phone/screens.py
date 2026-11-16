@@ -1,9 +1,7 @@
 """Which screen is this? An ordered table of named rules over OCR boxes and a few pixel checks.
 
-Rules are tried in order; the first that returns fields wins and its name is the observation's
-`reason`. Rules marked `fallback` catch leftovers (sparse text, unknown) and are excluded from the
-ambiguity test. Everything works in the 2340x1080 reference frame: `Perception` crops the device
-viewport and resizes before classifying.
+The first rule that returns fields wins and names the observation's `reason`; `fallback` rules catch leftovers and are
+excluded from the ambiguity test. Everything works in the 2340x1080 reference frame (`Perception` crops and resizes).
 """
 
 from __future__ import annotations
@@ -229,10 +227,8 @@ def _auto_notice(c: Ctx) -> dict | None:
 
 
 def _hp_plates(c: Ctx) -> dict | None:
-    """The battle scene between menus (attack and ability/item animations, a banner such as "Cinderace's Life
-    Orb"): an HP plate shows (theirs top right: name and "41%", or ours bottom left: name and "149/182") and
-    nothing else on the frame names a control. Polled like any wait; a frozen scene still meets the WAIT
-    screen timeout, and a real interruption is read earlier (dialog text, Communicating, a dismiss control)."""
+    """The battle scene between menus (animations, an item banner): an HP plate shows (theirs top right "41%", ours
+    bottom left "149/182") and no control is named. Polled like any wait; a real interruption is read earlier."""
     t = c.t
     if t.has(f.SAFE_CONTROL) or t.has(f.UNSAFE_CONTROL) or c.flags & {Flag.COMM_ERROR, Flag.DATE_CHANGED}:
         return None

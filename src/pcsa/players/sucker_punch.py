@@ -1,23 +1,9 @@
-"""Moves that fail unless the target attacks (Sucker Punch, Thunderclap): the neural player's `sucker_punch` guard
-rule (pcsa.players.neural_rules).
+"""Moves that fail unless the target attacks (Sucker Punch, Thunderclap): the neural player's `sucker_punch` guard rule.
 
-`why(battle, theirs, their_actions, passive_max)` names the reason such a move should not be played now, or None:
-
-  passive  the network's opponent head gives their active's non-attacking actions (status moves and switches)
-           more than `passive_max` of its probability; the distribution is the one the matrix weighs (the
-           decision notes' matrix.p_cols over matrix.cols), status vs damaging from poke-env's move data
-
-Switches that cannot happen are left out of that share (15 Nov 2026, user): once as many distinct opposing Pokemon
-have been seen as they brought (|teamsize|, 3 here), a preview-only Pokemon is not in their team, so a switch to it
-is not one of their options. Its columns are masked for the rule only (the share is renormalised over the rest);
-the network's input features are unchanged. Fainted ones are already closed by the opponent head.
-The rule used to also block a move that "already failed against this foe this battle"; that clause was wrong in 4
-of 5 labelled live cases and was dropped (15 Nov 2026, user).
-
-`their_actions` holds (kind, id, probability) per kept column: kind "move" (id: the move id) or "switch" (id: the
-switch target's species id, "" when unknown; an unknown target always counts). A move poke-env does not know counts
-as neither (it is left out of the passive share).
-"""
+`why(battle, theirs, their_actions, passive_max)` names the reason not to play such a move now, or None: the opponent
+head gives their non-attacking actions (status moves, possible switches) more than `passive_max` of its probability.
+Switches to a Pokemon that cannot be in their team (the brought trio is complete without it) are left out of the share.
+`their_actions` holds (kind "move" | "switch", move id or target species id, probability) per kept column."""
 
 from __future__ import annotations
 
@@ -103,10 +89,7 @@ def last_one_each(battle) -> bool:
 
 
 def why(battle, theirs, their_actions: Sequence[TheirAction] | None, passive_max: float = PASSIVE_MAX) -> str | None:
-    """Why a move that fails unless the target attacks should not be played into `theirs` now, or None.
-
-    In a 1v1 (one Pokemon left on each side) the chance they do not attack is taken as 0: never blocked (the
-    user's rule, 14 Nov 2026)."""
+    """Why a move that fails unless the target attacks should not be played into `theirs` now, or None."""
     if last_one_each(battle):
         return None
     if their_actions:

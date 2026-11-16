@@ -1,8 +1,4 @@
-"""Legal six-member teams drawn from the build catalog, for simulator games.
-
-The six species are drawn by ladder usage. Each member is its species' top build, or with `noisy` any of its
-catalog builds weighted by score. Item Clause is respected while drawing; Showdown's validator has the last word.
-"""
+"""Legal six-member teams drawn from the build catalog, for simulator games."""
 
 from __future__ import annotations
 

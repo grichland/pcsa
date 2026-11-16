@@ -1,17 +1,9 @@
 """`pcsa train sprites`: train the sprite network, measure it against the retired matcher, export it.
-
-Training mixes two kinds of example in every batch: the reference views (sprite_baseline's local source
-indexes), heavily augmented (shifts, rotation, scale, colour, palette swaps and greying for shiny Pokémon, erosion
-and dilation, cut-outs, blur), and real labelled crops from recorded runs (sprite_data.py), lightly
-augmented. The loss is a cosine classifier with an additive margin over every form id; a crop labelled
-only by species accepts any form of it. After training the classifier is dropped: each reference view is
-embedded by the exported numpy network (plus, per form the runs have shown, the centre of its real
-crops), so a new sprite later needs only its view embedded, not retraining.
-
-Measurement uses held-out runs (the newest `--test-runs`), never trained on, and runs both matchers
-through the same matching flow (sprites.preview_matches / log_decision / pick). The battle log's
-acceptance thresholds are calibrated on a validation slice of the training runs: the most matches whose
-wrong-species count does not exceed the retired matcher's on the same slice.
+Batches mix augmented reference views (shifts, rotation, palette swaps and greying for shinies, cut-outs, blur) and
+real
+labelled crops; loss: additive-margin cosine classifier over form ids (species-only labels accept any form). Measured
+on
+held-out runs (`--test-runs`); the export is the numpy network plus per-view reference embeddings.
 """
 
 from __future__ import annotations

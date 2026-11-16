@@ -1,11 +1,8 @@
 """`timing.move_peek: when_needed`: an action turn without the look at the move list, and when it needs one.
 
-Without the look, the turn takes from the team sheet and the log what the move list would have shown:
-move names by slot from the sheet, PP from the log count (`battle.state.logged_pp`, lowered by what an
-earlier look of this battle showed the count had missed), and the Mega button from "the active holds its
-stone and we have not Mega Evolved". The log count can be too high (a `used` row the log read lost), so the
-turn looks whenever that could matter; `why_before_log` and `why_after_log` name the reason, and a turn that
-has one runs today's flow unchanged. Measured on the recorded runs: research/pcsa-rl/runs/fast-turn/pp-check.md.
+Without the look, move names come from the team sheet, PP from the log count (`battle.state.logged_pp`, lowered by
+what an earlier look showed it had missed) and the Mega button from "the active holds its stone and we have not
+Mega Evolved". The log count can be too high, so `why_before_log` and `why_after_log` name each reason to look.
 """
 
 from __future__ import annotations
@@ -24,10 +21,10 @@ from pcsa.live.log_reader import LogVisit
 from pcsa.players.base import ScreenFacts
 from pcsa.run.battle_state import BattleRecord
 
-ALWAYS = "always"  # the setting's default: every action turn looks first
+ALWAYS = "always"  # the default: every action turn looks first
 WHEN_NEEDED = "when_needed"
 SKIPPED = "skipped"  # what a turn without the look records
-PEEK_PP_AT_MOST = 4  # look when a move's counted PP is this low: 2 PP of room plus the largest miss measured (2)
+PEEK_PP_AT_MOST = 4  # look when a counted PP is this low (room for a missed count)
 SETTLED_STOPS = ("top_confirmed", "settled_no_scrollbar")  # log collections that reached the turn's first row
 
 
@@ -35,13 +32,13 @@ SETTLED_STOPS = ("top_confirmed", "settled_no_scrollbar")  # log collections tha
 class Turn:
     """What the action turn knows once its log is read."""
 
-    battle: object | None  # the tracked Battle, before this turn's request
+    battle: object | None
     out: object | None  # its Translation
     active: int  # our active member's selected slot
-    same_turn: bool  # the log shows no new turn: the last taps did not go through
-    resynced: bool  # the action screen named another active member than the bookkeeping
+    same_turn: bool  # the log shows no new turn: the taps did not go through
+    resynced: bool
     log: LogVisit
-    turn_before: int | None  # the last turn the log held before this visit
+    turn_before: int | None
 
 
 def member_of(b: BattleRecord, team: Team | None, active: int) -> OwnMember | None:
@@ -55,11 +52,11 @@ def why_before_log(mode: str, b: BattleRecord, team: Team | None, repeated: bool
     if mode != WHEN_NEEDED:
         return ALWAYS
     if team is None or b.requested is None:
-        return "untracked"  # decided from the screen alone: that needs the move list
+        return "untracked"  # decided from the screen alone: needs the move list
     if b.adopted:
         return "adopted"  # picked up in the middle: the log count starts late
     if repeated and b.last_action is not None:
-        return "retry"  # the action screen again with no other screen between: the taps did not go through
+        return "retry"  # the action screen again: the taps did not go through
     return None
 
 
@@ -89,10 +86,10 @@ def doubts(out) -> int:
 def why_after_log(b: BattleRecord, team: Team | None, t: Turn) -> str | None:
     """A reason to look now that the log is read; None when the sheet and the log are enough."""
     if t.same_turn:
-        return "retry"
+        return "retry"  # the log shows no new turn: the taps did not go through
     member = member_of(b, team, t.active)
     if t.battle is None or member is None:
-        return "untracked"
+        return "untracked"  # decided from the screen alone: needs the move list
     doubt = log_doubt(t, b)
     if doubt is not None:
         return doubt
@@ -103,7 +100,7 @@ def why_after_log(b: BattleRecord, team: Team | None, t: Turn) -> str | None:
     if any(m.pp is not None and m.pp[0] <= PEEK_PP_AT_MOST for m in logged_rows(b, member, t)):
         return "low_pp"
     if b.mega_pending and not evolved(t.battle):
-        return "mega_unconfirmed"  # Mega was chosen last turn and the log has no Mega Evolution of ours
+        return "mega_unconfirmed"  # Mega chosen last turn, no Mega Evolution of ours in the log
     return None
 
 
@@ -129,7 +126,7 @@ def holds_stone(member: OwnMember, battle) -> bool:
     mon = battle.team.get(f"p1: {member.name}") if battle is not None else None
     item = member.item
     if mon is not None and mon.item != GenData.UNKNOWN_ITEM:
-        item = mon.item  # as the request reports it: revealed, changed or removed
+        item = mon.item
     return bool(item) and game.mega_form_for_stone(member.species, item) is not None
 
 
@@ -158,7 +155,7 @@ def remember(b: BattleRecord, team: Team | None, t: Turn, peek: Observation, was
             b.pp_offsets.pop(_key(t.active, name), None)
     shown = bool(peek.fields.get("mega_available"))
     if not t.same_turn and not shown and (was_pending or holds_stone(member, t.battle)):
-        b.mega_spent = True  # one Mega Evolution a battle: the button does not come back
+        b.mega_spent = True  # one Mega Evolution a battle
 
 
 def screen_facts(
@@ -168,7 +165,7 @@ def screen_facts(
     was_pending = b.mega_pending
     if t.out is not None:
         b.log_doubts = max(b.log_doubts, doubts(t.out))
-    if why is not None:  # today's flow
+    if why is not None:  # look first
         if b.mega_pending:
             b.mega_pending = False
             b.mega_used = not (peek and peek.fields.get("mega_available") and not t.same_turn)
@@ -179,7 +176,7 @@ def screen_facts(
     member = member_of(b, team, t.active)
     assert member is not None and t.battle is not None  # why_after_log looks otherwise
     done = evolved(t.battle)
-    if b.mega_pending:  # why_after_log looks unless the log shows the Mega Evolution chosen last turn
+    if b.mega_pending:
         b.mega_pending, b.mega_used = False, True
     b.mega_spent = b.mega_spent or done
     mega = holds_stone(member, t.battle) and not b.mega_spent
@@ -187,9 +184,7 @@ def screen_facts(
 
 
 def refused_moves(last: dict, turn: int, same_turn: bool, repeated: bool) -> tuple[int, ...]:
-    """The move slots we tapped in this turn that the game did not take: the action screen is back in the same turn
-    (the log shows no new turn, or the screen never left and the turn number did not move). Empty for a new turn or
-    after a switch; it grows with every refusal of the turn, so two blocked moves cannot be tried in turns."""
+    """The move slots we tapped in this turn that the game did not take: the action screen is back in the same turn."""
     label = str(last.get("label") or "")
     again = same_turn or (repeated and last.get("turn") == turn)
     if not again or "move" not in label:

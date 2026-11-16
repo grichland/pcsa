@@ -1,5 +1,4 @@
-# From research/pcsa-belief/belief/fast.py (sha256 dcd849036429, 2026-11-12 14:38), split into keys, grids, board,
-# member_state, member_grids, member_out, member, fast (pcsa's 400-line file limit); pcsa changes are marked "pcsa:".
+# Split from research/pcsa-belief/belief/fast.py (pcsa's file limit); pcsa changes are marked "pcsa:".
 """One member's forms, item / ability classes and calculation grids (overview: pcsa.belief.fast)."""
 
 from __future__ import annotations
@@ -105,10 +104,7 @@ class MemberGrids(MemberState):
         return hit
 
     def _context(self, battle, mon, coming: bool):
-        """What the calculator sees now: (item mode, ability mode, Mega plan, current form).
-        item mode: None (each row its own item) or the shown item ('' once gone); ability mode: None or the Mega's
-        ability; plan: {item index: Mega form} for the rows that Mega Evolve in the coming turn. Memoised per board
-        state (the same Battle object at the same protocol length)."""
+        """What the calculator sees now: (item mode, ability mode, Mega plan, current form)."""
         key = (
             id(battle),
             id(mon),
@@ -215,7 +211,7 @@ class MemberGrids(MemberState):
         unmod = np.zeros((Ic, Ac), bool)
         cur_base = opp._base(their_mon, form)
         if coming and theirs_attacking and form == "aegislash" and category in D.SCREENS:
-            cur_base = game.species_entry("aegislashblade").get("baseStats") or cur_base  # Stance Change
+            cur_base = game.species_entry("aegislashblade").get("baseStats") or cur_base
         cur_table = self.table(cur_base)
         segments = _segments(ireps, forms, areps)
         cols = _read_cols(move_id, category, theirs_attacking)

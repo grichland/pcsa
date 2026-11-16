@@ -1,7 +1,4 @@
-"""A Ditto that copies one of ours holds our whole move set once the request is in (battle/adapter.py).
-
-14 Nov 2026 battle 43: the live tracker replays the log before our request, so Ditto, transforming into a Cinderace
-that had not moved yet, copied no moves; the opponent head then never offered High Jump Kick, which KO'd us."""
+"""A Ditto that copies one of ours holds our whole move set once the request is in (battle/adapter.py)."""
 
 from __future__ import annotations
 

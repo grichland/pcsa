@@ -1,8 +1,6 @@
-"""The request of a faint replacement (live/turn.py forced, turn_sync.fainted_active): the fainted active goes first,
-active: true, "0 fnt", as Showdown lists a forced-switch request, so the network's members[0] is the fainted mon and
-its bench rows are the live ones. Before 15 Nov 2026 the request kept pick order: when the fainted mon was not pick
-0, a live mon was read as our active, two switch orders shared one action index and legal[0] was sent whatever the
-network chose (152 of 455 live replacements, 12-15 Nov)."""
+"""The request of a faint replacement lists the fainted active first (active: true, "0 fnt"), as Showdown does for a
+forced switch, so the network's members[0] is the fainted mon and its bench rows are the live ones.
+"""
 
 from __future__ import annotations
 
@@ -125,15 +123,14 @@ def test_fainted_mon_not_pick_0_gives_distinct_indices_with_matching_rows() -> N
 
 def test_the_15_nov_example_battle_10_decision_3() -> None:
     # request [Cinderace, Golisopod, Primarina fnt], legal [Cinderace, Golisopod]: the network chose Golisopod
-    # (p 1.0) and Cinderace was sent
     rec = json.loads(EXAMPLE.read_text(encoding="utf-8"))
     team, picks = team_from_request(rec["request"])
     names = team.names
     assert names == ("Cinderace", "Golisopod", "Primarina") and rec["network_pick"] == "golisopod"
     before = tracking.replay(rec["protocol"], rec["request"])
     old = orders.battle_actions(before, FORCED, slot_moves=[], names=list(names), fainted={2}, active=None)[0]
-    assert len({features.action_index(a, before) for a in old}) == 1  # the bug, as recorded
-    b = _record(names, [2, 0, 1], fainted={2})  # the U-turn put Primarina first on the party screen
+    assert len({features.action_index(a, before) for a in old}) == 1
+    b = _record(names, [2, 0, 1], fainted={2})
     first = fainted_active(b, tracking.replay(rec["protocol"], None), {})
     assert first == 2
     battle, legal, request = _forced(team, picks, rec["protocol"], first, {2}, names)
@@ -141,7 +138,7 @@ def test_the_15_nov_example_battle_10_decision_3() -> None:
     by = {a.message: features.action_index(a, battle) for a in legal}
     assert set(by) == set(rec["legal"]) and len(set(by.values())) == 2 and _rows_match(battle, legal)
     golisopod = features.legal_action(by["/choose switch Golisopod"], legal, battle)
-    assert golisopod.message == "/choose switch Golisopod"  # the network's pick is now the order sent
+    assert golisopod.message == "/choose switch Golisopod"
 
 
 def test_fainted_first_and_pivot_requests_are_unchanged() -> None:
@@ -171,7 +168,7 @@ def test_fainted_first_and_pivot_requests_are_unchanged() -> None:
 
 def test_which_fainted_mon_is_our_active() -> None:
     names, protocol = tuple(MOVES), _uturn_then_faint()
-    tracked = tracking.replay(protocol, None)  # the log's active: Primarina, standing at its last read
+    tracked = tracking.replay(protocol, None)
     # the faint behind this screen is the tracked active's, even when visible_order lags (an unseen pivot)
     assert fainted_active(_record(names, [0, 1, 2], fainted={2}), tracked, {}) == 2
     # a pivot the log has not shown yet: the log still has Cinderace in; visible_order followed the switch
@@ -183,7 +180,7 @@ def test_which_fainted_mon_is_our_active() -> None:
     assert fainted_active(b, tracking.replay(gone, None), {}) == 1
     # the party screen's 0 HP counts as fainted; no Battle: the bookkeeping alone
     assert fainted_active(_record(names, [1, 0, 2], fainted=set()), None, {1: (0, 160)}) == 1
-    assert fainted_active(_record(names, [0, 1, 2], fainted={1}), None, {}) == 1  # the only fainted slot
+    assert fainted_active(_record(names, [0, 1, 2], fainted={1}), None, {}) == 1
     assert fainted_active(_record(names, [0, 1, 2], fainted=set()), None, {}) is None
 
 

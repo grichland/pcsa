@@ -1,11 +1,7 @@
-"""Value calibration (15 Nov 2026): the critic's value mapped so (v + 1) / 2 reads as a live win chance.
+"""Value calibration: the critic's value mapped so (v + 1) / 2 reads as a live win chance.
 
-The critic learned in the simulator, where it wins far more often than on the ladder: on 367 live battles its
-(v + 1) / 2 averaged 0.66 against a 0.41 win share per decision (ECE 0.25; research/pcsa-rl
-rl2/scripts/value_calibration.py, runs/value-calibration/20261115). A Platt fit, p = sigmoid(a * v + b), scored
-with 5-fold cross-validation over battles, brings the ECE to 0.02 and the Brier score from 0.261 to 0.192 without
-changing the ranking (AUC 0.77). Set as `value_calibration: {a, b}` in config/players/neural.yaml (fitted per
-checkpoint); the mapped value stays on the -1..+1 scale: v' = 2 * sigmoid(a * v + b) - 1.
+The critic learned in the simulator, which it wins far more than the ladder. A Platt fit p = sigmoid(a * v + b), per
+checkpoint, keeps the ranking: v' = 2 * sigmoid(a * v + b) - 1. Set as `value_calibration: {a, b}` in neural.yaml.
 """
 
 from __future__ import annotations

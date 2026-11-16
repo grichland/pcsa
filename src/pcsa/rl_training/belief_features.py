@@ -1,29 +1,12 @@
-# From research/pcsa-rl/rl2/belief_features.py (sha256 60dacfe21d34, 2026-11-12 14:28); keep diffable.
+# From research/pcsa-rl/rl2/belief_features.py; keep diffable.
 # pcsa changes are marked "pcsa:".
-"""Belief feature mode (research/pcsa-belief, stage 2): v2 input columns read from the belief tracker.
-
-Off by default: with feature mode "base" nothing here is imported and former_features is exactly what it was. The
-other modes replace, in the same columns (research/pcsa-belief/belief/report.md, "For stage 2"):
-
-  318-323 / 324-329  opposing stat low / high (/400): the belief's 99% interval in the current form (members seen only
-                     at team preview: their species' prior)
-  148 / 149          surely faster / surely slower: P(their speed > ours) >= 0.999 or P(their speed >= ours) <= 0.001
-                     (Trick Room still swaps the two, as today)
-  150 / 151          log2 speed ratios against the belief's 0.5% / 99.5% speed quantiles (no x1.5 unknown-item factor)
-  move blocks 158 + 40j, +31..+39   damage both ways from the belief: mean = posterior mean roll x accuracy x hits,
-                     top = 99% high x hits (no ITEM_UNKNOWN_UPPER); 152 / 153 follow (they read the same hits)
-  their active is taken as it will be in the coming turn: rows holding its Mega Stone in the Mega form (speed too),
-  an Aegislash attacking in Blade Forme
-
-Mode "belief+mega" adds the columns of our Mega actions (they share the move blocks with the plain moves): while our
-active can Mega Evolve this turn, the four boosted columns (+36..+39: boosted mean, boosted top, boosted KO mean,
-boosted KO top; otherwise 1.5 x mean / top, redundant) of our active's move blocks hold its Mega form's mean, top and
-KO flags against their active, and those of their active's move blocks the same against our Mega form.
-
-Not added: unrevealed-move slots (their own gate). pcsa: the tracker is pcsa.belief.fast (ported from
-research/pcsa-belief/belief); live, critical hits are not in the protocol (crit_reported=False) and a listed build's
-empty item or ability is unknown (empty_unknown=True); research's behaviour is crit_reported=True,
-empty_unknown=False (the equivalence tests).
+"""Belief feature modes: v2 input columns read from the belief tracker (pcsa.belief.fast); off by default ("base").
+Other modes fill the same columns: opposing stat low / high 318-329 (/400, 99% interval); surely faster / slower
+148-149
+(P >= 0.999; Trick Room swaps them); log2 speed ratios 150-151; move-block damage both ways (mean = posterior mean x
+accuracy x hits, top = 99% high; 152-153 follow); their active as next turn (Mega form); "belief+mega" fills +36..+39.
+Live, crits are not in the protocol (crit_reported=False) and a listed build's empty item/ability is unknown
+(empty_unknown).
 """
 
 from __future__ import annotations
@@ -60,9 +43,8 @@ def _fast():
 
 
 def new_battle_belief(crit_reported: bool = True, empty_unknown: bool = False):
-    """One battle's belief (pcsa.belief.fast.BattleBelief). The catalog (with the ladder's seen builds, read once per
-    process), the species spaces and the preview-only priors are shared by every battle of the process (pcsa: one
-    set per `empty_unknown`, which changes the spaces)."""
+    """One battle's belief (pcsa.belief.fast.BattleBelief); the catalog and priors are shared per process, one set per
+    `empty_unknown`."""
     fast = _fast()
     state = _STATE.setdefault(("spaces", bool(empty_unknown)), {})
     if "spaces" not in state:
@@ -94,7 +76,7 @@ def hits(ctx, att, dfn, our_form: str | None = None) -> list:
     weather = frozenset(w.name.lower() for w in b.weather)
     stage = max(-6, min(6, att.mon.boosts.get("accuracy", 0) - dfn.mon.boosts.get("evasion", 0)))
     types = (dfn.mon.type_1, dfn.mon.type_2)
-    # the abilities today's accuracy reads: ours as held, theirs as revealed (Row.resolve: = the fighters' abilities)
+    # the abilities today's accuracy reads: ours as held, theirs as revealed
     fa_ability, fd_ability = att.ability, dfn.ability
     coming = _their_side(b, theirs)
     out = []

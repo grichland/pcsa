@@ -44,18 +44,18 @@ def test_latest_decision_carries_the_matrix_with_written_names(run: Path) -> Non
     notes = decision["notes"]
     assert notes["rule"] == "neural" and notes["fallback"] is False and notes["v"] == 0.52 and notes["ms"] == 12.1
     assert notes["override"] is None and notes["network"] is None
-    assert notes["rest"] == [{"key": "decisions", "value": "3"}]  # the matrix is not a generic note
+    assert notes["rest"] == [{"key": "decisions", "value": "3"}]
     matrix = notes["matrix"]
     assert matrix["rows"][:4] == ["crunch", "closecombat", "meteormash", "extremespeed"]
     assert matrix["row_labels"][3] == "Extreme Speed" and matrix["row_labels"][5] == "Close Combat + Mega"
     assert matrix["row_labels"][8:] == ["Garchomp", "Mimikyu", ""]
-    assert matrix["col_labels"][0] == "Earthquake" and matrix["col_labels"][5] == "Rotom-Wash"  # the record's names
+    assert matrix["col_labels"][0] == "Earthquake" and matrix["col_labels"][5] == "Rotom-Wash"
     assert matrix["col_labels"][8] == "" and matrix["col_kind"] == ["move"] * 4 + ["switch"] * 5
     assert matrix["shown"] == [True] + [False] * 8 and matrix["legal"][4:8] == [False] * 4
     assert len(matrix["cells"]) == 11 and all(len(line) == 9 for line in matrix["cells"])
     assert abs(sum(matrix["p_cols"]) - 1) < 0.01 and abs(sum(matrix["probs"]) - 1) < 0.01
     assert matrix["chosen"] == matrix["played"] == 3 and matrix["mega_p"] == 0.71
-    assert state["foes"][1]["name"] == "Tyranitar" and state["foes"][1]["moves"] == ["Earthquake"]  # revealed only
+    assert state["foes"][1]["name"] == "Tyranitar" and state["foes"][1]["moves"] == ["Earthquake"]
     assert state["field"]["weather"]["name"] == "Sand" and state["your_team"][0]["boosts"] == "def-1 spd-1"
 
 
@@ -114,7 +114,7 @@ def test_notes_view_passes_the_matrix_through_and_names_the_override() -> None:
         assert matrix[key] == raw["matrix"][key]
     assert (matrix["chosen"], matrix["played"]) == (1, 3) and matrix["row_labels"][1] == "Close Combat"
     assert view["override"] == "priority_ko" and view["network"]["label"] == "Close Combat"
-    plain = notes_view(raw)  # no record names, no order: the note's own row stands
+    plain = notes_view(raw)
     assert plain is not None and plain["matrix"]["played"] == 1 and plain["network"]["order"] == "move closecombat"
 
 
@@ -144,7 +144,7 @@ def test_the_temperature_is_passed_through_only_as_a_positive_number(run: Path) 
     assert good["tau"] == 0.1 and matrix_view(good)["tau"] == 0.1  # type: ignore[index]
     assert RunReader(run).state()["decision"]["notes"]["matrix"]["tau"] == 0.1
     assert matrix_view({**good, "tau": 1})["tau"] == 1.0  # type: ignore[index]
-    old = {key: value for key, value in good.items() if key != "tau"}  # a record from before the temperature
+    old = {key: value for key, value in good.items() if key != "tau"}
     assert matrix_view(old)["tau"] is None  # type: ignore[index]
     for bad in (0, 0.0, -0.1, "0.1", None, True, [0.1], float("nan"), float("inf")):
         view = matrix_view({**good, "tau": bad})
@@ -157,9 +157,9 @@ def test_the_opponent_temperature_is_passed_through_only_as_a_positive_number(ru
     assert RunReader(run).state()["decision"]["notes"]["matrix"]["opp_temperature"] == 1.0
     assert matrix_view({**good, "opp_temperature": 2})["opp_temperature"] == 2.0  # type: ignore[index]
     assert matrix_view({**good, "opp_temperature": 0.75})["opp_temperature"] == 0.75  # type: ignore[index]
-    old = {key: value for key, value in good.items() if key != "opp_temperature"}  # a record from before it
+    old = {key: value for key, value in good.items() if key != "opp_temperature"}
     view = matrix_view(old)
-    assert view is not None and view["opp_temperature"] is None and view["tau"] == 0.1  # the page reads None as 1
+    assert view is not None and view["opp_temperature"] is None and view["tau"] == 0.1
     for bad in (0, 0.0, -2, "1.5", None, True, [1.0], {"t": 1}, float("nan"), float("inf")):
         view = matrix_view({**good, "opp_temperature": bad})
         assert view is not None and view["opp_temperature"] is None and view["p_cols"] == good["p_cols"]
@@ -172,7 +172,7 @@ def test_rows_of_orders_and_display_names() -> None:
     assert row_of_order("move surf", rows) is None and row_of_order("default", rows) is None
     assert row_of_order(None, rows) is None and row_of_order("switch Lucario", rows) is None
     assert pretty("rotomwash", {"rotomwash": "Rotom-Wash"}) == "Rotom-Wash" and pretty("") == ""
-    assert pretty("notathingatall") == "Notathingatall"  # an id nothing names: shown with a capital
+    assert pretty("notathingatall") == "Notathingatall"
 
 
 # Win rates ------------------------------------------------------------------------------------------
@@ -196,7 +196,7 @@ def test_win_rates_over_the_run_and_the_last_ten(tmp_path: Path) -> None:
     }
     outcomes = ["win", "loss", "loss", "loss", "win", "opponent_forfeit", "draw", "win", "loss", "win", "win", "win"]
     text = "".join(line(event="battle_end", battle=i + 1, outcome=o) for i, o in enumerate(outcomes))
-    path.write_text(text + line(event="battle_start", battle=13), encoding="utf-8")  # battle 13 is being played
+    path.write_text(text + line(event="battle_start", battle=13), encoding="utf-8")
     scan.refresh()
     view = scan.winrate_view()
     assert (view["battles"], view["wins"], view["rate"]) == (12, 7, 0.5833)
@@ -250,8 +250,8 @@ def test_log_of_a_finished_battle_keeps_notes_and_uncollected_turns() -> None:
     assert last[0]["kind"] == "note" and last[0]["text"].startswith("(no log for this turn")
     assert last[1]["kind"] == "action" and len(log["notes"]) == 2 and log["notes"][0].startswith("failure:")
     sides = {line["text"]: line["side"] for turn in log["turns"] for line in turn["lines"]}
-    assert sides["Indeedee’s Psychic Surge"] == "theirs"  # theirs only at the preview
-    assert sides["Kingambit’s Leftovers"] is None  # both teams have a Kingambit: the text does not tell
+    assert sides["Indeedee’s Psychic Surge"] == "theirs"
+    assert sides["Kingambit’s Leftovers"] is None
 
 
 def test_plain_and_raw_logs(tmp_path: Path) -> None:
@@ -299,8 +299,8 @@ def test_every_script_of_the_page_is_served() -> None:
     for path in ASSETS:
         assert (STATIC / path.lstrip("/")).is_file() and path in page
     matrix = (STATIC / "matrix.js").read_text(encoding="utf-8")
-    assert "mxSeen" in matrix and "is-playing" in matrix  # a decision animates once, by its battle and sequence
-    assert "guess" not in page.lower() and "assumed" not in page.lower()  # nothing about guessed opposing builds
+    assert "mxSeen" in matrix and "is-playing" in matrix
+    assert "guess" not in page.lower() and "assumed" not in page.lower()
 
 
 def test_the_page_has_the_totals_and_the_control_of_their_actions_considered() -> None:
@@ -308,7 +308,7 @@ def test_the_page_has_the_totals_and_the_control_of_their_actions_considered() -
     matrix = (STATIC / "matrix.js").read_text(encoding="utf-8")
     style = (STATIC / "style.css").read_text(encoding="utf-8")
     assert 'id="mx-top"' in page and 'id="mx-pick"' in page and "Their actions considered" in page
-    tops = [f'data-top="{n}"' for n in (0, 5, 3, 2, 1)]  # All, Top 5, Top 3, Top 2, Top 1: in that order
+    tops = [f'data-top="{n}"' for n in (0, 5, 3, 2, 1)]
     assert all(top in page for top in tops) and sorted(tops, key=page.index) == tops
     for label in ('"SCORE"', '"FOR THEM"', "WOULD PICK", "most likely", "pcsa-mx-top", "m.tau"):
         assert label in matrix
@@ -322,8 +322,8 @@ def test_the_page_has_the_control_of_the_trust_in_the_prediction() -> None:
     style = (STATIC / "style.css").read_text(encoding="utf-8")
     assert 'id="mx-opp"' in page and "Trust in the prediction" in page and "Temperature on our prediction" in page
     parts = ['id="mx-top"', 'id="mx-opp"', 'data-step="-1"', 'id="mx-opp-now"', 'data-step="1"', 'id="mx-opp-reset"']
-    assert all(part in page for part in parts) and sorted(parts, key=page.index) == parts  # in this order
-    assert page.index('id="mx-opp-reset"') < page.index('id="mx-pick"')  # both controls and the readout: one line
+    assert all(part in page for part in parts) and sorted(parts, key=page.index) == parts
+    assert page.index('id="mx-opp-reset"') < page.index('id="mx-pick"')
     for label in ("pcsa-mx-opp", '"opp"', "m.opp_temperature", "MX_OPPS = [0.5, 0.75, 1, 1.5, 2, 3, 5]", "at trust"):
         assert label in matrix
     for rule in (".mx-calt", ".mx-cnum.alt", ".mx-stepper", ".mx-opp-now"):
@@ -333,7 +333,7 @@ def test_the_page_has_the_control_of_the_trust_in_the_prediction() -> None:
 def test_col_legal_passes_through_and_the_page_hides_columns_they_cannot_take() -> None:
     record = json.loads((FIXTURE / "battle-3" / "decisions" / "0003-action.json").read_text(encoding="utf-8"))
     notes = record["notes"]
-    assert notes_view(notes)["matrix"]["col_legal"] is None  # an older record: the page falls back to p = 0
+    assert notes_view(notes)["matrix"]["col_legal"] is None
     flags = [True] * 8 + [False]
     with_flags = {**notes, "matrix": {**notes["matrix"], "col_legal": flags}}
     assert notes_view(with_flags)["matrix"]["col_legal"] == flags
@@ -343,7 +343,7 @@ def test_col_legal_passes_through_and_the_page_hides_columns_they_cannot_take() 
 
 
 def test_the_lookahead_is_shown_by_the_depth_that_ran() -> None:
-    # matrix_depth (14 Nov): the blend note says the depth set and used; the page draws LOOK and its stat from it
+    # matrix_depth: the blend note says the depth set and used; the page draws LOOK and its stat from it
     good = notes_of("0003-action.json")["matrix"]
     q = [0.1 * i for i in range(11)]
     one = matrix_view({**good, "blend": {"blend": 2.0, "q": q, "network_index": 3, "depth_set": 1, "depth": 1}})
@@ -379,7 +379,7 @@ def test_the_lookahead_is_shown_by_the_depth_that_ran() -> None:
         {**good, "blend": {"blend": 2.0, "q": q, "depth_set": 2, "depth": 1, "depth2": "time cap", "ms2": 1501.0}}
     )["blend"]  # type: ignore[index]
     assert capped["depth_set"] == 2 and capped["depth"] == 1 and capped["capped"] and capped["cont"] is None
-    old = matrix_view({**good, "blend": {"blend": 4.0, "q": q, "network_index": 1}})["blend"]  # before the depth
+    old = matrix_view({**good, "blend": {"blend": 4.0, "q": q, "network_index": 1}})["blend"]
     assert old["depth_set"] == 1 and old["depth"] == 1  # type: ignore[index]
     assert matrix_view({**good, "blend": {"blend": 2.0, "error": "boom"}})["blend"] == {
         "error": "boom",

@@ -1,7 +1,4 @@
-"""Collecting the battle log on real panel frames: the climb keeps its last capture and survives a timer warning.
-
-Uses the local-only frames of tests/perception/test_log_frames.py and skips without them.
-"""
+"""Collecting the battle log on real panel frames: the climb keeps its last capture and survives a timer warning."""
 
 from __future__ import annotations
 
@@ -34,7 +31,6 @@ class Phone:
     def drag(self, *args) -> None:
         self.drags += 1
 
-    # the executor's side
     def point(self, name: str) -> str:
         return name
 

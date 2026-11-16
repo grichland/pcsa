@@ -1,13 +1,5 @@
-# From research/pcsa-belief/belief/evidence.py (sha256 b8b7c2d5721a, 2026-11-12 14:37); keep diffable.
-# pcsa changes are marked "pcsa:".
-"""Evidence read from protocol lines (p1's view): reveals, turn orders, hits.
-
-Hits come from stage 0's reader (stage0/common.py read_hits, copied verbatim into belief/hits.py so the package
-needs no stage-0 import); turn orders follow stage 0's order_events. Reveals are read here: moves used (not called
-by another move), items named by the protocol (a Mega Evolution names its stone; an item that arrived by Trick or
-the like spoils the member's item evidence), abilities named by the protocol (the holder is the subject of the line,
-or the [of] member for lines whose subject is someone else).
-"""
+# From research/pcsa-belief/belief/evidence.py; keep diffable. pcsa changes are marked "pcsa:".
+"""Evidence read from protocol lines (p1's view): reveals, turn orders, hits."""
 
 from __future__ import annotations
 
@@ -70,9 +62,9 @@ ORDER_MOVES = frozenset({"grassyglide", "pursuit", "focuspunch"})
 @dataclass
 class Reveal:
     line: int
-    kind: str  # "switch" | "move" | "item" | "ability" | "mega" | "spoil"
-    key: str  # "p2: Name"
-    value: str = ""  # species / move / item / ability / mega form
+    kind: str
+    key: str
+    value: str = ""
 
 
 def _of(parts: list[str]) -> str | None:

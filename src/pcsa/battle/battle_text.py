@@ -1,8 +1,4 @@
-"""Showdown's battle-message templates from the pinned simulator, and lookup of one log message.
-
-The snapshot assets/game/battle_text.json holds the English text tables. A template identifies which
-effect and message a log row is; what the row does to the battle is decided in log_patterns.
-"""
+"""Showdown's battle-message templates from the pinned simulator, and lookup of one log message."""
 
 from __future__ import annotations
 

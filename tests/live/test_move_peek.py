@@ -21,8 +21,8 @@ from pcsa.run.battle_state import BattleRecord
 from tests.live import harness
 from tests.live.test_harness import end_of_battle, events, lobby_to_team_select, one_turn
 
-SHEET = ("Earthquake", "Draco Meteor", "Swords Dance", "Protect")  # Champions PP 12, 8, 20, 8
-BASE = {"hp": 108, "atk": 130, "def": 95, "spa": 80, "spd": 85, "spe": 102}  # Garchomp
+SHEET = ("Earthquake", "Draco Meteor", "Swords Dance", "Protect")
+BASE = {"hp": 108, "atk": 130, "def": 95, "spa": 80, "spd": 85, "spe": 102}
 STATS = {s: hp_value(v, 0) if s == "hp" else stat_value(v, 0) for s, v in BASE.items()}
 HUD = {
     "active_name": "Garchomp",
@@ -44,7 +44,7 @@ OVERRIDES = ["policy.neural_checkpoint=assets/models/__absent_in_tests__.pt", "t
 
 
 class Scripted:
-    """Chooses the listed orders in turn (the first move when its order is not legal) and keeps what it was offered."""
+    """Chooses the listed orders in turn (else the first move) and keeps what it was offered."""
 
     name = "scripted"
 
@@ -108,8 +108,7 @@ def shown(*pp: int, mega: bool = False) -> dict:
 
 
 def no_look(turn: int, rows: tuple[str, ...], *, focused: bool = False) -> list[Step]:
-    """Action screen -> log -> Fight, (Mega), the move row twice. `focused`: the row submits on its first tap and
-    the second lands on the waiting screen; otherwise the first tap focuses the row and the second submits."""
+    """Action screen -> log -> Fight, (Mega), the move row twice."""
     action = Step(Screen.ACTION, HUD, accept=("fight",), log_rows=rows, log_turn=turn)
     first = Step(Screen.MOVES, accept=("mega", "move_rows"), advance_on=("move_rows",))
     if focused:
@@ -140,7 +139,7 @@ def play(config: Config, tmp_path: Path, turns: list[list[Step]], player: Script
     head = lobby_to_team_select()
     steps = head + [step for turn in turns for step in turn] + end_of_battle("win")
     state, device, recorder = harness.run_script(config, steps, tmp_path, player=player)
-    assert device.rejected == [], device.rejected  # every tap landed on a control its screen has
+    assert device.rejected == [], device.rejected
     assert state.outcomes == ["win"] and state.completed == 1 and state.restarts == 0
     taps, start = [], len(head)
     for turn in turns:
@@ -158,7 +157,7 @@ def mega_offered(player: Scripted) -> list[bool]:
 
 
 def test_the_setting_is_when_needed_in_agent_yaml_and_rejects_other_values(config: Config) -> None:
-    assert config.agent.timing.move_peek == "when_needed"  # agent.yaml since 11 Nov; the code's default stays always
+    assert config.agent.timing.move_peek == "when_needed"
     assert TimingConfig().move_peek == "always"
     with pytest.raises(ConfigError, match="timing.move_peek"):
         load_config(paths.repo_root() / "config" / "agent.yaml", ["timing.move_peek=sometimes"], environ={})
@@ -189,7 +188,7 @@ def test_a_battle_is_played_to_the_end_without_a_look(fast: Config, tmp_path: Pa
     assert pp(decisions[0]) == {"earthquake": 12, "dracometeor": 8, "swordsdance": 20, "protect": 8}
     rows = decisions[0]["request"]["active"][0]["moves"]
     assert [r["move"] for r in rows] == list(SHEET) and all(r["maxpp"] and not r["disabled"] for r in rows)
-    assert "canMegaEvo" in decisions[0]["request"]["active"][0]  # the stone is held and no Mega Evolution yet
+    assert "canMegaEvo" in decisions[0]["request"]["active"][0]
 
 
 def test_mega_is_tapped_once_and_not_offered_after_the_log_shows_it(fast: Config, tmp_path: Path) -> None:
@@ -197,7 +196,7 @@ def test_mega_is_tapped_once_and_not_offered_after_the_log_shows_it(fast: Config
     player = Scripted(EARTHQUAKE_MEGA)
     taps, decisions, _ = play(fast, tmp_path, turns, player)
     assert taps == [["fight", "mega", "move_rows0", "move_rows0"], NOT_LOOKED, NOT_LOOKED]
-    assert [d["peek"] for d in decisions] == ["skipped"] * 3  # the log's Mega Evolution row confirms it: no look
+    assert [d["peek"] for d in decisions] == ["skipped"] * 3
     assert [d["order"] for d in decisions] == [EARTHQUAKE_MEGA, EARTHQUAKE, EARTHQUAKE]
     assert ["canMegaEvo" in d["request"]["active"][0] for d in decisions] == [True, False, False]
     assert mega_offered(player) == [True, False, False]
@@ -212,7 +211,7 @@ def test_a_mega_the_log_does_not_show_is_settled_by_a_look(fast: Config, tmp_pat
     taps, decisions, _ = play(fast, tmp_path, turns, player)
     assert [d["peek"] for d in decisions] == ["skipped", "mega_unconfirmed", "skipped"]
     assert taps[1:] == [LOOKED, NOT_LOOKED]
-    # Button gone: it happened, and Mega is not offered again. Button still there: it did not, and it still is.
+    # button gone: it happened, Mega not offered again; button still there: it did not, and it still is
     assert mega_offered(player) == [True, button, button]
 
 
@@ -244,7 +243,7 @@ def test_taps_that_did_not_go_through_look_on_the_retry(fast: Config, tmp_path: 
     taps, decisions, _ = play(fast, tmp_path, turns, Scripted())
     assert [d["peek"] for d in decisions] == ["skipped", "retry", "retry", "skipped"]
     assert [d["same_turn"] for d in decisions] == [False, True, True, False]
-    assert [d["refused"] for d in decisions] == [[], [0], [0, 1], []]  # a refused move is not tried again that turn
+    assert [d["refused"] for d in decisions] == [[], [0], [0, 1], []]
     retry = [["fight", "move_back", "fight", f"move_rows{row}", f"move_rows{row}"] for row in (1, 2)]
     assert taps == [NOT_LOOKED, *retry, NOT_LOOKED]
 
@@ -264,7 +263,7 @@ def test_pressure_is_counted_and_a_low_count_looks_so_an_empty_move_is_never_off
     player = Scripted(METEOR, METEOR, METEOR, METEOR)
     taps, decisions, _ = play(fast, tmp_path, turns, player)
     assert [d["peek"] for d in decisions] == ["skipped", "skipped", "low_pp", "low_pp"]
-    assert [pp(d)["dracometeor"] for d in decisions] == [8, 6, 0, 0]  # Pressure: two PP a use
+    assert [pp(d)["dracometeor"] for d in decisions] == [8, 6, 0, 0]
     assert [METEOR in offered for offered in player.offered] == [True, True, False, False]
     assert [d["order"] for d in decisions] == [METEOR, METEOR, EARTHQUAKE, EARTHQUAKE]
     assert taps == [["fight", "move_rows1", "move_rows1"]] * 2 + [LOOKED] * 2
@@ -272,13 +271,13 @@ def test_pressure_is_counted_and_a_low_count_looks_so_an_empty_move_is_never_off
 
 def test_a_team_sheet_without_move_names_looks_every_turn(when_needed: Config, tmp_path: Path) -> None:
     turns = [look(1, START, shown(12, 8, 20, 8)), look(2, QUAKE, shown(11, 8, 20, 8))]
-    taps, decisions, _ = play(when_needed, tmp_path, turns, Scripted())  # the harness sheet names no moves
+    taps, decisions, _ = play(when_needed, tmp_path, turns, Scripted())
     assert [d["peek"] for d in decisions] == ["sheet", "sheet"] and {d["degrade"] for d in decisions} == {"full"}
 
 
 def test_a_battle_picked_up_midway_looks_every_turn(fast: Config, tmp_path: Path) -> None:
     turns = [look(1, START, shown(12, 8, 20, 8)), look(2, QUAKE, shown(11, 8, 20, 8))]
-    steps = [step for turn in turns for step in turn] + end_of_battle("loss")  # starts on an action screen
+    steps = [step for turn in turns for step in turn] + end_of_battle("loss")
     state, device, recorder = harness.run_script(fast, steps, tmp_path, player=Scripted())
     assert state.outcomes == ["loss"] and device.rejected == []
     assert [d["peek"] for d in decisions_of(recorder)] == ["adopted", "adopted"]
@@ -286,7 +285,7 @@ def test_a_battle_picked_up_midway_looks_every_turn(fast: Config, tmp_path: Path
 
 def test_a_battle_without_a_team_sheet_looks_before_the_log() -> None:
     b = BattleRecord(1, "id", harness.ROSTER, BattleLog("id"), requested=[0, 1, 2])
-    assert move_peek.why_before_log("when_needed", b, None, False) == "untracked"  # decided from the screen alone
+    assert move_peek.why_before_log("when_needed", b, None, False) == "untracked"
     assert move_peek.why_before_log("always", b, None, False) == "always"
 
 
@@ -309,9 +308,9 @@ def test_a_move_refused_by_the_game_is_not_offered_again_in_that_turn() -> None:
     from pcsa.players.base import ScreenFacts
 
     last = {"label": "move3", "turn": 10, "log_turn": 9}
-    assert move_peek.refused_moves(last, 10, True, False) == (3,)  # the log shows no new turn
-    assert move_peek.refused_moves(last, 10, False, True) == (3,)  # the log read failed, the screen never left
-    assert move_peek.refused_moves(last, 11, False, True) == ()  # a new turn
+    assert move_peek.refused_moves(last, 10, True, False) == (3,)
+    assert move_peek.refused_moves(last, 10, False, True) == (3,)
+    assert move_peek.refused_moves(last, 11, False, True) == ()
     assert move_peek.refused_moves(last, 10, False, False) == ()
     assert move_peek.refused_moves({"label": "mega+move1", "turn": 4}, 4, True, False) == (1,)
     assert move_peek.refused_moves({"label": "move2", "turn": 4, "refused": (3,)}, 4, True, False) == (3, 2)

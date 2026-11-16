@@ -1,8 +1,4 @@
-"""`battles.jsonl.gz` of `pcsa sim play`: one JSON object per finished battle, its full protocol included.
-
-Each ArenaPlayer keeps a seat record per finished battle (`finished`: role, team, picks, won, turns and the
-battle's replay data); `records` merges A's and B's seats into one record per battle tag, keyed by seat.
-"""
+"""`battles.jsonl.gz` of `pcsa sim play`: one JSON object per finished battle, its full protocol included."""
 
 from __future__ import annotations
 

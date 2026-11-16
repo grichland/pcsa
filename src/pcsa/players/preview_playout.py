@@ -1,22 +1,9 @@
-"""Team preview by full playouts (`preview: playout` in config/players/neural.yaml; 14 Nov 2026).
+"""Team preview by full playouts (`preview: playout` in config/players/neural.yaml).
 
-The robust preview (pcsa.rl_training.preview_leads) scores all 60 lineups from turn-1 views; its score barely
-predicts the live result (AUC 0.59 over 257 games) while the win rate of full simulated games does better (0.68;
-research/pcsa-search/preview-playouts). Here the robust scores only choose the candidates:
-
-  candidates  the kept lineups ranked by robust score + Gumbel noise, the robust pick always among them
-  rounds      sequential halving over `schedule` ([[16, 3], [8, 5], [4, 8], [2, 14]]: 16 candidates x 3 playouts,
-              then the best 8 x 5, ...; 148 games, about 0.65 s each per worker); every candidate of a round
-              meets the same sampled opposing lineups (pcsa.players.preview_sampler: their lead by the live
-              lead rates, Gumbel top-3, their seen sets)
-  playouts    full games on the workers (pcsa.players.preview_pool), the live network on both sides, sampled
-  pick        the finalist with the best win rate; the robust pick stays unless another lineup has at least
-              `min_playouts` games and a win rate better by `margin` or more
-
-Deadline-aware: a round that does not fit the time left is shrunk, the search returns the best so far when time
-runs out, and anything going wrong (no workers yet, no team export, an error) keeps the robust pick, noted in the
-team decision (`playout_fallback`). Every playout is saved in <run folder>/preview-playouts.jsonl.
-"""
+The robust preview (pcsa.rl_training.preview_leads) picks the candidate lineups; sequential halving over `schedule`
+plays full simulated games (pcsa.players.preview_pool) against sampled opposing lineups (preview_sampler). The robust
+pick stays unless another lineup has `min_playouts` games and a win rate better by `margin`. Deadline-aware; any
+failure keeps the robust pick (`playout_fallback`). Every playout is saved to <run folder>/preview-playouts.jsonl."""
 
 from __future__ import annotations
 
@@ -39,7 +26,7 @@ if TYPE_CHECKING:
     from pcsa.battle.builds import Catalog
     from pcsa.players.preview_pool import Pool
 
-FIRST_GUESS_S = 1.0  # a playout's length before any has finished (measured: about 0.65 s)
+FIRST_GUESS_S = 1.0  # a playout's length before any has finished (about 0.65 s)
 WAIT_S = 0.2
 ROBUST_S = 15.0  # the robust scores come first: max_preview_s must leave them this much
 PAIR = 2  # a schedule round is [candidates, playouts each]; a round needs two candidates

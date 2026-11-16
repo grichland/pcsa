@@ -1,9 +1,4 @@
-"""What `pcsa watch` keeps from a run's events.jsonl: record, rating, battles, warnings and the recent timeline.
-
-The file is read incrementally (only the bytes added since the last pass, and only up to the last complete
-line), so a run that is being written is followed without re-reading it and a half-written line is left for
-the next pass. Every field of an event is optional: an older or unknown event shape is skipped, never an error.
-"""
+"""What `pcsa watch` keeps from a run's events.jsonl: record, rating, battles, warnings and the recent timeline."""
 
 from __future__ import annotations
 

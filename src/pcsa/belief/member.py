@@ -1,5 +1,4 @@
-# From research/pcsa-belief/belief/fast.py (sha256 dcd849036429, 2026-11-12 14:38), split into keys, grids, board,
-# member_state, member_grids, member_out, member, fast (pcsa's 400-line file limit); pcsa changes are marked "pcsa:".
+# Split from research/pcsa-belief/belief/fast.py (pcsa's file limit); pcsa changes are marked "pcsa:".
 """One opposing member: weights, evidence and outputs (overview: pcsa.belief.fast)."""
 
 from __future__ import annotations
@@ -30,9 +29,9 @@ class FastMember(MemberOutputs):
         self.abilities = list(space.abilities)
         self.ability_index = {a: k for k, a in enumerate(self.abilities)}
         self.S = space.S
-        self.F = space.free_lp.copy()  # free component log-weights [I, A, S] (without the moves offset)
-        self.F0 = space.free_lp  # its log-prior (shrunk with F)
-        self.off = 0.0  # log-likelihood of the used moves, the same for every free row
+        self.F = space.free_lp.copy()  # free log-weights [I, A, S]
+        self.F0 = space.free_lp  # its log-prior
+        self.off = 0.0  # log-likelihood of used moves (free rows)
         self.r_comp, self.r_build = space.r_comp, space.r_build
         self.r_spread, self.r_item, self.r_ability = space.r_spread, space.r_item.copy(), space.r_ability.copy()
         self.r_lp, self.r_logw = space.r_lp, space.r_lp.copy()
@@ -43,8 +42,8 @@ class FastMember(MemberOutputs):
         self.spoiled = False
         self.evidence: collections.Counter = collections.Counter()
         self.fallbacks: collections.Counter = collections.Counter()
-        self.version = 0  # weights changed
-        self.vocab = 0  # item / ability vocabulary changed
+        self.version = 0  # bumped when weights change
+        self.vocab = 0  # bumped when the item / ability vocabulary changes
         self._wv = -1
         self._agg: dict = {}
         self._maps: dict = {}
@@ -199,7 +198,7 @@ class FastMember(MemberOutputs):
         consistent = sp > our_speed if they_first else sp < our_speed
         f = np.where(consistent, 1 - eps, np.where(sp == our_speed, 0.5, eps))
         if not form_of(mon, battle)[1]:
-            f = np.where(g.unmod[:, :, None], 1.0, f)  # an order-changing ability: nothing learnt  # pyright: ignore[reportOptionalSubscript]
+            f = np.where(g.unmod[:, :, None], 1.0, f)
         self.evidence["order"] += 1
         self._apply(np.log(f), g.imap, g.amap, inv=g.inv)
 

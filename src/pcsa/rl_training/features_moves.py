@@ -1,4 +1,4 @@
-# From research/pcsa-rl/rl/features_moves.py (sha256 b6ea2aee07de, 2026-11-08 20:13); keep diffable.
+# From research/pcsa-rl/rl/features_moves.py; keep diffable.
 """Move blocks: 27 static facts, 4 state columns and 9 engine damage columns against the opposing active."""
 
 from __future__ import annotations

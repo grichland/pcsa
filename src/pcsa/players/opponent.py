@@ -3,8 +3,7 @@
 An assumed set is the species' top catalog build under what the battle revealed (item, ability, moves), then
 corrected by what the opponent did: moving first when the uncorrected set says it is slower (Choice Scarf), or
 hitting harder than the uncorrected set's max roll (a power item). `Tracker` records those observations.
-Move ids are poke-env ids; items keep the catalog's display name or the revealed id (compare with to_id_str).
-"""
+Move ids are poke-env ids; items keep the catalog's display name or the revealed id (compare with to_id_str)."""
 
 from __future__ import annotations
 
@@ -61,7 +60,7 @@ class AssumedSet:
     nature: str
     points: dict[str, int]
     moves: tuple[str, ...]
-    source: str  # "revealed+top" / "scarf-corrected" / "power-corrected" / "fallback"
+    source: str
 
 
 @lru_cache(maxsize=1)
@@ -234,7 +233,7 @@ class _Hit:
 
     attacker: str
     move: str
-    target: str  # team key, "p1: Name"
+    target: str
     dealt: int = 0
     hits: int = 0
     crit: bool = False

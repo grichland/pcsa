@@ -32,9 +32,9 @@ def test_a_covered_set_marks_the_catalog_build_and_ranks_it_first(store: SeenBui
     report = store.learn("b1", [Observed("garchomp", ("earthquake", "swordsdance"))], plain(), "2026-11-10")
     assert report[0]["result"] == "covered by the catalog"
     players = Catalog(CATALOG, seen=store)
-    assert players.builds("Garchomp")[0].item == "Focus Sash"  # the seen build, ahead of the usage top
-    assert len(players.builds("Garchomp")) == 2  # no duplicate
-    assert plain().builds("Garchomp")[0].item == "Choice Scarf"  # the plain catalog is unchanged
+    assert players.builds("Garchomp")[0].item == "Focus Sash"
+    assert len(players.builds("Garchomp")) == 2
+    assert plain().builds("Garchomp")[0].item == "Choice Scarf"
 
 
 def test_an_uncovered_set_is_added_and_filled_from_the_closest_build(store: SeenBuilds) -> None:
@@ -42,7 +42,7 @@ def test_an_uncovered_set_is_added_and_filled_from_the_closest_build(store: Seen
     assert report[0]["result"] == "added"
     added = Catalog(CATALOG, seen=store).builds("Garchomp")[0]
     assert added.item == "Focus Sash" and moves(added)[:2] == ["Spikes", "Dragon Tail"] and len(added.moves) == 4
-    assert set(moves(added)[2:]) <= {"Earthquake", "Scale Shot", "Rock Tomb", "Swords Dance"}  # the sash build's
+    assert set(moves(added)[2:]) <= {"Earthquake", "Scale Shot", "Rock Tomb", "Swords Dance"}
 
 
 def test_the_same_battle_is_never_counted_twice_and_repeats_rank_higher(store: SeenBuilds) -> None:
@@ -77,7 +77,7 @@ def test_the_assumed_set_starts_from_the_first_build_that_fits_what_was_revealed
     build, _, _ = _base_build(builds, mon, "garchomp", False, None, (["scaleshot"], None))
     assert build.item == "Focus Sash" and fits(build, ["scaleshot"])
     build, _, _ = _base_build(builds, mon, "garchomp", False, None)
-    assert build.item == "Choice Scarf"  # nothing revealed: the top build
+    assert build.item == "Choice Scarf"
 
 
 def test_the_most_recently_seen_build_ranks_first_and_late_learning_keeps_the_dates(store: SeenBuilds) -> None:
@@ -89,7 +89,7 @@ def test_the_most_recently_seen_build_ranks_first_and_late_learning_keeps_the_da
     store.learn("b3", [sash], plain(), "2026-11-11")
     assert [(s.build.item, s.count) for s in store.ranked("garchomp")] == [("Focus Sash", 1), ("Choice Scarf", 2)]
     assert Catalog(CATALOG, seen=store).builds("Garchomp")[0].item == "Focus Sash"
-    store.learn("b0", [sash], plain(), "2026-11-02")  # an older run, learned later
+    store.learn("b0", [sash], plain(), "2026-11-02")
     [top] = [s for s in store.ranked("garchomp") if s.build.item == "Focus Sash"]
     assert (top.count, top.first, top.last) == (2, "2026-11-02", "2026-11-11")
 
@@ -97,17 +97,17 @@ def test_the_most_recently_seen_build_ranks_first_and_late_learning_keeps_the_da
 @pytest.mark.parametrize(
     ("form", "key"),
     [
-        ("Slowbro-Galar", "slowbrogalar"),  # regional forms keep their own builds, catalog or not
+        ("Slowbro-Galar", "slowbrogalar"),
         ("Typhlosion-Hisui", "typhlosionhisui"),
         ("Rotom-Fan", "rotomfan"),
         ("Indeedee-F", "indeedeef"),
         ("Toxtricity-Low-Key", "toxtricitylowkey"),
         ("Tauros-Paldea-Blaze", "taurospaldeablaze"),
         ("Basculegion", "basculegion"),
-        ("Furfrou-Dandy", "furfrou"),  # forms that differ only in looks: the species itself
+        ("Furfrou-Dandy", "furfrou"),
         ("Vivillon-High Plains", "vivillon"),
         ("Maushold-Four", "maushold"),
-        ("Charizard-Mega-X", "charizard"),  # Megas and in-battle forms: what they change from
+        ("Charizard-Mega-X", "charizard"),
         ("Floette-Mega", "floetteeternal"),
         ("Aegislash-Blade", "aegislash"),
         ("Palafin-Hero", "palafin"),
@@ -119,7 +119,7 @@ def test_a_form_is_kept_under_its_own_key(form: str, key: str) -> None:
 
 
 def slowbro_catalog() -> Catalog:
-    """Kanto Slowbro builds only: Scald and Teleport are not in Slowbro-Galar's learnset, nor Oblivious its ability."""
+    """Kanto Slowbro builds only (Scald, Teleport and Oblivious are not Slowbro-Galar's)."""
     points = {"hp": 32, "atk": 0, "def": 32, "spa": 2, "spd": 0, "spe": 0}
     first = {"item": "Leftovers", "ability": "Oblivious", "nature": "Bold", "points": points, "score": -1.0}
     second = {"item": "Leftovers", "ability": "Regenerator", "nature": "Bold", "points": points, "score": -2.0}
@@ -135,7 +135,7 @@ def test_a_regional_form_without_catalog_builds_is_never_filed_under_its_base(st
     assert report[0]["result"] == "added" and store.ranked("slowbro") == []
     [seen] = store.ranked("slowbrogalar")
     assert seen.build.species == "Slowbro-Galar" and seen.build.ability == "Quick Draw"
-    assert list(seen.build.moves) == ["Shell Side Arm", "Slack Off", "Calm Mind", "Ice Beam"]  # learnable fills only
+    assert list(seen.build.moves) == ["Shell Side Arm", "Slack Off", "Calm Mind", "Ice Beam"]
     assert all(game.can_learn("slowbrogalar", m) for m in seen.build.moves)
 
 

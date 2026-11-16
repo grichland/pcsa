@@ -1,13 +1,9 @@
-"""Build a player by kind from the agent config.
+"""Build a player by kind from the agent config (settings in config/players/<kind>.yaml).
 
-Live kinds (the phone can play them): random; simple_heuristic (the heuristic with poke-env's default numbers);
-custom_heuristic (the heuristic with config/players/heuristic.yaml); max_damage (the highest-scoring attack,
-nothing else); best_matchup_max_damage (max_damage plus a switch out of a really bad matchup,
-config/players/best_matchup.yaml); disciplined (max_damage plus the research rules,
-config/players/disciplined.yaml); mixed (a weighted pool of the others, one drawn per game); endgame
-(disciplined plus the 1v1 chain, config/players/endgame.yaml); neural (a PPO / imitation checkpoint from the
-research runs, config/players/neural.yaml, falling back to disciplined). Every kind is live (SIM_KINDS is empty).
-"""
+Kinds: random; simple_heuristic (poke-env's default numbers); custom_heuristic; max_damage; best_matchup_max_damage
+(max_damage plus a switch out of a bad matchup); disciplined (max_damage plus the research rules); mixed (a weighted
+pool, one drawn per game); endgame (disciplined plus the 1v1 chain); neural (a checkpoint, falling back to
+disciplined)."""
 
 from __future__ import annotations
 
@@ -32,9 +28,9 @@ LIVE_KINDS = (
     "disciplined",
     "mixed",
     "neural",
-    "endgame",  # disciplined plus the 1v1 chain at <= 2 members each, config/players/endgame.yaml
+    "endgame",  # disciplined plus the 1v1 chain at <= 2 members each
 )
-SIM_KINDS: tuple[str, ...] = ()  # kinds not offered to the phone (none: the user wants every player usable live)
+SIM_KINDS: tuple[str, ...] = ()  # kinds not offered to the phone (none)
 KINDS = LIVE_KINDS + SIM_KINDS
 
 

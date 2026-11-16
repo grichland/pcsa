@@ -109,8 +109,7 @@ SUBJECT_PATTERNS = [
     (r"hung on using its .+!", "trailing", {"what": "focus_sash"}),
     (r"endured the hit!", "trailing", {"what": "endure"}),
     (r"ended its encore!", "volatile_end", {"effect": "Encore"}),
-    # Rows that restate something other rows carry (Yawn already pending, Struggle forced, contact damage whose HP
-    # row is next to it: Rough Skin, Rocky Helmet, Spiky Shield, Innards Out).
+    # Rows that restate something other rows carry (Yawn pending, Struggle forced, contact damage next to its HP row).
     (r"is already drowsy[.!]?", "trailing", {"what": "yawn_already"}),
     (r"has no moves left(?: that it can use)?!", "trailing", {"what": "struggle"}),
     (r"was hurt!", "trailing", {"what": "hurt"}),

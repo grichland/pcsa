@@ -1,8 +1,4 @@
-"""Static game knowledge: the Champions dex, Mega forms, abilities, items, learnsets and format rules.
-
-Every table is a pinned asset under assets/game/, regenerated from the pinned Showdown commit outside
-this repo and checked against tools.lock.json at load time.
-"""
+"""Static game knowledge: the Champions dex, Mega forms, abilities, items, learnsets and format rules."""
 
 from __future__ import annotations
 
@@ -20,7 +16,7 @@ from pcsa.common.errors import ConfigError
 
 STATS = ("hp", "atk", "def", "spa", "spd", "spe")
 LEVEL = 50
-ABILITY_MATCH_FLOOR = 0.75  # with the species known; one-letter OCR slips resolve
+ABILITY_MATCH_FLOOR = 0.75
 ABILITY_MATCH_FLOOR_ANY = 0.9
 ITEM_MATCH_FLOOR = 0.9
 MATCH_MARGIN = 0.08

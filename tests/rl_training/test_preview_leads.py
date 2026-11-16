@@ -37,7 +37,7 @@ def test_robust_scores_take_the_mean_of_the_worst() -> None:
     t = np.array([[0.9, 0.8, -0.6, 0.7], [0.3, 0.2, 0.25, 0.3]])
     assert np.allclose(robust_scores(t, 1), [-0.6, 0.2])
     assert np.allclose(robust_scores(t, 2), [0.05, 0.225])
-    assert np.allclose(robust_scores(t, 9), t.mean(1))  # more than the leads: the plain mean
+    assert np.allclose(robust_scores(t, 9), t.mean(1))
     assert int(np.argmax(robust_scores(t, 2))) == 1 and int(np.argmax(t.mean(1))) == 0
 
 

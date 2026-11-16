@@ -1,23 +1,9 @@
 """The endgame player: disciplined until both sides are down to `max_members`, then the 1v1 chain decides.
 
-With at most `max_members` (config/players/endgame.yaml) left on each side, `pcsa.players.chain` plays out the
-rest as 1v1 duels and this player takes its first step: stay and use the line's move (its recovery move for
-chain.RECOVER), switch to the line's first member, or send it after a faint. Everything else is disciplined's.
-
-Inputs, per member: HP fraction; speed from `opponent.speed` on threat's fighter (negated under Trick Room);
-attacks from `threat.hit_fraction` on every known damaging move (ours exact, theirs `opponent.assumed`), with the
-accuracy divided back out, and as the KO roll the mean over 0.925 (rolls are 85-100%: threat exposes only the
-mean); recovery 1/2 (weather heals as disciplined's `heal_fraction`); known residuals (poison and toxic -1/8,
-burn -1/16, Leftovers and Black Sludge, sandstorm, Poison Heal, Magic Guard); Rocky Helmet 1/6 and Rough
-Skin / Iron Barbs 1/8 per hit taken. No free switch after a KO (ranked has none).
-
-Their unseen members (Champions brings 3: alive = 3 - fainted, less the revealed alive) are each set of
-unrevealed team-preview species in turn, assumed sets at full HP; every option is scored against the worst set
-for us (minimax). Our active's attacks are its legal moves; the Mega it may take this turn is not modelled.
-A pivot (U-turn's switch request) lets the leaving active be swapped even after a KO.
-Falls back to disciplined, with a note, on a tie between the top two legal options, a drawn best line (no win,
-margin >= 0: a loss always has a negative margin), a line it cannot play, or an error.
-"""
+`pcsa.players.chain` plays out the rest as 1v1 duels; this player takes its first step: stay and use the line's move,
+switch to the line's first member, or send it after a faint. Everything else is disciplined's.
+Inputs: HP, speed (negated under Trick Room), threat.hit_fraction attacks, recovery 1/2, known residuals and contact
+damage. Their unseen members are scored minimax over the assumed sets; ties and errors fall back to disciplined."""
 
 from __future__ import annotations
 
@@ -51,7 +37,7 @@ WHY_CHARS = 80
 
 @dataclass
 class EndgameParams:
-    max_members: int = 2  # the chain decides once both sides have at most this many members left
+    max_members: int = 2
 
     @classmethod
     def load(cls, path: Path) -> EndgameParams:

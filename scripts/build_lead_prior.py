@@ -1,11 +1,8 @@
 """Build assets/sets/lead_prior.json: how often each species led when it was in an opposing six on the live ladder.
-
-Reads every recorded battle under output/runs (battle.json: their six at team preview; the last decision record's
-protocol: their first send-out), counts per base species (Rotom-Heat = Rotom), and writes
-{"built", "games", "species": {key: {"lead": n, "six": m}}}. The playout team preview (pcsa.players.preview_sampler)
-draws their lead and trio from it. Run it after live sessions, like `pcsa sets learn`:
-
     uv run --no-sync python scripts/build_lead_prior.py [--runs output/runs] [--out assets/sets/lead_prior.json]
+Counts per base species over recorded battles; the playout team preview (pcsa.players.preview_sampler) draws their
+lead
+from it. Rerun after live sessions.
 """
 
 from __future__ import annotations

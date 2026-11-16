@@ -1,8 +1,4 @@
-"""endgame: disciplined until <= 2 members each, then the 1v1 chain picks stay / switch / the replacement.
-
-Damage and speed are a table here (FakeThreat): per (attacker, defender, move) expected shares of max HP, and a
-speed per species; disciplined's threat helpers read the same table.
-"""
+"""endgame: disciplined until <= 2 members each, then the 1v1 chain picks stay / switch / the replacement."""
 
 from __future__ import annotations
 
@@ -155,7 +151,7 @@ def player() -> EndgamePlayer:
 
 ALL_UP = {"Azumarill": 1.0, "Slowbro": 1.0, "Charizard": 1.0}
 TWO_UP = {"Azumarill": 1.0, "Slowbro": 1.0, "Charizard": 0.0}
-TWO_FOES = [("Gengar", 100), ("Garchomp", 0), ("Dragonite", 100)]  # Gengar on their bench, Garchomp down
+TWO_FOES = [("Gengar", 100), ("Garchomp", 0), ("Dragonite", 100)]
 
 
 def test_three_against_three_plays_exactly_disciplined(fake) -> None:
@@ -213,4 +209,4 @@ def test_factory_builds_it(config: Config, fake) -> None:
     built = build_player(config, "endgame")
     assert isinstance(built, EndgamePlayer) and built.name == "endgame"
     assert built.endgame == EndgameParams() and built.params()["max_members"] == 2
-    assert "endgame" in LIVE_KINDS and "endgame" in KINDS and "endgame" not in SIM_KINDS  # live since 9 Nov (user)
+    assert "endgame" in LIVE_KINDS and "endgame" in KINDS and "endgame" not in SIM_KINDS

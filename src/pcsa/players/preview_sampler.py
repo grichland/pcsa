@@ -1,12 +1,4 @@
-"""Opposing lineups for the playout team preview (pcsa.players.preview_playout).
-
-Their lead: how often each species led when it was in a six on the live ladder (assets/sets/lead_prior.json,
-built by scripts/build_lead_prior.py; 29% top-1 under cross-validation against 17% by chance, 14 Nov 2026), as a
-smoothed rate. Their trio: Gumbel top-3 over the log rates (a Plackett-Luce draw without replacement), the first
-one leads. Their sets: the build catalog with the builds seen on the ladder first (Catalog.load(seen=True)); a
-member without any build is left out of the draw (counted) and replaced on the bench, never a failure. One of each
-item (Item Clause). The export holds six (the format's team size): their trio first, the lead first.
-"""
+"""Opposing lineups for the playout team preview (pcsa.players.preview_playout)."""
 
 from __future__ import annotations
 
@@ -78,9 +70,9 @@ def gumbel_top(scores: np.ndarray, k: int, rng: np.random.Generator) -> list[int
 
 @dataclass(frozen=True)
 class Lineup:
-    species: tuple[str, ...]  # their trio, the lead first
-    export: str  # a full team export (the format wants six): the trio first, in that order, then the rest
-    no_build: int  # members of their six left out of the draw because no build is known
+    species: tuple[str, ...]
+    export: str
+    no_build: int
 
 
 def builds_of(catalog: Catalog, name: str) -> list[Build]:

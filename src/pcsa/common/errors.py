@@ -1,10 +1,8 @@
-"""The four ways things go wrong, and what each one means for the loop.
+"""The four ways things go wrong, and what each means for the loop.
 
-Transient   -> retry in place (a screencap failed, a tap did not land).
-Recoverable -> the session restarts from whatever screen the phone shows (stuck, unknown screen too long).
-SafetyStop  -> the run ends. Raised only when the next action could leave Ranked Singles or lose the account
-               something (forfeit, quit, edit team, purchase, rating dialog). Never caught by handlers.
-ConfigError -> refused before the phone is touched.
+Transient: retry in place. Recoverable: restart the session. SafetyStop: end the run (the next action could leave
+Ranked
+Singles or cost the account something; never caught by handlers). ConfigError: refused before the phone is touched.
 """
 
 

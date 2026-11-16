@@ -1,6 +1,6 @@
 """Keeping the battle record in step with what the phone shows: the active member, faints, the party order.
 
-Split out of turn.py (15 Nov 2026) so the turn flow stays under the file size cap; behaviour unchanged.
+Split out of turn.py to keep files under the size cap.
 """
 
 from __future__ import annotations
@@ -12,12 +12,7 @@ from pcsa.run.battle_state import BattleRecord, same_name, same_name_in
 
 
 def leaving_slot(b: BattleRecord, party: tuple) -> int | None:
-    """The slot of our active when it leaves the field alive (else None: a faint replacement).
-
-    A replacement screen while our active is still standing means it is leaving and cannot be picked: a pivot move
-    (U-turn and the like), or anything else that pulls it out mid-turn (Emergency Exit, Wimp Out, Eject Button, Eject
-    Pack), which the log has not shown yet when the screen comes up. The active is the mon this turn put in
-    (visible_order[0]); it counts only when the party screen shows it unfainted."""
+    """The slot of our active when it leaves the field alive (else None: a faint replacement)."""
     if not b.names:
         return None
     active = b.visible_order[0]
@@ -26,18 +21,7 @@ def leaving_slot(b: BattleRecord, party: tuple) -> int | None:
 
 
 def fainted_active(b: BattleRecord, battle, screen_hp: dict) -> int | None:
-    """The slot of our active that just fainted, on a faint replacement screen (leaving_slot None), else None.
-
-    Showdown's forced-switch request lists that fainted active first (active: true, "0 fnt"); the live request has
-    to do the same, or the network reads a live bench member as our active (15 Nov 2026: 152 of 455 replacements
-    sent legal[0] instead of the network's pick). Fainted here: in b.fainted (the party screen, the log's text) or
-    0 HP on the party screen. In order:
-      1. the tracked active (the log's last switch-in), when it fainted after the last log read (the log does not
-         show its faint yet: the faint behind this screen);
-      2. visible_order[0], when fainted (it follows replacements and pivots the log has not shown yet);
-      3. the tracked active, when fainted at all;
-      4. the only fainted slot.
-    `battle`: the tracked Battle before this decision's request (None: steps 1 and 3 are skipped)."""
+    """The slot of our active that just fainted, on a faint replacement screen (leaving_slot None), else None."""
     fainted = set(b.fainted) | {slot for slot, hp in screen_hp.items() if hp and hp[0] <= 0}
     mon = getattr(battle, "active_pokemon", None) if battle is not None else None
     tracked = b.slot_of(mon.name) if mon is not None else None
@@ -106,8 +90,7 @@ def resync_party(b: BattleRecord, party) -> None:
 
 def index_collisions(b: BattleRecord, kind: str, battle, legal) -> dict[int, list[str]]:
     """Legal orders that share one network action index ({index: orders}), logged as a warning: the network can
-    then pick only the first of them (features.legal_action), whatever it meant. Empty without a tracked Battle.
-    The index's slot fallback (features.action_index) is shared with training and left as it is."""
+    then pick only the first of them (features.legal_action), whatever it meant. Empty without a tracked Battle."""
     if battle is None:
         return {}
     try:

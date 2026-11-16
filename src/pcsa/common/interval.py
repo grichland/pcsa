@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 
-Z95 = 1.959964  # the normal quantile of a 95% interval
+Z95 = 1.959964
 
 
 def wilson(wins: int, n: int) -> tuple[float, float]:

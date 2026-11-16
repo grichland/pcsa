@@ -1,9 +1,4 @@
-"""Read our own team from the lobby's team pages, then return to the same lobby.
-
-Lobby -> tap the selected team's label -> team list or menu -> View Details -> read the Moves & More
-page -> Stats tab -> read it -> Back out to the lobby. Every tap is an OCR-located control through
-the tap policy. An incomplete sheet is returned with its issues, never raised.
-"""
+"""Read our own team from the lobby's team pages, then return to the same lobby."""
 
 from __future__ import annotations
 
@@ -55,8 +50,7 @@ def _complete(values: dict) -> dict | None:
 
 
 def _points(m: RosterMember, stats: dict | None) -> tuple[dict | None, str | None]:
-    """The read stat points and nature; when the points were not read but the stats were, the points that
-    reproduce those exact stats (a spread-less export gets the wrong max HP)."""
+    """The read stat points and nature; unread points are solved from the stats (a spread-less export gets the wrong max HP)."""
     read = _complete(m.stats.points) if m.stats else None
     nature = m.stats.nature if m.stats else None
     if read is not None or stats is None:

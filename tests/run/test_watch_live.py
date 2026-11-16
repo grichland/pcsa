@@ -68,7 +68,7 @@ def line(**event) -> str:
 def test_events_are_read_incrementally_and_a_half_line_waits(tmp_path: Path) -> None:
     path = tmp_path / "events.jsonl"
     scan = EventScan(path)
-    scan.refresh()  # no file yet
+    scan.refresh()
     assert scan.offset == 0 and scan.battles == {}
     start = line(event="battle_start", battle=1, roster=["Garchomp"])
     end = line(event="battle_end", battle=1, outcome="win", source="result screen")
@@ -81,7 +81,7 @@ def test_events_are_read_incrementally_and_a_half_line_waits(tmp_path: Path) -> 
         stream.flush()
         scan.refresh()
     assert scan.offset == len(start) + len(end) and scan.battles[1]["outcome"] == "win" and scan.record["wins"] == 1
-    scan.refresh()  # nothing new: nothing counted twice
+    scan.refresh()
     assert scan.record["wins"] == 1 and len(scan.timeline) == 2
 
 
@@ -90,7 +90,7 @@ def test_bad_lines_and_odd_events_are_skipped(tmp_path: Path) -> None:
     path.write_text(
         "not json\n"
         + "[1, 2]\n"
-        + line(event="battle_end")  # no battle number
+        + line(event="battle_end")
         + line(event="decision", battle="one", kind="action")
         + line(event="rank", rating="high")
         + line(event="turn", battle=3, visit="x")
@@ -130,11 +130,11 @@ def test_state_follows_a_run_as_its_files_appear(tmp_path: Path) -> None:
         state = reader.state()
         assert state["status"] == "LIVE" and state["battle"]["index"] == 1 and state["battle"]["outcome"] is None
         assert state["decision"] is None and state["preview"]["names"] == ["Kingambit", "Garchomp", "Mimikyu"]
-        assert state["session_record"]["losses"] == 0 and state["player"] is None  # the manifest is not there yet
+        assert state["session_record"]["losses"] == 0 and state["player"] is None
         shutil.copy(FIXTURE / "manifest.json", run / "manifest.json")
         decisions = run / "battle-1" / "decisions"
         decisions.mkdir(parents=True)
-        for name in ("0000-action.json", "0000-action.txt"):  # the record lands after its event line
+        for name in ("0000-action.json", "0000-action.txt"):
             shutil.copy(FIXTURE / "battle-1" / "decisions" / name, decisions / name)
         state = reader.state()
         assert state["player"] == "neural" and state["decision"]["label"] == "Iron Head" and state["turn"] == 1
@@ -143,7 +143,7 @@ def test_state_follows_a_run_as_its_files_appear(tmp_path: Path) -> None:
         stream.flush()
         state = reader.state()
     assert state["battle"]["index"] == 3 and state["session_record"]["losses"] == 2
-    assert state["decision"] is None and state["decisions"] == []  # battle 3's folder has not been copied
+    assert state["decision"] is None and state["decisions"] == []
     assert state["preview"]["names"] == ["Lucario", "Garchomp", "Mimikyu"] and state["winrate"]["rate"] == 0.0
     assert reader.state(battle=1)["decision"]["label"] == "Iron Head"
 
@@ -182,10 +182,10 @@ def test_server_serves_the_page_and_its_data(server: str) -> None:
     for wanted in (f'id="{name}"' for name in PAGE_IDS):
         assert wanted in page
     for gone in ("t-decision", "decision-list", "sb-match", "tab-events", "m-h", "What will they do?", "heuristic"):
-        assert gone not in page  # the old tiles, tabs and meters
+        assert gone not in page
     status, kind, body = get(server + "/style.css")
     assert status == 200 and kind.startswith("text/css") and b".hpbar" in body and b"prefers-reduced-motion" in body
-    assert b".is-playing .mx-cell" in body  # the one-shot animation of a new decision
+    assert b".is-playing .mx-cell" in body
     status, kind, body = get(server + "/app.js")
     assert status == 200 and kind.startswith("text/javascript") and b"/api/state" in body
     for script, marker in (("/matrix.js", b"function renderMatrix"), ("/panels.js", b"function renderLog")):
@@ -201,7 +201,7 @@ def test_server_serves_the_page_and_its_data(server: str) -> None:
     assert state["winrate"]["battles"] == 2 and [t["turn"] for t in state["log"]["turns"]] == [1, 2, 3]
     pinned = json.loads(get(server + "/api/state?battle=1")[2])
     assert pinned["battle"]["index"] == 1 and pinned["pinned"] == 1 and len(pinned["decisions"]) == 4
-    assert json.loads(get(server + "/api/state?battle=abc")[2])["battle"]["index"] == 3  # not a number: the newest
+    assert json.loads(get(server + "/api/state?battle=abc")[2])["battle"]["index"] == 3
 
     status, kind, body = get(server + "/api/frame")
     assert status == 200 and kind == "image/jpeg" and body.startswith(b"\xff\xd8")

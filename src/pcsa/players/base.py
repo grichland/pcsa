@@ -15,17 +15,17 @@ from pcsa.common.types import MoveInfo, SemanticAction
 
 
 class Degrade(StrEnum):
-    FULL = "full"  # tracked Battle, complete log
-    TRACKED = "tracked"  # tracked Battle, log gaps or unverified rows
-    SCREEN = "screen"  # no Battle: decide from what the screen shows
-    LEGAL_RANDOM = "legal_random"  # no readable moves either
-    EMERGENCY = "emergency"  # deadline nearly expired
+    FULL = "full"
+    TRACKED = "tracked"
+    SCREEN = "screen"
+    LEGAL_RANDOM = "legal_random"
+    EMERGENCY = "emergency"
 
 
 @dataclass(frozen=True)
 class LegalAction:
-    action: SemanticAction  # what the phone taps
-    order: SingleBattleOrder | None  # the poke-env order it corresponds to (None at screen level)
+    action: SemanticAction
+    order: SingleBattleOrder | None
 
     @property
     def message(self) -> str:
@@ -52,9 +52,9 @@ class DecisionView:
 @dataclass(frozen=True)
 class TeamPreviewView:
     battle: Battle | None
-    roster: tuple[str | None, ...]  # six names as the selection screen shows them
+    roster: tuple[str | None, ...]
     rng: random.Random
-    export: str | None = None  # our six as a team export, in roster order (the playout preview plays it)
+    export: str | None = None
 
 
 class Player(Protocol):

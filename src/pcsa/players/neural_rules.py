@@ -1,45 +1,9 @@
 """Guard rules over the neural player's choice: they stop plainly wasted actions and nothing else.
 
-The network proposes an action and ranks every legal action (its capped probabilities). Two modes (neural.yaml
-`rule_mode`):
-
-  override  each enabled rule looks at the position and may replace the proposal with the network's best action
-            that is not the mistake; the first rule that fires decides, and the decision's notes carry
-            `override: <rule>`, the reason and the network's own choice (apply)
-  mask      every legal action is put to the rules as if the network had chosen it; an action a rule would replace
-            is masked (the first such rule and its reason are noted), before the network's softmax and the matrix
-            blend, and the network chooses among the rest (masks). A prohibition masks exactly its action
-            (mega_weakness: only the Mega variant); the switch rules (locked_futile, encore_switch, weak4x_switch,
-            yawn_switch) mask the moves and leave every switch open; priority_ko masks the switches and the moves
-            that do not KO first, never the priority move itself with or without Mega Evolution
-
-  no_effect       a move that surely does nothing to the foe: an immune type or ability (Earthquake into Levitate,
-                  Electric into Volt Absorb), priority into Psychic Terrain, a status it cannot get, Fake Out after
-                  the first turn ... (pcsa.players.no_effect)
-  no_full_heal    Roost / Recover / Slack Off / Rest ... at full HP
-  useless_status  Stealth Rock already up, Spikes or Toxic Spikes already at their maximum, or a status move
-                  (Yawn, Toxic, Will-O-Wisp, Thunder Wave, sleep moves ...) on a foe that is already statused (Yawn:
-                  or already drowsy)
-  locked_futile   Encore or a Choice lock leaves only moves that do nothing: the network's best switch
-  sucker_punch    Sucker Punch or Thunderclap (they fail unless the target attacks) when the network's opponent
-                  head gives their status moves and possible switches more than `sucker_punch_passive`
-                  (neural.yaml) of its probability (pcsa.players.sucker_punch)
-  priority_ko     a priority move surely KOs the foe and the network's pick does not KO it first (with sucker_punch
-                  on, never a Sucker Punch that rule blocks)
-  encore_switch   their active used Encore on us since it came in and the protocol shows for sure that it moves
-                  before our active (earlier turns, same speed state): the network's best switch, encored or not
-                  (pcsa.players.encore_switch; the user's rule, 14 Nov 2026)
-  mega_weakness   Mega Evolving into a form that is 4x weak to an attack they are likely to use (the base form is
-                  not), when our move does not KO first: the same move without Mega Evolution
-  weak4x_switch   our active is 4x weak to a likely attack that lands first and KOs it, and we cannot KO first: the
-                  network's best switch that takes it at most neutrally (both: pcsa.players.mega_weakness, 14 Nov)
-  yawn_switch     our active is drowsy (Yawn: it falls asleep at the end of the turn), can fall asleep (no status,
-                  no Insomnia / Vital Spirit / Sweet Veil / Comatose, no Electric or Misty Terrain under it), and no
-                  legal move KOs their active this turn: the network's best switch (14 Nov, the labelled Yawn loops);
-                  not on its first turn in (Yawned on the way in: another switch restarts the loop)
-
-Damage and speed are pcsa.players.threat's estimates on the sets pcsa.players.opponent assumes.
-"""
+neural.yaml `rule_mode`: override (a rule replaces the pick with the network's best other action) or mask (forbidden
+actions leave the softmax). Rules: no_effect (move does nothing), no_full_heal, useless_status (hazard or status
+already set), locked_futile (Encore/lock leaves only useless moves), sucker_punch, priority_ko, encore_switch,
+mega_weakness (Mega form 4x weak), weak4x_switch, yawn_switch. Damage and speed: pcsa.players.threat."""
 
 from __future__ import annotations
 
@@ -94,10 +58,9 @@ class Spot:
     catalog: object
     tracker: object
     their: tuple[sucker.TheirAction, ...] | None = None  # the opponent head's kept actions; None: unknown
-    passive_max: float = sucker.PASSIVE_MAX  # sucker_punch: the largest share of their non-attacking actions
-    enabled: frozenset[str] = field(default_factory=frozenset)  # the rules on (set by apply)
+    passive_max: float = sucker.PASSIVE_MAX
+    enabled: frozenset[str] = field(default_factory=frozenset)
     # this decision's facts that do not depend on the chosen action (shared by `replace` copies: mask mode asks
-    # every rule once per legal action)
     memo: dict = field(default_factory=dict)
 
     def once(self, key, work: Callable[[], object]):
@@ -199,7 +162,7 @@ def sucker_punch(s: Spot) -> Outcome:
         m = _move(a)
         return m is None or (m.id not in sucker.FAIL_UNLESS_ATTACKED and not (strict and useless(s, m)))
 
-    other = s.best(lambda a: ok(a, True)) or s.best(lambda a: ok(a, False))  # a useful action first
+    other = s.best(lambda a: ok(a, True)) or s.best(lambda a: ok(a, False))
     return (other, f"{move.id}: {reason}") if other else None  # type: ignore[union-attr]
 
 

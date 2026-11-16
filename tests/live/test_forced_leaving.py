@@ -18,8 +18,8 @@ def _record(active: int) -> BattleRecord:
 
 
 def test_emergency_exit_marks_the_standing_active_as_leaving() -> None:
-    # 14 Nov battle 21: Golisopod came in, dropped below half and Emergency Exit asked for a replacement before the
-    # log showed it; the party screen lists Primarina first, the active Golisopod second (alive), Mamoswine fainted.
+    # Emergency Exit asked for a replacement before the log showed it; the party lists Primarina, Golisopod (active,
+    # alive), Mamoswine (fainted)
     b = _record(active=1)
     party = (_row(0, "Primarina"), _row(1, "Golisopod"), _row(2, "Mamoswine", fainted=True))
     assert leaving_slot(b, party) == 1

@@ -2,17 +2,7 @@
 
 The critic scores all 60 (lead, second, third) picks; these rules only remove picks, and the critic chooses among
 the rest as before (its softmax / nucleus, or greedy). When no pick is left, the rules are dropped for that
-battle (noted) and the critic chooses among all 60.
-
-  preview_lead_avoid     {species: [types]}: do not lead `species` when their preview six holds a Pokemon of one
-                         of those types (e.g. {golisopod: [Fire]})
-  preview_bring_max_one  [{types: [...], species: [...]}]: when their six holds one of `types`, bring at most one
-                         of `species` (e.g. Golisopod and Gholdengo into a Fire six)
-
-Types come from poke-env's pokedex: a preview species (a form like Rotom-Heat or Basculegion-F has its own entry)
-counts with its own types and those of its Mega forms (Charizard: Fire). Our members match by species or base
-species (Golisopod-Mega is golisopod).
-"""
+battle (noted) and the critic chooses among all 60."""
 
 from __future__ import annotations
 

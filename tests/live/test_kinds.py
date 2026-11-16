@@ -21,8 +21,7 @@ from tests.live.test_harness import (
     one_turn,
 )
 
-# The scripts accept only moves on the action screen and expect the first three roster members to be brought;
-# a random player (or the mixed pool when it draws one) may switch or bring others.
+# the scripts accept only moves on the action screen and expect the first three roster members brought
 OFF_SCRIPT = ("random", "mixed")
 
 

@@ -42,7 +42,7 @@ def test_neural_is_a_live_kind_and_reads_its_file(config: Config) -> None:
     assert "neural" in LIVE_KINDS
     params = NeuralParams.load(config.directory / config.agent.policy.neural)
     assert (params.sampling, params.fallback, params.device) == ("greedy", "disciplined", "cpu")
-    assert params.preview in ("robust", "playout")  # the live version picks; playout from 14 Nov (neural-1902)
+    assert params.preview in ("robust", "playout")
 
 
 def test_bad_settings_are_rejected(tmp_path: Path) -> None:
@@ -122,7 +122,7 @@ def test_a_late_answer_is_dropped_and_the_fallback_decides(tmp_path: Path) -> No
     assert "no answer within" in player.notes()["why"]
     assert "still running" in (player.choose_action(view, soon()) and player.notes()["why"])
     policy.release.set()
-    for _ in range(100):  # the late thread finishes and frees the network
+    for _ in range(100):
         if player._lock.acquire(timeout=0.05):
             player._lock.release()
             break
@@ -132,7 +132,7 @@ def test_a_late_answer_is_dropped_and_the_fallback_decides(tmp_path: Path) -> No
 def test_no_time_left_plays_the_fallback_without_asking_the_network(tmp_path: Path) -> None:
     policy = FakePolicy(error=AssertionError("must not be called"))
     player = fake_player(tmp_path, policy)
-    player.choose_action(view_of(decision_battle("Azumarill")), soon(0.3))  # under reserve_s = 0.5
+    player.choose_action(view_of(decision_battle("Azumarill")), soon(0.3))
     assert player.notes()["why"].startswith("deadline")
 
 
@@ -176,7 +176,7 @@ def test_synthetic_checkpoints_load_and_play(tmp_path: Path, d: int) -> None:
     assert player.choose_action(view, soon()) in view.legal
     notes = player.notes()
     assert notes["rule"] == "neural" and 0 < notes["p"] <= 0.99 and notes["ms"] >= 0
-    assert isinstance(notes["v"], float) and -2.0 < notes["v"] < 2.0  # the critic's value, kept for the dashboard
+    assert isinstance(notes["v"], float) and -2.0 < notes["v"] < 2.0
     matrix = notes["matrix"]  # the whole pair matrix, for the run records and the dashboard
     assert len(matrix["cells"]) == 11 and len(matrix["cols"]) == 9 and matrix["legal"][matrix["chosen"]]
 
@@ -239,7 +239,7 @@ def test_a_late_answer_leaves_no_trace_in_the_networks_memory(tmp_path: Path) ->
     proposal = player.policy.propose(
         view_of(decision_battle("Azumarill", [["|move|p1a: Azumarill|Aqua Jet|p2a: Dragonite"]]))
     )
-    assert proposal.cache["t"] == 2 and player.policy.game.cache["t"] == 1  # proposed, never committed
+    assert proposal.cache["t"] == 2 and player.policy.game.cache["t"] == 1
 
 
 @pytest.mark.torch
@@ -271,7 +271,7 @@ def test_the_research_checkpoint_loads() -> None:
 def test_override_rules_replace_a_full_hp_heal_with_the_networks_next_choice(tmp_path: Path, monkeypatch) -> None:
     path = synthetic_checkpoint(tmp_path)
     player = NeuralPlayer(replace(NeuralParams(seed=0), rules=["no_full_heal"]), MaxDamagePlayer(), path)
-    b = decision_battle("Slowbro")  # full HP, Slack Off legal
+    b = decision_battle("Slowbro")
     proposal = player.policy.propose(view_of(b))
     slackoff = next(a for a in view_of(b).legal if a.message == "/choose move slackoff")
     monkeypatch.setattr(player.policy, "propose", lambda view: replace(proposal, chosen=slackoff))
@@ -287,13 +287,13 @@ def test_preview_rules_remove_picks_and_the_critic_chooses_among_the_rest(tmp_pa
 
     from pcsa.rl_training import preview
 
-    lead, pair = {"kingambit": ["Fire"]}, [{"types": ["Fire"], "species": ["azumarill", "slowbro"]}]  # Volcarona
+    lead, pair = {"kingambit": ["Fire"]}, [{"types": ["Fire"], "species": ["azumarill", "slowbro"]}]
     path = synthetic_checkpoint(tmp_path)
     player = neural(path, preview="greedy", preview_lead_avoid=lead, preview_bring_max_one=pair)
     view = preview_view()
     picks = preview.all_picks()
     values = player.policy.preview_values(view.battle, picks)
-    allowed = [i for i, p in enumerate(picks) if p[0] != 5 and not {0, 1} <= set(p)]  # Kingambit 5, Azumarill 0
+    allowed = [i for i, p in enumerate(picks) if p[0] != 5 and not {0, 1} <= set(p)]
     team = player.choose_team(view, soon())
     assert team == list(picks[max(allowed, key=lambda i: values[i])])
     notes = player.notes()["preview_rules"]
@@ -302,7 +302,7 @@ def test_preview_rules_remove_picks_and_the_critic_chooses_among_the_rest(tmp_pa
         name.lower(): ["Fire"] for name in ("azumarill", "slowbro", "charizard", "garchomp", "gengar", "kingambit")
     }
     stuck = neural(path, preview="greedy", preview_lead_avoid=every)
-    assert stuck.choose_team(preview_view(), soon()) == list(picks[int(np.argmax(values))])  # no pick left: all
+    assert stuck.choose_team(preview_view(), soon()) == list(picks[int(np.argmax(values))])
     assert stuck.notes()["preview_rules"]["unsatisfiable"]
 
 

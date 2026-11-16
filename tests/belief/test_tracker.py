@@ -1,11 +1,6 @@
-"""pcsa.belief: the belief tracker's live fixes on hand-made battles.
-
-- live battle logs print no critical hits, so with crit_reported=False every hit may have been one (the damage
-  likelihood mixes in a x1.5 part) instead of crits being left out;
-- a decision whose protocol does not extend the one read before (a battle log read differently) rebuilds the
-  tracker from the whole protocol, and gives what a fresh tracker gives;
-- a seen build with an empty item or ability holds an unknown one (empty_unknown) instead of "no item";
-- the outputs the features read (stat intervals, speed, damage ranges) are finite and ordered.
+"""pcsa.belief live fixes on hand-made battles: crit_reported=False (every hit may have been a crit); a protocol that
+does not extend the last one rebuilds the tracker as a fresh one would; a seen build with empty item/ability holds an
+unknown one (empty_unknown); the outputs the features read are finite and ordered.
 """
 
 from __future__ import annotations
@@ -114,7 +109,7 @@ def test_live_hits_may_be_crits_and_simulator_crit_lines_are_left_out(spaces, mo
     lines = HEAD + TURN1
     live = belief(spaces, crit_reported=False)
     live.update(lines, None, request(130))
-    assert calls == [True, True]  # our hit and theirs, each possibly a crit
+    assert calls == [True, True]
     assert live.tracker.stats["hit_used_dealt"] == 1 and live.tracker.stats["hit_used_taken"] == 1
     calls.clear()
     sim = belief(spaces, crit_reported=True)
@@ -132,7 +127,7 @@ def test_live_hits_may_be_crits_and_simulator_crit_lines_are_left_out(spaces, mo
 
 def test_a_protocol_that_does_not_extend_the_last_one_rebuilds(spaces) -> None:
     first = HEAD + TURN1
-    reread = HEAD + [x.replace("38/100", "41/100") for x in TURN1] + TURN2  # turn 1 read differently
+    reread = HEAD + [x.replace("38/100", "41/100") for x in TURN1] + TURN2
     b = belief(spaces)
     b.update(HEAD, None, request())  # the decisions of turns 1 and 2, then turn 2 again with the log re-read
     b.update(first, None, request(130))
@@ -212,13 +207,12 @@ def test_an_empty_seen_item_or_ability_is_unknown(empty_seen, species: str, what
     k = next(i for i, lb in enumerate(new.builds) if lb.seen and not getattr(lb, what))
     rows_old, rows_new = (old.r_build == k) & (old.r_comp == 0), (new.r_build == k) & (new.r_comp == 0)
     if what == "item":
-        assert "" in old.items and "" not in new.items  # research: "no item"; pcsa live: unknown
+        assert "" in old.items and "" not in new.items
         assert len(set(old.r_item[rows_old].tolist())) == 1
         assert len(set(new.r_item[rows_new].tolist())) == len(new.items)
     else:
-        assert set(old.r_ability[rows_old].tolist()) == {0}  # research: the species' first ability
+        assert set(old.r_ability[rows_old].tolist()) == {0}
         assert len(set(new.r_ability[rows_new].tolist())) == len(new.abilities) > 1
-    # the components keep their prior masses
     for sp in (old, new):
         assert np.exp(sp.r_lp).sum() + np.exp(sp.free_lp).sum() == pytest.approx(1.0, abs=1e-9)
         assert np.exp(sp.r_lp[sp.r_comp == 0]).sum() == pytest.approx(0.45, rel=1e-6)

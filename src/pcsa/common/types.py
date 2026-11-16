@@ -10,35 +10,35 @@ from typing import Any
 
 class Screen(StrEnum):
     # Outside a battle
-    TITLE = "title"  # tap-to-start
-    HOME = "home"  # main menu with the Battle tile
-    BATTLE_MODES = "battle_modes"  # Ranked / Casual / ...
-    RANKED_FORMATS = "ranked_formats"  # Single Battle / Double Battle
-    LOBBY = "lobby"  # Begin Matchmaking
+    TITLE = "title"
+    HOME = "home"
+    BATTLE_MODES = "battle_modes"
+    RANKED_FORMATS = "ranked_formats"
+    LOBBY = "lobby"
     TEAM_LIST = "team_list"
     TEAM_MENU = "team_menu"
     TEAM_DETAILS = "team_details"
     TEAM_STATS = "team_stats"
     MATCHMAKING = "matchmaking"
     # Inside a battle
-    TRANSITION = "transition"  # black, loading, VS intro, send-out
+    TRANSITION = "transition"
     TEAM_SELECT = "team_select"
-    PREP = "prep"  # Preparing for Battle / Standing By
-    ACTION = "action"  # Fight + Pokemon + View Log
+    PREP = "prep"
+    ACTION = "action"
     MOVES = "moves"
     LOG = "log"
     PARTY = "party"
     SWITCH_POPUP = "switch_popup"
-    FORCED = "forced"  # forced replacement
+    FORCED = "forced"
     WAIT = "wait"  # Communicating / resolution text / animations
     FORFEIT_MSG = "forfeit_msg"
     RESULT = "result"
     REWARDS = "rewards"
-    OPTIONS = "options"  # Continue Battling / Quit Battling
+    OPTIONS = "options"
     # Interruptions
     RANK_UP = "rank_up"
     RATING_DIALOG = "rating_dialog"
-    DIALOG = "dialog"  # any popup with a single safe control
+    DIALOG = "dialog"
     COMM_ERROR = "comm_error"  # communication interrupted / returned to title
     UNKNOWN = "unknown"
 
@@ -90,7 +90,7 @@ class Observation:
     size: tuple[int, int]
     flags: frozenset[Flag] = frozenset()
     fields: Mapping[str, Any] = field(default_factory=dict)
-    reason: str = ""  # the rule that matched
+    reason: str = ""
     texts: tuple[Any, ...] = ()  # OCR boxes, for audit and text-anchored taps
     frame_id: str = ""
 
@@ -112,7 +112,7 @@ MOVE_SLOTS = 4  # moves per Pokémon
 class SemanticAction:
     """A battle order as the phone sees it: move row k (0-3, with or without Mega) or selected-team slot s (0-2)."""
 
-    kind: str  # "move" | "switch"
+    kind: str
     move: int | None = None
     mega: bool = False
     slot: int | None = None

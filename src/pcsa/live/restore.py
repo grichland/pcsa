@@ -1,17 +1,8 @@
 """Picking up a battle that is already under way: its earlier decisions, and the player's memory of them.
 
-A player may remember a battle through its own earlier decisions (the neural player's network does). The same
-session and player ride out a disconnect (reconnect.py), so nothing is lost there. A session that starts in
-the middle of a battle (a supervisor restart, or `pcsa run --resume` in a new process) builds a new
-BattleRecord; when the run state says that battle was already in progress, this module
-
-  - continues its decision numbering, so the records of the first part are kept, and
-  - rebuilds the view of every earlier decision from its record (`decisions/NNNN-<kind>.json`: the protocol
-    lines and the request at that decision) and hands them to `player.restore(views)`, once, before the next
-    decision. A player without `restore` is left alone.
-
-Which battle owns a `battle-N` folder is written to `battle-N/battle_id.json` when the battle starts: a battle
-lost without a result leaves its folder to the next one, and that one must not inherit the lost one's records.
+A session that starts mid-battle (supervisor restart, `pcsa run --resume`) continues the decision numbering and
+rebuilds every earlier decision's view from `decisions/NNNN-<kind>.json`, handing them to `player.restore(views)`
+once. `battle-N/battle_id.json` says which battle owns a folder, so a lost battle's records are not inherited.
 Restoring never breaks the battle: a record that cannot be read or rebuilt ends the list there.
 """
 
@@ -30,7 +21,7 @@ from pcsa.players.base import DecisionView, Degrade, ScreenFacts
 from pcsa.run.battle_state import BattleRecord, same_name
 
 SCHEMAS = ("pcsa-decision/1", "pcsa-decision/2")
-SHOWN_BATTLE = (str(Degrade.FULL), str(Degrade.TRACKED))  # the rungs at which the player is given the Battle
+SHOWN_BATTLE = (str(Degrade.FULL), str(Degrade.TRACKED))
 OWNER = "battle_id.json"
 
 
@@ -90,9 +81,7 @@ def _read(path: Path) -> dict | None:
 
 
 def load_records(directory: Path, battle_id: str | None = None) -> tuple[list[dict], list[str]]:
-    """(the records from sequence 0 up to the first missing or unreadable one, the kind of every sequence used).
-
-    With `battle_id`, records of another battle (left in a reused folder) do not count."""
+    """(the records from sequence 0 up to the first missing or unreadable one, the kind of every sequence used)."""
     found: dict[int, dict | None] = {}
     kinds: dict[int, str] = {}
     for path in sorted(directory.glob("[0-9]*-*.json")):
@@ -118,7 +107,7 @@ def battle_of(protocol: list[str], request: dict, tag: str):
     for line in protocol:
         try:
             battle.parse_message(line.split("|"))
-        except Exception:  # the translator kept such a line as a warning and went on; so does the rebuild
+        except Exception:  # the translator kept such a line as a warning; so does the rebuild
             continue
     battle.parse_request(request)
     tracking.normalize_fainted_request(battle)
@@ -126,10 +115,7 @@ def battle_of(protocol: list[str], request: dict, tag: str):
 
 
 def view_of(record: dict, tag: str) -> DecisionView:
-    """What the player was shown at this decision. ValueError when the record does not rebuild to it.
-
-    The legal actions are the recorded orders, in the recorded order; their phone targets are not rebuilt
-    (players.mirror: the phone-side encoding carries no meaning there), and nothing is chosen from them."""
+    """What the player was shown at this decision. ValueError when the record does not rebuild to it."""
     protocol, request = record.get("protocol"), record.get("request")
     if not protocol or not isinstance(request, dict):
         raise ValueError("no protocol or request in the record")
@@ -165,7 +151,7 @@ def rebuild_views(records: list[dict], battle_id: str) -> list[DecisionView]:
 
 
 TEAM_SIZE = 3
-GOOD_RUNGS = ("full", "tracked")  # records whose request shows our side as the tracked Battle had it
+GOOD_RUNGS = ("full", "tracked")  # records whose request shows our side as tracked
 
 
 def _side_names(record: dict) -> list[str]:
@@ -174,10 +160,7 @@ def _side_names(record: dict) -> list[str]:
 
 
 def lineup(records: list[dict], roster: tuple) -> dict | None:
-    """Our brought trio as the earlier records show it (14 Nov 2026: a restart mid-battle fell back to the first
-    three of the roster and played Mamoswine as Gholdengo): `requested` = roster rows in the order of the first
-    record's side (lead first), `visible_order` and `fainted` from the last record at a good rung, `mega_used` from
-    any of our members shown in a Mega form. None when the records do not name three roster members."""
+    """Our brought trio as the earlier records show it: `requested` = roster rows in the order of the first."""
     good = [r for r in records if r.get("degrade") in GOOD_RUNGS and len(_side_names(r)) == TEAM_SIZE]
     if not good:
         return None
@@ -220,8 +203,7 @@ def _restore_lineup(b: BattleRecord, records: list[dict]) -> None:
 
 
 def resume(s, b: BattleRecord, found: Earlier) -> None:
-    """Continue the numbering of the battle's records, put our lineup back and give the player its memory back.
-    Never raises."""
+    """Continue the numbering of the battle's records, put our lineup back and restore the player's memory. Never raises."""
     b.decisions = list(found.kinds)
     _restore_lineup(b, found.records)
     restore = getattr(s.player, "restore", None)

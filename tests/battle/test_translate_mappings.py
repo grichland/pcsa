@@ -1,4 +1,4 @@
-"""Every live log row maps to protocol: the mechanics first seen unmapped in the 8-14 Nov live runs."""
+"""Every live log row maps to protocol: mechanics once seen unmapped in live runs."""
 
 from poke_env.battle.effect import Effect
 from poke_env.battle.pokemon_type import PokemonType
@@ -126,7 +126,7 @@ def test_curse_start_and_damage() -> None:
     _mapped(t)
     assert "|-start|p1a: Golisopod|Curse" in t.out.lines
     assert Effect.CURSE in t.battle.active_pokemon.effects
-    assert t.battle.active_pokemon.current_hp == 126  # the curse row itself writes nothing; the HP row does
+    assert t.battle.active_pokemon.current_hp == 126
 
 
 def test_lum_berry_defrost_cures_freeze_and_eats_the_berry() -> None:
@@ -340,7 +340,7 @@ def test_unreadable_rows_stay_unmapped() -> None:
 
 
 def test_a_sprite_naming_no_member_of_the_rows_side_is_ignored() -> None:
-    # 12 Nov: "The opposing Dragapult had its energy drained!" carried our drainer's icon (Archaludon)
+    # "The opposing Dragapult had its energy drained!" carried our drainer's icon (Archaludon)
     t = translator_for(("Archaludon", "Archaludon", 197), [("Dragapult", "Dragapult")])
     text = "The opposing Dragapult had its energy drained!"
     category, message = split_category(text)

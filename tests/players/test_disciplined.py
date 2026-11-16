@@ -1,7 +1,4 @@
-"""disciplined: the sweeper denier, Mega first, disciplined switching, the recovery threshold, the phase rule.
-
-The threat estimates are a table here (FakeThreat): who hits whom for what share of max HP, who is faster.
-"""
+"""disciplined: the sweeper denier, Mega first, disciplined switching, the recovery threshold, the phase rule."""
 
 from __future__ import annotations
 
@@ -149,7 +146,7 @@ def test_denier_prefers_a_ko_now_then_haze(fake) -> None:
     fake({("azumarill", "dragonite"): (1.0, "playrough")}, faster={("azumarill", "dragonite")})
     assert decide(player(), battle("Azumarill", [BOOST])) == ("/choose move playrough", {"rule": "denier:ko"})
     fake({("azumarill", "dragonite"): (1.0, "playrough"), ("dragonite", "azumarill"): (1.0, "outrage")})
-    chosen, notes = decide(player(), battle("Azumarill", [BOOST]))  # slower and KOed first: no KO now
+    chosen, notes = decide(player(), battle("Azumarill", [BOOST]))
     assert chosen.startswith("/choose move") and notes["rule"] == "denier:hardest_hit"
     fake({("dragonite", "slowbro"): (0.7, "outrage")})
     assert decide(player(), battle("Slowbro", [BOOST])) == ("/choose move haze", {"rule": "denier:anti_setup"})
@@ -165,10 +162,10 @@ def test_denier_switches_only_to_a_member_that_takes_little_and_kos(fake) -> Non
 @pytest.mark.parametrize(
     ("change", "blocked"),
     [
-        ({("dragonite", "azumarill"): (0.3, "outrage")}, False),  # not threatened
-        ({("azumarill", "dragonite"): (1.0, "playrough")}, False),  # we KO it
-        ({("dragonite", "slowbro"): (0.3, "outrage")}, True),  # the switch-in takes too much
-        ({("slowbro", "dragonite"): (0.2, "surf")}, True),  # the switch-in does not threaten
+        ({("dragonite", "azumarill"): (0.3, "outrage")}, False),
+        ({("azumarill", "dragonite"): (1.0, "playrough")}, False),
+        ({("dragonite", "slowbro"): (0.3, "outrage")}, True),
+        ({("slowbro", "dragonite"): (0.2, "surf")}, True),
     ],
 )
 def test_a_voluntary_switch_needs_all_four_conditions(fake, change: dict, blocked: bool) -> None:
@@ -181,7 +178,7 @@ def test_a_voluntary_switch_needs_all_four_conditions(fake, change: dict, blocke
 def test_switch_in_damage_is_a_share_of_current_hp(fake) -> None:
     fake()
     b = battle("Azumarill")
-    b.team["p1: Slowbro"]._current_hp = 85  # half HP: 0.2 of max is 0.4 of what is left
+    b.team["p1: Slowbro"]._current_hp = 85
     chosen, notes = decide(player(), b)
     assert chosen.startswith("/choose move") and "switch_blocked" in notes
 
@@ -191,7 +188,7 @@ def test_back_to_back_switch_blocked_when_the_opponent_stayed(fake) -> None:
     me = player()
     assert decide(me, battle("Slowbro"))[0] == "/choose switch Azumarill"
     stayed = ["|switch|p1a: Azumarill|Azumarill, L50|175/175", "|move|p2a: Dragonite|Outrage|p1a: Azumarill"]
-    fake({("dragonite", "slowbro"): (0.2, "outrage")})  # now Azumarill is threatened and Slowbro is safe
+    fake({("dragonite", "slowbro"): (0.2, "outrage")})
     chosen, notes = decide(me, battle("Slowbro", [stayed]))
     assert chosen.startswith("/choose move") and "the opponent did not" in notes["switch_blocked"]
 
@@ -201,7 +198,7 @@ def test_recovery_only_below_the_threshold(fake) -> None:
     fake()
     assert decide(player(), battle("Slowbro", hp=0.5)) == ("/choose move slackoff", {"rule": "recover"})
     assert decide(player(), battle("Slowbro", hp=0.7)) == ("/choose move surf", {"rule": "attack"})
-    fake({("dragonite", "slowbro"): (1.0, "outrage")})  # still KOed from full HP: attack
+    fake({("dragonite", "slowbro"): (1.0, "outrage")})
     assert decide(player(), battle("Slowbro", hp=0.5))[0] == "/choose move surf"
 
 
@@ -240,16 +237,16 @@ def test_factory_builds_it_with_the_config_thresholds(config: Config, fake) -> N
     fake()
     built = build_player(config, "disciplined")
     assert isinstance(built, DisciplinedPlayer) and built.name == "disciplined"
-    assert built.rules == DisciplinedParams()  # the yaml holds the defaults
+    assert built.rules == DisciplinedParams()
     assert built.params()["recover_below"] == 0.6
-    assert "disciplined" in LIVE_KINDS and "disciplined" in KINDS and "disciplined" not in SIM_KINDS  # promoted 8 Nov
+    assert "disciplined" in LIVE_KINDS and "disciplined" in KINDS and "disciplined" not in SIM_KINDS
 
 
 # Futile attack and bad trade --------------------------------------------------------------------------------
 def test_a_choice_lock_into_a_useless_move_switches_to_the_hardest_hitter(fake) -> None:
     fake(move_hits={("azumarill", "dragonite", "aquajet"): 0.02})
     b = battle("Azumarill")
-    b._available_moves = [m for m in b.available_moves if m.id == "aquajet"]  # locked into Aqua Jet
+    b._available_moves = [m for m in b.available_moves if m.id == "aquajet"]
     chosen, notes = decide(player(), b)
     assert chosen == "/choose switch Slowbro" and notes["rule"] == "switch"
     assert notes["switch"].startswith("futile:")

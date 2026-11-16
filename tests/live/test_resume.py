@@ -80,8 +80,8 @@ def test_views_rebuilt_from_the_records_are_the_original_decisions(config: Confi
         assert view.battle.turn == record["turn"] and str(view.degrade) == record["degrade"]
         assert view.screen.forced == (record["kind"] == "forced")
         text = (directory / f"{record['sequence']:04d}-{record['kind']}.txt").read_text(encoding="utf-8")
-        assert tracking.battle_text(view.battle, record["revealed_abilities"]) == text  # the same Battle, in full
-    assert [v.battle.turn for v in views] == [1, 1]  # the forced replacement does not visit the log
+        assert tracking.battle_text(view.battle, record["revealed_abilities"]) == text
+    assert [v.battle.turn for v in views] == [1, 1]
     assert [v.battle.battle_tag for v in views] == [f"{owner}-0", f"{owner}-1"]
 
 
@@ -92,10 +92,10 @@ def test_a_broken_record_ends_the_list(config: Config, tmp_path: Path) -> None:
     records, _ = restore.load_records(files[0].parent)
     assert len(restore.rebuild_views(records, "b")) == 3
     damaged = [dict(r) for r in records]
-    damaged[1]["legal"] = ["/choose move splash"]  # readable, but not what the rebuilt battle offers
+    damaged[1]["legal"] = ["/choose move splash"]
     assert [v.battle.turn for v in restore.rebuild_views(damaged, "b")] == [1]
     screen_only = [dict(r) for r in records]
-    screen_only[1].update(degrade="screen", protocol=None, request=None)  # the player was shown no Battle: skipped
+    screen_only[1].update(degrade="screen", protocol=None, request=None)
     assert [v.battle.turn for v in restore.rebuild_views(screen_only, "b")] == [
         records[0]["turn"],
         records[2]["turn"],
@@ -124,7 +124,7 @@ def test_a_resumed_battle_restores_the_player_once_and_keeps_its_records(tmp_pat
     assert state.ending == "completed" and state.restarts == 1 and state.outcomes == ["win"]  # type: ignore[attr-defined]
     assert len(player.restored) == 1 and [v.battle.turn for v in player.restored[0]] == [1]
     first, second = (json.loads(p.read_text(encoding="utf-8")) for p in decision_files(recorder))
-    assert [first["sequence"], second["sequence"]] == [0, 1]  # the numbering went on: record 0 was not overwritten
+    assert [first["sequence"], second["sequence"]] == [0, 1]
     assert first["battle_id"] == second["battle_id"]
     assert [a.message for a in player.restored[0][0].legal] == first["legal"]
     log = events(recorder)
@@ -166,14 +166,14 @@ def test_no_restore_on_a_normal_battle_start_or_after_a_disconnect(config: Confi
     state, device, recorder = run_script(config, steps, tmp_path, player=player)
     assert state.outcomes == ["win"] and state.restarts == 0 and len(decision_files(recorder)) == 2
     assert [e["outcome"] for e in events(recorder) if e["event"] == "disconnect_recovered"] == ["battle_resumed"]
-    assert player.restored == []  # the same session and player went on: nothing to give back
+    assert player.restored == []
 
 
 def test_a_battle_lost_before_the_lobby_is_not_resumed_by_the_next_one(tmp_path: Path) -> None:
     """The restarted session finds the lobby: the next battle reuses the folder and must not inherit its records."""
     config, _ = restart_mid_battle()
     stuck = Step(Screen.UNKNOWN, accept=("screen_centre",), advance_on=(), after_s=25)
-    lobby = Step(Screen.LOBBY, {"team_label": "Team 1"}, after_s=1)  # seen, then a battle is already on
+    lobby = Step(Screen.LOBBY, {"team_label": "Team 1"}, after_s=1)
     steps = lobby_to_team_select() + one_turn(1, TURN1) + [stuck, lobby] + one_turn(1, TURN1) + end_of_battle("win")
     player = Remembering()
     state, device, recorder = run_script(config, steps, tmp_path, player=player)
@@ -214,7 +214,7 @@ def test_the_log_files_are_written_while_the_battle_is_on(config: Config, tmp_pa
     class Watching(HeuristicPlayer):
         def choose_action(self, view, deadline):
             seen.append({name: (folder / name).stat().st_size for name in LOG_FILES if (folder / name).is_file()})
-            assert not (folder / "battle.json").exists()  # the battle has not ended
+            assert not (folder / "battle.json").exists()
             return super().choose_action(view, deadline)
 
     state, device, recorder = run_script(config, three_turns(), tmp_path, player=Watching())

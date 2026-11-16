@@ -1,12 +1,8 @@
 """The decision matrix of `pcsa watch`: the neural player's `matrix` note, checked and given display names.
-
-The note holds our 11 actions (4 moves, the same 4 with Mega Evolution, 3 switches) against the opponent's 9
-kept actions (4 moves, 5 switches): a value per pair, a probability per column, our final distribution, the
-temperature `tau` that turned the weighted rows into it and the temperature `opp_temperature` the column
-probabilities were taken at (the page works the row and column totals out itself, and what they would be at
-another opponent temperature). Its names are ids (`dragondance`, `garchomp`); the page shows the written name:
-from the record when it spells the name out, else from the game data, else the id with a capital. A note of
-another shape gives no matrix.
+Our 11 actions (4 moves, 4 with Mega, 3 switches) against their 9 kept actions (4 moves, 5 switches): a value per
+pair, a
+probability per column, our distribution, `tau` and `opp_temperature`. Names are ids; the page shows the written name
+(record, else game data, else capitalised id). A note of another shape gives no matrix.
 """
 
 from __future__ import annotations

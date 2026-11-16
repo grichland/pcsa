@@ -1,9 +1,7 @@
 """`pcsa scout`: watch while a person walks through the game; report what differs from what we know.
 
-Read-only on the phone: it captures and runs OCR, and sends no tap. The person drives through the
-checklist shown in the console; the report lists unseen checklist items, unknown screens grouped
-by their text, anchor labels that moved, roster names and items the game data does not know, and
-the game version: what to adjust before a new season.
+Read-only (captures and OCR, no taps). The report lists unseen checklist items, unknown screens grouped by text, moved
+anchor labels, unknown roster names and items, and the game version.
 """
 
 from __future__ import annotations

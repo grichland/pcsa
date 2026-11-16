@@ -12,7 +12,7 @@ from pcsa.phone.ocr import REFERENCE, TextBox
 
 Rect = tuple[int, int, int, int]
 FULL: Rect = (0, 0, REFERENCE[0], REFERENCE[1])
-LIME = ((22, 120, 170), (43, 255, 255))  # HSV focus highlight
+LIME = ((22, 120, 170), (43, 255, 255))
 LINE_LETTERS = re.compile(r"[A-Za-z]{3,}")
 
 

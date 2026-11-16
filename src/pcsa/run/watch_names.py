@@ -1,9 +1,4 @@
-"""Display names for `pcsa watch`, taken from the decision record itself.
-
-The tracked-battle snapshot and the legal orders use ids (`ninetalesalola`, `swordsdance`). The same record
-carries the written names: its protocol lines (`|move|p2a: Ceruledge|Swords Dance|...`), the request's move
-list and our own team sheet. An id none of them names is shown as it is; nothing is guessed.
-"""
+"""Display names for `pcsa watch`, taken from the decision record itself."""
 
 from __future__ import annotations
 

@@ -1,25 +1,9 @@
 """Endgame chains: with at most two members left per side, the rest of the game is a run of 1v1 duels.
 
-Pure arithmetic, no battle objects. Damage is matchup-specific, so attacks come from a `Matchups` matrix.
-
-Simplifications (cheap and deterministic on purpose):
-- Expected-value race: a hit deals `fraction * accuracy`. A hit whose max roll KOs (`ko_fraction >= hp`) and whose
-  accuracy is at least 0.5 is taken to KO outright.
-- Each side greedily picks its best attack every turn (a KO first, best priority then accuracy; else the most
-  expected damage), or recovers by the rule in `_choose`. No status moves, setup, crits, secondary effects or
-  mid-duel switches.
-- Order is priority then speed. Speed ties go to `tie_goes_to` (default "b": pessimistic for side a, which is our side
-  in `chain_options`). Recovery is priority 0.
-- Every damaging hit counts as contact: the attacker loses the target's `passive_on_hit`, scaled by accuracy.
-- `residual` applies to each living combatant at end of turn; HP stays within [0, 1].
-- A duel that reaches `horizon` turns is a draw (winner None); in `chain_options` it ends the game as a draw.
-- `chain_options` is minimax over who fights whom. The opponent answers after seeing our choice (pessimistic for
-  us), except after one of their members faints, when they send the replacement first.
-- A voluntary switch costs one turn: the side that stays uses the action it picked against the old target (same move
-  name, damage against the newcomer). Replacements after a faint come in free.
-- `can_switch_on_faint`: when this member KOs its opponent and survives, its side may also swap it for a reserve
-  (free, after seeing the replacement). Set it False for formats without that option.
-"""
+Pure arithmetic over a `Matchups` matrix. Expected-value race; each side greedily attacks (a KO first) or recovers.
+Order: priority, then speed; ties go to `tie_goes_to` (default "b", pessimistic for us). A duel past `horizon` is a draw.
+A voluntary switch costs a turn; replacements after a faint are free. The opponent answers after seeing our choice.
+No status, setup, crits or mid-duel switches."""
 
 from __future__ import annotations
 
@@ -40,7 +24,7 @@ class Attack:
     fraction: float  # expected damage
     priority: int
     accuracy: float  # 0-1
-    ko_fraction: float  # max-roll damage, for KO checks
+    ko_fraction: float  # max roll, for KO checks
 
 
 @dataclass(frozen=True)
@@ -51,9 +35,9 @@ class Combatant:
     hp: float
     speed: int
     attacks: tuple[Attack, ...] = ()
-    recover: float = 0.0  # fraction healed by its recovery move, 0 if none
-    residual: float = 0.0  # per-turn HP change (poison, burn, Leftovers...); negative is a loss
-    passive_on_hit: float = 0.0  # fraction an attacker loses per hit on this member (Rough Skin, Rocky Helmet)
+    recover: float = 0.0  # fraction healed, 0 if none
+    residual: float = 0.0  # per-turn HP change; negative = loss
+    passive_on_hit: float = 0.0  # fraction lost per hit taken (Rocky Helmet)
     can_switch_on_faint: bool = True
 
 
@@ -61,13 +45,13 @@ class Combatant:
 class Matchups:
     """Attack matrix, both directions keyed (our_i, their_j); a missing pair means no damaging attacks."""
 
-    ours: Mapping[tuple[int, int], tuple[Attack, ...]]  # our i's attacks against their j
-    theirs: Mapping[tuple[int, int], tuple[Attack, ...]]  # their j's attacks against our i
+    ours: Mapping[tuple[int, int], tuple[Attack, ...]]
+    theirs: Mapping[tuple[int, int], tuple[Attack, ...]]
 
 
 @dataclass(frozen=True)
 class DuelResult:
-    winner: Literal["a", "b"] | None  # None: draw by horizon, or both fainted
+    winner: Literal["a", "b"] | None  # None: draw
     turns: int
     a_hp_left: float
     b_hp_left: float
@@ -76,10 +60,10 @@ class DuelResult:
 
 @dataclass(frozen=True)
 class ChainResult:
-    wins: bool  # against the opponent's best replies
-    order: tuple[int, ...]  # our members in the order they enter; order[0] != active_ours means switch / send it
-    first_move: str | None  # our first move (after a replacement: against their reply); None when we switch
-    margin: float  # our HP left minus theirs at the end: positive HP left on a win, negative deficit on a loss
+    wins: bool
+    order: tuple[int, ...]
+    first_move: str | None
+    margin: float
 
 
 def facing(
@@ -203,7 +187,7 @@ class _Hp(NamedTuple):
 
 @dataclass(frozen=True)
 class _Line:
-    score: tuple[int, float]  # (1 win / 0 draw / -1 loss, margin)
+    score: tuple[int, float]
     order: tuple[int, ...]
 
 
@@ -333,9 +317,6 @@ def chain_options(
     active_theirs: int,
     horizon: int = 30,
 ) -> dict[int, ChainResult]:
-    """Each first member we could field (stay, switch, or replacement) -> its result against their best reply.
-
-    A fainted (hp <= 0) active means a replacement choice for that side. Empty when either side has nobody left.
-    """
+    """Each first member we could field (stay, switch, or replacement) -> its result against their best reply."""
     game = _Game(tuple(ours), tuple(theirs), attacks, horizon)
     return {k: _result(*choice) for k, choice in _choices(game, active_ours, active_theirs).items()}

@@ -1,7 +1,7 @@
-"""Every filesystem location the package uses. The only module that may locate the repository.
+"""Every filesystem location the package uses; the only module that may locate the repository.
 
-Everything the package writes goes under `output/` (or `PCSA_OUTPUT`). Tools installed by `pcsa setup`
-live under `.tools/`. Both are ignored by git.
+Everything written goes under `output/` (or `PCSA_OUTPUT`); tools from `pcsa setup` live under `.tools/`. Both are
+git-ignored.
 """
 
 from __future__ import annotations
@@ -10,7 +10,7 @@ import os
 from collections.abc import Mapping
 from pathlib import Path
 
-_REPO = Path(__file__).resolve().parents[3]  # src/pcsa/common/paths.py -> repo
+_REPO = Path(__file__).resolve().parents[3]
 
 OUTPUT_ENV = "PCSA_OUTPUT"
 OUTPUT_SUBDIRS = ("runs", "scout")

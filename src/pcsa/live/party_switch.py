@@ -1,12 +1,7 @@
 """A switch from the action screen: open the party, find the member by name on screen, tap it, check it went in.
 
-15 Nov 2026 (run 20261115-034548, battle 7, turns 12-14): the switch row came from the tracked party order, which
-assumed the game swaps the incoming member with row 0. The game showed Cinderace, Gholdengo, Golisopod (frame
-00383) where the record had Cinderace, Golisopod, Gholdengo, so "switch to Gholdengo" tapped the fainted Golisopod
-(its summary opened, no Switch In button), the party screen stayed up, the stray-surface handler backed out of
-it and the move timer ran out three turns in a row. The order the game uses differs between the party and the
-replacement screens (battle 7 turn 9, frame 00373, listed the outgoing Gholdengo above the fainted Golisopod), so
-the row is now read from the party screen itself, and a party screen still up after Switch In is tried once more.
+The row is read from the party screen itself: the game's order differs between the party and replacement screens.
+A party screen still up after Switch In is tried once more.
 """
 
 from __future__ import annotations
@@ -17,7 +12,7 @@ from pcsa.live.taps import ExecResult
 from pcsa.live.turn_sync import resync_party
 from pcsa.run.battle_state import BattleRecord, same_name
 
-SWITCH_ATTEMPTS = 2  # the party taps, and once more when the party screen is still up after Switch In
+SWITCH_ATTEMPTS = 2  # the party taps, and once more when still up after Switch In
 
 
 def target_row(b: BattleRecord, party, slot: int) -> int | None:
@@ -35,26 +30,24 @@ def _merge(total: ExecResult, part: ExecResult) -> None:
 
 
 def switch(pipeline, b: BattleRecord, slot: int) -> tuple[ExecResult, bool]:
-    """Pokémon -> read the party -> the target's row -> Switch In -> the party screen must be gone.
-
-    Returns the taps and False when the switch was seen not to go in (the party screen was backed out of)."""
+    """Pokémon -> read the party -> the target's row -> Switch In -> the party screen must be gone."""
     phone, clock, timing = pipeline.phone, pipeline.clock, pipeline.cfg.timing
     executor, device = phone.executor, phone.device
     result = executor.execute([executor.point("pokemon")], Screen.ACTION, device, clock, 0.0)
     clock.sleep(timing.party_settle_s)
     obs, _ = phone.observe("switch")
-    if obs.screen == Screen.ACTION:  # the Pokémon tap did not take: the blind plan from the tracked order
+    if obs.screen == Screen.ACTION:  # the tap did not take: the blind plan from the tracked order
         log.warning("party_not_opened", battle=b.index, slot=slot)
         blind = executor.plan_switch(b.visible_order.index(slot))
         _merge(result, executor.execute(blind, Screen.ACTION, device, clock, timing.inter_tap_s))
         return result, True
     for attempt in range(1, SWITCH_ATTEMPTS + 1):
         if obs.screen != Screen.PARTY:
-            return result, True  # the switch went in (or the turn moved on); the turn's log check confirms it
+            return result, True
         party = tuple(obs.fields.get("party", ()))
         resync_party(b, party)
         row = target_row(b, party, slot)
-        if row is None:  # the name did not read: the tracked order, if that row is an unread standing member
+        if row is None:  # name unread: fall back to the tracked order
             guess = b.visible_order.index(slot)
             shown = next((m for m in party if m.row == guess), None)
             row = guess if shown is not None and shown.name is None and not shown.fainted else None
@@ -69,5 +62,5 @@ def switch(pipeline, b: BattleRecord, slot: int) -> tuple[ExecResult, bool]:
             log.warning("switch_not_taken", battle=b.index, slot=slot, row=row, attempt=attempt)
     if obs.screen != Screen.PARTY:
         return result, True
-    phone.navigator.back_out(obs)  # back on the action screen, the turn flow decides again while time is left
+    phone.navigator.back_out(obs)
     return result, False

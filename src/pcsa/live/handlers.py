@@ -25,11 +25,10 @@ from pcsa.run.battle_state import BattleRecord, reconcile_roster
 MAX_BEGIN_TAPS = 2
 MAX_TEAM_REPAIRS = 2
 MAX_CONTINUE_TAPS = 3
-MAX_RATING_WAITS = 3  # rewards polls a battle without an outcome waits for its rating to change
-MAX_RATING_STEP = 100.0  # a larger rating change than this is a misread, not one battle
+MAX_RATING_WAITS = 3  # polls to wait for the rating to change
+MAX_RATING_STEP = 100.0  # a larger change is a misread, not one battle
 LOBBY_SETTLE_S = 2.0
-# 15 Nov 2026 (battles 31-32): a communication error during team selection rode out (live/reconnect.py) back onto the
-# same selection screen. That is the same match, so its lineup is repaired, not taken for a new battle.
+# Team selection seen again after a communication error is the same match: repair its lineup, not a new battle.
 RECONNECT_SCREENS = (Screen.COMM_ERROR, Screen.UNKNOWN, Screen.DIALOG)
 
 
@@ -60,7 +59,7 @@ def tracking_export(team) -> str:
 
 def new_battle(s, roster: tuple[str | None, ...], adopted: bool = False) -> BattleRecord:
     if s.battle is not None and not s.battle.finished:
-        finalize(s, None)  # the previous battle ended while we were away (disconnect, restart)
+        finalize(s, None)  # the previous battle ended while we were away
     if s.team is not None and roster and len(roster) == len(s.team.names):
         reconciled = reconcile_roster(s.team.names, roster)
         if reconciled is None:
@@ -68,7 +67,7 @@ def new_battle(s, roster: tuple[str | None, ...], adopted: bool = False) -> Batt
         else:
             roster = reconciled[0]
     index = s.state.played + 1
-    earlier = restore.earlier(s, index) if adopted else None  # this battle was already in progress: pick it up
+    earlier = restore.earlier(s, index) if adopted else None  # this battle was already in progress
     battle_id = earlier.battle_id if earlier else f"{datetime.now():%Y%m%dT%H%M%S}-{uuid.uuid4().hex[:8]}"
     b = BattleRecord(
         index,
@@ -193,7 +192,7 @@ def finalize(s, outcome: str | None) -> None:
             turn=b.current_turn(),
         )
     b.log.note("final_turn", f"turn {b.current_turn()}: the final turn is not collectable", turn=b.current_turn())
-    write_log(s.rec, b, s.team, s.state.seed)  # the final versions of the files the turn flow keeps current
+    write_log(s.rec, b, s.team, s.state.seed)
     if b.requested and s.team is not None:
         try:
             battle, out = tracking.build(
@@ -257,8 +256,7 @@ def rating_outcome(b: BattleRecord) -> str | None:
 
 
 def awaiting_rating(s) -> bool:
-    """On the rewards screen with no outcome yet but the rating before the battle known: the rating animates from
-    the old value to the new one, so finalizing waits a few polls for the change (the options screen settles it)."""
+    """On the rewards screen with no outcome yet the rating animates: finalizing waits a few polls for the change."""
     b = s.battle
     if b is None or b.finished or b.outcome is not None or b.outcome_hint or rating_outcome(b) is not None:
         return False
@@ -269,8 +267,7 @@ def awaiting_rating(s) -> bool:
 
 
 def _learn_builds(s, b: BattleRecord, battle, abilities: dict[str, str]) -> None:
-    """Every opposing set this battle revealed is covered by the build catalog or added to it
-    (assets/sets/seen_builds.json); what happened is kept in the battle folder (builds_seen.json)."""
+    """Every opposing set this battle revealed is covered by the build catalog or added to it (builds_seen.json)."""
     try:
         from pcsa.battle import seen_builds
 
@@ -343,8 +340,7 @@ def on_interruption(s, obs: Observation) -> None:
 
 def on_stray(s, obs: Observation) -> None:
     if obs.screen == Screen.PARTY and obs.fields.get("no_back"):
-        # No Back to tap: a pivot (U-turn) or a replacement nothing marked fainted. Poll again; the session treats
-        # it as forced when it is still there (Session.persistent_party_without_back).
+        # No Back to tap: a pivot (U-turn) or a replacement nothing marked fainted; polled again.
         log.event("party_without_back", focused_row=obs.fields.get("focused_row"))
         s.clock.sleep(s.agent.timing.poll_interval_s)
         return

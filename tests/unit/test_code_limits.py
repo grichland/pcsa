@@ -1,9 +1,8 @@
 """Rules that keep the code readable, enforced on every source file.
 
 - no file over MAX_FILE_LINES, no function over MAX_FUNCTION_LINES
-- `Path(...).parents` only in common/paths.py (every other module asks paths.py)
-- `time.*` only in common/clock.py (so tests control time)
-- `print` only in cli.py and common/setup.py (their job is console output)
+- `Path(...).parents` only in common/paths.py; `time.*` only in common/clock.py (so tests control time)
+- `print` only in cli.py and common/setup.py
 """
 
 from __future__ import annotations

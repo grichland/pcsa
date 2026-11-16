@@ -1,9 +1,9 @@
 """`pcsa calibrate`: find where the game draws in this phone's frame and write its profile.
 
-With the game on the lobby, capture a frame and look for the Begin Matchmaking label. If the frame
-has the reference aspect ratio and the label sits where the reference layout puts it, the viewport
-is the whole frame. If the frame is wider or taller, the game is assumed to letterbox at the
-reference aspect ratio, centred; the label position confirms or refutes that guess.
+From a lobby frame: with the reference aspect and the Begin Matchmaking label at its reference position the viewport
+is
+the whole frame; otherwise the game is assumed letterboxed at the reference aspect, centred, and the label confirms
+it.
 """
 
 from __future__ import annotations

@@ -1,4 +1,4 @@
-# From research/pcsa-rl/rl/features_vocab.py (sha256 8000d1eec5eb, 2026-11-08 20:13); keep diffable.
+# From research/pcsa-rl/rl/features_vocab.py; keep diffable.
 # Inference only: build() and main() (which rebuild data/vocab.json from pcsa's assets) stay in research.
 """Integer ids for species, items, abilities and moves (0 = unknown/pad), from data/vocab.json (a copy of
 research's rl/data/vocab.json; the ids are the network's embedding rows, so the file must match the checkpoint)."""

@@ -17,7 +17,7 @@ EXPORT_STATS = {"hp": "HP", "atk": "Atk", "def": "Def", "spa": "SpA", "spd": "Sp
 @dataclass(frozen=True)
 class OwnMember:
     roster_index: int
-    name: str  # as the game writes it ("Rotom" for Rotom-Wash)
+    name: str
     species: str  # Showdown species, form resolved
     ability: str | None
     item: str | None

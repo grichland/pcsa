@@ -1,22 +1,10 @@
-# From research/pcsa-belief/belief/calc.py (sha256 11ad07543688, 2026-11-12 12:06); keep diffable.
-# pcsa changes are marked "pcsa:".
+# From research/pcsa-belief/belief/calc.py; keep diffable. pcsa changes are marked "pcsa:".
 """pcsa's damage and speed formulas, vectorised over hypothesis rows, plus local fixes.
 
 `rolls` reproduces pcsa.battle.damage._rolls exactly (tests/test_calc.py compares them on random cases) when
 `fixes` is off: the scalar parts (power modifier, effectiveness, attacker stat multiplier, final modifiers) come
 from pcsa's own helpers on a representative Fighter of each (item, ability) group, and only the stat arithmetic is
-done in numpy. pcsa is imported read-only; nothing in it is changed.
-
-Local fixes (on by default in the tracker; pcsa's calculator lacks them, stage 0 "Looks wrong" 5):
-  - Rock types' Sp. Def x1.5 in sand, Ice types' Defence x1.5 in snow
-  - Multiscale / Shadow Shield halve damage at full HP
-  - Blaze / Torrent / Overgrow / Swarm: attack x1.5 at 1/3 HP or less with a move of that type
-  - Unaware: the other side's stat stages are ignored
-  - resist berries halve a super-effective hit of their type (Chilan: any Normal hit)
-  - Muscle Band: physical power x1.1; Freeze-Dry is super effective on Water
-  - Protean / Libero: STAB on every move
-  - Iron Ball halves speed (speed only)
-"""
+done in numpy. pcsa is imported read-only; nothing in it is changed."""
 
 from __future__ import annotations
 
@@ -97,8 +85,8 @@ class Side:
 
     fighter: Fighter
     stats: dict | None = None  # stat -> np.ndarray, or None: the fighter's own stats for every row
-    hp_full: bool = False  # at full HP (Multiscale)
-    hp_third: bool = False  # at 1/3 HP or less (pinch abilities)
+    hp_full: bool = False
+    hp_third: bool = False
 
     def stat(self, name: str, n: int) -> np.ndarray:
         if self.stats is not None and name in self.stats:
@@ -109,8 +97,7 @@ class Side:
 def rolls(
     att: Side, dfn: Side, move_id: str, where: Conditions, power: int | None, n: int, fixes: Fixes = NO_FIXES
 ) -> tuple[np.ndarray, np.ndarray]:
-    """(low, high) arrays of length n as fractions of the defender's max HP; zeros when the move does no damage.
-    Mirrors pcsa.battle.damage._rolls line by line."""
+    """(low, high) arrays of length n as fractions of the defender's max HP; zeros when the move does no damage."""
     attacker, defender = att.fighter, dfn.fighter
     zeros = (np.zeros(n), np.zeros(n))
     move_id = to_id_str(move_id)

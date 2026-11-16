@@ -1,5 +1,4 @@
-"""The neural player's feature mode and the guard rules' threat estimates (moved out of pcsa.players.neural for its
-length limit)."""
+"""The neural player's feature mode and the guard rules' threat estimates."""
 
 from __future__ import annotations
 

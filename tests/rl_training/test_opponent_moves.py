@@ -65,8 +65,8 @@ def test_the_opponent_head_puts_no_weight_outside_the_mask_but_keeps_revealed_mo
     allowed = {index("move", m) for m in [*keep, "dragondance"]}
     outside = [i for i in range(1, VOCAB["move"]) if i not in allowed]
     assert float(plain[outside].sum()) > 0.1 and float(narrowed[outside].sum()) < 1e-6
-    assert float(narrowed[index("move", "dragondance")]) > 0  # revealed: kept
-    v = VOCAB["move"]  # switches keep their share relative to each other
+    assert float(narrowed[index("move", "dragondance")]) > 0
+    v = VOCAB["move"]
     assert torch.allclose(
         plain[v:] / plain[v:].sum().clamp_min(1e-9), narrowed[v:] / narrowed[v:].sum().clamp_min(1e-9)
     )

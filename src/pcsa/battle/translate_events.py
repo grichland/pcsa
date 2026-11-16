@@ -106,7 +106,7 @@ def _move(t: Translator, row: RawRow, e: Event) -> None:
             for m in t.theirs.values()
             if m is not member and has_illusion(m.species) and game.can_learn(m.species, e.data["move"])
         ]
-        if len(users) == 1:  # an Illusion user was sent out in disguise; build() translates again
+        if len(users) == 1:  # Illusion user sent out in disguise; build() translates again
             t.out.illusions[t.sent_out[e.side]] = users[0].name
     t.ensure_active(e.side, member, row)
     target = t.active(t.other(e.side)) or ""
@@ -259,7 +259,7 @@ def _form_change(t: Translator, row: RawRow, e: Event) -> None:
     t.out.revealed_abilities[f"{e.side}: {member.name}"] = e.data["ability"]
     t.apply(f"|-activate|{ident}|ability: {e.data['ability']}")
     t.apply(f"|detailschange|{ident}|{e.data['form']}, L{LEVEL}")
-    if e.data.get("keeps"):  # Palafin-Hero stays Hero for the rest of the battle, switch-ins included
+    if e.data.get("keeps"):  # Palafin-Hero stays Hero, switch-ins included
         member.species = e.data["form"]
 
 

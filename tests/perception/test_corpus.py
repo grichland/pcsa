@@ -1,13 +1,4 @@
-"""Real screenshots from past runs, classified from cached OCR boxes (no OCR engine needed).
-
-The screenshots are game captures and stay out of git: `expected.json` and `ocr_cache.json` are tracked,
-the JPGs are written locally by `scripts/curate_frames.py`, and every test that needs the pixels skips
-in a checkout without them.
-
-`expected.json` records the screen each frame is expected to classify as. Entries with
-`agrees: false` are frames whose saved label and current classification disagree; they are kept
-visible here as expected failures until a person settles them, never silently accepted.
-"""
+"""Real screenshots from past runs, classified from cached OCR boxes (no OCR engine needed)."""
 
 from __future__ import annotations
 

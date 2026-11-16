@@ -1,6 +1,4 @@
-"""The neural player's guard rules on hand-made positions.
-
-The threat estimates are test_disciplined's table (FakeThreat); the network's ranking is the legal order given."""
+"""The neural player's guard rules on hand-made positions."""
 
 from __future__ import annotations
 
@@ -41,7 +39,7 @@ def decide(rules, s: Spot) -> tuple[str, str] | None:
 
 def test_the_repo_settings_turn_on_every_guard_and_bad_names_are_rejected() -> None:
     params = NeuralParams.load(REPO / "config" / "players" / "neural.yaml")
-    off = {"weak4x_switch"}  # off from neural-20261114-2110 until it is fixed (4 of 4 live fires bad on 14 Nov)
+    off = {"weak4x_switch"}
     assert sorted(params.rules) == sorted(set(ALL) - off) and params.rule_mode == "mask"
     with pytest.raises(ConfigError):
         neural_rules.check(["no_full_heal", "roost_spam"], "test")
@@ -102,5 +100,5 @@ def test_a_priority_move_into_psychic_terrain_on_a_grounded_foe_is_replaced(thre
 
 def test_psychic_terrain_does_not_block_priority_into_a_flying_foe(threat) -> None:
     threat()
-    b = battle("Azumarill", [TERRAIN])  # Dragonite is not grounded
+    b = battle("Azumarill", [TERRAIN])
     assert decide(ALL, spot(b, "/choose move aquajet")) is None

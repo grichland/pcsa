@@ -41,9 +41,9 @@ def test_immunity_and_status_moves_do_nothing() -> None:
 
 
 def test_ko_on_us_uses_the_max_roll() -> None:
-    b, me, snorlax = sides("Snorlax")  # top build: Ice Punch, Yawn, Earthquake (immune), Rest
+    b, me, snorlax = sides("Snorlax")
     mean = threat.hit_fraction(b, snorlax, me, "icepunch", CATALOG)
-    me._current_hp = round(CHARIZARD["hp"] * mean * 1.05)  # above the mean roll, below the max
+    me._current_hp = round(CHARIZARD["hp"] * mean * 1.05)
     assert me.current_hp_fraction > mean
     assert threat.can_ko(b, snorlax, me, CATALOG)
     me._current_hp = round(CHARIZARD["hp"] * mean * 1.12)
@@ -94,5 +94,5 @@ def test_triple_axel_counts_its_escalation_once() -> None:
     from pcsa.players.threat import ESCALATING_HITS, _hits
 
     axel = Move("tripleaxel", gen=9)
-    assert _hits(axel) == ESCALATING_HITS < 3  # move_power already gives the mean power per hit (40)
+    assert _hits(axel) == ESCALATING_HITS < 3
     assert _hits(Move("bulletseed", gen=9)) == Move("bulletseed", gen=9).expected_hits

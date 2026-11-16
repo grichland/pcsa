@@ -1,12 +1,4 @@
-"""Damage estimates: the Showdown damage formula at level 50 under Champions stat rules.
-
-`damage` returns (low, high) as fractions of the defender's max HP: the lowest and highest random roll.
-When the defender's spread is unknown, low is the minimum roll against a max-investment defender and high
-the maximum roll against a zero-investment one. Weather, terrain, screens, burn, stat boosts, STAB, abilities
-and items with simple multipliers are applied (the tables below: move-flag and type abilities such as Tough
-Claws or Transistor, Technician, the -ate abilities, Filter-family and other defender abilities), as are Foul
-Play and Body Press stats; anything else (HP-dependent abilities, Multiscale) is ignored.
-"""
+"""Damage estimates: the Showdown damage formula at level 50 under Champions stat rules."""
 
 from __future__ import annotations
 
@@ -58,7 +50,7 @@ ATE_ABILITY = {"aerilate": "flying", "pixilate": "fairy", "refrigerate": "ice", 
 ATE_BOOST = 1.2
 TECHNICIAN, TECHNICIAN_LIMIT = 1.5, 60
 SAND_FORCE, SAND_FORCE_TYPES = 1.3, ("rock", "ground", "steel")
-STAT_BOOST = 1.5  # Guts / Hustle (Attack), Solar Power (Sp. Atk in sun)
+STAT_BOOST = 1.5  # Guts, Hustle, Solar Power in sun
 SOLID = ("filter", "solidrock", "prismarmor")
 SOLID_MULT = 0.75
 FUR_COAT = 2.0
@@ -125,7 +117,7 @@ class Fighter:
     item: str = ""
     boosts: dict[str, int] = field(default_factory=dict)
     status: str = ""
-    base: dict[str, int] | None = None  # base stats; with spread_known False they bound the defender
+    base: dict[str, int] | None = None
     spread_known: bool = True
 
     @property
@@ -170,8 +162,7 @@ def nature_percent(nature: str) -> dict[str, int]:
 def damage(
     attacker: Fighter, defender: Fighter, move_id: str, where: Conditions = CALM, power: int | None = None
 ) -> tuple[float, float]:
-    """(low, high) damage of `move_id` as fractions of the defender's max HP; (0, 0) for status moves.
-    `power` overrides the table's base power (a variable-power move the caller resolved)."""
+    """(low, high) damage of `move_id` as fractions of the defender's max HP; (0, 0) for status moves; `power` overrides the table."""
     if not defender.spread_known and defender.base is not None:
         weakest, strongest = investment_bounds(defender.base)
         low = _rolls(attacker, replace(defender, stats=strongest), move_id, where, power)[0]
@@ -210,7 +201,7 @@ def effectiveness_of(move_type: str, defender: Fighter) -> float:
     for name in defender.types:
         try:
             types.append(PokemonType.from_name(name))
-        except Exception:  # a type the chart does not know counts as neutral
+        except Exception:
             continue
     chart = _type_multiplier(move_type, types)
     multiplier = NEUTRAL if chart is None else chart

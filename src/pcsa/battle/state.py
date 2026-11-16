@@ -1,9 +1,4 @@
-"""One poke-env Battle per decision, reconstructed from everything known so far.
-
-Inputs: our team sheet, the preview sprite slots, our three picks, the collected log rows, and what
-the screens show now (HP, PP, Mega, forced replacement). Nothing carries over between decisions,
-so a corrected log row or a late reveal applies to every later decision.
-"""
+"""One poke-env Battle per decision, reconstructed from everything known so far."""
 
 from __future__ import annotations
 
@@ -124,13 +119,13 @@ def battle_request(
             condition += " " + mon.status.name.lower()
         item = member.item
         if mon is not None and mon.item != GenData.UNKNOWN_ITEM:
-            item = mon.item  # latest revealed, changed, consumed, or knocked-off item
+            item = mon.item
         entries.append(_entry(member, condition, slot == active, item))
     side = {"name": USERNAME, "id": "p1", "pokemon": entries}
     if forced:
         return current_request(battle, {"forceSwitch": [True], "side": side})
     rows = _move_rows(team, picks, battle, active, moves)
-    if entries and rows:  # the screen's moves are the active member's moves when the sheet had none
+    if entries and rows:  # the screen moves stand in when the sheet had none
         known = entries[0]["moves"]
         entries[0]["moves"] = known + [r["id"] for r in rows if r["id"] not in known]
     active_block = {"moves": rows, **({"canMegaEvo": True} if mega_available else {})}
@@ -159,11 +154,7 @@ FIRST_TURN_MOVES = frozenset({"fakeout", "firstimpression", "matblock"})
 
 
 def acted_since_entry(battle: Battle, name: str) -> bool:
-    """Our member has taken a move action (a move line or a `cant`) since it was last sent out.
-
-    The simulator's request then disables Fake Out, First Impression and Mat Block; the game's move screen does
-    not grey them out, so the live request has to. Without this the network was offered First Impression on a
-    later turn, a choice it never had in training, and clicked it (run 20261109-205551, battle 2, turn 6)."""
+    """Our member has taken a move action (a move line or a `cant`) since it was last sent out."""
     actor = f"p1a: {name}"
     for parts in reversed(getattr(battle, "_replay_data", [])):
         if len(parts) < 3 or parts[2] != actor:
@@ -176,11 +167,7 @@ def acted_since_entry(battle: Battle, name: str) -> bool:
 
 
 def status_blocked(mon, item: str | None) -> bool:
-    """Our member cannot choose a status move: it is under Taunt, or holds an Assault Vest.
-
-    The simulator's request disables those moves; the game's move screen does not grey them out, so the live request
-    has to. Without this the network was offered Slack Off and Yawn under Taunt, the game refused the taps, and the
-    turn timer picked the move for two turns (run 20261111-190432, battle 7, turns 10 and 11)."""
+    """Our member cannot choose a status move: it is under Taunt, or holds an Assault Vest."""
     taunted = mon is not None and any(effect.name == "TAUNT" for effect in mon.effects)
     return taunted or to_id_str(item or "") == "assaultvest"
 
@@ -247,10 +234,7 @@ def build(
     sprites_by_turn=None,
     regenerator: bool = True,
 ) -> tuple[Battle, Translation]:
-    """The Battle for one decision. Without `picks` it is the team preview.
-
-    An Illusion user found partway means earlier rows named its disguise: the log is translated again
-    with that send-out known. A sent-out opponent the preview missed replaces a misread slot the same way."""
+    """The Battle for one decision. Without `picks` it is the team preview."""
     disguises: dict[str, str] = {}
     replaced: dict[int, Member] = {}
     battle, t = None, None

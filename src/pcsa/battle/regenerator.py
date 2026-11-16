@@ -1,14 +1,4 @@
-"""Regenerator on the opponent's switch-out (13 Nov 2026 fix).
-
-The phone's battle log prints no HP when the opponent sends a Pokemon out, and the screen's action HUD reads only
-the opponent's name (pcsa.phone.fields.action_hud), so the translator carries the last HP it saw. A Regenerator
-user that switched out (a voluntary switch, a pivot or a drag; not a faint) is back with 1/3 of its HP more:
-the HP the next `|switch|` line carries is raised here, silently (Showdown prints nothing for it either). The next
-`[HP Lost]` row states the real HP again.
-
-"Surely Regenerator": revealed, every possible ability of the species, or every seen build of the species
-(assets/sets/seen_builds.json) runs it.
-"""
+"""Regenerator on the opponent's switch-out."""
 
 from __future__ import annotations
 

@@ -1,16 +1,9 @@
-"""Two guard rules for a 4x weakness (14 Nov 2026, from the hand-labelled live losses: Mega Golisopod, Bug/Steel,
-was one-shot by Fire six times; base Golisopod is Bug/Water and takes Fire neutrally).
+"""Two guard rules for a 4x weakness (e.g. Mega Golisopod, Bug/Steel, is one-shot by Fire; base Golisopod is not).
 
-  mega_weakness   the chosen move Mega Evolves, the Mega form is 4x weak to an attack they are likely to use (the
-                  opponent head gives it at least LIKELY, or they have shown it) while the base form is not, and our
-                  move does not KO them first: the same move without Mega Evolution (else the network's best action
-                  without it)
-  weak4x_switch   our active is 4x weak to such an attack, their active moves first (faster, or more priority),
-                  that hit KOs us, and none of our moves KOs them first: the network's best switch to a member that
-                  does not take that attack super effectively
-
-Types come from the game data (pcsa.battle.game); damage and speed from pcsa.players.threat via the Spot.
-"""
+  mega_weakness   a Mega Evolving move whose Mega form is 4x weak to a likely or shown attack (the base form is not)
+                  and does not KO first: the same move without Mega Evolution
+  weak4x_switch   our active is 4x weak to such an attack that lands first and KOs it, and no move of ours KOs first:
+                  the network's best switch that takes it at most neutrally"""
 
 from __future__ import annotations
 

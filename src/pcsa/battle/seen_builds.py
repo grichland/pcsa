@@ -1,18 +1,5 @@
 """Builds seen on the live ladder: every opposing set a battle revealed is either covered by the build catalog or
-added to it, and seen builds rank first when an opponent's set is assumed.
-
-After each live battle (and with `pcsa sets learn` for recorded runs) each opposing Pokémon's revealed set (moves,
-item, ability; a Mega Evolution reveals its stone) is checked in this order:
-1. a seen build already fits it: that build's count goes up (an added build also learns the newly revealed parts);
-2. a catalog build covers it (every revealed move in the build, same item and ability when revealed): that catalog
-   build becomes a seen build;
-3. otherwise a new build is added: the revealed parts, the rest (other moves, nature, spread, unrevealed item or
-   ability) from the closest catalog build of the species.
-`Catalog.load(seen=True)` (the players' catalog) lists a species' seen builds first, the most often seen first, then
-the rest of the catalog in its usage order. The simulator's team draws and research use the plain catalog.
-
-The file (assets/sets/seen_builds.json) also records which battles were learned, so a battle is never counted twice.
-"""
+added to it, and seen builds rank first when an opponent's set is assumed."""
 
 from __future__ import annotations
 
@@ -33,7 +20,7 @@ from pcsa.common import paths
 
 SCHEMA = "pcsa-seen-builds/1"
 DEFAULT_PATH = "sets/seen_builds.json"
-ENV_PATH = "PCSA_SEEN_BUILDS"  # another file (tests point it at one that does not exist)
+ENV_PATH = "PCSA_SEEN_BUILDS"  # tests point it at a missing file
 MOVE_SLOTS = 4
 FALLBACK_NATURE = "Hardy"
 FLAT_POINTS = 11
@@ -56,11 +43,11 @@ class Observed:
 @dataclass
 class Seen:
     build: Build
-    source: str  # "catalog" (a catalog build that covered what was seen) or "added"
+    source: str
     count: int = 0
     first: str = ""
     last: str = ""
-    known_moves: tuple[str, ...] = ()  # added builds: the moves actually seen (ids); the rest is filled in
+    known_moves: tuple[str, ...] = ()
     known_item: bool = False
     known_ability: bool = False
 
@@ -101,8 +88,7 @@ class SeenBuilds:
         tmp.replace(self.path)
 
     def ranked(self, species: str) -> list[Seen]:
-        """A species' seen builds, the most recently seen first (then the most often seen): what the ladder brings now
-        comes before what it brought earlier in the season."""
+        """A species' seen builds, the most recently seen first (then the most often seen)."""
         return sorted(self.by_species.get(to_id_str(species), []), key=lambda s: (s.last, s.count), reverse=True)
 
     # Learning ------------------------------------------------------------------------------------------------
@@ -175,10 +161,7 @@ def _fits_seen(s: Seen, o: Observed) -> bool:
 
 
 def species_key(form: str, catalog: Catalog) -> str:
-    """The species a battle form's builds are kept under: the form an in-battle form changes from (Aegislash-Blade,
-    Palafin-Hero; Floette-Mega comes from Floette-Eternal), the base species of other Megas and of forms that differ
-    only in looks (Vivillon patterns, Maushold-Four, Furfrou trims), else the form itself: regional and other lasting
-    forms (Slowbro-Galar, Rotom-Fan, Indeedee-F) keep their own builds even when the catalog has none for them."""
+    """The species a battle form's builds are kept under: the form an in-battle form changes from (Aegislash-Blade."""
     form = to_id_str(form)
     from_form = GenData.from_gen(9).pokedex.get(form, {}).get("battleOnly")
     if from_form:
@@ -234,8 +217,7 @@ def _new_build(o: Observed, catalog: Catalog) -> Build:
     ordered = sorted(builds, key=closeness, reverse=True)
     base = ordered[0] if ordered else None
     moves = [move_name(m) for m in o.moves]
-    # the closest build's other moves; a form filled from its base species' builds takes only moves it can learn,
-    # from the next closest builds when the closest is short of them
+    # the closest build's other moves; a form filled from its base species takes only moves it can learn.
     for m in (m for b in ordered for m in b.moves):
         if len(moves) >= MOVE_SLOTS:
             break
@@ -286,8 +268,7 @@ def item_name(item_id: str, species: str, catalog: Catalog) -> str:
 def observed_from_battle(
     battle, abilities: dict[str, str] | None = None, catalog: Catalog | None = None
 ) -> list[Observed]:
-    """The opposing sets a (finished) tracked Battle revealed. `abilities`: the tracker's revealed abilities by
-    'p2: Name' (the phone's log shows abilities the Battle may not have parsed)."""
+    """The opposing sets a (finished) tracked Battle revealed; `abilities` are the tracker's revealed abilities by 'p2: Name'."""
     catalog = catalog or Catalog.load()
     out = []
     side = "p2" if (battle.player_role or "p1") == "p1" else "p1"
@@ -311,7 +292,7 @@ def observed_from_battle(
         if ability and ability not in {
             to_id_str(a) for a in game.species_entry(species).get("abilities", {}).values()
         }:
-            ability = None  # not one the base species can have (a form's or a copied ability)
+            ability = None  # not one the base species can have
         out.append(Observed(species, moves, item, ability))
     return out
 

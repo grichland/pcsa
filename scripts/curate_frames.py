@@ -1,15 +1,7 @@
 """Build the perception corpus from saved run frames: a few real screenshots per screen, with cached OCR.
-
     uv run python scripts/curate_frames.py --source output/runs --per-screen 3
-
-Frames whose saved name carries a screen label (<run>/frames/NNNNN-<tag>-<screen>.jpg) are candidates, and
-battle-log panel captures (<run>/battle-N/log-frames/*.png) stand for the log screen. Each is
-classified with the current rule table and real OCR; the OCR boxes are cached so the corpus test
-runs without the OCR engine. Agreement with the saved label is recorded; disagreements are kept in
-review.json for a human to settle rather than silently accepted.
-
-The screenshots are git-ignored (they are game captures); only expected.json, ocr_cache.json and review.json
-are tracked. The corpus tests that need pixels skip in a checkout without the screenshots.
+Frames are classified with the current rules and real OCR; boxes are cached so corpus tests run without OCR, and
+disagreements with the saved label go to review.json. Screenshots are git-ignored; the json files are tracked.
 """
 
 from __future__ import annotations

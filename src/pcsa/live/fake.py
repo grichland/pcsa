@@ -1,13 +1,4 @@
-"""Devices and perception that replay a script, so the whole loop runs without a phone.
-
-A script is a list of steps. Each step is one screen the phone would show, with the taps that move
-it to the next step. The device stays on a step until an accepted tap arrives (or `after_s` of
-clock time passes); a tap that is not accepted is a test failure, recorded in `rejected`.
-
-    Step(Screen.LOBBY, {...}, accept=("begin_matchmaking",))
-    Step(Screen.MATCHMAKING, after_s=5)
-    Step(Screen.ACTION, {...}, accept=("fight",), inject="screencap_fail")  # or "tap_fail"
-"""
+"""Devices and perception that replay a script, so the whole loop runs without a phone."""
 
 from __future__ import annotations
 
@@ -35,10 +26,10 @@ class Step:
     after_s: float | None = None
     inject: str | None = None
     note: str = ""
-    advance_on: tuple[str, ...] | None = None  # accepted taps that move to the next step (default: all accepted)
-    log_rows: tuple[str, ...] = ()  # what the battle log would show on this step (harness log reader)
+    advance_on: tuple[str, ...] | None = None
+    log_rows: tuple[str, ...] = ()
     log_turn: int | None = None
-    log_stop: str = "top_confirmed"  # how the log read of this step ended (harness log reader that honours it)
+    log_stop: str = "top_confirmed"
 
 
 class ScriptedDevice:
@@ -59,7 +50,7 @@ class ScriptedDevice:
         self.taps: list[tuple[int, str | None]] = []  # (step index, region name or None)
         self.rejected: list[tuple[int, int, int]] = []
         self.failed_captures = 0
-        self.party_focus: int | None = None  # the party row tapped on this step: the Switch In button sits under it
+        self.party_focus: int | None = None  # the Switch In button sits under the tapped row
 
     @property
     def step(self) -> Step:
@@ -80,10 +71,7 @@ class ScriptedDevice:
             self._advance()
 
     def region_at(self, x: int, y: int) -> str | None:
-        """Which configured region (name, or name+index for lists) contains a device pixel.
-
-        Regions of different screens overlap; the one the current screen allows wins. On the party
-        screens the Switch In button under the tapped row covers the listed rows, so it is checked first."""
+        """Which configured region (name, or name+index for lists) contains a device pixel."""
         from pcsa.live.taps import ALLOWED
 
         if self._on_switch_in(x, y):

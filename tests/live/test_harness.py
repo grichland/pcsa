@@ -168,7 +168,7 @@ def test_forfeit_seen_only_by_the_move_peek_is_recorded(config: Config, tmp_path
     )
     forfeit_step = len(lobby_to_team_select()) + len(one_turn(1, TURN1)) + 1
     state, device, recorder = run_script(config, steps, tmp_path)
-    assert {index for index, _, _ in device.rejected} <= {forfeit_step}  # only the blind taps on the message miss
+    assert {index for index, _, _ in device.rejected} <= {forfeit_step}
     assert state.outcomes == ["opponent_forfeit", "win"] and state.completed == 1 and state.played == 2
     battle = json.loads((recorder.dir / "battle-1" / "battle.json").read_text(encoding="utf-8"))
     assert battle["outcome"] == "opponent_forfeit" and battle["outcome_source"] == "forfeit message"
@@ -193,7 +193,7 @@ def test_comm_error_mid_battle_returns_to_lobby_and_plays_on(config: Config, tmp
     )
     state, device, recorder = run_script(config, steps, tmp_path)
     assert device.rejected == []
-    assert state.outcomes == ["unknown", "win"]  # the interrupted battle is closed, the next one counted
+    assert state.outcomes == ["unknown", "win"]
     assert state.completed == 1 and state.played == 2
 
 
@@ -252,7 +252,7 @@ def test_every_decision_precedes_its_deadline(config: Config, tmp_path: Path) ->
 
 
 def test_disconnect_mid_battle_is_tapped_through_and_the_battle_continues(config: Config, tmp_path: Path) -> None:
-    forfeit = TextBox("Forfeit", 0.6, (1080, 470, 1260, 610))  # doubtful OCR, still enough to refuse a blind tap
+    forfeit = TextBox("Forfeit", 0.6, (1080, 470, 1260, 610))
     steps = (
         lobby_to_team_select()
         + one_turn(1, TURN1)
@@ -272,7 +272,7 @@ def test_disconnect_mid_battle_is_tapped_through_and_the_battle_continues(config
     forfeit_step = next(i for i, step in enumerate(steps) if step.note == "forfeit under the centre")
     assert not [name for index, name in device.taps if index == forfeit_step]
     battle = json.loads((recorder.dir / "battle-1" / "battle.json").read_text(encoding="utf-8"))
-    assert len(battle["turns"]) == 2  # the second turn was played after the disconnect
+    assert len(battle["turns"]) == 2
     log = events(recorder)
     taps = [e for e in log if e["event"] == "disconnect_tap"]
     assert [e["tap"] for e in taps] == ["centre", "centre", "control", "centre"]
@@ -306,8 +306,7 @@ def test_disconnect_past_the_bound_restarts_the_session(tmp_path: Path) -> None:
 
 
 def test_party_without_back_is_polled_not_backed_out(config: Config, tmp_path: Path) -> None:
-    """14 Nov: a U-turn pivot shows party rows, no Back, nothing fainted. The first poll tapped party_back (a stray
-    surface); now it waits one poll and the second sees it as the forced replacement."""
+    """A U-turn pivot shows party rows, no Back, nothing fainted."""
     alive = (PartyMember(0, "Garchomp", (90, 180)), PARTY[1], PARTY[2])
     steps = (
         lobby_to_team_select()
@@ -339,8 +338,7 @@ def rated(rating: float) -> dict:
 
 
 def test_unknown_outcome_is_read_from_the_rating_change(config: Config, tmp_path: Path) -> None:
-    """14 Nov battles 15 and 36: no result banner was read. The rewards screen first shows the old rating, then
-    the new one; a rise is a win."""
+    """No result banner was read."""
     steps = (
         [Step(Screen.LOBBY, {"team_label": "Team 1", **rated(1652.626)}, accept=("begin_matchmaking",))]
         + lobby_to_team_select()[1:]
@@ -376,7 +374,7 @@ def test_no_rating_before_the_battle_leaves_the_outcome_unknown(config: Config, 
 
 
 def test_a_result_banner_ending_a_disconnect_is_read(monkeypatch) -> None:
-    """14 Nov battle 15: the disconnect taps ended on the WON banner and the next poll was already past it, so the
+    """The disconnect taps ended on the WON banner and the next poll was already past it, so the
     banner the recovery saw is the outcome."""
     from types import SimpleNamespace
 
@@ -391,4 +389,4 @@ def test_a_result_banner_ending_a_disconnect_is_read(monkeypatch) -> None:
     reconnect.resolved(session, banner, 3, 13.7)
     assert seen == ["win"]
     reconnect.resolved(session, Observation(Screen.ACTION, REFERENCE, frozenset(), {}, "Fight and Pokemon"), 1, 4.0)
-    assert seen == ["win"]  # a resumed battle is not finalized
+    assert seen == ["win"]

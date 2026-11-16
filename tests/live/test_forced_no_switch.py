@@ -1,6 +1,5 @@
-"""14 Nov 2026 (run 20261114-173647, battle 5): our last member went in by itself, the replacement screen's party
-rows read as all fainted, no switch was legal and the session crashed (`b.names[None]`); the restart then played
-with the first three of the roster instead of the trio brought."""
+"""Our last member went in by itself, the replacement screen's party rows read as all fainted and no switch was legal:
+no crash, and a restart keeps the trio brought."""
 
 from types import SimpleNamespace
 
@@ -19,7 +18,7 @@ ROSTER = ("Gholdengo", "Garchomp", "Golisopod", "Primarina", "Mamoswine", "Cinde
 
 
 def _record() -> BattleRecord:
-    b = BattleRecord(5, "id", ROSTER, BattleLog("id"), requested=[3, 2, 4])  # Primarina, Golisopod, Mamoswine
+    b = BattleRecord(5, "id", ROSTER, BattleLog("id"), requested=[3, 2, 4])
     b.visible_order = [1, 0, 2]
     return b
 
@@ -58,7 +57,7 @@ def test_party_rows_that_all_read_fainted_mark_nobody() -> None:
     resync_party(b, party)
     assert b.fainted == set()
     resync_party(b, (*party[:2], _row(2, "Mamoswine", False)))
-    assert b.fainted == {1, 0}  # Golisopod (slot 1) and Primarina (slot 0)
+    assert b.fainted == {1, 0}
 
 
 def _decision(names: list[str], conditions: list[str], degrade: str = "full", details: str = "") -> dict:

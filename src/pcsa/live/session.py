@@ -1,8 +1,7 @@
 """The session: observe, check the watchdog, hand the screen to its handler, repeat.
 
-A session starts from whatever the phone shows. A screen that stays too long, an unknown screen
-that will not go away, or a device that will not answer raises Recoverable; the supervisor restarts
-the session on the same run state. Only SafetyStop ends the run.
+A screen that stays too long, an unknown screen or a silent device raises Recoverable (the supervisor restarts the
+session on the same run state). Only SafetyStop ends the run.
 """
 
 from __future__ import annotations
@@ -155,12 +154,12 @@ class Session:
             log.warning("turn_timed_out", battle=self.battle.index, notice=obs.fields.get("notice"))
             b = self.battle
             if not b.finished and b.team_submitted and b.action_visits == 0 and not b.team_auto:
-                b.team_auto = True  # no turn yet: the game chose the lineup (live/team_check.py checks the team)
+                b.team_auto = True  # the game chose the lineup (team_check checks it)
                 log.warning("team_auto_chosen", battle=b.index, requested=list(b.names))
 
     def handle(self, obs: Observation, frame) -> None:
         screen = obs.screen
-        if reconnect.applies(self, obs):  # a disconnect mid-battle: tap through it until a known screen returns
+        if reconnect.applies(self, obs):
             reconnect.ride_out(self, obs)
         elif screen == Screen.TEAM_SELECT:
             handlers.on_team_select(self, obs, frame, frame.captured_at)
@@ -195,7 +194,7 @@ class Session:
         if self.battle is None or self.battle.finished:
             handlers.new_battle(self, (), adopted=True)
         if self.battle is not None and self.battle.requested is None:
-            self.battle.requested = [0, 1, 2]  # adopted mid-battle: the party screen resyncs the real order
+            self.battle.requested = [0, 1, 2]  # adopted mid-battle: the party screen resyncs the order
         self.turns.team = self.team
 
 

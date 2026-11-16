@@ -1,8 +1,4 @@
-"""The sucker_punch guard rule: Sucker Punch (and Thunderclap) only when the foe may well attack.
-
-Blocked when the opponent head's status moves and possible switches exceed `passive_max` (a switch to a
-preview-only Pokemon is not possible once all the Pokemon they brought were seen); never when it is the only legal
-action; priority_ko does not pick a blocked one. A fail earlier in the battle no longer blocks it (15 Nov 2026)."""
+"""The sucker_punch guard rule: Sucker Punch (and Thunderclap) only when the foe may well attack."""
 
 from __future__ import annotations
 
@@ -26,8 +22,8 @@ RULES = ("no_effect", "no_full_heal", "useless_status", "locked_futile", "sucker
 FAILED = ["|move|p1a: Golisopod|Sucker Punch|p2a: Dragonite", "|-fail|p1a: Golisopod"]
 LANDED = ["|move|p1a: Golisopod|Sucker Punch|p2a: Dragonite", "|-damage|p2a: Dragonite|60/100"]
 PUNCH, LEECH = "/choose move suckerpunch", "/choose move leechlife"
-ATTACKS = (("move", "outrage", 0.7), ("move", "roost", 0.1), ("switch", "", 0.2))  # passive 0.3
-STALLS = (("move", "outrage", 0.3), ("move", "dragondance", 0.4), ("switch", "", 0.3))  # passive 0.7
+ATTACKS = (("move", "outrage", 0.7), ("move", "roost", 0.1), ("switch", "", 0.2))
+STALLS = (("move", "outrage", 0.3), ("move", "dragondance", 0.4), ("switch", "", 0.3))
 
 
 @pytest.fixture
@@ -86,11 +82,11 @@ def test_the_repo_settings_turn_the_rule_on() -> None:
     params = NeuralParams.load(REPO / "config" / "players" / "neural.yaml")
     assert params.rules.index("sucker_punch") < params.rules.index("priority_ko")
     assert params.sucker_punch_passive == 0.5
-    assert "sucker_punch" not in NeuralParams().rules  # off by default
+    assert "sucker_punch" not in NeuralParams().rules
 
 
 def test_a_fail_earlier_in_the_battle_no_longer_blocks_it(threat) -> None:
-    # 15 Nov 2026 (user): the "already failed against this foe" clause was wrong in 4 of 5 labelled live cases
+    # the "already failed against this foe" clause was wrong in 4 of 5 labelled live cases
     threat()
     assert decide(spot(battle([FAILED]))) is None
     assert decide(spot(battle([FAILED]), their=ATTACKS)) is None
@@ -118,10 +114,10 @@ def test_switches_to_preview_only_pokemon_do_not_count_once_their_team_is_seen(t
     b = battle(SEEN_ALL, preview=SIX)
     assert sucker.team_closed(b)
     assert sucker.impossible_switch(b, "gengar") and not sucker.impossible_switch(b, "garchomp")
-    assert not sucker.impossible_switch(b, "")  # an unknown target always counts
+    assert not sucker.impossible_switch(b, "")
     # Gengar and Kingambit masked; the rest renormalised: (0.05 + 0.1) / 0.5 = 0.3
     assert round(passive_share(TO_PREVIEW, b), 6) == 0.3
-    assert round(passive_share(TO_PREVIEW), 6) == 0.65  # without the battle: every switch counts, as before
+    assert round(passive_share(TO_PREVIEW), 6) == 0.65
     assert decide(spot(b, their=TO_PREVIEW)) is None
 
 
@@ -148,11 +144,11 @@ def test_blocked_when_their_status_moves_and_switches_are_likely(threat) -> None
     message, rule, why = decide(spot(battle(), their=STALLS))
     assert (message, rule) == (LEECH, "sucker_punch") and "0.70 > 0.5" in why
     assert decide(spot(battle(), their=ATTACKS)) is None
-    assert decide(spot(battle(), their=None)) is None  # no opponent head: never blocked
+    assert decide(spot(battle(), their=None)) is None
 
 
 def test_never_blocked_one_against_one(threat) -> None:
-    # the user's rule (14 Nov): with one Pokemon left on each side, the chance they do not attack is 0
+    # the user's rule: with one Pokemon left on each side, the chance they do not attack is 0
     threat()
     gone = [
         "|switch|p2a: Snorlax|Snorlax, L50|100/100",
@@ -165,8 +161,8 @@ def test_never_blocked_one_against_one(threat) -> None:
     for name in ("Gholdengo", "Garchomp"):
         b.team[f"p1: {name}"].faint()
     assert sucker.last_one_each(b)
-    assert decide(spot(b, their=STALLS)) is None  # the passive check does not block
-    alive = battle([FAILED, gone])  # their last one, but we still have three
+    assert decide(spot(b, their=STALLS)) is None
+    alive = battle([FAILED, gone])
     assert not sucker.last_one_each(alive) and decide(spot(alive, their=STALLS))[1] == "sucker_punch"
 
 
@@ -182,7 +178,7 @@ def test_priority_ko_does_not_pick_a_blocked_sucker_punch(threat) -> None:
     ranked = (LEECH, PUNCH)
     assert decide(spot(b, LEECH, ranked, their=ATTACKS))[:2] == (PUNCH, "priority_ko")
     assert decide(spot(b, LEECH, ranked, their=STALLS)) is None
-    without = tuple(r for r in RULES if r != "sucker_punch")  # neural-gold940.yaml: as before
+    without = tuple(r for r in RULES if r != "sucker_punch")
     assert decide(spot(b, LEECH, ranked, their=STALLS), without)[:2] == (PUNCH, "priority_ko")
 
 
@@ -198,5 +194,5 @@ def test_the_opponent_heads_switch_columns_name_their_targets() -> None:
     bench = [m.species for _, m in features._their_members(b, features_log.read(b))[1:]]
     acts = their_actions(out, b)
     assert [a[1] for a in acts] == [bench[0], bench[2], bench[4]]
-    assert {a[1] for a in acts} & {"gengar", "kingambit", "corviknight"}  # preview-only rows are in the bench
-    assert [a[1] for a in their_actions(out)] == ["", "", ""]  # no battle: targets unknown
+    assert {a[1] for a in acts} & {"gengar", "kingambit", "corviknight"}
+    assert [a[1] for a in their_actions(out)] == ["", "", ""]

@@ -10,9 +10,9 @@ def test_scripted_device_advances_only_on_accepted_taps(config: Config, fake_clo
         config.screen,
         fake_clock,
     )
-    device.tap(100, 100)  # nowhere
+    device.tap(100, 100)
     assert device.index == 0 and device.rejected == [(0, 100, 100)]
-    device.tap(1600, 930)  # inside begin_matchmaking
+    device.tap(1600, 930)
     assert device.index == 1
     device.capture()
     assert device.index == 1

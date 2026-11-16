@@ -1,14 +1,8 @@
-"""Their active's move options narrowed by the builds it could be (13 Nov 2026, inference only, not trained).
-
-The opponent head (former.Net._opponent) scores every move their active's species can learn (plus its revealed
-moves). With `opponent_moves_from_builds` on (FormerPlayer, config/players/neural.yaml) the player passes a mask:
-the moves of the species' builds seen on the live ladder (assets/sets/seen_builds.json) that agree with every move
-revealed so far, plus the revealed moves themselves; when no seen build agrees (or none is seen), the species'
-listed builds (seen and usage catalog, the belief tracker's list builds) that agree. The
-head's move probabilities are renormalised over that mask (switches untouched), so the matrix columns follow.
-
-A revealed move that no listed build has makes no build agree: no mask (the full learnset, as trained). A species
-without listed builds: no mask.
+"""Their active's move options narrowed by the builds it could be (inference only, not trained).
+With `opponent_moves_from_builds` on, the opponent head is masked to the moves of the species' seen-ladder builds that
+agree
+with every revealed move (else its listed builds), plus the revealed moves, and renormalised (switches untouched).
+No agreeing build, or none listed: no mask (the full learnset, as trained).
 """
 
 from __future__ import annotations

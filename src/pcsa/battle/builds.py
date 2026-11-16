@@ -82,8 +82,7 @@ class Catalog:
         return [builds[0].species for builds in self.by_id.values() if builds]
 
     def builds(self, species: str) -> list[Build]:
-        """The species' builds, best first (seen ones first when the catalog has `seen`); a form without builds
-        falls back to its base species."""
+        """The species' builds, best first (seen ones first when the catalog has `seen`); a form falls back to its base species."""
         key = to_id_str(species)
         if key not in self.by_id and key not in (self.seen.by_species if self.seen else {}):
             key = to_id_str(game.base_name(key))

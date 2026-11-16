@@ -1,9 +1,4 @@
-"""`pcsa sim play`: paired simulator games between two players, with the win rate and its interval.
-
-Each pair is two battles with the seats (p1/p2) swapped and the teams swapped, so each team pair is played both
-ways. Output: results.json, notes.jsonl, battles.jsonl.gz (pcsa.run.battle_log), events.jsonl and server.log in
-output/sim/<stamp>/.
-"""
+"""`pcsa sim play`: paired simulator games between two players, with the win rate and its interval."""
 
 from __future__ import annotations
 

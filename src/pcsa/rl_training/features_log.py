@@ -1,4 +1,4 @@
-# From research/pcsa-rl/rl/features_log.py (sha256 6bc4a7ebf2a8, 2026-11-08 20:13); keep diffable.
+# From research/pcsa-rl/rl/features_log.py; keep diffable.
 """One pass over a Battle's protocol: per-member evidence and per-side tendencies for the feature rows/field."""
 
 from __future__ import annotations

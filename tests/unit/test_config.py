@@ -25,7 +25,7 @@ def test_cli_override_and_env_override(tmp_path: Path) -> None:
     environ = {"PCSA__timing__max_turn_s": "30", "PCSA__run__battles": "3", "HOME": "x"}
     assert overrides_from_environ(environ) == ["run.battles=3", "timing.max_turn_s=30"]
     config = load_config(REPO / "config/agent.yaml", overrides=["timing.max_turn_s=25.5"], environ=environ)
-    assert config.agent.timing.max_turn_s == 25.5  # explicit override wins over the environment
+    assert config.agent.timing.max_turn_s == 25.5
     assert config.agent.run.battles == 3
 
 
@@ -52,7 +52,7 @@ def test_regions_resolve_to_the_measured_pixels(config: Config) -> None:
 
 
 def test_regions_scale_and_offset_with_the_viewport(config: Config) -> None:
-    letterboxed = Viewport(x=160, y=0, w=1600, h=738)  # a 16:9 phone drawing the game in a centred band
+    letterboxed = Viewport(x=160, y=0, w=1600, h=738)
     fight = config.screen.resolve("fight", letterboxed)
     assert 160 < fight.x1 < fight.x2 <= 1760
     assert fight.center[0] == pytest.approx(160 + 0.8952 * 1600, abs=2)

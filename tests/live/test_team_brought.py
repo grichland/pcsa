@@ -1,8 +1,8 @@
-"""15 Nov 2026 (run 20261115-034548, battles 31-32): a communication error during team selection came back to the same
-selection screen with 2 seconds left (frame 02036); the session took it for a new battle (31 ended "unknown"), the
-lineup taps came too late and the game chose Gholdengo, Garchomp and Golisopod itself (frame 02037), while every
-decision of battle 32 was made for the requested Mamoswine, Cinderace and Primarina.
-Fixture: tests/fixtures/live_20261115/battle32_team.json (the roster, the request, the log rows, the party read)."""
+"""A communication error during team selection returns to the same selection screen: the same match, so the lineup is
+repaired, not taken for a new battle.
+
+Fixture: tests/fixtures/live_20261115/battle32_team.json (roster, request, log rows, party read).
+"""
 
 from __future__ import annotations
 
@@ -36,9 +36,9 @@ def _record(auto: bool) -> BattleRecord:
 def test_the_automatic_lineup_is_played_from_the_first_action_screen() -> None:
     b = _record(auto=True)
     assert check_team(b, active=FIX["first_action_active_name"])
-    assert list(b.names) == ["Gholdengo", "Garchomp", "Golisopod"]  # the first three roster rows, Gholdengo led
+    assert list(b.names) == ["Gholdengo", "Garchomp", "Golisopod"]
     assert b.slot_of("Garchomp") == 1 and b.visible_order == [0, 1, 2]
-    assert not check_team(b, party=FIX["party_names"])  # the party screen agrees: nothing more to change
+    assert not check_team(b, party=FIX["party_names"])
     summary = b.summary(0, True)
     assert summary["team_requested_names"] == ["Mamoswine", "Cinderace", "Primarina"]
     assert summary["team_played_names"] == ["Gholdengo", "Garchomp", "Golisopod"]
@@ -71,7 +71,7 @@ def test_a_timeout_notice_before_any_turn_marks_the_lineup_automatic() -> None:
     _notice(b)
     assert b.team_auto
     later = _record(auto=False)
-    later.action_visits = 3  # a move timer running out is not the lineup
+    later.action_visits = 3
     _notice(later)
     assert not later.team_auto
 

@@ -1,10 +1,8 @@
 """The battle log of `pcsa watch`, turn by turn, read from a battle folder.
 
-`battle_log.txt` is the standard format (`standard_text()` in pcsa.phone.log_merge): a `# format:
-pcsa-battle-log/1` header, `key: value` lines, then `=== Turn N ===` blocks of `[Category] message` lines and
-`# controller: ...` annotations (the action we sent). `log.txt` holds the collected rows only (`TurnN:` blocks).
-Both are parsed into turns; each line carries the side it is about when the text tells (the game writes "The
-opposing ..." for theirs, shows their HP as a percentage and ours as numbers). Any other text is served raw.
+`battle_log.txt` (`standard_text()`: header, `=== Turn N ===` blocks of `[Category] message`, `# controller:` lines)
+or the
+collected `log.txt` rows; each line carries the side it is about when the text tells ("The opposing ..." is theirs).
 """
 
 from __future__ import annotations

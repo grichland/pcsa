@@ -1,44 +1,9 @@
 """Re-translate every saved live battle with the current log translator, into a separate reconciled tree.
-
-    cd <repo>; PYTHONPATH=src .venv/Scripts/python.exe scripts/reconcile_live.py
-        [--runs DIR ...] [--out-root DIR | --out DIR] [--tree-file FILE] [--only RUN[/battle-N] ...]
-
-The live turn flow builds each decision's Battle from the battle log as read so far (live/turn.py `_build`:
-battle.state.build over `b.log.history()` and `b.log.sprite_history()`), saves the protocol it built in
-`battle-N/decisions/NNNN-<kind>.json`, and keeps the whole log in `log.jsonl` with the merge of every log visit in
-`ocr_audit.json` (phone/log_merge.py BattleLog). The fine-tune rebuilds every decision from the record's protocol and
-request, so rows the translator of the day dropped are missing from its data. This tool translates each decision
-again from exactly the rows the bot had read when it made it, and writes the result to
-
-    <out-root>/<translator commit>[-dirty]/<runs folder tag>/<run>/battle-N/
-
-(a fresh folder each time: `-2`, `-3` ... when the name is taken), with report.md and report.json at the top. The
-original run folders are only read.
-
-Which rows a decision saw. An action decision made at log visit V (its record's `visit`) saw the log after every
-accepted merge up to V; a forced replacement does not read the log, so it saw the log of the last action decision
-before it (no rows of the rest of its turn). A merge only appends to a turn's rows (anchors new / prefix / overlap /
-unanchored / contained; `extended`, which rewrites a turn, has never been recorded and makes the battle unbounded),
-so the turn's rows after visit V are the first sum(appended of that turn's visits <= V) rows of log.jsonl. A row's
-sprite is the combination of its observations over the visits (sprites.combine_observations, which never replaces a
-matched observation except by a conflict), so the observation the bot had at V is the stored one when its source
-frame is from a visit <= V; otherwise the bot had no matched sprite for that row then, which the translator treats as
-no sprite (None here). A record whose bound cannot be checked keeps its original content: the folder's log does not
-add up (the visits' appended rows against log.jsonl), the action visits restart (a resumed battle, whose earlier
-rows another log held), the record belongs to another battle (a reused folder), the original's unmapped or inferred
-rows are not the bounded rows, or the rebuilt protocol's `|turn|` lines differ from the original's.
-
-Consistency checks, each falling back to the original record: our own moves and switches as in the original
-protocol; the request still applies to the rebuilt Battle; `pcsa.battle.state.replay(protocol, request)` succeeds with
-no replay error the original did not have, at the same turn, offering every recorded legal order the original
-offered. Per battle, the regenerated showdown.log must keep the original's |win| line and its faint count per side
-(more faints are allowed and reported: the original missed them); when it does not, the whole battle is kept as it
-was.
-
-Each reconciled record keeps everything else from the original and gets a `reconciled` block: the status, the bound
-(visit and rows per turn), the protocol lines added and removed, and the original unmapped, warnings, inferred and
-revealed abilities. Kept records are copied byte for byte. battle.json, battle_id.json and the run's manifest.json,
-state.json and own_team.json are copied; showdown.log and battle_final.txt are regenerated from the final rows.
+    PYTHONPATH=src python scripts/reconcile_live.py [--runs DIR ...] [--out-root DIR] [--only RUN[/battle-N]]
+Each decision is translated again from exactly the log rows the bot had read when it made it (an action decision at
+visit V saw every accepted merge up to V; a forced replacement saw the last action decision's). Records whose bound
+cannot be checked, or that fail the protocol/replay/faint-count checks, keep their original content. Output:
+`<out-root>/<translator commit>/<runs tag>/<run>/battle-N/` plus report.md/json; originals are only read.
 """
 
 from __future__ import annotations
@@ -59,7 +24,7 @@ from pathlib import Path
 from pcsa.common.clock import SystemClock
 
 REPO = Path(__file__).resolve().parents[1]
-DEFAULT_RUNS = [Path(r"C:\Users\geral\Code\pcsa\output\runs")]  # this repo's games only (the old repo's: --runs)
+DEFAULT_RUNS = [Path(r"C:\Users\geral\Code\pcsa\output\runs")]
 DEFAULT_OUT_ROOT = Path(r"C:\Users\geral\Code\research\pcsa-rl\runs\live-reconciled")
 SCHEMA = "pcsa-reconciled/1"
 RUN_FILES = ("manifest.json", "state.json", "own_team.json", "own_team.txt")
@@ -67,8 +32,8 @@ BATTLE_COPIES = ("battle.json", "battle_id.json")
 APPEND_ANCHORS = re.compile(r"^(new|prefix|contained|unanchored|overlap\d+)$")
 VISIT_IN_SOURCE = re.compile(r"visit(\d+)-")
 TAG_PARTS = ("<tag>", "output", "runs")
-MOVE_FIELDS, IDENT_FIELDS = 4, 3  # |move|<ident>|<move>, |switch|<ident>
-WINNER = {"win": "me", "opponent_forfeit": "me", "loss": "opponent"}  # live/handlers.py finalize
+MOVE_FIELDS, IDENT_FIELDS = 4, 3
+WINNER = {"win": "me", "opponent_forfeit": "me", "loss": "opponent"}
 
 
 # Translator state ------------------------------------------------------------------------------------------------
@@ -137,8 +102,8 @@ def sprite_at(sprite: dict | None, visit: int) -> tuple[dict | None, bool]:
 
 @dataclass
 class Log:
-    rows: dict[int, list[dict]]  # turn -> log.jsonl rows in index order
-    visits: list[dict]  # ocr_audit.json visits: the accepted merges, in order
+    rows: dict[int, list[dict]]
+    visits: list[dict]
     problem: str | None = None
 
     def bounded(self, visit: int) -> tuple[dict[int, tuple[str, ...]], dict[int, tuple], dict[int, int], bool]:
@@ -235,11 +200,8 @@ def own_actions(lines: list[str]) -> list[tuple[str, ...]]:
 
 
 def own_actions_added(protocol: list[str], out, unmapped_before) -> tuple[list[tuple[str, ...]], str | None]:
-    """(our own moves and switches the rebuilt protocol adds, why the change is refused or None).
-
-    The original's own actions must all be there, in order. An added one must come from a row the original left
-    unmapped and the rebuild maps (a "Go! X!" whose icon was misread as Ditto): a row of the original's unmapped list,
-    no longer unmapped, whose text names the member (and the move, for a move)."""
+    """(our own moves and switches the rebuilt protocol adds, why the change is refused or None). The original's
+    actions must all be there, in order; an added one must come from a row the original left unmapped."""
     old, new = own_actions(protocol), own_actions(out.lines)
     if old == new:
         return [], None
@@ -783,7 +745,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"reconciling into {tree} with {name} (dirty: {translator['dirty']})", flush=True)
     reports = []
     for folder in a.runs:
-        runs = sorted(p for p in folder.glob("*-run") if p.is_dir())  # discovered now: every run and battle there is
+        runs = sorted(p for p in folder.glob("*-run") if p.is_dir())
         for run in runs:
             reports += reconcile_run(run, tree / runs_tag(folder) / run.name, a.only, translator, run == runs[-1])
     header = {

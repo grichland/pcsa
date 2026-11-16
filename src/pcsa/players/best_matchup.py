@@ -2,12 +2,7 @@
 
 Matchups are the heuristic's score (`HeuristicPlayer.matchup`, weights from config/players/heuristic.yaml).
 When the active's score is below `switch_below` and the best legal bench member's is above `switch_in_above`
-(config/players/best_matchup.yaml), that member comes in. Everything else is MaxDamagePlayer's.
-
-Back-to-back voluntary switches: the second is allowed once, and only when the opponent also switched on the
-turn of the first (a switch of theirs before any faint of theirs that turn); a third in a row never is.
-Forced switches neither count nor are restricted.
-"""
+(config/players/best_matchup.yaml), that member comes in. Everything else is MaxDamagePlayer's."""
 
 from __future__ import annotations
 

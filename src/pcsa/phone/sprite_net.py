@@ -1,14 +1,9 @@
 """The sprite embedding network, run in numpy: silhouette features -> unit vectors compared by cosine.
-
-A crop's silhouette feature (`sprites.feature`: a 40x40 mask and the Lab colour under it, plus the
-silhouette's aspect ratio) becomes four channels; six 3x3 convolutions with ReLU, a 2x2 max-pool after
-every second one, global average pooling, the log aspect ratio and two dense layers map it to a unit
-vector. Two sprites match by the cosine of their vectors.
-
-`assets/sprites/sprite_net.json` names the weights and the reference vectors (one per known sprite
-view, for team preview and for the battle log) with their hashes, and the battle log's acceptance
-thresholds. All of it is produced by `pcsa train sprites` (sprite_training/sprite_train.py, which also checks
-this forward pass against torch's); no sprite pixels are shipped.
+Input: 40x40 mask + Lab colour + aspect ratio; six 3x3 convs (max-pool every second), global average pool, two dense
+layers.
+`assets/sprites/sprite_net.json` names the weights, reference vectors and the log's acceptance thresholds, all
+produced by
+`pcsa train sprites` (no sprite pixels are shipped).
 """
 
 from __future__ import annotations

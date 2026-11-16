@@ -1,8 +1,4 @@
-"""`pcsa watch`: a read-only page over a run directory (events, decisions, battle log, latest frame). No controls.
-
-The server only reads the run folder, and it tolerates a run that is being written: files that are missing,
-empty or half written show as empty panels until they land. It listens on localhost.
-"""
+"""`pcsa watch`: a read-only page over a run directory (events, decisions, battle log, latest frame). No controls."""
 
 from __future__ import annotations
 
@@ -186,7 +182,7 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def do_GET(self) -> None:  # the http.server API names it
+    def do_GET(self) -> None:
         url = urlsplit(self.path)
         path = url.path
         if path in ("/", "/index.html"):
@@ -208,7 +204,7 @@ class Handler(BaseHTTPRequestHandler):
     def _no_frame(self) -> None:
         self._send(404, b"No frame yet", "text/plain")
 
-    def log_message(self, format: str, *args) -> None:  # the http.server API names it
+    def log_message(self, format: str, *args) -> None:
         pass
 
 

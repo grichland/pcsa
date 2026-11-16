@@ -62,7 +62,7 @@ TURN1 = [
     "Move: Cinderace used Pyro Ball!",
     "Move: The opposing Glimmora used Power Gem!",
 ]
-TURN1_LATE = ["Move: The opposing Glimmora used Earth Power!"]  # read at visit 2 (the rest of the turn)
+TURN1_LATE = ["Move: The opposing Glimmora used Earth Power!"]
 TURN2 = ["Move: Cinderace used U-turn!", "Fainted: The opposing Glimmora fainted!"]
 
 
@@ -173,8 +173,8 @@ def test_reconcile_end_to_end(rl, tmp_path):
     bdir, team, summary = make_battle(tmp_path)
     t1, t12 = {1: tuple(TURN1)}, {1: tuple(TURN1 + TURN1_LATE)}
     write(bdir, original(team, summary, t1, 1, 0, "action", visit=1))
-    write(bdir, original(team, summary, t1, 1, 1, "forced", forced=True))  # mid-turn: visit 1's rows only
-    future = original(team, summary, {**t12, 2: tuple(TURN2)}, 3, 2, "action", visit=2)  # saw rows of visit 3
+    write(bdir, original(team, summary, t1, 1, 1, "forced", forced=True))
+    future = original(team, summary, {**t12, 2: tuple(TURN2)}, 3, 2, "action", visit=2)
     write(bdir, future)
     write(bdir, original(team, summary, {**t12, 2: tuple(TURN2)}, 3, 3, "action", visit=3))
     full = original(team, summary, {**t12, 2: tuple(TURN2)}, 0, 9, "action")
@@ -182,7 +182,7 @@ def test_reconcile_end_to_end(rl, tmp_path):
     before = {p: p.read_bytes() for p in bdir.rglob("*") if p.is_file()}
     tree = tmp_path / "tree"
     assert rl.main(["--runs", str(tmp_path / "runs"), "--out", str(tree)]) == 0
-    assert {p: p.read_bytes() for p in bdir.rglob("*") if p.is_file()} == before  # originals untouched
+    assert {p: p.read_bytes() for p in bdir.rglob("*") if p.is_file()} == before
     out = tree / rl.runs_tag(tmp_path / "runs") / "20990101-000000-run" / "battle-1"
     recs = {p.name: json.loads(p.read_text(encoding="utf-8")) for p in (out / "decisions").glob("*.json")}
     assert recs["0000-action.json"]["reconciled"]["identical"] is True
