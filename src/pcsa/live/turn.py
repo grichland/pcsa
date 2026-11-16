@@ -19,7 +19,14 @@ from pcsa.live.decide import Decider, event_notes
 from pcsa.live.log_reader import LogReader, LogVisit
 from pcsa.live.log_save import LogSaver
 from pcsa.live.team_check import check_team
-from pcsa.live.turn_sync import check_identity, faints_from_log, leaving_slot, resync_party
+from pcsa.live.turn_sync import (
+    check_identity,
+    fainted_active,
+    faints_from_log,
+    index_collisions,
+    leaving_slot,
+    resync_party,
+)
 from pcsa.players.base import ScreenFacts
 from pcsa.run.battle_state import BattleRecord, action_detail, same_name
 from pcsa.run.recorder import Recorder
@@ -127,6 +134,7 @@ class TurnPipeline:
             battle, out = None, None
         slot_moves = list(self.team.members[b.requested[t.active]].moves) if self.team and b.requested else []
         decision = self.decider.decide(b, screen, battle, out, deadline, slot_moves=slot_moves, active=t.active)
+        index_collisions(b, "action", battle, decision.legal)
         path = {"same_turn": same_turn, "peek": why or move_peek.SKIPPED, "refused": list(refused)}
         self._save_decision(b, "action", battle, out, request, decision, visit=visit, log_turn=log_info.turn, **path)
         chosen, taken = decision.chosen.action, True
@@ -222,9 +230,12 @@ class TurnPipeline:
         assert b.forced_choice is not None
         screen_hp = {slot: tuple(m.hp) for m in party if (slot := b.slot_of(m.name)) is not None and m.hp}
         screen = ScreenFacts((), False, True, None)
-        battle, out, request = self._track(
-            b, "forced", turn=b.current_turn(), active=leaving, screen=screen, screen_hp=screen_hp
-        )
+        battle, out = self._build(b, "forced", b.current_turn())
+        # a faint: the fainted active goes first in the request, as Showdown lists it (turn_sync.fainted_active)
+        first = leaving if leaving is not None else fainted_active(b, battle, screen_hp)
+        request = self._request(b, "forced", battle, out, first, screen, screen_hp)
+        if request is None:
+            battle, out = None, None
         decision = self.decider.decide(
             b,
             screen,
@@ -235,6 +246,7 @@ class TurnPipeline:
             active=leaving,
             leaving=leaving,
         )
+        index_collisions(b, "forced", battle, decision.legal)
         action = decision.chosen.action
         if action.kind != "switch" or action.slot is None:
             switches = [a for a in decision.legal if a.action.kind == "switch"]
@@ -269,13 +281,6 @@ class TurnPipeline:
         self.clock.sleep(self.cfg.timing.post_action_wait_s)
 
     # Helpers ---------------------------------------------------------------------------------------------
-    def _track(
-        self, b: BattleRecord, kind: str, *, turn: int, active: int | None, screen: ScreenFacts, screen_hp: dict
-    ):
-        battle, out = self._build(b, kind, turn)
-        request = self._request(b, kind, battle, out, active, screen, screen_hp)
-        return (battle, out, request) if request is not None else (None, None, None)
-
     def _build(self, b: BattleRecord, kind: str, turn: int):
         """(Battle, Translation) from everything the log holds, before this decision's request; else (None, None)."""
         if self.team is None or b.requested is None:

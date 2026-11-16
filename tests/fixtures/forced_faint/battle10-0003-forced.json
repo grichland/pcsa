@@ -1,0 +1,136 @@
+{
+ "schema": "pcsa-decision/2",
+ "battle_id": "20261115T050741-b00c83c4",
+ "sequence": 3,
+ "kind": "forced",
+ "turn": 2,
+ "choice": "switch0",
+ "order": "/choose switch Cinderace",
+ "legal": [
+  "/choose switch Cinderace",
+  "/choose switch Golisopod"
+ ],
+ "request": {
+  "forceSwitch": [
+   true
+  ],
+  "side": {
+   "name": "me",
+   "id": "p1",
+   "pokemon": [
+    {
+     "ident": "p1: Cinderace",
+     "details": "Cinderace, L50",
+     "condition": "157/157",
+     "active": false,
+     "stats": {
+      "hp": 157,
+      "atk": 184,
+      "def": 95,
+      "spa": 76,
+      "spd": 95,
+      "spe": 171
+     },
+     "moves": [
+      "pyroball",
+      "highjumpkick",
+      "gunkshot",
+      "uturn"
+     ],
+     "baseAbility": "libero",
+     "ability": "libero",
+     "item": "choicescarf"
+    },
+    {
+     "ident": "p1: Golisopod",
+     "details": "Golisopod, L50",
+     "condition": "182/182",
+     "active": false,
+     "stats": {
+      "hp": 182,
+      "atk": 194,
+      "def": 160,
+      "spa": 72,
+      "spd": 112,
+      "spe": 60
+     },
+     "moves": [
+      "leechlife",
+      "firstimpression",
+      "suckerpunch",
+      "ironhead"
+     ],
+     "baseAbility": "emergencyexit",
+     "ability": "emergencyexit",
+     "item": "golisopite"
+    },
+    {
+     "ident": "p1: Primarina",
+     "details": "Primarina, L50",
+     "condition": "0 fnt",
+     "active": false,
+     "stats": {
+      "hp": 187,
+      "atk": 84,
+      "def": 113,
+      "spa": 176,
+      "spd": 136,
+      "spe": 81
+     },
+     "moves": [
+      "sparklingaria",
+      "aquajet",
+      "calmmind",
+      "moonblast"
+     ],
+     "baseAbility": "torrent",
+     "ability": "torrent",
+     "item": "leftovers"
+    }
+   ]
+  }
+ },
+ "protocol": [
+  "|player|p1|me|",
+  "|player|p2|opponent|",
+  "|gen|9",
+  "|clearpoke",
+  "|poke|p2|Archaludon, L50|",
+  "|poke|p2|Primarina, L50|",
+  "|poke|p2|Metagross, L50|",
+  "|poke|p2|Gallade, L50|",
+  "|poke|p2|Charizard, L50|",
+  "|poke|p2|Mimikyu, L50|",
+  "|teampreview|3",
+  "|teamsize|p1|3",
+  "|teamsize|p2|3",
+  "|start",
+  "|switch|p2a: Gallade|Gallade, L50|100/100",
+  "|switch|p1a: Cinderace|Cinderace, L50|157/157",
+  "|switch|p1a: Cinderace|Cinderace, L50|157/157",
+  "|turn|1",
+  "|move|p1a: Cinderace|U-turn|p2a: Gallade",
+  "|-ability|p1a: Cinderace|Libero",
+  "|-start|p1a: Cinderace|typechange|Bug",
+  "|-damage|p2a: Gallade|48/100",
+  "|switch|p1a: Primarina|Primarina, L50|187/187",
+  "|move|p2a: Gallade|Psycho Cut|p1a: Primarina",
+  "|-damage|p1a: Primarina|43/187",
+  "|-item|p2a: Gallade|Life Orb",
+  "|-damage|p2a: Gallade|38/100",
+  "|-item|p1a: Primarina|Leftovers",
+  "|-heal|p1a: Primarina|54/187",
+  "|turn|2"
+ ],
+ "own_names": [
+  "Gholdengo",
+  "Garchomp",
+  "Golisopod",
+  "Primarina",
+  "Mamoswine",
+  "Cinderace"
+ ],
+ "pivot": false,
+ "source": "pcsa output/runs/20261115-034548-run/battle-10/decisions/0003-forced.json (15 Nov 2026 live run); notes left out",
+ "network_pick": "golisopod"
+}
