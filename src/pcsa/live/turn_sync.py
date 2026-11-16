@@ -25,6 +25,39 @@ def leaving_slot(b: BattleRecord, party: tuple) -> int | None:
     return active if alive else None
 
 
+def fainted_active(b: BattleRecord, battle, screen_hp: dict) -> int | None:
+    """The slot of our active that just fainted, on a faint replacement screen (leaving_slot None), else None.
+
+    Showdown's forced-switch request lists that fainted active first (active: true, "0 fnt"); the live request has
+    to do the same, or the network reads a live bench member as our active (15 Nov 2026: 152 of 455 replacements
+    sent legal[0] instead of the network's pick). Fainted here: in b.fainted (the party screen, the log's text) or
+    0 HP on the party screen. In order:
+      1. the tracked active (the log's last switch-in), when it fainted after the last log read (the log does not
+         show its faint yet: the faint behind this screen);
+      2. visible_order[0], when fainted (it follows replacements and pivots the log has not shown yet);
+      3. the tracked active, when fainted at all;
+      4. the only fainted slot.
+    `battle`: the tracked Battle before this decision's request (None: steps 1 and 3 are skipped)."""
+    fainted = set(b.fainted) | {slot for slot, hp in screen_hp.items() if hp and hp[0] <= 0}
+    mon = getattr(battle, "active_pokemon", None) if battle is not None else None
+    tracked = b.slot_of(mon.name) if mon is not None else None
+    shown = b.visible_order[0] if b.visible_order else None
+    if tracked is not None and tracked in fainted and not mon.fainted:  # type: ignore[union-attr]
+        if shown is not None and shown != tracked and shown in fainted:
+            log.warning("fainted_active_disagree", battle=b.index, tracked=tracked, visible=shown, used=tracked)
+        return tracked
+    if shown is not None and shown in fainted:
+        return shown
+    if tracked is not None and tracked in fainted:
+        return tracked
+    alone = sorted(fainted)
+    if len(alone) == 1:
+        log.warning("fainted_active_guess", battle=b.index, slot=alone[0], tracked=tracked, visible=shown)
+        return alone[0]
+    log.warning("fainted_active_unknown", battle=b.index, fainted=alone, tracked=tracked, visible=shown)
+    return None
+
+
 def check_identity(b: BattleRecord, active: str | None) -> bool:
     """True when the screen named another active member than the bookkeeping (which is then resynced)."""
     expected = b.names[b.visible_order[0]] if b.names else None
@@ -69,3 +102,33 @@ def resync_party(b: BattleRecord, party) -> None:
         if m.fainted and slot is not None:
             b.fainted.add(slot)
     b.observed["party_names"] = [m.name for m in party]
+
+
+def index_collisions(b: BattleRecord, kind: str, battle, legal) -> dict[int, list[str]]:
+    """Legal orders that share one network action index ({index: orders}), logged as a warning: the network can
+    then pick only the first of them (features.legal_action), whatever it meant. Empty without a tracked Battle.
+    The index's slot fallback (features.action_index) is shared with training and left as it is."""
+    if battle is None:
+        return {}
+    try:
+        from pcsa.rl_training import features
+
+        by: dict[int, list[str]] = {}
+        for a in legal:
+            by.setdefault(features.action_index(a, battle), []).append(a.message)
+    except Exception as error:  # a check, never a reason to stop a decision
+        log.warning(
+            "index_collision_check_failed", battle=b.index, kind=kind, reason=f"{type(error).__name__}: {error}"
+        )
+        return {}
+    clashes = {i: orders for i, orders in by.items() if len(orders) > 1}
+    if clashes:
+        log.warning(
+            "ACTION_INDEX_COLLISION",
+            battle=b.index,
+            kind=kind,
+            turn=b.current_turn(),
+            clashes={str(i): orders for i, orders in clashes.items()},
+            note="the network can pick only the first order of each index",
+        )
+    return clashes

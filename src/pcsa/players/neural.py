@@ -284,7 +284,7 @@ class NeuralPlayer:
             self._threat = self._load_threat()
         catalog, tracker = self._threat
         tracker.observe(view.battle)
-        their, passive = self._their(out), float(self.p.sucker_punch_passive)
+        their, passive = self._their(out, view.battle), float(self.p.sucker_punch_passive)
         ranked = self._ranked(view, scores)
         return neural_rules.Spot(view.battle, view.legal, chosen, ranked, catalog, tracker, their, passive)
 
@@ -294,13 +294,14 @@ class NeuralPlayer:
         return neural_rules.masks(self.p.rules, spot)
 
     @staticmethod
-    def _their(out: Any) -> tuple | None:
-        """The opponent head's kept actions with their probabilities (sucker_punch), None when unknown."""
+    def _their(out: Any, battle=None) -> tuple | None:
+        """The opponent head's kept actions with their probabilities and switch targets (sucker_punch), None when
+        unknown."""
         if not isinstance(out, dict) or "kept_idx" not in out or "kept_p" not in out:
             return None
         from pcsa.rl_training.former_notes import their_actions
 
-        return their_actions(out)
+        return their_actions(out, battle)
 
     @staticmethod
     def _ranked(view: DecisionView, probs: list) -> list[LegalAction]:

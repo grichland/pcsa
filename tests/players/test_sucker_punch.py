@@ -1,7 +1,8 @@
 """The sucker_punch guard rule: Sucker Punch (and Thunderclap) only when the foe may well attack.
 
-Blocked when it already failed this battle against the same foe, or when the opponent head's status moves and
-switches exceed `passive_max`; never when it is the only legal action; priority_ko does not pick a blocked one."""
+Blocked when the opponent head's status moves and possible switches exceed `passive_max` (a switch to a
+preview-only Pokemon is not possible once all the Pokemon they brought were seen); never when it is the only legal
+action; priority_ko does not pick a blocked one. A fail earlier in the battle no longer blocks it (15 Nov 2026)."""
 
 from __future__ import annotations
 
@@ -12,7 +13,7 @@ from pcsa.players import mirror, neural_rules
 from pcsa.players import sucker_punch as sucker
 from pcsa.players.neural import NeuralParams
 from pcsa.players.neural_rules import Spot
-from pcsa.players.sucker_punch import failed_against, passive_share
+from pcsa.players.sucker_punch import passive_share
 from tests.conftest import REPO
 from tests.players.test_disciplined import HITS, PRELUDE, FakeThreat
 
@@ -39,8 +40,14 @@ def threat(monkeypatch):
     return install
 
 
-def battle(turns: list[list[str]] | None = None, foe: str = "Dragonite"):
-    lines = [*PRELUDE, "|switch|p1a: Golisopod|Golisopod, L50|182/182", f"|switch|p2a: {foe}|{foe}, L50|100/100"]
+def battle(turns: list[list[str]] | None = None, foe: str = "Dragonite", preview: tuple[str, ...] = ()):
+    lines = [*PRELUDE[:3], "|clearpoke", *(f"|poke|p2|{name}, L50|" for name in preview), "|teampreview|3"]
+    lines = [
+        *(lines if preview else PRELUDE[:3]),
+        *PRELUDE[3:],
+        "|switch|p1a: Golisopod|Golisopod, L50|182/182",
+        f"|switch|p2a: {foe}|{foe}, L50|100/100",
+    ]
     lines.append("|turn|1")
     for turn, events in enumerate(turns or [], start=2):
         lines += [*events, f"|turn|{turn}"]
@@ -82,28 +89,57 @@ def test_the_repo_settings_turn_the_rule_on() -> None:
     assert "sucker_punch" not in NeuralParams().rules  # off by default
 
 
-def test_blocked_after_it_failed_against_the_same_foe(threat) -> None:
+def test_a_fail_earlier_in_the_battle_no_longer_blocks_it(threat) -> None:
+    # 15 Nov 2026 (user): the "already failed against this foe" clause was wrong in 4 of 5 labelled live cases
     threat()
-    b = battle([FAILED])
-    assert failed_against(b) == {"p2: Dragonite"}
-    message, rule, why = decide(spot(b))
-    assert (message, rule) == (LEECH, "sucker_punch") and "already failed against dragonite" in why
-
-
-def test_not_blocked_when_it_landed_or_failed_against_another_foe(threat) -> None:
-    threat()
+    assert decide(spot(battle([FAILED]))) is None
+    assert decide(spot(battle([FAILED]), their=ATTACKS)) is None
     assert decide(spot(battle([LANDED]))) is None
-    switched = battle([FAILED, ["|switch|p2a: Garchomp|Garchomp, L50|100/100"]])
-    assert decide(spot(switched)) is None  # it failed against Dragonite, not Garchomp
-    back = battle(
-        [FAILED, ["|switch|p2a: Garchomp|Garchomp, L50|100/100"], ["|switch|p2a: Dragonite|Dragonite, L50|100/100"]]
-    )
-    assert decide(spot(back))[1] == "sucker_punch"  # Dragonite again
-    into_switch = [
-        "|switch|p2a: Garchomp|Garchomp, L50|100/100",
-        *(e.replace("Dragonite", "Garchomp") for e in FAILED),
-    ]
-    assert failed_against(battle([into_switch])) == set()  # the switch made it fail, not Garchomp's choice
+
+
+SIX = ("Dragonite", "Garchomp", "Snorlax", "Gengar", "Kingambit", "Corviknight")
+SEEN_ALL = [
+    ["|switch|p2a: Garchomp|Garchomp, L50|100/100"],
+    ["|switch|p2a: Snorlax|Snorlax, L50|100/100"],
+    ["|switch|p2a: Dragonite|Dragonite, L50|100/100"],
+]
+# Dragonite in: 0.35 attacking, 0.05 status, switches 0.1 to Garchomp (seen) and 0.5 to preview-only Pokemon
+TO_PREVIEW = (
+    ("move", "outrage", 0.35),
+    ("move", "roost", 0.05),
+    ("switch", "garchomp", 0.1),
+    ("switch", "gengar", 0.3),
+    ("switch", "kingambit", 0.2),
+)
+
+
+def test_switches_to_preview_only_pokemon_do_not_count_once_their_team_is_seen(threat) -> None:
+    threat()
+    b = battle(SEEN_ALL, preview=SIX)
+    assert sucker.team_closed(b)
+    assert sucker.impossible_switch(b, "gengar") and not sucker.impossible_switch(b, "garchomp")
+    assert not sucker.impossible_switch(b, "")  # an unknown target always counts
+    # Gengar and Kingambit masked; the rest renormalised: (0.05 + 0.1) / 0.5 = 0.3
+    assert round(passive_share(TO_PREVIEW, b), 6) == 0.3
+    assert round(passive_share(TO_PREVIEW), 6) == 0.65  # without the battle: every switch counts, as before
+    assert decide(spot(b, their=TO_PREVIEW)) is None
+
+
+def test_switches_to_preview_pokemon_still_count_while_their_team_is_open(threat) -> None:
+    threat()
+    b = battle(SEEN_ALL[:1], preview=SIX)  # Dragonite and Garchomp seen: the third is any of the other four
+    assert not sucker.team_closed(b)
+    assert round(passive_share(TO_PREVIEW, b), 6) == 0.65
+    message, rule, why = decide(spot(b, their=TO_PREVIEW))
+    assert (message, rule) == (LEECH, "sucker_punch") and "0.65 > 0.5" in why
+
+
+def test_mega_forms_count_as_their_base_species(threat) -> None:
+    threat()
+    mega = [["|switch|p2a: Garchomp|Garchomp-Mega, L50|100/100"], *SEEN_ALL[1:]]
+    b = battle(mega, preview=SIX)
+    assert sucker.team_closed(b) and not sucker.impossible_switch(b, "garchomp")
+    assert sucker.impossible_switch(b, "gengar")
 
 
 def test_blocked_when_their_status_moves_and_switches_are_likely(threat) -> None:
@@ -112,7 +148,7 @@ def test_blocked_when_their_status_moves_and_switches_are_likely(threat) -> None
     message, rule, why = decide(spot(battle(), their=STALLS))
     assert (message, rule) == (LEECH, "sucker_punch") and "0.70 > 0.5" in why
     assert decide(spot(battle(), their=ATTACKS)) is None
-    assert decide(spot(battle(), their=None)) is None  # no opponent head: only the failed-before check
+    assert decide(spot(battle(), their=None)) is None  # no opponent head: never blocked
 
 
 def test_never_blocked_one_against_one(threat) -> None:
@@ -129,7 +165,7 @@ def test_never_blocked_one_against_one(threat) -> None:
     for name in ("Gholdengo", "Garchomp"):
         b.team[f"p1: {name}"].faint()
     assert sucker.last_one_each(b)
-    assert decide(spot(b, their=STALLS)) is None  # neither the failed-before nor the passive check blocks
+    assert decide(spot(b, their=STALLS)) is None  # the passive check does not block
     alive = battle([FAILED, gone])  # their last one, but we still have three
     assert not sucker.last_one_each(alive) and decide(spot(alive, their=STALLS))[1] == "sucker_punch"
 
@@ -148,3 +184,19 @@ def test_priority_ko_does_not_pick_a_blocked_sucker_punch(threat) -> None:
     assert decide(spot(b, LEECH, ranked, their=STALLS)) is None
     without = tuple(r for r in RULES if r != "sucker_punch")  # neural-gold940.yaml: as before
     assert decide(spot(b, LEECH, ranked, their=STALLS), without)[:2] == (PUNCH, "priority_ko")
+
+
+def test_the_opponent_heads_switch_columns_name_their_targets() -> None:
+    torch = pytest.importorskip("torch")
+    from pcsa.rl_training import features, features_log
+    from pcsa.rl_training.former_notes import their_actions
+    from pcsa.rl_training.spec import VOCAB
+
+    b = battle(SEEN_ALL, preview=SIX)
+    v = VOCAB["move"]
+    out = {"kept_idx": torch.tensor([v, v + 2, v + 4]), "kept_p": torch.tensor([0.2, 0.3, 0.5])}
+    bench = [m.species for _, m in features._their_members(b, features_log.read(b))[1:]]
+    acts = their_actions(out, b)
+    assert [a[1] for a in acts] == [bench[0], bench[2], bench[4]]
+    assert {a[1] for a in acts} & {"gengar", "kingambit", "corviknight"}  # preview-only rows are in the bench
+    assert [a[1] for a in their_actions(out)] == ["", "", ""]  # no battle: targets unknown

@@ -6,6 +6,7 @@ from __future__ import annotations
 from functools import lru_cache
 
 import torch
+from poke_env.data.normalize import to_id_str
 
 from pcsa.rl_training import former_features as fx
 from pcsa.rl_training.features_vocab import tables
@@ -58,12 +59,24 @@ def belief_notes(belief) -> dict:
     }
 
 
-def their_actions(out: dict) -> tuple[tuple[str, str, float], ...]:
+def their_actions(out: dict, battle=None) -> tuple[tuple[str, str, float], ...]:
     """Their kept actions as the matrix weighs them (the notes' cols / col_kind / p_cols): (kind "move" or "switch",
-    move id or "", probability), for the neural player's sucker_punch guard rule."""
+    move id or the switch target's species id, probability), for the neural player's sucker_punch guard rule. The
+    switch target comes from `battle` (their observation rows, features._their_members); "" without one."""
     move, v = _names("move"), VOCAB["move"]
     kept = [int(i) for i in out["kept_idx"].reshape(-1).tolist()]
     probs = [float(p) for p in out["kept_p"].reshape(-1).tolist()]
+    bench: list[str] = []
+    if battle is not None:
+        from pcsa.rl_training import features, features_log
+
+        members = features._their_members(battle, features_log.read(battle))[1:]
+        bench = [to_id_str(m.species) for _, m in members]
+
+    def target(k: int) -> str:
+        return bench[k] if 0 <= k < len(bench) else ""
+
     return tuple(
-        ("move", move.get(i, ""), p) if i < v else ("switch", "", p) for i, p in zip(kept, probs, strict=True)
+        ("move", move.get(i, ""), p) if i < v else ("switch", target(i - v), p)
+        for i, p in zip(kept, probs, strict=True)
     )
