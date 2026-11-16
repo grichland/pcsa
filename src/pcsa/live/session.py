@@ -153,6 +153,10 @@ class Session:
     def flags(self, obs: Observation) -> None:
         if Flag.AUTO_NOTICE in obs.flags and self.battle is not None:
             log.warning("turn_timed_out", battle=self.battle.index, notice=obs.fields.get("notice"))
+            b = self.battle
+            if not b.finished and b.team_submitted and b.action_visits == 0 and not b.team_auto:
+                b.team_auto = True  # no turn yet: the game chose the lineup (live/team_check.py checks the team)
+                log.warning("team_auto_chosen", battle=b.index, requested=list(b.names))
 
     def handle(self, obs: Observation, frame) -> None:
         screen = obs.screen

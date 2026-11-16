@@ -54,6 +54,7 @@ class TimingConfig(Strict):
     poll_interval_s: float = 1.0
     fight_settle_s: float = 0.9
     back_settle_s: float = 0.7
+    party_settle_s: float = 0.9  # live/party_switch.py: after Pokémon and after Switch In, before reading the screen
     move_peek: Literal["always", "when_needed"] = "always"  # live/move_peek.py
     team_menu_settle_s: float = 0.8
     log_open_settle_s: float = 1.2

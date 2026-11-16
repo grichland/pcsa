@@ -56,6 +56,8 @@ class BattleRecord:
     adopted: bool = False  # the session started (or restarted) in the middle of this battle
     requested: list[int] | None = None  # roster rows in selected-slot order
     team_submitted: bool = False
+    team_auto: bool = False  # the game chose the lineup itself (the selection timer ran out)
+    requested_at_preview: list[int] | None = None  # what the selection asked for, when the team brought differs
     team_repairs: int = 0
     team_deadline: float | None = None
     visible_order: list[int] = field(default_factory=lambda: [0, 1, 2])  # selected slots as the party shows them
@@ -121,8 +123,13 @@ class BattleRecord:
             "rank_before": self.rank_before,
             "rank_after": self.rank_after,
             "roster": self.roster,
-            "team_requested": self.requested,
-            "team_requested_names": list(self.names),
+            "team_requested": self.requested_at_preview or self.requested,
+            "team_requested_names": [
+                self.roster[i] if i < len(self.roster) else None
+                for i in (self.requested_at_preview or self.requested or [])
+            ],
+            "team_played_names": list(self.names),
+            "team_auto": self.team_auto,
             "opponent_preview": jsonable(self.opponent_preview),
             "preview_frame": self.preview_frame,
             "team_observed": self.observed,

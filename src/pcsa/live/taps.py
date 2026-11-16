@@ -167,6 +167,10 @@ class Executor:
     def plan_switch(self, visible_row: int, focused_row: int | None = 0) -> list[Tap]:
         return [self.point("pokemon"), *self._party_taps(visible_row, "party_rows", focused_row, lowest=1)]
 
+    def plan_party_switch(self, visible_row: int, focused_row: int | None) -> list[Tap]:
+        """The party taps of a switch once the party screen is open (rows 1-2: row 0 is the active)."""
+        return self._party_taps(visible_row, "party_rows", focused_row, lowest=1)
+
     def plan_forced(self, visible_row: int, focused_row: int | None) -> list[Tap]:
         return self._party_taps(visible_row, "party_rows", focused_row, lowest=0)
 

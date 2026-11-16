@@ -10,6 +10,7 @@ from pcsa.live import restore
 from pcsa.live.decide import Decision
 from pcsa.live.orders import SemanticAction
 from pcsa.live.turn import TurnPipeline
+from pcsa.live.turn_sync import resync_party
 from pcsa.phone.log_merge import BattleLog
 from pcsa.players.base import Degrade, LegalAction
 from pcsa.run.battle_state import BattleRecord
@@ -53,9 +54,9 @@ def test_a_replacement_screen_without_a_switch_taps_nothing() -> None:
 def test_party_rows_that_all_read_fainted_mark_nobody() -> None:
     b = _record()
     party = (_row(0, "Golisopod", True), _row(1, "Primarina", True), _row(2, "Mamoswine", True))
-    TurnPipeline._resync_party(None, b, party)  # type: ignore[arg-type]
+    resync_party(b, party)
     assert b.fainted == set()
-    TurnPipeline._resync_party(None, b, (*party[:2], _row(2, "Mamoswine", False)))  # type: ignore[arg-type]
+    resync_party(b, (*party[:2], _row(2, "Mamoswine", False)))
     assert b.fainted == {1, 0}  # Golisopod (slot 1) and Primarina (slot 0)
 
 

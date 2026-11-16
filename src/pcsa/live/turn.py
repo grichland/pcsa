@@ -7,38 +7,25 @@ a deadline that is nearly gone sends the cheapest plan.
 
 from __future__ import annotations
 
-import re
-
 from pcsa.battle import state as tracking
 from pcsa.battle.teams import Team, export_text, teambuilder_team
 from pcsa.common import log
 from pcsa.common.clock import Clock, Deadline
 from pcsa.common.config import AgentConfig
 from pcsa.common.types import Observation, Screen
-from pcsa.live import move_peek, restore
+from pcsa.live import move_peek, party_switch, restore
+from pcsa.live.action_check import verify_last_action
 from pcsa.live.decide import Decider, event_notes
 from pcsa.live.log_reader import LogReader, LogVisit
 from pcsa.live.log_save import LogSaver
+from pcsa.live.team_check import check_team
+from pcsa.live.turn_sync import check_identity, faints_from_log, leaving_slot, resync_party
 from pcsa.players.base import ScreenFacts
-from pcsa.run.battle_state import BattleRecord, action_detail, same_name, same_name_in
+from pcsa.run.battle_state import BattleRecord, action_detail, same_name
 from pcsa.run.recorder import Recorder
 
 MIN_NEW_TURN_MOVE_TIME = 15  # a lower reading on a fresh action screen is an OCR drop of the first digit
 FORCED_RETRY_DEADLINE_S = 40.0
-
-
-def leaving_slot(b: BattleRecord, party: tuple) -> int | None:
-    """The slot of our active when it leaves the field alive (else None: a faint replacement).
-
-    A replacement screen while our active is still standing means it is leaving and cannot be picked: a pivot move
-    (U-turn and the like), or anything else that pulls it out mid-turn (Emergency Exit, Wimp Out, Eject Button, Eject
-    Pack), which the log has not shown yet when the screen comes up. The active is the mon this turn put in
-    (visible_order[0]); it counts only when the party screen shows it unfainted."""
-    if not b.names:
-        return None
-    active = b.visible_order[0]
-    alive = any(same_name(m.name, b.names[active]) and not m.fainted for m in party)
-    return active if alive else None
 
 
 class TurnPipeline:
@@ -120,8 +107,10 @@ class TurnPipeline:
             and log_info.turn == last.get("log_turn")
             and not log_info.appended
         )
-        resynced = self._check_identity(b, active_name)
-        self._faints_from_log(b)
+        verify_last_action(b)  # the turn just read: did the game play what was chosen for it?
+        check_team(b, active=active_name)  # the team brought, not the one asked for, from here on
+        resynced = check_identity(b, active_name)
+        faints_from_log(b)
         turn = b.current_turn()
         battle, out = self._build(b, "action", turn)
         t = move_peek.Turn(battle, out, b.visible_order[0], same_turn, resynced, log_info, turn_before)
@@ -140,14 +129,18 @@ class TurnPipeline:
         decision = self.decider.decide(b, screen, battle, out, deadline, slot_moves=slot_moves, active=t.active)
         path = {"same_turn": same_turn, "peek": why or move_peek.SKIPPED, "refused": list(refused)}
         self._save_decision(b, "action", battle, out, request, decision, visit=visit, log_turn=log_info.turn, **path)
-        plan = self.phone.executor.plan_action(
-            decision.chosen.action, b.visible_order, peek.fields.get("focused_row") if peek else None
-        )
-        result = self.phone.executor.execute(
-            plan, Screen.ACTION, self.phone.device, self.clock, self.cfg.timing.inter_tap_s
-        )
+        chosen, taken = decision.chosen.action, True
+        if chosen.kind == "switch" and chosen.slot is not None:
+            result, taken = party_switch.switch(self, b, chosen.slot)  # the row by name from the party screen
+        else:
+            plan = self.phone.executor.plan_action(
+                chosen, b.visible_order, peek.fields.get("focused_row") if peek else None
+            )
+            result = self.phone.executor.execute(
+                plan, Screen.ACTION, self.phone.device, self.clock, self.cfg.timing.inter_tap_s
+            )
         elapsed = (result.last_tap_at or self.clock.now()) - t0
-        self._after_action(b, decision, screen, turn, visit, log_info, path, elapsed, t0)
+        self._after_action(b, decision, screen, turn, visit, log_info, path, elapsed, t0, taken)
         self.clock.sleep(self.cfg.timing.post_action_wait_s)
 
     def _after_action(
@@ -161,8 +154,10 @@ class TurnPipeline:
         path: dict,
         elapsed: float,
         t0: float,
+        taken: bool = True,
     ) -> None:
         action, same_turn = decision.chosen.action, path["same_turn"]
+        active_name = b.names[b.visible_order[0]] if b.names else None
         record = {"visit": visit, "turn": turn, "action": action.label(), "degrade": str(decision.degrade)}
         record.update(
             log_s=log_info.seconds,
@@ -186,15 +181,19 @@ class TurnPipeline:
         )
         switch_name = b.names[action.slot] if action.kind == "switch" and action.slot is not None else None
         retry = " [retry]" if same_turn else ""
-        b.actions.setdefault(turn, []).append(action_detail(action, move_name, switch_name) + retry)
-        if action.kind == "switch" and action.slot is not None:
+        missed = "" if taken else " [not taken: the party screen stayed up]"
+        b.actions.setdefault(turn, []).append(action_detail(action, move_name, switch_name) + retry + missed)
+        if action.kind == "switch" and action.slot is not None and taken:
             b.record_switch(action.slot)
         if action.kind == "move" and action.mega:
             b.mega_pending = True
         b.last_action = {
             "label": action.label(),
+            "kind": action.kind,
             "turn": turn,
             "move_name": move_name,
+            "switch_name": switch_name,
+            "active_name": active_name,
             "log_turn": log_info.turn,
             "refused": tuple(path["refused"]),
             "at": t0,
@@ -206,11 +205,12 @@ class TurnPipeline:
     ) -> tuple[tuple, int | None, Deadline]:
         """Party rows, the slot leaving on a pivot (else None), and the replacement deadline."""
         party = tuple(obs.fields.get("party", ()))
+        check_team(b, party=[m.name for m in party])
         leaving = leaving_slot(b, party)
-        self._resync_party(b, party)
+        resync_party(b, party)
         repeated = previous_forced and b.forced_choice is not None and b.forced_choice.get("turn") == b.current_turn()
         b.forced_attempts = b.forced_attempts + 1 if repeated else 1
-        self._faints_from_log(b)
+        faints_from_log(b)
         if b.forced_attempts == 1:
             b.forced_choice = {"action": None, "first_seen": self.clock.now(), "turn": b.current_turn()}
         assert b.forced_choice is not None
@@ -359,42 +359,3 @@ class TurnPipeline:
             dropped=len(decision.dropped),
             **event_notes(decision.notes),  # the record above keeps the full notes
         )
-
-    def _check_identity(self, b: BattleRecord, active: str | None) -> bool:
-        """True when the screen named another active member than the bookkeeping (which is then resynced)."""
-        expected = b.names[b.visible_order[0]] if b.names else None
-        if not (expected and active) or same_name(expected, active):
-            return False
-        slot = b.slot_of(active)
-        rows = b.log.turns.get(b.last_turn, []) if b.last_turn else []
-        explained = slot is not None and any(
-            same_name_in(row, b.names[slot]) and re.search(r"dragged out|go!|sent out|was forced", row, re.I)
-            for row in rows
-        )
-        if slot is not None:
-            b.record_switch(slot)
-        log.event("identity_resync", battle=b.index, expected=expected, observed=active, explained=explained)
-        return True
-
-    def _faints_from_log(self, b: BattleRecord) -> None:
-        for turn, rows in b.log.turns.items():
-            for text in rows:
-                match = re.fullmatch(r"(?:Fainted:\s*)?(?!The opposing)(.+?) fainted!", text.strip())
-                slot = b.slot_of(match[1]) if match else None
-                if slot is not None and slot not in b.fainted:
-                    b.fainted.add(slot)
-                    log.event("fainted_from_log", battle=b.index, slot=slot, turn=turn)
-
-    def _resync_party(self, b: BattleRecord, party) -> None:
-        slots = [b.slot_of(m.name) for m in party]
-        if None not in slots and sorted(slots) == [0, 1, 2]:  # type: ignore[type-var]
-            if slots != b.visible_order:
-                log.event("order_resync", battle=b.index, before=list(b.visible_order), after=slots)
-            b.visible_order = slots  # type: ignore[assignment]
-        if party and all(m.fainted for m in party):
-            log.warning("party_all_fainted_ignored", battle=b.index)  # a battle still going has a member standing
-            return
-        for m in party:
-            if m.fainted and m.row < len(b.visible_order):
-                b.fainted.add(b.visible_order[m.row])
-        b.observed["party_names"] = [m.name for m in party]

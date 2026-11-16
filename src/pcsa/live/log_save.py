@@ -18,6 +18,9 @@ def standard_header(b: BattleRecord, team: Team | None, seed: int) -> dict:
     picked = ", ".join(
         f"{name} (roster row {row + 1})" for name, row in zip(b.names, b.requested or [], strict=False)
     )
+    asked = {}
+    if b.requested_at_preview is not None:  # the team brought is not the one the selection asked for (team_check)
+        asked = {"team_asked_at_preview": ", ".join(str(b.roster[i]) for i in b.requested_at_preview)}
     return {
         "battle_id": b.battle_id,
         "battle_number": b.index,
@@ -26,6 +29,7 @@ def standard_header(b: BattleRecord, team: Team | None, seed: int) -> dict:
         "own_rank_before": rank_text(b.rank_before),
         "own_rank_after": rank_text(b.rank_after),
         "team_requested": picked or "unknown",
+        **asked,
         "lead_observed": b.observed.get("lead") or "unknown",
         "opponents_seen": ", ".join(b.opponents) or "none",
         "opponent_preview": ", ".join(m.name or "?" for m in b.opponent_preview) or "unknown",

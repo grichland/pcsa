@@ -28,6 +28,9 @@ MAX_CONTINUE_TAPS = 3
 MAX_RATING_WAITS = 3  # rewards polls a battle without an outcome waits for its rating to change
 MAX_RATING_STEP = 100.0  # a larger rating change than this is a misread, not one battle
 LOBBY_SETTLE_S = 2.0
+# 15 Nov 2026 (battles 31-32): a communication error during team selection rode out (live/reconnect.py) back onto the
+# same selection screen. That is the same match, so its lineup is repaired, not taken for a new battle.
+RECONNECT_SCREENS = (Screen.COMM_ERROR, Screen.UNKNOWN, Screen.DIALOG)
 
 
 def on_lobby(s, obs: Observation) -> None:
@@ -95,8 +98,13 @@ def on_team_select(s, obs: Observation, frame, t0: float) -> None:
         and not s.battle.finished
         and s.battle.action_visits == 0
         and s.previous is not None
-        and s.previous.screen in (Screen.TEAM_SELECT, Screen.TRANSITION)
+        and s.previous.screen in (Screen.TEAM_SELECT, Screen.TRANSITION, *RECONNECT_SCREENS)
     )
+    if repairing and s.battle is not None and s.previous is not None and s.previous.screen in RECONNECT_SCREENS:
+        repairing = _same_preview(s, frame, s.battle)
+        log.warning(
+            "team_select_after_disconnect", battle=s.battle.index, timer=obs.fields.get("timer"), same_match=repairing
+        )
     if not repairing:
         new_battle(s, tuple(obs.fields.get("roster", ())))
     b = s.battle
@@ -137,6 +145,14 @@ def on_team_select(s, obs: Observation, frame, t0: float) -> None:
         s.execute(s.phone.executor.plan_team(team), Screen.TEAM_SELECT, obs)
         return
     repair_team_selection(s, obs, b)
+
+
+def _same_preview(s, frame, b: BattleRecord) -> bool:
+    """The selection screen shows the opponent this battle's preview showed (the same match after a disconnect)."""
+    if not b.opponent_preview:
+        return False
+    shown = match_team_preview(to_reference(frame.image, s.phone.profile.viewport))
+    return [m.name for m in shown] == [m.name for m in b.opponent_preview]
 
 
 def repair_team_selection(s, obs: Observation, b: BattleRecord) -> None:

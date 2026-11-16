@@ -1,0 +1,152 @@
+{
+ "source": "output/runs/20261115-034548-run battle-7 (log.jsonl turns 9-14, decisions 0010-0016, frame 00383-poll-party)",
+ "roster": [
+  "Gholdengo",
+  "Garchomp",
+  "Golisopod",
+  "Primarina",
+  "Mamoswine",
+  "Cinderace"
+ ],
+ "requested": [
+  2,
+  0,
+  5
+ ],
+ "visible_order_before_turn_12": [
+  2,
+  0,
+  1
+ ],
+ "party_screen_00383": [
+  [
+   "Cinderace",
+   [
+    37,
+    157
+   ],
+   false
+  ],
+  [
+   "Gholdengo",
+   [
+    151,
+    163
+   ],
+   false
+  ],
+  [
+   "Golisopod",
+   [
+    0,
+    182
+   ],
+   true
+  ]
+ ],
+ "party_screen_00383_focused_row": 2,
+ "log_rows": {
+  "9": [
+   "Gholdengo, come back!",
+   "Go! Golisopod!",
+   "Move: The opposing Gengar used Shadow Ball",
+   "HP Lost: Golisopod’s HP: 14 → 0",
+   "Fainted: Golisopod fainted!",
+   "Go! Cinderace!"
+  ],
+  "10": [
+   "withdrew Gengar!",
+   "sent out Slowking!",
+   "Move: Cinderace used Pyro Ball!",
+   "HP Lost: Slowking’s HP: 100% → 72%",
+   "It’s not very effective..",
+   "Held Item: Slowking’s Leftovers",
+   "HP Restored: Slowking’s HP: 72% → 78%"
+  ],
+  "11": [
+   "Move: Cinderace used Pyro Ball!",
+   "HP Lost: Slowking’s HP: 78% → 50%",
+   "It’s not very effective..",
+   "Move: The opposing Slowking used Scald!",
+   "HP Lost: Cinderace’s HP: 157 → 37",
+   "It’s super effective!",
+   "Held Item: Slowking’s Leftovers",
+   "HP Restored: Slowking’s HP: 50% → 56%"
+  ],
+  "12": [
+   "Move: Cinderace used Pyro Ball!",
+   "HP Lost: Slowking’s HP: 56% → 31%",
+   "It’s not very effective..",
+   "Move: The opposing Slowking used Slack Off!",
+   "HP Restored: Slowking’s HP: 31% → 81%",
+   "Held Item: Slowking’s Leftovers",
+   "HP Restored: Slowking’s HP: 81% → 87%"
+  ],
+  "13": [
+   "Move: Cinderace used Pyro Ball!",
+   "HP Lost: Slowking’s HP: 87% → 57%",
+   "It’s not very effective..",
+   "Move: The opposing Slowking used Slack Off!",
+   "HP Restored: Slowking’s HP: 57% → 100%"
+  ],
+  "14": [
+   "Move: Cinderace used Pyro Ball!",
+   "HP Lost: Slowking’s HP: 100% → 70%",
+   "It’s not very effective..",
+   "Move: The opposing Slowking used Scald!",
+   "HP Lost: Cinderace’s HP: 37 → 0",
+   "It’s super effective!",
+   "Fainted: Cinderace fainted!",
+   "Held Item: Slowking’s Leftovers",
+   "HP Restored: Slowking’s HP: 70% → 76%",
+   "Go! Gholdengo!"
+  ]
+ },
+ "decisions": {
+  "10": [
+   {
+    "sequence": 10,
+    "choice": "move0",
+    "order": "/choose move pyroball"
+   }
+  ],
+  "11": [
+   {
+    "sequence": 11,
+    "choice": "move0",
+    "order": "/choose move pyroball"
+   }
+  ],
+  "12": [
+   {
+    "sequence": 12,
+    "choice": "switch1",
+    "order": "/choose switch Gholdengo"
+   },
+   {
+    "sequence": 13,
+    "choice": "switch1",
+    "order": "/choose switch Gholdengo"
+   }
+  ],
+  "13": [
+   {
+    "sequence": 14,
+    "choice": "switch1",
+    "order": "/choose switch Gholdengo"
+   },
+   {
+    "sequence": 15,
+    "choice": "switch1",
+    "order": "/choose switch Gholdengo"
+   }
+  ],
+  "14": [
+   {
+    "sequence": 16,
+    "choice": "switch1",
+    "order": "/choose switch Gholdengo"
+   }
+  ]
+ }
+}
