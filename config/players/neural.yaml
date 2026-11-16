@@ -1,3 +1,7 @@
+# version neural-20261116-0009h (16 Nov, user switched after the 26-25 session on 0009): the same job without the label
+# SFT step: final update 103 + opponent head on 456 live games + value head (policy lr 0); value calibration refit for
+# this model (a 2.180, b -0.115; research runs/value-calibration/20261116-0009). Sim n=1000 vs live-0330: gold side
+# 67.7% (0009 with SFT 63.2%), roster side 39.3%, vs x63-1 50.0%, vs x0-1 60.8%. Controller fixes as in 0009.
 # version neural-20261116-0009 (16 Nov, user's pipeline): league run v2-league-1115 final update 103 -> opponent-action
 # head on all 456 live games (top-1 0.43 -> 0.655, in-sample) + value head on the last 100 gold games (policy lr 0) ->
 # label SFT on our actions: 3,332 expert labels over 333 live gold games (label CE 2.98 -> 1.10, mistake top-1
@@ -26,7 +30,7 @@
 # (research/pcsa-rl, network code in src/pcsa/rl_training). Needs torch: `uv sync --extra train`.
 # Point a run at another network without editing this file: --set policy.neural_checkpoint=<path>
 # (or the environment variable PCSA__policy__neural_checkpoint=<path>).
-checkpoint: assets/models/poke-transformer-live-20261116-0009.pt  # 20261116-0009: final-u103.pt + opponent head on 456 live games (top-1 0.655, in-sample) + value head refit (policy lr 0) + label SFT on 3,332 expert labels (research job-20261116-0009 model-sft.pt)
+checkpoint: assets/models/poke-transformer-live-20261116-0009-heads.pt  # final-u103.pt + opponent head on 456 live games + value head refit (policy lr 0), no label SFT (research job-20261116-0009 model-standard.pt)
 device: cpu
 sampling: greedy                # greedy: the most likely action; sample: training's capped (0.99) distribution
 temperature: 1.0                # of `sample`
@@ -90,4 +94,4 @@ features: checkpoint
 belief_crit_lines: false        # belief modes: the protocol prints critical hits (true only for simulator runs;
                                 # the phone's battle log does not, so any hit may have been one)
 preview_playout: {workers: 6, budget_s: 30}  # 14 Nov: 6 workers measured at a median 24 s per preview (max 36 s)
-value_calibration: {a: 2.22882, b: -0.10027}  # fitted for poke-transformer-live-20261116-0009.pt (label SFT model; research runs/value-calibration/20261116-0009-sft)
+value_calibration: {a: 2.17953, b: -0.11459}  # fitted for poke-transformer-live-20261116-0009-heads.pt (research runs/value-calibration/20261116-0009)
