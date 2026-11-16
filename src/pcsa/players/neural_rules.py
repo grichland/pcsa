@@ -21,9 +21,9 @@ The network proposes an action and ranks every legal action (its capped probabil
                   (Yawn, Toxic, Will-O-Wisp, Thunder Wave, sleep moves ...) on a foe that is already statused (Yawn:
                   or already drowsy)
   locked_futile   Encore or a Choice lock leaves only moves that do nothing: the network's best switch
-  sucker_punch    Sucker Punch or Thunderclap (they fail unless the target attacks) when it already failed this
-                  battle against the same foe, or the network's opponent head gives their status moves and switches
-                  more than `sucker_punch_passive` (neural.yaml) of its probability (pcsa.players.sucker_punch)
+  sucker_punch    Sucker Punch or Thunderclap (they fail unless the target attacks) when the network's opponent
+                  head gives their status moves and possible switches more than `sucker_punch_passive`
+                  (neural.yaml) of its probability (pcsa.players.sucker_punch)
   priority_ko     a priority move surely KOs the foe and the network's pick does not KO it first (with sucker_punch
                   on, never a Sucker Punch that rule blocks)
   encore_switch   their active used Encore on us since it came in and the protocol shows for sure that it moves

@@ -3,15 +3,20 @@ rule (pcsa.players.neural_rules).
 
 `why(battle, theirs, their_actions, passive_max)` names the reason such a move should not be played now, or None:
 
-  failed   the move already failed this battle against the same opposing Pokemon (our `|move|` line of it, then
-           our `|-fail|`): that foe has shown it plays around it (Calm Mind, Recover, Protect ...). A fail into a
-           Pokemon that switched in that turn does not count against it: the switch made it fail, not its choice
   passive  the network's opponent head gives their active's non-attacking actions (status moves and switches)
            more than `passive_max` of its probability; the distribution is the one the matrix weighs (the
            decision notes' matrix.p_cols over matrix.cols), status vs damaging from poke-env's move data
 
-`their_actions` holds (kind, move id, probability) per kept column: kind "move" or "switch"; a move poke-env does
-not know counts as neither (it is left out of the passive share).
+Switches that cannot happen are left out of that share (15 Nov 2026, user): once as many distinct opposing Pokemon
+have been seen as they brought (|teamsize|, 3 here), a preview-only Pokemon is not in their team, so a switch to it
+is not one of their options. Its columns are masked for the rule only (the share is renormalised over the rest);
+the network's input features are unchanged. Fainted ones are already closed by the opponent head.
+The rule used to also block a move that "already failed against this foe this battle"; that clause was wrong in 4
+of 5 labelled live cases and was dropped (15 Nov 2026, user).
+
+`their_actions` holds (kind, id, probability) per kept column: kind "move" (id: the move id) or "switch" (id: the
+switch target's species id, "" when unknown; an unknown target always counts). A move poke-env does not know counts
+as neither (it is left out of the passive share).
 """
 
 from __future__ import annotations
@@ -20,14 +25,14 @@ from collections.abc import Sequence
 
 from poke_env.data.normalize import to_id_str
 
+from pcsa.battle import game
 from pcsa.players.opponent import move_object
 
 FAIL_UNLESS_ATTACKED = frozenset({"suckerpunch", "thunderclap"})
 PASSIVE_MAX = 0.5  # the default share of their non-attacking actions above which the move is blocked
-WHO_FIELD, MOVE_FIELD = 2, 3  # |move|<who>|<move>|<target>
-ENDS = frozenset({"move", "switch", "drag", "replace", "turn", "upkeep", "faint", "cant"})
+BROUGHT = 3  # their team size when the battle did not announce one
 
-TheirAction = tuple[str, str, float]  # (kind "move" | "switch", move id or "", probability)
+TheirAction = tuple[str, str, float]  # (kind "move" | "switch", move id or switch target species id, probability)
 
 
 def _sides(battle) -> tuple[str, str]:
@@ -43,46 +48,46 @@ def ident(position: str) -> str:
     return position
 
 
-def failed_against(battle, moves: frozenset[str] = FAIL_UNLESS_ATTACKED) -> set[str]:
-    """The opposing Pokemon (team keys, 'p2: Name') against which one of our `moves` failed this battle."""
-    ours, theirs = _sides(battle)
+def _bases(species: str) -> set[str]:
+    return {to_id_str(species), game.base_name(species)}
+
+
+def seen_species(battle) -> set[str]:
+    """Species ids (and base species ids) of the opposing Pokemon seen in battle (not the preview-only ones)."""
     out: set[str] = set()
-    pending: str | None = None
-    switched: set[str] = set()  # their Pokemon that came in this turn
-    for parts in getattr(battle, "_replay_data", []):
-        kind = parts[1] if len(parts) > 1 else ""
-        who = parts[2] if len(parts) > WHO_FIELD else ""
-        if kind == "turn":
-            switched = set()
-        elif kind in ("switch", "drag", "replace") and who.startswith(theirs):
-            switched.add(ident(who))
-        if kind == "-fail" and pending and who.startswith(ours):
-            out.add(pending)
-            pending = None
-            continue
-        if kind in ENDS:
-            pending = None
-        if kind != "move" or len(parts) <= MOVE_FIELD + 1 or not who.startswith(ours):
-            continue
-        target = ident(parts[MOVE_FIELD + 1])
-        if to_id_str(parts[MOVE_FIELD]) in moves and target.startswith(theirs) and target not in switched:
-            pending = target
+    for key, mon in battle.opponent_team.items():
+        if ": " in key:  # preview keys are bare species
+            out |= _bases(mon.species)
     return out
 
 
-def key_of(battle, mon) -> str | None:
-    """`mon`'s key in the opposing team ('p2: Name'), or None."""
-    return next((k for k, v in battle.opponent_team.items() if v is mon), None)
+def team_closed(battle) -> bool:
+    """As many distinct opposing Pokemon seen as they brought: the preview-only ones are not in their team."""
+    _, theirs = _sides(battle)
+    size = getattr(battle, "_team_size", {}).get(theirs) or BROUGHT
+    return sum(1 for key in battle.opponent_team if ": " in key) >= size
 
 
-def passive_share(their_actions: Sequence[TheirAction]) -> float:
-    """The probability their active does not attack this turn: their status moves plus their switches."""
-    total = 0.0
-    for kind, move_id, p in their_actions:
-        move = move_object(move_id) if kind == "move" else None
+def impossible_switch(battle, target: str) -> bool:
+    """A switch to `target` (a species id) cannot happen: their team is closed and it was never seen."""
+    return bool(target) and team_closed(battle) and not (_bases(target) & seen_species(battle))
+
+
+def passive_share(their_actions: Sequence[TheirAction], battle=None) -> float:
+    """The probability their active does not attack this turn: their status moves plus their switches. With
+    `battle`, switches that cannot happen (impossible_switch) are masked and the rest renormalised."""
+    total = possible = passive = 0.0
+    for kind, target, p in their_actions:
+        total += p
+        if kind == "switch" and battle is not None and impossible_switch(battle, target):
+            continue
+        possible += p
+        move = move_object(target) if kind == "move" else None
         if kind == "switch" or (move is not None and move.category.name == "STATUS"):
-            total += p
-    return total
+            passive += p
+    if possible <= 0:
+        return 0.0
+    return passive if possible == total else passive * total / possible
 
 
 def last_one_each(battle) -> bool:
@@ -104,11 +109,8 @@ def why(battle, theirs, their_actions: Sequence[TheirAction] | None, passive_max
     user's rule, 14 Nov 2026)."""
     if last_one_each(battle):
         return None
-    key = key_of(battle, theirs)
-    if key is not None and key in failed_against(battle):
-        return f"already failed against {theirs.species} this battle"
     if their_actions:
-        share = passive_share(their_actions)
+        share = passive_share(their_actions, battle)
         if share > passive_max:
             return f"P(they do not attack) {share:.2f} > {passive_max:g}"
     return None
