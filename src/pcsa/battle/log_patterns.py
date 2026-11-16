@@ -168,6 +168,13 @@ TEMPLATE_EVENTS = {
     ("tailwind", "end"): ("hazard", {"condition": "move: Tailwind", "action": "end"}),
     ("rest", "start"): ("status", {"status": "slp", "source": "move: Rest"}),
     ("unboost", "failNoStat"): ("trailing", {"what": "stats_not_lowered"}),
+    ("firespin", "start"): ("volatile", {"effect": "move: Fire Spin"}),
+    ("whirlpool", "start"): ("volatile", {"effect": "move: Whirlpool"}),
+    ("magmastorm", "start"): ("volatile", {"effect": "move: Magma Storm"}),
+    ("bind", "start"): ("volatile", {"effect": "move: Bind"}),
+    ("wrap", "start"): ("volatile", {"effect": "move: Wrap"}),
+    ("snaptrap", "start"): ("volatile", {"effect": "move: Snap Trap"}),
+    ("trapped", "start"): ("volatile", {"effect": "trapped"}),
     ("default", "end"): ("volatile_end", {"effect": "move: {EFFECT}"}),  # "X was freed from Infestation!"
     ("zerotohero", "activate"): ("form_change", {"form": "Palafin-Hero", "ability": "Zero to Hero", "keeps": True}),
     ("substitute", "alreadyStarted"): ("trailing", {"what": "substitute_already"}),

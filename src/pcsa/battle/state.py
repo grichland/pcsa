@@ -13,6 +13,7 @@ from pcsa.battle.moves import base_data, max_pp
 from pcsa.battle.names import showdown_species
 from pcsa.battle.teams import OwnMember, Team
 from pcsa.battle.translate import LEVEL, Member, Translation, Translator
+from pcsa.battle.trapping import is_trapped
 
 USERNAME = "me"
 PICKED = 3
@@ -129,7 +130,10 @@ def battle_request(
         known = entries[0]["moves"]
         entries[0]["moves"] = known + [r["id"] for r in rows if r["id"] not in known]
     active_block = {"moves": rows, **({"canMegaEvo": True} if mega_available else {})}
-    return current_request(battle, {"active": [active_block], "side": side})
+    request = current_request(battle, {"active": [active_block], "side": side})
+    if active is not None and is_trapped(battle, request["side"]["pokemon"][0]):
+        request["active"][0]["trapped"] = True
+    return request
 
 
 CHOICE_ITEMS = frozenset({"choicescarf", "choiceband", "choicespecs"})

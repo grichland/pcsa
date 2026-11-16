@@ -130,3 +130,12 @@ def test_ribbon_title_without_its_space_is_split_off() -> None:
         e = parse(text)
         assert (e.kind, e.side, e.name, e.data["title"]) == ("send_out", "p2", "Mimikyu", "the Sociable")
     assert parse("Opponent sent out Mimikyu!").data["title"] is None
+
+
+def test_trapping_move_starts_become_volatiles() -> None:
+    from tests.battle.conftest import parse
+
+    event = parse("[-] Gholdengo became trapped in the fiery vortex!")
+    assert (event.kind, event.data["effect"]) == ("volatile", "move: Fire Spin")
+    event = parse("[-] Gholdengo can no longer escape!")
+    assert (event.kind, event.data["effect"]) == ("volatile", "trapped")

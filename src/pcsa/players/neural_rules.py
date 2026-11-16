@@ -166,7 +166,14 @@ def sucker_punch(s: Spot) -> Outcome:
     return (other, f"{move.id}: {reason}") if other else None  # type: ignore[union-attr]
 
 
+def switch_in_top3(their) -> bool:
+    """Whether a switch is among the opponent head's three likeliest actions (then the target may not be there)."""
+    return bool(their) and any(kind == "switch" for kind, _, _ in sorted(their, key=lambda t: -t[2])[:3])
+
+
 def priority_ko(s: Spot) -> Outcome:
+    if switch_in_top3(s.their):
+        return None  # a likely switch: the KO may hit the switch-in instead, so the network decides
     pk = s.once("priority_ko", lambda: threat.priority_ko(s.battle, s.mine, s.theirs, s.catalog, s.tracker))  # type: ignore[arg-type]
     if pk is None or (pk == "suckerpunch" and not foe_attacked(s.battle)):
         return None  # Sucker Punch fails unless they attack
