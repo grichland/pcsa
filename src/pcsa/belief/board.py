@@ -9,7 +9,6 @@ import collections
 from poke_env.battle import Field
 from poke_env.data.normalize import to_id_str
 
-from pcsa.battle import game
 from pcsa.battle.builds import Catalog
 from pcsa.battle.moves import base_data
 from pcsa.battle.seen_builds import species_key
@@ -179,7 +178,7 @@ class FastTracker:
         return self.members.get(key)
 
     def _new(self, key: str, species: str) -> FastMember:
-        sp = species_key(game.base_name(species) if game.is_mega(species) else species, self.catalog)
+        sp = species_key(species, self.catalog)
         m = FastMember(key, sp, self.spaces.get(sp), self.priors, self.fixes)
         for item in self.team_items:
             m.forbid_item(item)

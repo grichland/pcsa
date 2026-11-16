@@ -42,7 +42,7 @@ NOT_MOVES = frozenset({"struggle", "recharge"})
 
 @dataclass(frozen=True)
 class Observed:
-    """One opposing Pokémon's revealed set (ids), its species the base form."""
+    """One opposing Pokémon's revealed set (ids), its species the key builds are kept under (`species_key`)."""
 
     species: str
     moves: tuple[str, ...] = ()
@@ -130,7 +130,7 @@ class SeenBuilds:
                 _extend(s, o, catalog)
                 _seen_again(s, when)
                 return _row(o, "seen again" if s.source == "catalog" else "added build seen again", s)
-        cover = next((b for b in catalog.builds(o.species) if covers(b, o)), None)
+        cover = next((b for b in catalog.by_id.get(key, []) if covers(b, o)), None)  # the form's own builds
         if cover is not None:
             s = Seen(cover, "catalog", 1, when, when)
             entries.append(s)
@@ -175,10 +175,25 @@ def _fits_seen(s: Seen, o: Observed) -> bool:
 
 
 def species_key(form: str, catalog: Catalog) -> str:
-    """The catalog species a battle form counts as: its own builds when the catalog has them (regional forms), else
-    its base species (Megas, Aegislash-Blade and other in-battle forms)."""
+    """The species a battle form's builds are kept under: the form an in-battle form changes from (Aegislash-Blade,
+    Palafin-Hero; Floette-Mega comes from Floette-Eternal), the base species of other Megas and of forms that differ
+    only in looks (Vivillon patterns, Maushold-Four, Furfrou trims), else the form itself: regional and other lasting
+    forms (Slowbro-Galar, Rotom-Fan, Indeedee-F) keep their own builds even when the catalog has none for them."""
     form = to_id_str(form)
-    return form if form in catalog.by_id else to_id_str(game.base_name(form))
+    from_form = GenData.from_gen(9).pokedex.get(form, {}).get("battleOnly")
+    if from_form:
+        return to_id_str(from_form if isinstance(from_form, str) else from_form[0])
+    if form in catalog.by_id:
+        return form
+    base = to_id_str(game.base_name(form))
+    if game.is_mega(form) or _looks_only(game.species_entry(form), game.species_entry(base)):
+        return base
+    return to_id_str(game.species_entry(form).get("name") or form)
+
+
+def _looks_only(entry: dict, base: dict) -> bool:
+    """A form with its base species' stats, types and abilities (a cosmetic form)."""
+    return all(entry.get(k) == base.get(k) for k in ("baseStats", "types", "abilities"))
 
 
 def _extend(s: Seen, o: Observed, catalog: Catalog) -> None:
@@ -216,19 +231,30 @@ def _new_build(o: Observed, catalog: Catalog) -> Build:
             b.score,
         )
 
-    base = max(builds, key=closeness) if builds else None
+    ordered = sorted(builds, key=closeness, reverse=True)
+    base = ordered[0] if ordered else None
     moves = [move_name(m) for m in o.moves]
-    for m in base.moves if base else ():
+    # the closest build's other moves; a form filled from its base species' builds takes only moves it can learn,
+    # from the next closest builds when the closest is short of them
+    for m in (m for b in ordered for m in b.moves):
         if len(moves) >= MOVE_SLOTS:
             break
-        if to_id_str(m) not in o.moves:
+        if to_id_str(m) not in {to_id_str(x) for x in moves} and game.can_learn(o.species, m):
             moves.append(m)
     item = item_name(o.item, o.species, catalog) if o.item is not None else (base.item if base else "")
-    ability = ability_name(o.ability, o.species) if o.ability is not None else (base.ability if base else "")
+    ability = ability_name(o.ability, o.species) if o.ability is not None else _own_ability(base, o.species)
     nature = base.nature if base else FALLBACK_NATURE
     points = base.points if base else (FLAT_POINTS,) * len(STAT_ORDER)
     species = game.species_entry(o.species).get("name", o.species)
     return Build(species, item, ability, nature, points, tuple(moves))  # type: ignore[arg-type]
+
+
+def _own_ability(base: Build | None, species: str) -> str:
+    """The closest build's ability when `species` can have it, else the species' first ability."""
+    own = [str(a) for a in game.species_entry(species).get("abilities", {}).values()]
+    if base and (not own or to_id_str(base.ability) in {to_id_str(a) for a in own}):
+        return base.ability
+    return own[0] if own else ""
 
 
 # Names -----------------------------------------------------------------------------------------------------------
@@ -265,8 +291,9 @@ def observed_from_battle(
     catalog = catalog or Catalog.load()
     out = []
     side = "p2" if (battle.player_role or "p1") == "p1" else "p1"
+    preview = {to_id_str(p.species) for p in getattr(battle, "teampreview_opponent_team", ())}
     for key, mon in battle.opponent_team.items():
-        form = to_id_str(mon.species)
+        form = preview_form(to_id_str(mon.species), preview)
         species = species_key(form, catalog)
         moves = tuple(m for m in mon.moves if m not in NOT_MOVES)
         item = to_id_str(mon.item) if mon.item and mon.item != GenData.UNKNOWN_ITEM else None
@@ -287,6 +314,15 @@ def observed_from_battle(
             ability = None  # not one the base species can have (a form's or a copied ability)
         out.append(Observed(species, moves, item, ability))
     return out
+
+
+def preview_form(form: str, preview: set[str]) -> str:
+    """The team preview's form of a base species the Battle named from a nickname alone (an Illusion user's
+    `|detailschange|` leaves Zoroark-Hisui as "Zoroark"): the one previewed form of that species, else `form`."""
+    if form in preview or form != to_id_str(game.base_name(form)):
+        return form
+    forms = [p for p in preview if to_id_str(game.base_name(p)) == form]
+    return forms[0] if len(forms) == 1 else form
 
 
 def _row(o: Observed, result: str, s: Seen) -> dict:

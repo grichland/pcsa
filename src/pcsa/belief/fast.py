@@ -32,7 +32,6 @@ from __future__ import annotations
 
 import collections
 
-from pcsa.battle import game
 from pcsa.battle.builds import Catalog
 from pcsa.battle.damage import Fighter
 from pcsa.battle.seen_builds import species_key
@@ -152,9 +151,7 @@ class BattleBelief:
                 return m
         sp = self._species.get(mon.species)
         if sp is None:
-            sp = self._species[mon.species] = species_key(
-                game.base_name(mon.species) if game.is_mega(mon.species) else mon.species, self.tracker.catalog
-            )
+            sp = self._species[mon.species] = species_key(mon.species, self.tracker.catalog)
         m = self._prior.get(sp)
         if m is None:
             m = self._prior[sp] = FastMember(
