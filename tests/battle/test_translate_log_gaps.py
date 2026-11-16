@@ -18,7 +18,7 @@ def feed_with_sprites(t: Translator, rows: list[tuple[str, dict | None]]) -> Non
 
 
 def test_an_avoided_attack_is_a_miss_by_the_latest_mover() -> None:
-    # run 20261102-160125, battle 1, turn 4: Glaceon in snow avoided Gholdengo's Shadow Ball
+    # turn 4: Glaceon in snow avoided Gholdengo's Shadow Ball
     t = translator_for(("Gholdengo", "Gholdengo", 194), [("Glaceon", "Glaceon")])
     feed(
         t,
@@ -36,7 +36,7 @@ def test_an_avoided_attack_is_a_miss_by_the_latest_mover() -> None:
 
 
 def test_a_missed_leech_seed_seeds_no_one() -> None:
-    # run 20261102-104355, battle 7, turn 15: the log has no "was seeded" row because the move missed
+    # turn 15: the log has no "was seeded" row because the move missed
     t = translator_for(("Charizard", "Charizard", 153), [("Venusaur", "Venusaur")])
     feed(
         t,
@@ -60,7 +60,6 @@ def test_a_miss_without_its_move_row_writes_nothing() -> None:
 
 
 def test_a_hit_count_goes_to_the_latest_move_target() -> None:
-    # run 20261102-220602, battle 20, turn 1: Parental Bond Double-Edge
     t = translator_for(("Charizard", "Charizard", 185), [("Kangaskhan", "Kangaskhan")])
     feed(
         t,
@@ -76,8 +75,7 @@ def test_a_hit_count_goes_to_the_latest_move_target() -> None:
 
 
 def test_our_mega_seen_only_in_a_row_sprite_is_written_before_our_move() -> None:
-    # run 20261103-015542, battle 14, turn 1 as recorded: the climb stopped before the rows of our Mega
-    # Evolution, so the first sign of it is Charizard's Mega Y icon beside its move
+    # turn 1 as recorded: the climb stopped before the rows of our Mega Evolution
     t = translator_for(("Charizard", "Charizard", 185), [("Venusaur", "Venusaur")])
     feed_with_sprites(
         t,

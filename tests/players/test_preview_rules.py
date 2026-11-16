@@ -49,7 +49,7 @@ def kept(theirs: list[str], lead=LEAD, pair=PAIR) -> tuple[list[tuple[int, ...]]
 def test_the_repo_settings_turn_both_rules_on_and_the_rollback_leaves_them_off() -> None:
     params = NeuralParams.load(REPO / "config" / "players" / "neural.yaml")
     assert params.preview_lead_avoid == LEAD and params.preview_bring_max_one == PAIR
-    assert not NeuralParams().preview_lead_avoid and not NeuralParams().preview_bring_max_one  # off by default
+    assert not NeuralParams().preview_lead_avoid and not NeuralParams().preview_bring_max_one
     assert keeper({}, []) is None
 
 
@@ -62,7 +62,7 @@ def test_fire_types_from_the_pokedex_forms_included() -> None:
 def test_no_golisopod_lead_into_a_fire_six() -> None:
     picks, notes = kept(FIRE_SIX, pair=[])
     assert picks and all(p[0] != GOLISOPOD for p in picks)
-    assert any(GOLISOPOD in p[1:] for p in picks)  # it may still come, just not lead
+    assert any(GOLISOPOD in p[1:] for p in picks)
     assert notes["why"] == ["no golisopod lead (charizard)"] and notes["kept"] == len(picks) == 50
 
 
@@ -70,8 +70,8 @@ def test_at_most_one_of_golisopod_and_gholdengo_into_a_fire_six() -> None:
     picks, notes = kept(FIRE_SIX, lead={})
     assert picks and not any(GOLISOPOD in p and GHOLDENGO in p for p in picks)
     assert any(GOLISOPOD in p for p in picks) and any(GHOLDENGO in p for p in picks)
-    assert len(picks) == 48  # the 4 trios with both, 3 leads each, are out
-    both, _ = kept(FIRE_SIX)  # 60 - 10 Golisopod leads - 12 with both + 4 counted twice
+    assert len(picks) == 48
+    both, _ = kept(FIRE_SIX)
     assert len(both) == 42 and all(p[0] != GOLISOPOD and not {GOLISOPOD, GHOLDENGO} <= set(p) for p in both)
 
 

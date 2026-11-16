@@ -19,8 +19,8 @@ def test_scarf_stage_and_paralysis_change_the_speed() -> None:
     t.apply("|-boost|p2a: Snorlax|spe|2")
     assert effective_speed(theirs, False) == pytest.approx(scarfed * 2, abs=2)
     t.apply("|-status|p2a: Snorlax|par")
-    assert effective_speed(theirs, False) == pytest.approx(scarfed, abs=2)  # +2 then paralysis halves it
-    assert effective_speed(mine) > base  # Garchomp outspeeds an unboosted Snorlax
+    assert effective_speed(theirs, False) == pytest.approx(scarfed, abs=2)
+    assert effective_speed(mine) > base
 
 
 def test_stages() -> None:

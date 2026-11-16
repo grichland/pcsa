@@ -1,14 +1,8 @@
 """Riding out a disconnect in the middle of a battle.
 
-While a battle is in progress and the phone shows something that is not a battle screen (an unknown
-frame, "Communication was interrupted", a dialog, a black or loading frame that lasts), the session
-taps once per round: an OCR-confirmed safe control (OK, Close, Continue, Cancel, Not now) when the
-screen offers exactly one, otherwise the screen centre. It waits `navigator.disconnect_settle_s`,
-observes again, and repeats until a known screen returns: a battle screen (the turn pipeline takes
-over), a post-battle screen (the usual handlers finalize), or the lobby or a menu (the battle is
-finalized here, as the communication-error path does). Every tap passes the tap policy; a tap with
-forbidden text near it is skipped and the round only waits. Past `disconnect_max_taps` rounds or
-`disconnect_max_s` seconds it raises Recoverable and the supervisor restarts the session.
+While a battle is on and the phone shows no battle screen, tap once per round (the one OCR-confirmed safe control,
+else the screen centre), wait `navigator.disconnect_settle_s` and observe again until a known screen returns.
+Every tap passes the tap policy; past `disconnect_max_taps` or `disconnect_max_s` it raises Recoverable.
 """
 
 from __future__ import annotations
@@ -30,7 +24,7 @@ POST_BATTLE = frozenset(
 )
 CONTROL = r"ok|close|continue|cancel|not now"
 CONTROL_REGION = (300, 150, 2040, 1000)
-BLIND_MIN_CONFIDENCE = 0.5  # read more words than usual before a blind tap: a doubtful "Forfeit" still counts
+BLIND_MIN_CONFIDENCE = 0.5  # a doubtful "Forfeit" still counts
 
 
 def applies(s, obs: Observation) -> bool:
@@ -63,7 +57,7 @@ def ride_out(s, obs: Observation) -> None:
         rounds += 1
         tap_once(s, obs, rounds)
         s.clock.sleep(cfg.disconnect_settle_s)
-        obs, _ = s.observe("disconnect")  # unknown frames are saved by the session's observe
+        obs, _ = s.observe("disconnect")  # unknown frames are saved by observe
     resolved(s, obs, rounds, s.clock.now() - started)
 
 
@@ -117,7 +111,7 @@ def resolved(s, obs: Observation, rounds: int, seconds: float) -> None:
     )
     if outcome == "left_battle":
         handlers.finalize(s, None)
-    elif obs.screen == Screen.RESULT:  # read the banner now: the next poll may already be past it (battle 15, 14 Nov)
+    elif obs.screen == Screen.RESULT:  # read the banner now: the next poll may be past it
         handlers.finalize(s, obs.fields.get("outcome"))
     elif obs.screen == Screen.FORFEIT_MSG:
         handlers.on_forfeit(s, obs)

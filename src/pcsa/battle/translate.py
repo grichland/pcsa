@@ -1,9 +1,4 @@
-"""Battle-log rows -> Showdown protocol, applied to a poke-env Battle as they are written.
-
-The Battle is the only state. A recognized row sprite decides species and form before the text
-event is applied; preview sprites and names are the fallback. Rows that map to nothing are listed
-as unmapped; informational rows (effectiveness, Protect blocking a move) write nothing.
-"""
+"""Battle-log rows -> Showdown protocol, applied to a poke-env Battle as they are written."""
 
 from __future__ import annotations
 
@@ -99,7 +94,7 @@ class Translator:
         regenerator: bool = True,
     ) -> None:
         self.battle = battle
-        self.regenerator = regenerator  # their Regenerator user heals on switch-out (pcsa.battle.regenerator)
+        self.regenerator = regenerator
         self.disguises = dict(disguises or {})
         self.alias: dict[str, tuple[str, Member]] = {}  # side -> (shown name, Illusion user)
         self.sent_out: dict[str, str] = {}  # side -> row id of its latest send-out
@@ -246,14 +241,12 @@ class Translator:
         if not (sprite and sprite.get("status") == "matched" and e.name):
             return None
         if not self._sprite_candidates(sprite, ["p1", "p2"]):
-            # A species on neither roster: a misread icon (14 Nov: rows with an empty icon slot matched Ditto at
-            # 0.65-0.74 and were dropped). The row's own name decides, as it does without a sprite.
+            # A species on neither roster is a misread icon (an empty icon slot matched Ditto): the row's own name decides.
             self.out.warnings.append(f"{row.row_id}: ignored sprite {sprite['name']!r}, on neither roster")
             return None
         found = self._sprite_candidates(sprite, [e.side] if e.side is not None else ["p1", "p2"])
         if not found and e.side is not None:
-            # The text says whose row it is and that side has no such species: the icon is the other side's
-            # (a drain row shows the drainer) or misread (an empty slot read as Ditto). The text decides.
+            # The text names a side with no such species: the icon is the other side's or misread; the text decides.
             self.out.warnings.append(f"{row.row_id}: ignored sprite {sprite['name']!r}, not on {e.side}'s roster")
             return None
         if len(found) != 1:
@@ -264,7 +257,7 @@ class Translator:
         if (mon := self.tracked(side, member)) is not None:
             form = reconcile_form(observed_form(self.battle, mon), name)
             name = game.species_entry(form).get("name", name)
-        if e.kind == "form_change":  # the text names the new form (Mimikyu-Busted, Palafin-Hero)
+        if e.kind == "form_change":
             name = e.data["form"]
         self.out.inferred.append(
             {
@@ -311,7 +304,7 @@ class Translator:
             if sprites is not None and len(sprites) != len(rows_by_turn[turn]):
                 raise ValueError(f"turn {turn}: sprite count does not match text row count")
             raw = rows_from_texts(turn, rows_by_turn[turn], list(sprites) if sprites else None)
-            if turn == 1:  # opening send-outs (and entry abilities or weather) happen before turn 1 starts
+            if turn == 1:  # opening send-outs happen before turn 1 starts
                 split = next((i for i, r in enumerate(raw) if parse_row(r).kind in TURN_ACTION_KINDS), len(raw))
                 self._rows(raw[:split])
                 if split < len(raw):

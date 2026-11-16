@@ -80,7 +80,7 @@ def test_back_to_back_switch_blocked_when_the_opponent_stayed() -> None:
     player = BestMatchupMaxDamagePlayer()
     assert decide(player, battle("Charizard", "Tyranitar"))[0] == "/choose switch Swampert"
     stayed = ["|move|p2a: Venusaur|Sludge Bomb|p1a: Swampert"]
-    after = battle("Swampert", "Venusaur", [stayed])  # a bad matchup on turn 2; they did not switch on turn 1
+    after = battle("Swampert", "Venusaur", [stayed])
     assert not opponent_switched(after, 1)
     chosen, notes = decide(player, after)
     assert chosen.startswith("/choose move") and "the opponent did not" in notes["switch_blocked"]
@@ -94,7 +94,7 @@ def test_back_to_back_switch_allowed_once_when_the_opponent_switched_too() -> No
     chosen, notes = decide(player, second)
     assert chosen == "/choose switch Charizard" and "back-to-back" in notes["switch"]
     back = ["|switch|p1a: Charizard|Charizard, L50|153/153", "|switch|p2a: Tyranitar|Tyranitar, L50|100/100"]
-    chosen, notes = decide(player, battle("Charizard", "Tyranitar", [SWITCHED, back]))  # Charizard in again
+    chosen, notes = decide(player, battle("Charizard", "Tyranitar", [SWITCHED, back]))
     assert chosen.startswith("/choose move") and "twice in a row" in notes["switch_blocked"]
 
 
@@ -102,7 +102,7 @@ def test_a_turn_without_a_switch_restarts_the_count() -> None:
     player = BestMatchupMaxDamagePlayer()
     assert decide(player, battle("Charizard", "Tyranitar"))[0] == "/choose switch Swampert"
     rest = ["|move|p1a: Swampert|Surf|p2a: Venusaur"]
-    later = battle("Charizard", "Tyranitar", [SWITCHED, rest])  # turn 3: switched on 1, attacked on 2
+    later = battle("Charizard", "Tyranitar", [SWITCHED, rest])
     assert decide(player, later)[0] == "/choose switch Charizard"
 
 
@@ -125,7 +125,7 @@ def test_a_new_battle_resets_the_rule() -> None:
     player = BestMatchupMaxDamagePlayer()
     assert decide(player, battle("Charizard", "Tyranitar"))[0] == "/choose switch Swampert"
     player._last_switch, player._streak = 1, 2
-    assert decide(player, battle("Charizard", "Tyranitar"))[0] == "/choose switch Swampert"  # turn went 2 -> 1
+    assert decide(player, battle("Charizard", "Tyranitar"))[0] == "/choose switch Swampert"
 
 
 def test_factory_builds_it_with_the_config_thresholds(config: Config) -> None:

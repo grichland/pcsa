@@ -48,7 +48,7 @@ def test_focused_row_needs_one_tap(executor: Executor) -> None:
 
 def test_switch_target_bounds(executor: Executor) -> None:
     with pytest.raises(ValueError):
-        executor.plan_switch(0)  # the active Pokémon is row 0 on the party menu
+        executor.plan_switch(0)
     assert executor.plan_action(SemanticAction("switch", slot=2), [0, 2, 1], None)[1].name == "party_rows1"
 
 
@@ -65,7 +65,7 @@ def test_policy_refuses_taps_outside_the_screen_whitelist(executor: Executor, fa
     device = RecordingDevice()
     with pytest.raises(SafetyStop, match="not allowed"):
         executor.execute(executor.plan_move(0, False, None), Screen.LOBBY, device, fake_clock, 0.5)
-    assert device.taps == []  # the whole plan is checked before any tap is sent
+    assert device.taps == []
 
 
 def test_policy_refuses_forbidden_geometry_and_text(executor: Executor) -> None:

@@ -1,15 +1,8 @@
 """Is the battle played with the three members the team selection asked for? If not, play the team brought.
 
-15 Nov 2026 (run 20261115-034548, battles 31-32): a communication error during team selection brought the
-selection screen back with 2 seconds left; the lineup taps came too late, the game chose Gholdengo, Garchomp and
-Golisopod by itself ("Pokémon to send into battle were automatically chosen for you") and every decision of the
-battle was made for Mamoswine, Cinderace and Primarina, the trio requested.
-
-Every own member the battle shows (the active on the action screen, the party rows, the log's "Go! X!") is
-compared with the requested trio. A member outside it means the lineup differs: the record switches to the team
-actually brought (`b.requested`), keeps what was asked in `b.requested_at_preview`, and logs `team_mismatch`.
-Members not seen yet are filled from the game's automatic lineup (the first three roster rows, lead first) when
-the selection timed out, else from the requested trio; a later sighting corrects the guess.
+When selection times out the game picks the lineup itself. Every own member the battle shows is compared with the
+requested trio; a member outside it switches the record to the team brought (`b.requested`), keeps the request in
+`b.requested_at_preview` and logs `team_mismatch`. Members not seen yet are filled from the automatic lineup.
 """
 
 from __future__ import annotations
@@ -19,7 +12,7 @@ from pcsa.live.action_check import own_send_outs
 from pcsa.run.battle_state import BattleRecord, same_name
 
 TEAM_SIZE = 3
-AUTOMATIC_LINEUP = (0, 1, 2)  # the game's pick when the selection timer runs out (battle 32: rows 1-3, row 1 led)
+AUTOMATIC_LINEUP = (0, 1, 2)  # the game's pick when the selection timer runs out
 
 
 def roster_row(b: BattleRecord, name: str | None) -> int | None:

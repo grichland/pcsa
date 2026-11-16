@@ -1,6 +1,5 @@
-"""rule_mode: mask end to end on a synthetic checkpoint (pcsa.rl_training.rule_masks, 14 Nov 2026): the forbidden
-actions leave the legality mask before the blend and the softmax, the network chooses among the rest, the notes
-name the masked rows; all masked = no masks; a rule error = no masks, noted."""
+"""rule_mode: mask end to end on a synthetic checkpoint: forbidden actions leave the legality mask before the blend
+and softmax, the notes name the masked rows; all masked = no masks; a rule error = no masks, noted."""
 
 from __future__ import annotations
 
@@ -41,7 +40,7 @@ def test_the_masked_action_is_never_chosen_and_the_notes_say_why(tmp_path: Path)
     assert chosen.message != first.message and "override" not in notes
     row = int(next(iter(notes["matrix"]["masked"])))
     assert notes["matrix"]["masked"][str(row)] == ["no_full_heal", "test reason"]
-    assert notes["matrix"]["probs"][row] == 0.0 and notes["matrix"]["legal"][row]  # legal, but masked
+    assert notes["matrix"]["probs"][row] == 0.0 and notes["matrix"]["legal"][row]
     assert notes["mask_rules"] == ["no_full_heal"] and notes["network"] == first.message
     view = matrix_view(notes["matrix"], order=chosen.message, network=notes["network"])
     assert view is not None and view["masked"][row] == ["no_full_heal", "test reason"]

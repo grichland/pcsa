@@ -1,10 +1,8 @@
 """Measuring the sprite network against the retired matcher, in numpy (no torch needed).
-
-Both matchers run through the same matching flow (sprites.preview_matches / log_decision / pick) on
-held-out runs. The battle log's acceptance thresholds are calibrated on a validation slice of the training
-runs: the most matches whose wrong-species count does not exceed the retired matcher's on the same slice.
-A recolour stress test stands in for shiny Pokémon: the same crops with hue rotated, lightness inverted,
-part of the sprite recoloured, or all colour removed.
+Both run through the same matching flow on held-out runs; the log's acceptance thresholds are calibrated on a
+validation
+slice (most matches whose wrong-species count does not exceed the retired matcher's). A recolour stress test stands in
+for shinies.
 """
 
 from __future__ import annotations
@@ -44,11 +42,7 @@ def in_memory_net(
 
 
 def real_centres(weights, source: sb.SourceIndex, data: sd.Dataset, rows: np.ndarray, domain: int):
-    """One extra view per form with enough form-labelled real crops: the mean of their vectors.
-
-    Reference art and in-game crops of the same form can sit apart; the centre of the real crops pulls
-    them back together for every form the runs have shown. Forms never seen keep their reference view.
-    """
+    """One extra view per form with enough form-labelled real crops: the mean of their vectors."""
     name_of: dict[str, tuple[str, str]] = {}
     for name, base in zip(source.names, source.base_names, strict=True):
         name_of.setdefault(sd.form_id(name), (name, base))

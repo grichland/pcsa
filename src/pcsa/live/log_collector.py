@@ -1,7 +1,7 @@
 """Open the battle log, capture the bottom view once settled, climb toward older entries, stop at a budget.
 
-Only pixel checks run between captures; OCR runs afterwards on the whole batch. Running out of
-budget leaves the start uncaptured, which the merge reports; the turn is still decided from what was read.
+Only pixel checks run between captures; OCR runs afterwards on the batch. Running out of budget leaves the start
+uncaptured, which the merge reports.
 """
 
 from __future__ import annotations
@@ -112,7 +112,7 @@ class LogCollector:
             and state.previous_index not in out.rejected
             and out.stop_reason not in ("top_confirmed", "settled_no_scrollbar")
         ):
-            out.unsettled.append(state.previous_index)  # the merge keeps it only when its rows join the others
+            out.unsettled.append(state.previous_index)  # kept only when its rows join the others
         if close:
             self.close(out)
         out.seconds = self.clock.now() - started
@@ -123,7 +123,7 @@ class LogCollector:
         if not lp.is_log_panel(normalized):
             out.panel_open = False
             state.missing_panel += 1
-            out.rejected.append(index)
+            out.rejected.append(index)  # compared with the one before this
             out.events.append({"capture": index, "state": state.name, "result": "panel_not_open"})
             if state.missing_panel >= 2:
                 out.stop_reason = "panel_not_open"
@@ -131,7 +131,7 @@ class LogCollector:
         out.panel_open = True
         state.missing_panel = 0
         if lp.has_timer_overlay(normalized):
-            out.rejected.append(index)  # the next uncovered capture is compared with the one before this
+            out.rejected.append(index)
             out.events.append(
                 {"capture": index, "state": state.name, "timer_overlay": round(lp.timer_overlay_ratio(normalized), 3)}
             )

@@ -1,4 +1,4 @@
-# From research/pcsa-rl/rl/spec.py (sha256 6dac9bf692e9, 2026-11-08 20:13); keep diffable.
+# From research/pcsa-rl/rl/spec.py; keep diffable.
 """Shapes and constants shared by every rl module."""
 
 ROWS = 12

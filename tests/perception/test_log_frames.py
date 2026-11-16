@@ -1,11 +1,4 @@
-"""Battle-log collection and merging on real log-panel frames (run 20261103-015542, battle 14, visit 2).
-
-The climb toward Turn 1's start ran out of budget: the MOVE TIME warning covered one capture and the last
-capture, the only one showing our Mega Evolution, Drought and the sun, was never compared with a second one.
-`views.json` caches what the panel reader read from each frame (`-m ocr` re-reads them), with the trainer names
-anonymised. The frames are game captures and stay out of git; the tests that need their pixels skip in a checkout
-without them.
-"""
+"""Battle-log collection and merging on real log-panel frames."""
 
 from __future__ import annotations
 
@@ -40,7 +33,7 @@ SETTLED_ROWS = [
 ]
 BUDGET_S = 60.0
 PREFIX = r"(?:[A-Z][A-Za-z ]*: )?"
-TRAINER_ROWS = (  # rows that embed a trainer name: (before)(name)(after)
+TRAINER_ROWS = (
     re.compile(r"^(.* is reacting to )(.*?)([’']s Omni Ring!)$"),
     re.compile(rf"^({PREFIX})(.*?)( sent out .+)$"),
     re.compile(rf"^({PREFIX})(.*?)( withdrew .+)$"),

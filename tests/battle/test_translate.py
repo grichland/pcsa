@@ -71,7 +71,7 @@ def test_rough_skin_of_a_pokemon_just_knocked_out_in_a_mirror_is_ours() -> None:
 
 
 def test_a_sprite_of_a_species_on_neither_roster_is_ignored(garchomp_vs_snorlax) -> None:
-    # 14 Nov: a row whose icon slot was empty matched Ditto (0.74) and the row was dropped as unassignable
+    # a row whose icon slot was empty matched Ditto (0.74) and the row was dropped as unassignable
     t = garchomp_vs_snorlax
     text = "The opposing Snorlax’s Attack fell!"
     category, message = split_category(text)
@@ -221,7 +221,7 @@ def test_white_herb_restores_only_negative_boosts() -> None:
     assert t.battle.opponent_active_pokemon.boosts["def"] == 0
 
 
-# Illusion: Hisuian Zoroark entered as Garchomp and used Bitter Malice (live run 20261030-132239).
+# Illusion: Hisuian Zoroark entered as Garchomp and used Bitter Malice.
 ILLUSION_ROWS = {
     1: [
         "U-h sent out Garchomp!",

@@ -1,26 +1,9 @@
 """The policy player over the poke-singles-former network (former.py): propose, then commit.
-
-The network remembers a game through one stored token per earlier decision and layer (former.Net.step_cached).
-On the phone a decision is not always final when the network answers, so the two steps are separate:
-
-  propose(view)  the network's answer for this view. Changes nothing: it steps a copy of the game's memory.
-  commit(p)      makes a proposal the game's latest decision (its memory entry is kept) and returns its action.
-
-A proposal that is never committed (a late answer the caller dropped) leaves no trace. The same turn asked again
-with the same observation (a re-read screen, a rejected tap) replaces the last decision instead of adding one,
-so the memory holds one entry per decision, as in training. `restore` rebuilds the memory of a battle that is
-resumed in a new process from the views of its earlier decisions.
-
-The notes carry the pair matrix (`matrix`: our 11 actions against their kept actions); research's training player
-(rl2/player.py: episodes, rewards, exploration) is not copied.
-
-Feature modes (`features`, research rl2/player.py): "base" is the observation the network was trained on before
-the belief tracker; "belief" and "belief+mega" (pcsa.rl_training.belief_features) replace some columns with what
-one belief per battle (pcsa.belief.fast.BattleBelief, kept with the game's memory) says. The mode must be the one
-the checkpoint was trained with (checkpoint_features); pcsa.players.neural enforces it.
-
-Rule masks (`rule_mask`, rule_masks.py): the guard rules' forbidden actions leave the legality mask before the
-softmax. (The damage-calculator matrix blend / two-turn search was removed on 15 Nov 2026, user's call.)
+propose(view) answers for a view and changes nothing (it steps a copy of the game's memory); commit(p) makes a
+proposal
+the latest decision. The same turn asked again replaces the last decision (one memory entry per decision, as in
+training); `restore` rebuilds it for a resumed battle. Feature mode must match the checkpoint; rule masks leave the
+legality mask before the softmax. Notes carry the pair matrix.
 """
 
 from __future__ import annotations
@@ -43,7 +26,7 @@ from pcsa.rl_training.former_notes import belief_notes, matrix_notes
 
 PREVIEW_TAU, PREVIEW_TOP_P = 0.1, 0.9
 VERSION = "v2"  # the "version" field of a poke-singles-former checkpoint
-FEATURES = ("base", "belief", "belief+mega")  # feature modes (belief_features.MODES)
+FEATURES = ("base", "belief", "belief+mega")
 __all__ = ["FormerPlayer", "Proposal", "belief_notes", "matrix_notes"]
 
 
@@ -70,7 +53,7 @@ class Proposal:
     replaces: bool  # a same-turn retry of the latest committed decision
     chosen: LegalAction
     base: dict  # the memory this decision was computed from
-    cache: dict  # the memory with this decision in it
+    cache: dict
     out: dict  # the network's outputs (matrix, kept_idx, kept_p, opp_mega, ...)
     belief: Any = None  # the battle's belief (feature modes other than "base"), carried into the committed game
 
@@ -151,8 +134,7 @@ class FormerPlayer:
         self.greedy_preview = greedy_preview
         # preview rules (pcsa.players.preview_rules.keeper): (battle, picks) -> (keep per pick, notes); None = off
         self.preview_keep: Any = None
-        # robust preview (pcsa.rl_training.preview_leads): > 0 = score each pick by the mean of its N worst values
-        # over their six possible leads (turn-1 views), and take the best; 0 = the critic's turn-0 values
+        # robust preview (pcsa.rl_training.preview_leads)
         self.preview_robust_worst = 0
         self.value_map: Any = None  # pcsa.rl_training.value_calibration.mapper; None = the raw value
         self.name = f"rl:{tag}"
@@ -215,7 +197,7 @@ class FormerPlayer:
                 return self._robust_team(view, picks)
             values = self.preview_values(view.battle, picks)
             keep, rules = self.preview_keep(view.battle, picks) if self.preview_keep else ([True] * len(picks), {})
-            rows = [i for i, k in enumerate(keep) if k] or list(range(len(picks)))  # none left: every pick
+            rows = [i for i, k in enumerate(keep) if k] or list(range(len(picks)))
             kept = values[rows]
             if self.greedy_preview:
                 index = rows[int(np.argmax(kept))]
@@ -279,8 +261,7 @@ class FormerPlayer:
         return self.game if turn >= self.game.turn else _Game()
 
     def _step(self, view: DecisionView) -> tuple[fx.Obs, int, bool, dict, dict, dict, Any]:
-        """(observation, turn, replaces, memory before, memory after, outputs, belief) of this view. Changes nothing
-        but the battle's belief, which reads the view's protocol (the same protocol read again changes nothing)."""
+        """(observation, turn, replaces, memory before, memory after, outputs, belief) of this view."""
         battle = view.battle
         turn = int(battle.turn or 0)  # type: ignore[union-attr]
         g = self._game(turn)
@@ -314,9 +295,8 @@ class FormerPlayer:
         self._notes = {"rule": "rl", "p": round(float(p.probs.max()), 4), "h": round(h, 4)}
         self._notes.update(value_calibration.notes(self.value_map, p.value))  # v (calibrated when set), v_raw
         self._notes["matrix"] = matrix_notes(p.obs, p.out, p.probs, p.index)
-        # tau: `probs` is softmax over legal rows of (sum_j p_cols[j] * cells[i][j]) / tau. It is the network's
-        # learned temperature times the player's sampling temperature (1 when it plays greedy).
-        self._notes["matrix"]["opp_temperature"] = round(float(self.net.opp_temperature), 4)  # of p_cols
+        # tau: `probs` is softmax over legal rows of (sum_j p_cols[j] * cells[i][j]) / tau
+        self._notes["matrix"]["opp_temperature"] = round(float(self.net.opp_temperature), 4)
         # opp_top: only their N likeliest columns weighed our actions (0 = all); w_cols are the weights used
         self._notes["matrix"]["opp_top"] = int(self.net.opp_top)
         self._notes["matrix"]["w_cols"] = [round(float(x), 3) for x in p.out["kept_w"].tolist()]
@@ -338,7 +318,7 @@ class FormerPlayer:
         for view in views:
             try:
                 obs, turn, _, base, cache, _, belief = self._step(view)
-            except Exception:  # keep what was rebuilt
+            except Exception:
                 break
             self.game = _Game(
                 turn=turn,

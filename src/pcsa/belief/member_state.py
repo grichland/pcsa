@@ -1,5 +1,4 @@
-# From research/pcsa-belief/belief/fast.py (sha256 dcd849036429, 2026-11-12 14:38), split into keys, grids, board,
-# member_state, member_grids, member_out, member, fast (pcsa's 400-line file limit); pcsa changes are marked "pcsa:".
+# Split from research/pcsa-belief/belief/fast.py (pcsa's file limit); pcsa changes are marked "pcsa:".
 """The state of one opposing member and its posterior weights (overview: pcsa.belief.fast)."""
 
 from __future__ import annotations

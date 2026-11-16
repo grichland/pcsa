@@ -22,7 +22,7 @@ from pcsa.run.battle_state import BattleRecord, RunState
 from pcsa.run.recorder import Recorder
 
 STAT_KEYS = ("hp", "atk", "def", "spa", "spd", "spe")
-STATS = {  # level-50 values
+STATS = {
     "Garchomp": (183, 182, 115, 100, 106, 169),
     "Primarina": (155, 94, 94, 178, 136, 80),
     "Corviknight": (205, 107, 125, 63, 105, 87),

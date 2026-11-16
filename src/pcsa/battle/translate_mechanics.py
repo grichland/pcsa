@@ -25,7 +25,7 @@ def item_reveal_or_end(t: Translator, row: RawRow, e: Event) -> None:
         if f"|-enditem|{ident}|{e.data['item']}" not in this_turn(t):
             t.apply(f"|-enditem|{ident}|{e.data['item']}")
         return
-    if ability := e.data.get("ability"):  # Harvest: the berry is back and the ability is shown
+    if ability := e.data.get("ability"):  # Harvest: the berry is back, ability shown
         t.out.revealed_abilities[f"{e.side}: {member.name}"] = ability
         mon = t.tracked(e.side, member)
         if mon is None or mon.ability != to_id_str(ability):
@@ -45,8 +45,7 @@ def this_turn(t: Translator) -> list[str]:
 
 
 def revive(t: Translator, row: RawRow, e: Event) -> None:
-    """Revival Blessing: a fainted party member comes back with half its HP (Showdown writes it with the bench
-    identifier, `p2: X`); poke-env's -heal clears the fainted status."""
+    """Revival Blessing: a fainted party member comes back with half its HP (`p2: X` bench identifier)."""
     if (member := t.require(row, e)) is None or e.side is None:
         return
     t.apply(

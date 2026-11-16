@@ -1,15 +1,8 @@
 """One playout worker of the playout team preview: a child process with its own Showdown server and two copies
-of the live network, playing full games with forced lineups.
+of the live network, playing full games with forced lineups. Run: python -m pcsa.players.preview_worker
 
-    python -m pcsa.players.preview_worker
-      first line on stdin, the spec: {"checkpoint": path, "params": NeuralParams as a dict, "log": server log
-      path, "timeout_s": per game}
-
-Tasks then arrive as JSON lines on stdin ({"id", "ours", "our_pick", "theirs", "their_pick", "seed"}: team exports and
-0-based lineups, the lead first), results leave as JSON lines on stdout ({"id", "won", "turns", "seconds"} or
-{"id", "error"}); the first line out is {"ready": true}. Seat A (ours) always challenges. The process ends when
-stdin closes (the parent is gone or asked for it) and stops its server. Nothing else writes to stdout.
-"""
+Stdin: a spec line, then JSON task lines; stdout: {"ready": true}, then one JSON result per task. Seat A (ours) always
+challenges. Exits when stdin closes. Nothing else writes to stdout."""
 
 from __future__ import annotations
 
@@ -132,7 +125,7 @@ class Worker:
             raise RuntimeError(errors[0])
         log_path = Path(spec["log"]) if spec.get("log") else None
         self.server = ShowdownServer(self.engine, None, log_path=log_path).start()
-        self.loop = asyncio.new_event_loop()  # one loop for every battle (a loop per battle leaks sockets on Windows)
+        self.loop = asyncio.new_event_loop()
         self.arenas: list = []
 
     def _arenas(self) -> list:

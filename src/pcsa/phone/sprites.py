@@ -1,12 +1,8 @@
-"""Sprites -> Pokémon names, by the sprite network's vectors (sprite_net.py).
+"""Sprites -> Pokemon names, by the sprite network's vectors (sprite_net.py), in reference-frame coordinates.
 
-A sprite is segmented from its local background, cropped to its silhouette and normalized to a fixed
-square (`feature`); the network turns that into a unit vector, scored by cosine against one reference
-vector per known sprite view. Two uses: the six opponent cards on team selection ("preview") and the
-sprite at the left of each battle-log row ("log"). Reference-frame coordinates.
-
-The matching flow takes any `Scorer`, so training can run the retired thumbnail matcher
-(sprite_training/sprite_baseline.py) through exactly the same steps when it measures the network.
+A sprite is segmented, cropped to its silhouette, normalized (`feature`), embedded, and scored by cosine against one
+reference vector per known view. Used for the six team-selection cards ("preview") and the battle-log rows ("log").
+The matching flow takes any `Scorer`, so training can run the retired matcher through the same steps.
 """
 
 from __future__ import annotations

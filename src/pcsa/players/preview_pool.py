@@ -24,7 +24,7 @@ class WorkerProcess:
         self.index, self.results = index, results
         self.ready = False
         self.error: str | None = None
-        self.busy: object = None  # the id of the task it is playing
+        self.busy: object = None
         folder.mkdir(parents=True, exist_ok=True)
         stem = folder / f"worker-{os.getpid()}-{index}"
         self._err = open(f"{stem}.err", "a", encoding="utf-8")  # noqa: SIM115 - lives as long as the worker
@@ -62,7 +62,7 @@ class WorkerProcess:
                 continue
             self.busy = None
             self.results.put({**record, "worker": self.index})
-        self.ready = False  # the process is gone
+        self.ready = False
 
     def alive(self) -> bool:
         return self.proc.poll() is None

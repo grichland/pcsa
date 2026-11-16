@@ -1,14 +1,10 @@
-# From research/pcsa-rl/rl2/features.py (sha256 6b9f6eeb6cb2, 2026-11-11 12:28); keep diffable.
-# pcsa: the belief feature modes' hooks from research's later version (sha256 33773407c2d6, 2026-11-12 14:14).
+# From research/pcsa-rl/rl2/features.py; keep diffable.
+# pcsa: the belief feature modes' hooks from research's later version.
 """v2 decision observations: revealed-only opposing rows, damage ranges, a last-turn token.
-
-The network never sees a guessed build. Opposing rows hold what the battle revealed (moves, item, ability), facts
-true for every set of the species (base stats, stat bounds, possible abilities, whether it could Mega Evolve), and
-damage *ranges* over every spread, nature and unrevealed item (pcsa.battle.damage with spread_known=False; the upper
-bound of their hits on us assumes a boosting item while theirs is unrevealed). Our rows are S1's (exact).
-
-Layout: S1's 318-float row (rl.features_rows; the field encoder reads it) + EXTRA floats; ids = S1's 7 + 3 possible
-abilities. The last-turn token is the previous turn's record (rl2.turns) from our point of view.
+The network never sees a guessed build: opposing rows hold what the battle revealed plus facts true for every set of
+the
+species, and damage ranges over every spread, nature and unrevealed item (upper bound assumes a boosting item).
+Layout: the 318-float row + EXTRA floats; ids = 7 + 3 possible abilities; the last-turn token is turns.py's record.
 """
 
 from __future__ import annotations
@@ -268,9 +264,8 @@ def last_turn(battle, records: dict[int, tt.TurnRecord] | None = None) -> tuple[
 
 # Observations --------------------------------------------------------------------------------------------------
 def observe(battle, legal: Sequence[LegalAction], belief=None, feature_mode: str = "belief") -> Obs:
-    """The v2 observation of one decision (no catalog, no tracker). With `belief` (a pcsa.belief.fast.BattleBelief,
-    one per battle) the belief columns of belief_features in `feature_mode` ("belief" or "belief+mega"); the belief
-    first reads the battle's new protocol lines and request."""
+    """The v2 observation of one decision; with `belief` (one BattleBelief per battle) the belief columns of
+    `feature_mode` are filled."""
     log = features_log.read(battle)
     mine, theirs = f1.my_rows(battle, legal), their_rows(battle, log)
     if belief is not None:
@@ -302,7 +297,7 @@ def preview_observations(
         mine = [leads[lead], *(benches[i] for i in rest)]
         mine += [Row(None, True) for _ in range(6 - len(mine))]
         rows, ids, field = _encode(ctx, mine, theirs, (), cache)
-        rows[0, 147] = 1.0  # the lead
+        rows[0, 147] = 1.0
         mask = np.zeros(ACTIONS, dtype=bool)
         out.append(Obs(rows, ids, field, last.copy(), last_ids.copy(), mask, 0, True))
     return out

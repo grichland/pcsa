@@ -1,14 +1,9 @@
-"""Guard-rule masks on the network's actions (neural.yaml `rule_mode: mask`, 14 Nov 2026).
-
-FormerPlayer.rule_mask, when set, is `(view, out) -> {legal action's message: (rule, reason)}`: the actions the
-guard rules forbid (pcsa.players.neural_rules.masks, called by the neural player with the network's outputs `out`
-for the opponent head's columns and its ranking). The masked rows leave the legality mask before the matrix blend
-(the search skips them) and before the softmax, so the network chooses among the rest. When the masks would leave
-nothing, they are dropped for that decision (noted). A rule error never stops a decision: no masks, noted.
-
-`out` gains (all optional): rule_masked {action index: (rule, reason)}, rule_legal (the legality mask without the
-masked rows), rule_network (the order the network's own logits rank first, when the masks took it away),
-rule_mask_ignored / rule_mask_error (why no masks were used).
+"""Guard-rule masks on the network's actions (neural.yaml `rule_mode: mask`).
+`FormerPlayer.rule_mask(view, out)` returns {legal action's message: (rule, reason)}; masked rows leave the legality
+mask
+before the blend and softmax. All masked: the masks are dropped (noted); a rule error: no masks. `out` gains
+rule_masked,
+rule_legal, rule_network, rule_mask_ignored / rule_mask_error.
 """
 
 from __future__ import annotations
@@ -35,7 +30,7 @@ def apply(rule_mask: Any, view, obs, out: dict) -> dict:
                 index = features.action_index(action, view.battle)
                 if 0 <= index < len(obs.mask) and obs.mask[index]:
                     masked[index] = tuple(forbidden[action.message])
-    except Exception as error:  # the rules never stop a decision
+    except Exception as error:
         return {**out, "rule_mask_error": f"{type(error).__name__}: {error}"[:ERROR_WIDTH]}
     if not masked:
         return out

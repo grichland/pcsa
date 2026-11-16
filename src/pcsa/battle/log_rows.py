@@ -1,8 +1,4 @@
-"""Raw battle-log rows to typed events. Every row yields exactly one event; no pattern -> `unknown`.
-
-Nothing here knows about game state. Sides come from the text alone ("The opposing X" is p2, a bare
-name p1); the translator turns events into protocol.
-"""
+"""Raw battle-log rows to typed events. Every row yields exactly one event; no pattern -> `unknown`."""
 
 from __future__ import annotations
 

@@ -18,32 +18,32 @@ def _why(move: str, foe: str, turns=None, ability: str | None = None) -> str | N
 
 
 def test_immune_types_and_certain_levitate() -> None:
-    assert _why("earthquake", "Dragonite")  # Flying
-    assert _why("earthquake", "Flygon")  # Levitate is its only ability
-    assert _why("earthquake", "Bronzong") is None  # may have Heatproof or Heavy Metal
-    assert _why("earthquake", "Bronzong", ability="levitate")  # revealed
+    assert _why("earthquake", "Dragonite")
+    assert _why("earthquake", "Flygon")
+    assert _why("earthquake", "Bronzong") is None
+    assert _why("earthquake", "Bronzong", ability="levitate")
     assert _why("thunderwave", "Garchomp") and _why("thunderbolt", "Garchomp")
     assert _why("shadowball", "Snorlax") and _why("bodyslam", "Gengar")
     assert _why("earthquake", "Garchomp") is None and _why("playrough", "Garchomp") is None
 
 
 def test_absorbing_and_blocking_abilities_only_when_certain() -> None:
-    assert _why("thunderbolt", "Jolteon") is None  # Volt Absorb or Quick Feet
+    assert _why("thunderbolt", "Jolteon") is None
     assert _why("thunderbolt", "Jolteon", ability="voltabsorb")
     assert _why("surf", "Vaporeon", ability="waterabsorb")
     assert _why("flamethrower", "Heatran", ability="flashfire")
-    assert _why("thunderwave", "Gholdengo")  # Good as Gold (its only ability)
+    assert _why("thunderwave", "Gholdengo")
     assert _why("shadowball", "Dragonite", ability="bulletproof")
 
 
 def test_priority_into_psychic_terrain_and_first_turn_moves() -> None:
     assert _why("suckerpunch", "Indeedee", [TERRAIN])
     assert _why("aquajet", "Indeedee", [TERRAIN]) and _why("firstimpression", "Indeedee", [TERRAIN])
-    assert _why("aquajet", "Dragonite", [TERRAIN]) is None  # not grounded
+    assert _why("aquajet", "Dragonite", [TERRAIN]) is None
     assert _why("aquajet", "Indeedee") is None
-    assert _why("protect", "Indeedee", [TERRAIN]) is None  # targets the user
+    assert _why("protect", "Indeedee", [TERRAIN]) is None
     later = ["|move|p1a: Azumarill|Play Rough|p2a: Garchomp", "|-damage|p2a: Garchomp|80/100"]
-    assert _why("fakeout", "Garchomp", [later])  # not the user's first turn out
+    assert _why("fakeout", "Garchomp", [later])
 
 
 def test_status_the_target_cannot_get() -> None:

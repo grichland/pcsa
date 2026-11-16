@@ -1,7 +1,7 @@
 """Taps: the safety policy every tap passes through, the plans for battle orders, and transmission.
 
-Every tap lands at a uniformly random point inside its control's region. Points come in reference
-coordinates (2340x1080) and are mapped to the device through the viewport in exactly one place.
+Every tap lands at a random point inside its control's region, in reference coordinates (2340x1080), mapped to the
+device through the viewport in one place.
 """
 
 from __future__ import annotations
@@ -19,8 +19,7 @@ from pcsa.phone.ocr import REFERENCE, TextBox
 from pcsa.phone.texts import Texts
 
 FORBIDDEN_TEXT = r".*(?:forfeit|quit|edit team|rate|submit|review|purchase|buy|double battle|shop).*"
-# A blind tap (the screen centre during a disconnect) has no expected control under it, so it is refused near
-# a wider set of words and with a wider margin than a tap on a known control.
+# A blind tap (screen centre during a disconnect) has no known control under it: wider forbidden words and margin.
 BLIND_FORBIDDEN_TEXT = r".*(?:forfeit|quit|edit team|rat(?:e|ing)|submit|review|purchase|buy|double|shop|delete).*"
 TEXT_MARGIN = 20
 BLIND_TEXT_MARGIN = 60
@@ -45,7 +44,7 @@ ALLOWED: dict[Screen, frozenset[str]] = {
     Screen.RATING_DIALOG: frozenset({"dismiss"}),
     Screen.DIALOG: frozenset({"dismiss", "screen_centre"}),
     Screen.COMM_ERROR: frozenset({"dismiss", "screen_centre"}),
-    Screen.TRANSITION: frozenset({"screen_centre"}),  # only while a battle is riding out a disconnect
+    Screen.TRANSITION: frozenset({"screen_centre"}),  # only while riding out a disconnect
     Screen.TITLE: frozenset({"title_continue"}),
     Screen.HOME: frozenset({"home_battle"}),
     Screen.BATTLE_MODES: frozenset({"ranked_battles"}),
@@ -205,7 +204,7 @@ class Executor:
             at = clock.now()
             try:
                 transport = device.tap(tap.x, tap.y)
-            except Exception as error:  # a transport failure ends the plan; it is recorded, not retried here
+            except Exception as error:  # a transport failure ends the plan; recorded, not retried
                 result.error = f"{tap.name}: {error}"
                 result.taps.append({"name": tap.name, "x": tap.x, "y": tap.y, "at": at, "ok": False})
                 log.warning("tap_failed", tap=tap.name, reason=str(error))

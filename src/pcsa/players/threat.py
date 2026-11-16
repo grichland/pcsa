@@ -1,11 +1,4 @@
-"""HP-fraction threat estimates for rule-based players: how hard a member hits, KOs, speed order.
-
-Every fraction is of the defender's MAX HP (and may exceed 1). Our members fight with their exact sets; the
-opponent's with `opponent.assumed` (top build + revealed facts + the tracker's corrections). Damage is the
-Showdown formula in `battle.damage`; `hit_fraction` and `best_hit` are expected values (mean roll, accuracy,
-expected hits); `can_ko` and `priority_ko` ignore accuracy and use the max roll against us, the mean against
-them.
-"""
+"""HP-fraction threat estimates for rule-based players: how hard a member hits, KOs, speed order."""
 
 from __future__ import annotations
 

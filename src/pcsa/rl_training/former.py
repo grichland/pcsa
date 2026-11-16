@@ -1,17 +1,10 @@
-# From research/pcsa-rl/rl2/model.py (sha256 7202f21a923a, 2026-11-11 13:12); keep diffable.
-"""poke-singles-former (plan 1, research/pcsa-rl-s-v2): predict the opponent, then choose through a pair matrix.
-
-Batch layout: games [G, T] padded (valid [G, T]). Per decision 14 state tokens: field, our 6 rows, their 6 rows,
-the last turn. A token sees its own decision's 14 tokens and the field token of up to `memory` earlier decisions of
-the same game (ps-ppo's turn memory); so one pass over a game equals step-by-step play. Three readouts cross-attend:
-opp-action (to the 14), our-action (to the 14 and the opp readout), value (to the 14).
-
-Heads:
-  opponent: logits over every move id (masked to their active's learnset plus revealed moves) and their 5 bench
-            rows; a separate Mega logit
-  matrix:   M[i, j] = c_i + A_i . B_j for our 11 actions x their kept actions (top-K moves by p, then 5 switches);
-            our logits = sum_j stopgrad(p_kept_j) M[i, j] / tau
-  value:    51-bin distribution over [-1.6, 1.6]
+# From research/pcsa-rl/rl2/model.py; keep diffable.
+"""Predict the opponent, then choose through a pair matrix (poke-singles-former).
+Per decision 14 state tokens (field, our 6 rows, their 6 rows, last turn); a token also sees the field tokens of up to
+`memory` earlier decisions, so one pass over a game equals step-by-step play. Heads: opponent (move logits masked to
+their learnset + revealed, 5 bench rows, Mega logit); matrix M[i,j] = c_i + A_i.B_j, our 11 actions x their kept
+actions
+(top-K moves, 5 switches), logits = sum_j p_kept_j M[i,j] / tau; value (51 bins on [-1.6, 1.6]).
 """
 
 from __future__ import annotations
@@ -31,7 +24,7 @@ from pcsa.rl_training.spec import ACTIONS, VOCAB
 
 NEG = -1e9
 STATE = 14  # field, 12 rows, last turn
-THEIR_ACTIVE, THEIR_BENCH = 7, slice(8, 13)  # token positions
+THEIR_ACTIVE, THEIR_BENCH = 7, slice(8, 13)
 OUR_ACTIVE, OUR_BENCH = 1, slice(2, 5)
 SWITCHES = 5
 BINS, VMIN, VMAX = 51, -1.6, 1.6
@@ -46,7 +39,7 @@ class Config:
     heads: int = 4
     ffn_mult: float = 8 / 3
     rank: int = 32
-    top_k: int = 4  # opposing move columns: every revealed move (at most 4), then the most likely (8 until 11 Nov)
+    top_k: int = 4  # opposing move columns: every revealed move (at most 4), then the most likely
     memory: int = 64
     max_positions: int = 128
     emb_species: int = 32
@@ -114,8 +107,7 @@ class Net(nn.Module):
         self.mega_vec = nn.Parameter(torch.zeros(cfg.rank))
         self.base = _mlp(d, (d,), ACTIONS, norm=False)
         self.log_tau = nn.Parameter(torch.zeros(()))
-        # Inference only (training keeps 1): the temperature of their action distribution where it weights the
-        # matrix columns. Above 1 hedges against their less likely actions, below 1 trusts the favourite more.
+        # Inference only (training keeps 1): temperature of their action distribution in the matrix weights
         self.opp_temperature = 1.0
         # Inference only (training keeps 0 = all): weigh our actions against only their N likeliest kept actions.
         self.opp_top = 0
@@ -249,10 +241,8 @@ class Net(nn.Module):
     # One game, step by step (inference) --------------------------------------------------------------------------
     @torch.no_grad()
     def step_cached(self, obs, cache: dict, opp_allowed=None) -> dict:
-        """The next decision of a game, given `cache` (one dict per game, empty at its start): each layer keeps the
-        inputs of earlier decisions' field tokens (the only tokens later decisions see), so only this decision's 14
-        tokens run. Equal to the full pass. `opp_allowed` ([move vocab] bool, pcsa): their active's moves narrowed
-        to these (and its revealed ones) in the opponent head; None = every learnable move, as trained."""
+        """The next decision of a game given `cache` (one dict per game, empty at its start; it keeps earlier field-
+        token inputs). Equal to the full pass; `opp_allowed` narrows their active's moves."""
         device = next(self.parameters()).device
         t = cache.get("t", 0)
         b = stack([[obs]], device)
@@ -305,7 +295,7 @@ class Net(nn.Module):
             c["t"] = c.get("t", 0) + 1
         h = self.final(x)
         out: dict = {}
-        if not value_only:  # team preview needs only the value
+        if not value_only:
             r_opp = self.read_opp(h)
             r_us = self.read_us(torch.cat([h, r_opp[:, None]], dim=1))
             out = self._opponent(h, r_opp, b)

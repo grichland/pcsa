@@ -27,7 +27,7 @@ def test_the_setting_follows_the_checkpoint_and_a_base_network_refuses_belief_co
     assert feature_mode("checkpoint", "base") == "base"
     assert feature_mode("checkpoint", "belief+mega") == "belief+mega"
     assert feature_mode("base", "base") == "base"
-    assert feature_mode("belief", "belief+mega") == "belief"  # between belief modes: allowed, logged
+    assert feature_mode("belief", "belief+mega") == "belief"
     for asked in ("belief", "belief+mega"):
         with pytest.raises(ConfigError, match="trained with feature mode base"):
             feature_mode(asked, "base")
@@ -77,7 +77,7 @@ def test_a_base_checkpoint_plays_base_and_refuses_an_override(tmp_path: Path) ->
 def test_a_belief_checkpoint_keeps_one_belief_per_battle(tmp_path: Path) -> None:
     player = NeuralPlayer(NeuralParams(seed=0), MaxDamagePlayer(), checkpoint(tmp_path, "belief+mega"))
     assert player.error is None and player.policy.features == "belief+mega"
-    assert player.policy.belief_options == {"crit_reported": False, "empty_unknown": True}  # live settings
+    assert player.policy.belief_options == {"crit_reported": False, "empty_unknown": True}
     player.choose_team(preview_view(), soon())
     assert player.notes()["rule"] == "neural"
     first = player.policy.game.belief
@@ -87,10 +87,10 @@ def test_a_belief_checkpoint_keeps_one_belief_per_battle(tmp_path: Path) -> None
     assert player.choose_action(view, soon()) in view.legal
     notes = player.notes()
     assert notes["rule"] == "neural" and notes["belief"]["updates"] == 1 and notes["belief"]["rebuilds"] == 0
-    assert player.policy.game.belief is first  # the preview's belief goes on into the battle
+    assert player.policy.game.belief is first
     player.choose_action(view, soon())  # the same decision again (a re-read screen): the same belief, read again
     assert player.notes()["belief"]["updates"] == 2 and player.policy.game.belief is first
-    player.choose_team(preview_view(), soon())  # a new battle, a new belief
+    player.choose_team(preview_view(), soon())
     assert player.policy.game.belief is not first
 
 
@@ -106,10 +106,9 @@ def _live_battles(count: int) -> list[Path]:
 @pytest.mark.torch
 @pytest.mark.parametrize("mode", ["base", "belief+mega"])
 def test_dry_run_on_recorded_live_decisions(tmp_path: Path, mode: str, record_property) -> None:
-    """The newest recorded live run's first battles, every decision the player was shown a Battle for, played again
-    in order (gold940; for belief+mega the same weights under a belief+mega config: this checks the plumbing, not
-    the play). No fallback, finite answers, the belief's notes in belief mode. research/pcsa-belief/stage4/
-    dry_run_live.py runs every recorded battle with a trained belief network."""
+    """The newest recorded live run's first battles, every decision the player was shown a Battle for, played again in
+    order (gold940; for belief+mega the same weights under a belief+mega config: this checks the plumbing.
+    """
     import torch
 
     from pcsa.live import restore

@@ -1,8 +1,7 @@
 """The battle's log files, written while the battle is on and again when it ends.
 
-`battle-N/log.jsonl`, `log.txt` and `coverage.json` (BattleLog.save) and the readable `battle_log.txt`. The turn
-flow saves them after every visit to the log that changed it, so the dashboard shows the log of a battle in
-progress and a battle that crashes keeps what was read; `finalize` writes the final versions.
+Saved after every visit to the log that changed it, so a crashed battle keeps what was read; `finalize` writes the
+final versions.
 """
 
 from __future__ import annotations
@@ -19,7 +18,7 @@ def standard_header(b: BattleRecord, team: Team | None, seed: int) -> dict:
         f"{name} (roster row {row + 1})" for name, row in zip(b.names, b.requested or [], strict=False)
     )
     asked = {}
-    if b.requested_at_preview is not None:  # the team brought is not the one the selection asked for (team_check)
+    if b.requested_at_preview is not None:  # the team brought differs from the one asked for
         asked = {"team_asked_at_preview": ", ".join(str(b.roster[i]) for i in b.requested_at_preview)}
     return {
         "battle_id": b.battle_id,

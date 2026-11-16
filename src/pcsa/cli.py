@@ -1,9 +1,7 @@
 """The `pcsa` command.
 
-pcsa setup [--with sim] [--with train] [--check]   install or check tools, output folder, device
-pcsa doctor                                         same checks, no installs
-pcsa observe / calibrate / scout / watch / sim play / train ...
-pcsa run / nav                                      live play on the phone
+    pcsa setup [--with sim] [--with train] [--check] | doctor | observe / calibrate / scout / watch / sim play / train
+    pcsa run / nav        live play on the phone
 """
 
 from __future__ import annotations

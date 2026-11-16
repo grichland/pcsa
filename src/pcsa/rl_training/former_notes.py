@@ -1,5 +1,6 @@
-"""The decision notes of the former player (pcsa.rl_training.former_player): the pair matrix as plain lists, the
-belief's summary and the matrix blend's values. Split from former_player.py for pcsa's file limit."""
+"""The decision notes of the former player (former_player): the pair matrix as plain lists, the belief's summary and
+the matrix blend's values. Split from former_player.py for pcsa's file limit.
+"""
 
 from __future__ import annotations
 

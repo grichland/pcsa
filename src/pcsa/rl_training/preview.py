@@ -1,4 +1,4 @@
-# From research/pcsa-rl/rl/preview.py (sha256 d4e254a98159, 2026-11-08 19:55); keep diffable.
+# From research/pcsa-rl/rl/preview.py; keep diffable.
 """Team preview: the 60 (lead, second, third) picks and the critic-greedy nucleus sampler over them."""
 
 from __future__ import annotations

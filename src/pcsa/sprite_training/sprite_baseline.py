@@ -1,11 +1,4 @@
-"""The retired thumbnail matcher, kept for training the sprite network and measuring it.
-
-Its two indexes (`roster_index` for team preview, `log_index` for battle-log rows: 40x40 silhouettes and
-Lab colour of every known sprite view) are game imagery, so they live outside git, in a local source
-folder (default `output/sprite_source/`). They are the network's reference views, and this scorer is
-the baseline the network must match or beat. Comparison is silhouette IoU times Lab colour agreement,
-best over a few pixel shifts, with an aspect-ratio factor.
-"""
+"""The retired thumbnail matcher, kept for training the sprite network and measuring it."""
 
 from __future__ import annotations
 

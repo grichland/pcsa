@@ -1,28 +1,4 @@
-"""The neural player: a poke-singles-former checkpoint from the research runs (pcsa.rl_training), with a fallback.
-
-Settings in config/players/neural.yaml (NeuralParams). The network decides team preview and every move or switch
-from the Battle the loop gives it; the fallback kind decides (reason in the notes) when it cannot: no or a bad
-checkpoint, no Battle, an exception, or no answer within min(max_decision_s, or max_preview_s at team preview;
-the deadline's remaining time - reserve_s). Preview `robust`: pcsa.rl_training.preview_leads; `playout`: the robust
-scores, then full simulated games on worker processes (pcsa.players.preview_playout, `preview_playout`).
-
-Guard rules (pcsa.players.neural_rules, the `rules` list) stop plainly wasted actions. `rule_mode: override`: the
-network's best other action replaces its pick (notes `override`, `override_why`, `network`); `mask`: the forbidden
-actions are masked before the matrix blend and the softmax (pcsa.rl_training.rule_masks; notes matrix.masked,
-`mask_rules`, `network` when its own pick was masked). The opponent head's kept actions feed sucker_punch.
-Preview rules (`preview_lead_avoid`, `preview_bring_max_one`; pcsa.players.preview_rules) remove team-preview picks
-before the critic chooses among the rest (notes: `preview_rules`).
-
-Feature mode (`features`): the observation columns the network reads. A checkpoint carries the mode it was trained
-with (its run config's `features`; none = "base", every network before the belief tracker), and by default
-(`features: checkpoint`) that is the mode used, so an old network is never fed belief columns. An explicit mode
-is refused at build when the checkpoint is "base" and the mode is not; between belief modes it is allowed (logged).
-In the belief modes the player keeps one belief tracker per battle (pcsa.belief); `belief_crit_lines` says whether
-the protocol prints critical hits (false on the phone: a hit may then have been one), and empty items / abilities
-of seen builds count as unknown. See src/pcsa/belief/README.md.
-
-torch is imported only when a checkpoint is loaded; it comes with the `train` extra (`uv sync --extra train`).
-"""
+"""The neural player: a poke-singles-former checkpoint from the research runs (pcsa.rl_training), with a fallback."""
 
 from __future__ import annotations
 
@@ -46,7 +22,7 @@ from pcsa.rl_training import value_calibration
 
 NETWORKS_ENV = "PCSA_NETWORKS"  # a folder relative checkpoint paths are looked up in first
 SAMPLING = ("greedy", "sample")
-RULE_MODES = ("override", "mask")  # mask (14 Nov 2026): forbidden actions leave the mask before the softmax
+RULE_MODES = ("override", "mask")  # mask: forbidden actions leave the mask before the softmax
 PREVIEW = ("critic", "greedy", "robust", "playout")  # playout: robust, then pcsa.players.preview_playout
 FEATURES = ("checkpoint", "base", "belief", "belief+mega")  # checkpoint: the mode the network was trained with
 TORCH_HINT = "the neural player needs torch: run `uv sync --extra train` (or `uv sync --inexact --extra train`)"
@@ -63,7 +39,6 @@ class NeuralParams:
     opponent_moves_from_builds: bool = False  # their move options: their listed builds' moves (opponent_moves.py)
     preview: str = "critic"  # critic: training's softmax(value / 0.1) top-p 0.9 nucleus; greedy: the best value
     # robust: each pick scored against each of their six leads (turn-1 views); the pick with the best mean over its
-    # `preview_robust_worst` worst leads (pcsa.rl_training.preview_leads)
     preview_robust_worst: int = 2
     fallback: str = "disciplined"  # the player kind that decides when the network cannot
     max_decision_s: float = 5.0  # longest a decision may take before the fallback decides

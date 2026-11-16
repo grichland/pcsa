@@ -1,5 +1,4 @@
-# From research/pcsa-belief/belief/fast.py (sha256 dcd849036429, 2026-11-12 14:38), split into keys, grids, board,
-# member_state, member_grids, member_out, member, fast (pcsa's 400-line file limit); pcsa changes are marked "pcsa:".
+# Split from research/pcsa-belief/belief/fast.py (pcsa's file limit); pcsa changes are marked "pcsa:".
 """One member's outputs: stat intervals, speed, damage ranges, move / item / ability probabilities (overview:
 pcsa.belief.fast)."""
 
@@ -191,7 +190,7 @@ class MemberOutputs(MemberGrids):
         """tracker.Member.truth on the dense cells."""
         table = self.stats_table(battle, mon)
         tv = np.array([stats[s] for s in STATS])
-        eq_spread = np.all(table == tv[None, :], axis=1)  # [S]
+        eq_spread = np.all(table == tv[None, :], axis=1)
         W, _, rw = self._weights()
         I, A, S = W.shape
         it = self.item_index.get(item, -1)

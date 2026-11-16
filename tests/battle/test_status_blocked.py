@@ -1,5 +1,5 @@
-"""Taunt and an Assault Vest stop our member choosing a status move; the game's move screen does not show it, so
-the request rebuilt from the log has to (run 20261111-190432, battle 7: Slack Off and Yawn offered under Taunt)."""
+"""Taunt and an Assault Vest stop our member choosing a status move; the move screen does not show it, so the request
+rebuilt from the log must."""
 
 from __future__ import annotations
 

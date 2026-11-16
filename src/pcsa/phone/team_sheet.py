@@ -1,9 +1,4 @@
-"""Our own team, read from the six-card Moves & More and Stats pages before matchmaking.
-
-Reading never raises for an unreadable field: the sheet carries a status per field and lists its
-issues, and the caller decides how much it needs. Species and form resolution is not done here
-(that is game knowledge, in `pcsa.battle`).
-"""
+"""Our own team, read from the six-card Moves & More and Stats pages before matchmaking."""
 
 from __future__ import annotations
 

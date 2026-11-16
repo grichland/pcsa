@@ -43,7 +43,7 @@ def test_records_merge_both_seats_into_one_per_battle(tmp_path) -> None:
     a = {"t1": _seat("p1", True, "TEAM A", ["X", "Y", "Z"]), "t2": _seat("p2", False, "TEAM A2", ["Q"])}
     b = {"t1": _seat("p2", False, "TEAM B", ["U"]), "t2": _seat("p1", True, "TEAM B2", [])}
     rows = battle_log.records(["t1", "t2", "t3"], {"a": ("heuristic", a), "b": ("random", b)})
-    assert [r["tag"] for r in rows] == ["t1", "t2"]  # t3 never finished: no record
+    assert [r["tag"] for r in rows] == ["t1", "t2"]
     first, second = rows
     assert (first["p1"], first["p2"], first["p1_team"], first["p2_team"]) == (
         "heuristic",
@@ -71,7 +71,7 @@ def test_sim_play_writes_one_battle_record_per_battle(monkeypatch, tmp_path) -> 
     try:
         outcome = play_command(config, "random", "max_damage", 2, 7, noisy=False, port=None)
     finally:
-        log.configure(None, console=False)  # closes events.jsonl
+        log.configure(None, console=False)
     (out_dir,) = (tmp_path / "sim").iterdir()
     rows = battle_log.read(out_dir / battle_log.FILE)
     assert outcome.code == 0 and len(rows) == 2 and len({r["tag"] for r in rows}) == 2

@@ -72,8 +72,8 @@ class ArenaPlayer(PokeEnvPlayer):
         self.decision_s = decision_s
         self.picks: dict[str, list[str]] = {}
         self.notes: list[dict] = []
-        self.team_of: dict[str, str] = {}  # battle tag -> the export this seat played
-        self.finished: dict[str, dict] = {}  # battle tag -> seat record, see _battle_finished_callback
+        self.team_of: dict[str, str] = {}
+        self.finished: dict[str, dict] = {}
 
     def teampreview(self, battle) -> str:
         if self.teams.history:

@@ -27,10 +27,7 @@ def hp_value(base: int, points: int, level: int = game.LEVEL) -> int:
 
 
 def solve_points(base: dict, stats: dict) -> tuple[dict, dict] | None:
-    """Stat points and nature multipliers that reproduce exact level-50 stats, or None.
-
-    A -10% stat can fit two point values; ties go to a total of exactly 66 points, then the smaller
-    total. Cached: callers must not modify the result."""
+    """Stat points and nature multipliers that reproduce exact level-50 stats, or None."""
     return _solve_points(tuple(sorted(base.items())), tuple(sorted(stats.items())))
 
 
@@ -89,8 +86,7 @@ def stat_ranges(base: dict) -> dict[str, tuple[int, int]]:
 
 
 def form_of(mon, battle=None) -> tuple[str, bool]:
-    """(dex key of the current form, is a Mega). poke-env keeps the base species after a Mega
-    Evolution and swaps base stats, so a Mega entry is found by its base stats."""
+    """(dex key of the current form, is a Mega); a Mega entry is found by its base stats (poke-env keeps the base species)."""
     if battle is not None:
         from pcsa.battle.moves import observed_form
 
@@ -127,8 +123,7 @@ def our_stats(mon, form: str, is_mega: bool) -> tuple[dict, dict]:
 
 
 def current_stats(mon, exact: bool = True, form: str | None = None) -> dict[str, float]:
-    """Current-form stats (or those of `form`, e.g. the Mega the mon becomes this turn); bounded midpoints
-    where exact stats are unknown (the opponent)."""
+    """Current-form stats (or those of `form`); bounded midpoints where exact stats are unknown (the opponent)."""
     form, mega = (form, game.is_mega(form)) if form else form_of(mon)
     values = our_stats(mon, form, mega)[0] if exact and getattr(mon, "stats", None) else {}
     ranges = stat_ranges(species_entry(form).get("baseStats") or mon.base_stats)
@@ -147,8 +142,7 @@ def stage(value: int, boost: int) -> int:
 
 
 def effective_speed(mon, exact: bool = True) -> float:
-    """Speed as the engine would use it now: the current-form stat (ours exact, theirs a bounded midpoint),
-    a known Choice Scarf, the speed stage, and paralysis."""
+    """Speed as the engine would use it now: form stat, known Choice Scarf, speed stage, paralysis."""
     speed = current_stats(mon, exact)["spe"]
     item = to_id_str(mon.item or "")
     if item and item != "unknown_item":

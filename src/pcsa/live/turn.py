@@ -1,9 +1,5 @@
 """One battle turn: peek the moves, read the log within its budget, reconstruct the Battle, decide, tap.
-With `timing.move_peek: when_needed` the peek is left out unless move_peek.py names a reason for it.
-
-Nothing here refuses to act. A log that could not be read lowers the decision to the screen rung;
-a deadline that is nearly gone sends the cheapest plan.
-"""
+With `timing.move_peek: when_needed` the peek is left out unless move_peek.py names a reason for it."""
 
 from __future__ import annotations
 
@@ -70,12 +66,12 @@ class TurnPipeline:
             self.clock.sleep(0.4)
         if obs is not None and obs.screen == Screen.MOVES:
             if self.phone.navigator.close_move_info(obs).screen != Screen.MOVES:
-                return obs  # the moves were read; whatever the panel's taps left, it is not the moves screen
+                return obs
             executor.execute([executor.point("move_back")], Screen.MOVES, device, self.clock, 0.0)
             self.clock.sleep(self.cfg.timing.back_settle_s)
             return obs
         if obs is not None and obs.screen == Screen.FORFEIT_MSG and b.outcome is None:
-            b.outcome = "opponent_forfeit"  # the message shows only here; the next poll lands on the options screen
+            b.outcome = "opponent_forfeit"  # the message shows only here; the next poll is the options screen
         log.warning("peek_failed", battle=b.index, screen=str(obs.screen) if obs else None)
         if obs is not None and obs.screen in (Screen.MOVES, Screen.PARTY, Screen.LOG):
             self.phone.navigator.back_out(obs)
@@ -106,7 +102,7 @@ class TurnPipeline:
         peek = self.peek(b) if why else None
         turn_before = b.last_turn
         log_info = self.logs.collect_log(b, visit, deadline.minus(self.cfg.degrade.decide_reserve_s))
-        self.log_saver.after_visit(b, self.team)  # the log files are current while the battle is on
+        self.log_saver.after_visit(b, self.team)
         last = b.last_action or {}
         same_turn = (
             bool(last)
@@ -114,20 +110,20 @@ class TurnPipeline:
             and log_info.turn == last.get("log_turn")
             and not log_info.appended
         )
-        verify_last_action(b)  # the turn just read: did the game play what was chosen for it?
-        check_team(b, active=active_name)  # the team brought, not the one asked for, from here on
+        verify_last_action(b)
+        check_team(b, active=active_name)
         resynced = check_identity(b, active_name)
         faints_from_log(b)
         turn = b.current_turn()
         battle, out = self._build(b, "action", turn)
         t = move_peek.Turn(battle, out, b.visible_order[0], same_turn, resynced, log_info, turn_before)
         if why is None and (why := move_peek.why_after_log(b, self.team, t)) is not None:
-            peek = self.peek(b)  # the log is already read; from here the turn is the peek-first flow
+            peek = self.peek(b)
         hp = obs.fields.get("active_hp")
         refused = move_peek.refused_moves(last, turn, same_turn, repeated)
         screen = move_peek.without_moves(move_peek.screen_facts(b, self.team, t, peek, why, hp), refused)
         request = self._request(b, "action", battle, out, t.active, screen, {t.active: tuple(hp)} if hp else {})
-        if request is None and why is None:  # not trackable after all: a decision from the screen needs the list
+        if request is None and why is None:  # not trackable after all: the screen needs the list
             why, peek = "untracked", self.peek(b)
             screen = move_peek.without_moves(move_peek.screen_facts(b, self.team, t, peek, why, hp), refused)
         if request is None:
@@ -252,9 +248,7 @@ class TurnPipeline:
             switches = [a for a in decision.legal if a.action.kind == "switch"]
             action = switches[0].action if switches else action
         if action.kind != "switch" or action.slot is None:
-            # 14 Nov 2026: a replacement screen with nobody to send in (the last member goes in by itself; the
-            # party rows were read as all fainted) crashed the session here. Nothing is tapped or recorded: the
-            # next observation decides.
+            # A replacement screen with nobody to send in (the last member goes in by itself): tap nothing, observe again.
             log.warning("forced_without_switch", battle=b.index, turn=b.current_turn(), reason=decision.reason)
             self.clock.sleep(self.cfg.timing.post_action_wait_s)
             return
@@ -327,7 +321,7 @@ class TurnPipeline:
         sequence = len(b.decisions)
         b.decisions.append(kind)
         record = {
-            "schema": "pcsa-decision/2",  # /2: battle_id; notes may hold nested values (the neural player's matrix)
+            "schema": "pcsa-decision/2",  # /2: battle_id; notes may hold nested values
             "battle_id": b.battle_id,
             "sequence": sequence,
             "kind": kind,

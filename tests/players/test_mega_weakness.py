@@ -1,5 +1,4 @@
-"""The mega_weakness and weak4x_switch guard rules (pcsa.players.mega_weakness; 14 Nov 2026, from the hand-labelled
-live losses: Mega Golisopod is Bug/Steel and takes Fire 4x, base Golisopod is Bug/Water)."""
+"""The mega_weakness and weak4x_switch guard rules."""
 
 from __future__ import annotations
 
@@ -54,8 +53,7 @@ def test_type_multipliers() -> None:
 
 
 def test_no_mega_into_a_likely_fire_move(threat) -> None:
-    # 13 Nov battle 2, turn 3: Golisopod vs Galarian Slowking, Flamethrower predicted 63%; it Mega Evolved for First
-    # Impression (Slowking to 17%) and was one-shot. The same First Impression without Mega Evolution is the pick.
+    # Golisopod vs Galarian Slowking, Flamethrower predicted 63%
     threat()
     b, legal, their = position("case29-mega-into-flamethrower.json")
     mega = "/choose move firstimpression mega"
@@ -67,16 +65,16 @@ def test_no_mega_into_a_likely_fire_move(threat) -> None:
 def test_mega_stays_when_our_move_kos_first_or_no_fire_is_likely(threat) -> None:
     b, legal, their = position("case29-mega-into-flamethrower.json")
     mega = "/choose move firstimpression mega"
-    threat(move_hits={("golisopod", "slowkinggalar", "firstimpression"): 1.2})  # it KOs first (priority +2)
+    threat(move_hits={("golisopod", "slowkinggalar", "firstimpression"): 1.2})
     assert neural_rules.apply(["mega_weakness"], spot(b, legal, their, mega)) is None
     threat()
-    calm = tuple(x for x in their if x[1] != "flamethrower")  # no Fire move predicted, none shown
+    calm = tuple(x for x in their if x[1] != "flamethrower")
     assert neural_rules.apply(["mega_weakness"], spot(b, legal, calm, mega)) is None
     assert neural_rules.apply(["mega_weakness"], spot(b, legal, their, "/choose move firstimpression")) is None
 
 
 def test_switch_out_of_a_4x_hit_that_lands_first(threat) -> None:
-    # 12 Nov battle 11, turn 7: Mega Golisopod in front of a faster Fire user (Flamethrower 63%); stays in and dies.
+    # Mega Golisopod in front of a faster Fire user (Flamethrower 63%); stays in and dies.
     b, legal, their = position("stay-in-vs-flamethrower.json")
     me, foe = b.active_pokemon.species, b.opponent_active_pokemon.species
     threat(hits={(foe, me): (1.5, "flamethrower")})
@@ -92,9 +90,9 @@ def test_no_switch_when_we_are_faster_and_ko_or_it_does_not_ko(threat) -> None:
     b, legal, their = position("stay-in-vs-flamethrower.json")
     me, foe = b.active_pokemon.species, b.opponent_active_pokemon.species
     chosen = next(a.message for a in legal if "move" in a.message)
-    threat(hits={(foe, me): (0.3, "flamethrower")})  # the hit does not KO
+    threat(hits={(foe, me): (0.3, "flamethrower")})
     assert neural_rules.apply(["weak4x_switch"], spot(b, legal, their, chosen)) is None
-    threat(hits={(foe, me): (1.5, "flamethrower"), (me, foe): (1.5, "x")}, faster={(me, foe)})  # we KO first
+    threat(hits={(foe, me): (1.5, "flamethrower"), (me, foe): (1.5, "x")}, faster={(me, foe)})
     assert neural_rules.apply(["weak4x_switch"], spot(b, legal, their, chosen)) is None
 
 

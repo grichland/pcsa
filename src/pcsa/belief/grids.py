@@ -1,5 +1,4 @@
-# From research/pcsa-belief/belief/fast.py (sha256 dcd849036429, 2026-11-12 14:38), split into keys, grids, board,
-# member_state, member_grids, member_out, member, fast (pcsa's 400-line file limit); pcsa changes are marked "pcsa:".
+# Split from research/pcsa-belief/belief/fast.py (pcsa's file limit); pcsa changes are marked "pcsa:".
 """The vectorised calculator parts and the Grid of one calculation (overview: pcsa.belief.fast)."""
 
 from __future__ import annotations
@@ -127,7 +126,7 @@ def _rolls_groups(params: list, their_attacking: bool, their_stats: np.ndarray, 
 
     p = params
     a_side, a_stat, d_stat = p[0][1], p[0][2], p[0][6]
-    ints = np.array([(x[0], x[3], x[7], x[5], x[8], x[9]) for x in p], np.int64)  # power, stages, flags
+    ints = np.array([(x[0], x[3], x[7], x[5], x[8], x[9]) for x in p], np.int64)
     power, a_boost, d_boost = ints[:, 0:1], ints[:, 1:2], ints[:, 2:3]
     pinch, fur, wthr = ints[:, 3:4] != 0, ints[:, 4:5] != 0, ints[:, 5:6] != 0
     attack = _stage(stat(a_side, a_stat), a_boost)  # pyright: ignore[reportArgumentType]
@@ -195,8 +194,8 @@ class Grid:
     imap: np.ndarray
     amap: np.ndarray
     unmod: np.ndarray | None = None
-    zero: bool = False  # the move does no damage in any class
-    inv: np.ndarray | None = None  # [S] -> [0, U); None: U = S
+    zero: bool = False
+    inv: np.ndarray | None = None
     inv_key: object = None
 
 

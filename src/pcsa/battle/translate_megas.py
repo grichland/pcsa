@@ -64,16 +64,14 @@ def mega(t: Translator, row: RawRow, e: Event) -> None:
 
 
 def mega_from_sprite(t: Translator, side: str, member: Member, row: RawRow) -> None:
-    """A row sprite already in a Mega form the protocol has not reached: the Mega Evolution rows were not read
-    (the start of the turn's log was not captured). The evolution, which happens before any move, is written
-    before this row, as the stone reacting and the evolution rows would have written it."""
+    """A row sprite already in a Mega form the protocol has not reached: the Mega Evolution rows were not read."""
     mon = t.tracked(side, member)
     entry = game.species_entry(member.species)
     stone = entry.get("requiredItem")
     if mon is None or not stone or not game.is_mega(member.species) or game.is_mega(observed_form(t.battle, mon)):
         return
     if any(line.startswith(f"|-mega|{side}a: ") for line in t.out.lines):
-        return  # one Mega Evolution per side and battle: a second Mega sprite is not this
+        return  # one Mega Evolution per side and battle
     ident = t.ident(side, member)
     t.megas[ident] = stone
     t.out.inferred.append({"kind": "mega_from_sprite", "row": row.row_id, "form": member.species, "item": stone})

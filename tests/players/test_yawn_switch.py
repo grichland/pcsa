@@ -1,5 +1,4 @@
-"""The yawn_switch guard rule (14 Nov 2026, from the labelled Yawn loops: Garchomp stayed in drowsy against
-Hippowdon, could not KO it, fell asleep and Hippowdon used Slack Off)."""
+"""The yawn_switch guard rule."""
 
 from __future__ import annotations
 
@@ -45,7 +44,7 @@ def decide(s: Spot):
 
 
 def test_drowsy_and_no_ko_switches(threat) -> None:
-    threat()  # every hit 10%: nothing KOs Hippowdon
+    threat()
     b, legal = position()
     assert b.active_pokemon.species.startswith("garchomp") and not b.active_pokemon.first_turn
     message, rule, why = decide(spot(b, legal))  # type: ignore[misc]
@@ -62,13 +61,13 @@ def test_no_switch_when_it_cannot_fall_asleep_or_just_came_in(threat) -> None:
     threat()
     b, legal = position()
     mon = b.active_pokemon
-    mon._active_turns = 1  # Yawned on the way in
+    mon._active_turns = 1
     assert decide(spot(b, legal)) is None
     mon._active_turns = 3
-    mon._status = Status.PAR  # already statused: Yawn's sleep fails
+    mon._status = Status.PAR
     assert decide(spot(b, legal)) is None
     mon._status = None
-    b._fields = {Field.MISTY_TERRAIN: 1}  # grounded under Misty Terrain
+    b._fields = {Field.MISTY_TERRAIN: 1}
     if b.is_grounded(mon):
         assert decide(spot(b, legal)) is None
 

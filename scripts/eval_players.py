@@ -1,8 +1,4 @@
-"""Evaluate one player kind against a reference opponent (top and noisy builds) and record one row in results.md.
-
-Side A's notes are split from side B's by order: notes.jsonl is A's records then B's, so the first battle tag that
-reappears after a different tag marks the start of B. Concurrent runs are safe (free ports, locked file).
-"""
+"""Evaluate one player kind against a reference opponent (top and noisy builds) and record one row in results.md."""
 
 from __future__ import annotations
 
@@ -125,7 +121,7 @@ def update_file(out: Path, kind: str, row: str) -> None:
             break
         except FileExistsError:
             if clock.now() > deadline:
-                lock.unlink(missing_ok=True)  # stale lock
+                lock.unlink(missing_ok=True)
             clock.sleep(0.2)
     try:
         text = out.read_text(encoding="utf-8") if out.exists() else HEADER

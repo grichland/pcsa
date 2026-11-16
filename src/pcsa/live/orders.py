@@ -1,9 +1,4 @@
-"""poke-env battle orders <-> phone tap targets, and the screen check before tapping.
-
-Legality comes from the tracked Battle (`battle.valid_orders`). This module maps an order to what
-the phone can tap, checks the screen shows it, and offers the screen-only list for decisions
-without a Battle.
-"""
+"""poke-env battle orders <-> phone tap targets, and the screen check before tapping."""
 
 from __future__ import annotations
 

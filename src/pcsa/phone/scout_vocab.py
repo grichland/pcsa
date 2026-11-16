@@ -34,8 +34,8 @@ def letters(text: str) -> str:
 
 @dataclass
 class Known:
-    species: dict[str, str]  # letters -> display name
-    other: set[str]  # letters of moves, items, abilities
+    species: dict[str, str]
+    other: set[str]
     items: set[str]
 
     @classmethod

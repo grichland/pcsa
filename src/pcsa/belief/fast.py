@@ -1,32 +1,10 @@
-# From research/pcsa-belief/belief/fast.py (sha256 dcd849036429, 2026-11-12 14:38), split into keys, grids, board,
-# member_state, member_grids, member_out, member, fast (pcsa's 400-line file limit); pcsa changes are marked "pcsa:".
+# Split from research/pcsa-belief/belief/fast.py (pcsa's file limit); pcsa changes are marked "pcsa:".
 """Stage 2: stage 1's belief tracker (belief/tracker.py), made cheap enough for training rollouts.
 
-Same model (rows, priors, evidence, likelihoods, outputs; README.md), other bookkeeping:
-
-- The free component (every spread x item x ability) is a dense array [items, abilities, spreads] of log-weights
-  instead of ~110k rows; the listed components (list / spread / item) stay rows (a few thousand). Certain reveals
-  shrink the item and ability axes; a used move multiplies the free part by one number.
-- Every calculation runs on a grid (item class x ability class x spread). Items and abilities that a calculation
-  cannot tell apart share a class: the calculator (pcsa.battle.damage, belief.calc, pcsa.players.opponent.speed)
-  reads an item or ability only through the tables named in the *_key functions below, so the classes are exact
-  (tests/test_fast.py compares every row with stage 1). The scalar parts of a calculation run once per class pair,
-  the stat arithmetic once per (class pair, spread) in one numpy pass.
-- Protocol lines are read once (belief.hits.Reader: hits, turn orders, Mega lines). The board of the moment comes from
-  one private Battle advanced line by line, with the decision's request applied at each decision (IncBoard), instead
-  of replaying the protocol prefix for every hit and turn order. A board_at callback (stage 1's interface) still
-  works.
-- Posterior weights, their class aggregates and the outputs are cached per member version.
-
-Additions over stage 1 (stage-2 brief):
-- the Mega form in the coming turn: `coming=True` on their active takes the rows holding one of its Mega Stones in
-  that Mega form (types, base stats, ability, the stone, the weather a Drought / Drizzle / Sand Stream / Snow
-  Warning Mega sets), the others in the current form, and an Aegislash's damaging moves in Blade Forme (Stance
-  Change); `our_form=<Mega form>` takes our member in that Mega form (exact stats from the solved points, the Mega's
-  ability);
-- a floor on the hidden Choice Scarf prior (FastPriors.scarf_floor), for the item prior of the free and item
-  components.
-"""
+Same model, other bookkeeping: the free component is a dense [items, abilities, spreads] log-weight array, and every
+calculation runs on a grid of (item class x ability class x spread), classes being items/abilities the calculator
+cannot tell apart. Protocol lines are read once, on one private incrementally advanced Battle (IncBoard). Additions:
+`coming=True` / `our_form` for the coming turn's Mega form, and a Choice Scarf prior floor (FastPriors.scarf_floor)."""
 
 from __future__ import annotations
 
@@ -97,16 +75,15 @@ class BattleBelief:
         self.rebuilds = 0
         self._requests: dict[int, dict] = {}  # pcsa: the first request seen at each turn (for a rebuild)
         self._prior: dict[str, FastMember] = {}
-        self._cache: dict = {}  # this decision (cleared by update)
-        self._across: dict = {}  # damage ranges by value key, across decisions
+        self._cache: dict = {}
+        self._across: dict = {}
         self._species: dict[str, str] = {}
         self.updates = 0
         self.counts: collections.Counter = collections.Counter()
 
     def update(self, lines: list[str], end: int | None = None, request: dict | None = None) -> None:
-        """Read the decision's protocol (lines[:end]) and request. pcsa: the tracker reads only the lines it has not
-        read; when this protocol does not extend the one read before (live: a battle log re-read differently, 169
-        of 2,798 recorded decisions in stage 1), the tracker starts again (`_rebuild`)."""
+        """Read the decision's protocol (lines[:end]) and request. pcsa: only unread lines are read; a protocol that does not
+        extend the one read before (live: a battle log re-read differently) restarts the tracker (`_rebuild`)."""
         end = len(lines) if end is None else end
         n = len(self._lines)
         for m in self._prior.values():  # pcsa: memos keyed by id(battle); live builds a Battle per decision

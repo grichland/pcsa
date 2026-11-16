@@ -105,7 +105,7 @@ def test_the_exported_network_matches_torch() -> None:
 
     torch.manual_seed(0)
     net = Net()
-    for norm in net.norms:  # non-trivial running statistics, so the folding is exercised
+    for norm in net.norms:
         norm.running_mean.uniform_(-0.5, 0.5)
         norm.running_var.uniform_(0.5, 2.0)
         norm.weight.data.uniform_(0.5, 1.5)

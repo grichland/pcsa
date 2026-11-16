@@ -34,10 +34,10 @@ class HeuristicParams:
     hazard_min_opponents: int = 2
     setup_min_boost: int = 2
     setup_requires_full_hp: bool = True
-    setup_max_boost: int = MAX_BOOST  # stop boosting a stat once it reaches this stage
+    setup_max_boost: int = MAX_BOOST
     stab: float = 1.5
     exact_own_stats: bool = True
-    mega: str = "first"  # first | matchup | last | never
+    mega: str = "first"
 
     @classmethod
     def load(cls, path: Path) -> HeuristicParams:
@@ -53,7 +53,7 @@ class HeuristicPlayer:
 
     def __init__(self, params: HeuristicParams | None = None, name: str | None = None) -> None:
         self.p = params or HeuristicParams()
-        self.name = name or "heuristic"  # simple_heuristic (code defaults) | custom_heuristic (the tuned yaml)
+        self.name = name or "heuristic"
         self._notes: dict = {}
 
     def params(self) -> dict:
@@ -96,7 +96,7 @@ class HeuristicPlayer:
         if b["def"] <= p.drop_threshold or b["spd"] <= p.drop_threshold:
             return True
         stats = active.stats or {}
-        attack = "atk" if (stats.get("atk") or 0) >= (stats.get("spa") or 0) else "spa"  # an unread stat counts as 0
+        attack = "atk" if (stats.get("atk") or 0) >= (stats.get("spa") or 0) else "spa"
         return b[attack] <= p.drop_threshold or self.matchup(active, opponent, battle) < p.switch_threshold
 
     def want_mega(self, battle, own_left: int) -> bool:

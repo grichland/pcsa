@@ -51,12 +51,12 @@ def test_the_lead_prior_is_a_smoothed_rate(tmp_path: Path) -> None:
     path = tmp_path / "lead_prior.json"
     path.write_text(json.dumps({"games": 40, "species": {"rotom": {"lead": 15, "six": 35}}}), encoding="utf-8")
     prior = sampler.LeadPrior.load(path)
-    assert prior.games == 40 and prior.rate("Rotom-Heat") == pytest.approx((15 + 0.5) / 38)  # forms count as one
-    assert prior.rate("Garchomp") == pytest.approx(1 / 6)  # never seen: chance
+    assert prior.games == 40 and prior.rate("Rotom-Heat") == pytest.approx((15 + 0.5) / 38)
+    assert prior.rate("Garchomp") == pytest.approx(1 / 6)
     p = prior.probabilities(["Rotom", "Garchomp", "Milotic"])
     assert p.sum() == pytest.approx(1.0) and p[0] > p[1] == p[2]
     empty = sampler.LeadPrior.load(tmp_path / "missing.json")
-    assert np.allclose(empty.probabilities(THEIRS), 1 / 6)  # no file: every lead equally likely
+    assert np.allclose(empty.probabilities(THEIRS), 1 / 6)
 
 
 def test_gumbel_top_draws_without_replacement_in_proportion() -> None:
@@ -75,9 +75,9 @@ def test_their_lineup_is_six_with_the_trio_first_and_one_of_each_item() -> None:
     blocks = lineup.export.strip().split("\n\n")
     names = [b.split(" @ ")[0] for b in blocks]
     assert len(blocks) == 6 and tuple(names[:3]) == lineup.species and "Volcarona" not in names
-    assert "Snorlax" in names  # the member without a build is replaced on the bench
+    assert "Snorlax" in names
     items = [b.splitlines()[0].split(" @ ")[1] for b in blocks]
-    assert len(set(items)) == 6  # Item Clause: another build or a filler item
+    assert len(set(items)) == 6
     assert sampler.their_lineup(THEIRS, sampler.LeadPrior({}), FakeCatalog(missing=set(THEIRS[:4])), rng) is None
 
 
@@ -87,7 +87,7 @@ def test_a_preview_name_without_builds_uses_its_formes() -> None:
         "rotomwash": [build("Rotom-Wash", "C")],
     }
     got = sampler.builds_of(FakeCatalog(forms=forms), "Rotom")
-    assert [b.species for b in got] == ["Rotom-Heat", "Rotom-Wash", "Rotom-Heat"]  # the formes in turn
+    assert [b.species for b in got] == ["Rotom-Heat", "Rotom-Wash", "Rotom-Heat"]
     assert sampler.builds_of(FakeCatalog(forms=forms), "Indeedee Female")[0].species == "Indeedee"
     assert sampler.builds_of(FakeCatalog(forms=forms), "Mudsdale") == []
 
@@ -135,7 +135,7 @@ def setup(answer, *, params=None, seconds=0.1, workers=2, export="x"):
     battle = preview_battle()
     view = TeamPreviewView(battle, tuple(OURS), random.Random(0), export)
     picks = preview.all_picks(6, 3)
-    scores = np.linspace(1.0, 0.0, len(picks))  # pick 0 is the robust pick
+    scores = np.linspace(1.0, 0.0, len(picks))
     return search, pool, view, picks, Policy(scores, list(range(len(picks)))), clock
 
 
@@ -149,19 +149,19 @@ def test_halving_plays_the_schedule_and_takes_the_lineup_that_wins(tmp_path, mon
     assert notes["playout_finalists"][0].endswith("30/30") and notes["playout_robust"].startswith("Azumarill/")
     assert all(not isinstance(v, dict) and (not isinstance(v, list) or len(v) <= 16) for v in notes.values())
     first = [t for t in pool.sent if t["round"] == 0]
-    assert {t["pick"] for t in first} == set(range(16))  # the best 16 by robust score, the robust pick among them
-    assert len({(t["theirs"], t["seed"]) for t in first}) == 3  # every candidate meets the same three lineups
+    assert {t["pick"] for t in first} == set(range(16))
+    assert len({(t["theirs"], t["seed"]) for t in first}) == 3
     assert all(t["their_pick"] == [0, 1, 2] and t["ours"] == "x" for t in pool.sent)
     saved = [json.loads(line) for line in (tmp_path / "preview-playouts.jsonl").read_text("utf-8").splitlines()]
-    assert len(saved) == 149 and saved[0]["six"] and sum("won" in r for r in saved) == 148  # every playout is kept
+    assert len(saved) == 149 and saved[0]["six"] and sum("won" in r for r in saved) == 148
 
 
 def test_the_robust_pick_stays_without_a_clear_winner(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(pp, "run_folder", lambda: tmp_path)
     search, _, view, picks, policy, clock = setup(lambda task: {"won": True})
     team, notes = search.refine(policy, view, Deadline.after(clock, 80.0), list(picks[0]), {"rule": "rl"})
-    assert team == list(picks[0]) and not notes["playout_changed"]  # all win alike: no margin
-    few = pp.PlayoutParams(noise=0.0, schedule=[[4, 2], [2, 3]])  # the winner has 5 games: fewer than min_playouts
+    assert team == list(picks[0]) and not notes["playout_changed"]
+    few = pp.PlayoutParams(noise=0.0, schedule=[[4, 2], [2, 3]])
     search, _, view, picks, policy, clock = setup(lambda task: {"won": task["pick"] == 1}, params=few)
     team, _ = search.refine(policy, view, Deadline.after(clock, 80.0), list(picks[0]), {"rule": "rl"})
     assert team == list(picks[0])
@@ -171,15 +171,15 @@ def test_the_search_stops_at_the_deadline_with_the_best_so_far(tmp_path, monkeyp
     monkeypatch.setattr(pp, "run_folder", lambda: tmp_path)
     search, _, view, picks, policy, clock = setup(lambda task: {"won": task["pick"] == 2}, seconds=0.25)
     team, notes = search.refine(policy, view, Deadline.after(clock, 33.0), list(picks[0]), {"rule": "rl"})
-    assert notes["playout_done"] < 148 and notes["playout_s"] <= 30.5  # 33 s less the 3 s reserve
+    assert notes["playout_done"] < 148 and notes["playout_s"] <= 30.5
     assert notes["playout_stop"] == "deadline" and notes["playout_rounds"][:2] == ["16x3:48", "8x5:40"]
-    assert team == list(picks[2])  # 16 games by then, all won
+    assert team == list(picks[2])
     search, _, view, picks, policy, clock = setup(lambda task: {"won": task["pick"] == 2}, seconds=0.5)
     team, notes = search.refine(policy, view, Deadline.after(clock, 33.0), list(picks[0]), {"rule": "rl"})
-    assert notes["playout_rounds"][1] == "8x1:8" and team == list(picks[0])  # later rounds shrunk: too few games
+    assert notes["playout_rounds"][1] == "8x1:8" and team == list(picks[0])
     search, _, view, picks, policy, clock = setup(lambda task: {"won": task["pick"] == 2}, seconds=2.0)
     team, notes = search.refine(policy, view, Deadline.after(clock, 9.0), list(picks[0]), {"rule": "rl"})
-    assert team == list(picks[0]) and notes["playout_done"] <= 3  # too few games: the robust pick
+    assert team == list(picks[0]) and notes["playout_done"] <= 3
 
 
 def test_failed_playouts_are_counted_and_do_not_score(tmp_path, monkeypatch) -> None:

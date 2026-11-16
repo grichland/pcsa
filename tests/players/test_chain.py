@@ -78,8 +78,6 @@ def test_horizon_is_a_draw() -> None:
     assert drawn.margin == 0
 
 
-# Our P0, P1 against their Q0, Q1. Q0 beats P0 but P1 walls it; Q1 beats P1 but P0 beats it.
-# Indices: ours[0] is a fainted member (we are choosing a replacement), P0 = 1, P1 = 2.
 SWEEP = Matchups(
     ours={(1, 0): (hit(0.1, 0.12),), (2, 0): (hit(0.5, 0.55),), (2, 1): (hit(0.1, 0.12),), (1, 1): (hit(0.6, 0.7),)},
     theirs={
@@ -124,7 +122,7 @@ def test_opponent_picks_its_order_adversarially() -> None:
 
 
 def test_switching_out_of_a_lost_matchup() -> None:
-    # Q0 KOs P0 at once; P1 takes little from Q0 and beats it. Switching keeps P0 alive.
+    # Q0 KOs P0 at once; P1 takes little from Q0 and beats it, so switching keeps P0 alive
     ours = [no_swap("P0", 50), no_swap("P1", 50)]
     theirs = [no_swap("Q0", 100)]
     matrix = Matchups(

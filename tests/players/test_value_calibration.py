@@ -21,7 +21,7 @@ def test_map_is_two_sigmoid_minus_one_and_keeps_order() -> None:
     got = f(v)
     want = 2 / (1 + np.exp(-(1.93 * v - 1.16))) - 1
     assert np.allclose(got, want)
-    assert np.all(np.diff(got) > 0)  # a > 0: the critic's order is kept
+    assert np.all(np.diff(got) > 0)
     assert np.all((got > -1) & (got < 1))
     # the live fit lowers an optimistic 0.9 (raw win chance 0.95) to about 0.64
     assert (f(np.array([0.9]))[0] + 1) / 2 == pytest.approx(0.640, abs=0.005)

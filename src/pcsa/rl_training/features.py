@@ -1,13 +1,8 @@
-# From research/pcsa-rl/rl/features.py (sha256 61303b72c917, 2026-11-08 20:15); keep diffable.
-# pcsa: the first network's own observation (their_rows with assumed sets, observe, preview_observations) is
-# removed with that network; what is left is what former_features builds on.
+# From research/pcsa-rl/rl/features.py; keep diffable.
+# pcsa: only what former_features builds on.
 """Shared parts of a decision observation: our rows, their members in canonical order, the per-observation damage
-cache and the action mapping, from the poke-env Battle a pcsa player sees (always the p1 view).
-
-Canonical rows: 0 my active (or the member that just fainted), 1-2 my bench in request order (= switch actions
-8-9), 3-5 my unbrought (always empty: the Battle holds only the request's members); 6 their active (or the one
-that just fainted), 7.. their other members seen in battle, then the preview-only ones in preview order.
-Row layout in features_rows, field layout in features_field.
+cache
+and the action mapping, from the poke-env Battle a pcsa player sees (always the p1 view).
 """
 
 from __future__ import annotations

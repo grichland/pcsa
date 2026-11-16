@@ -24,13 +24,10 @@ class ChampionsBattle(Battle):
         super().__init__(*args, **kwargs)
         self.compatibility_repairs = []
         self.replay_errors = []
-        self._transforms: dict[str, str] = {}  # transformed mon's ident -> the ident it copied
+        self._transforms: dict[str, str] = {}
 
     def _refresh_transforms(self) -> None:
-        """Bring every copied move set up to the copied mon's full set. The live tracker replays the log before our
-        request, so a Ditto that copied one of ours took only the moves the log had shown by then (none, on a fresh
-        switch-in); the request fills in our moves, and the copy has to follow (14 Nov battle 43). Moves already
-        copied keep their objects (PP used); boosts are left alone."""
+        """Bring every copied move set up to the copied mon's full set (the request fills in ours after the log replay)."""
         for ident, into in self._transforms.items():
             mon, target = self._mon(ident), self._mon(into)
             if mon is None or target is None or not mon.transformed:

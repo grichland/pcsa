@@ -1,9 +1,8 @@
-# From research/pcsa-rl/rl2/turns.py (sha256 3f6c7577066d, 2026-11-10 20:44); keep diffable.
+# From research/pcsa-rl/rl2/turns.py; keep diffable.
 """One pass over a battle protocol: what each side did in each turn.
 
-Used for the last-turn token (the previous turn's record) and the opponent-action labels (the record of the turn a
-decision was made in). A turn's segment is everything after `|turn|t` up to `|turn|t+1`; the decision made while
-`battle.turn == t` (not a forced switch) acts in segment t.
+Feeds the last-turn token and the opponent-action labels. A turn's segment is everything after `|turn|t` up to
+`|turn|t+1`; the decision made while `battle.turn == t` (not a forced switch) acts in segment t.
 """
 
 from __future__ import annotations

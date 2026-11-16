@@ -1,8 +1,7 @@
 """Logging: a console line for people and an `events.jsonl` line for tools, from the same call.
 
-from pcsa.common import log
-log.configure(run_dir)              # once per run (run_dir may be None for console only)
-log.event("decision", battle=1, turn=3, action="move2", degrade="full")
+    log.configure(run_dir)  # once per run (None = console only)
+    log.event("decision", battle=1, turn=3, action="move2")
 """
 
 from __future__ import annotations

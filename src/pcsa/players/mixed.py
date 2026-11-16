@@ -3,8 +3,7 @@
 The draw happens at team preview (the start of every game) and again whenever the turn counter goes
 backwards, which is how a game boundary looks when no preview was shown. With `per_decision` on, a
 member is drawn for every decision instead (an experiment setting: the result is an opponent nobody
-plays like). Weights need not sum to one. `notes()` names the member that decided.
-"""
+plays like). Weights need not sum to one. `notes()` names the member that decided."""
 
 from __future__ import annotations
 

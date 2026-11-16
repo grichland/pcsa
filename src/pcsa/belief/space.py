@@ -1,21 +1,10 @@
-# From research/pcsa-belief/belief/space.py (sha256 027bb2a0ac64, 2026-11-12 12:19); keep diffable.
-# pcsa changes are marked "pcsa:".
+# From research/pcsa-belief/belief/space.py; keep diffable. pcsa changes are marked "pcsa:".
 """The hypothesis space of one opposing species: weighted rows (spread, item, ability, moves source).
 
-A row is one complete stat-relevant build: a spread (stat points + nature), the item it brought, its base ability,
-and where its moves come from (a listed build, or the species' generic move frequencies). Rows come from four
-components, each with a prior mass (Priors):
-
-  A  "list"    the listed builds (seen on the ladder first, then the usage catalog), exactly
-  B  "spread"  a listed build's item, ability and moves with any spread of the spread table
-  C  "item"    a listed build's spread, ability and moves with any item the species can hold
-  D  "free"    any spread x any item x any ability, generic moves (the factored component)
-
-The spread table is species-independent: every spread of the catalog and the seen builds, the simulator's
-perturbation spreads, and a grid of "standard" patterns (each stat at 0 or 32 points, at most two maxed) under each
-of the 21 nature effects (neutral, or + one stat and - another). Stats of a row in a form are computed from that
-form's base stats (pcsa.battle.damage.build_stats arithmetic, vectorised).
-"""
+A row is one complete stat-relevant build. Components, each with a prior mass (Priors): list (the listed builds),
+spread (a build's item/ability/moves with any spread), item (a build's spread with any item) and free (any spread x
+item x ability, generic moves; factored). The spread table is species-independent: catalog and seen spreads, the
+simulator's perturbations and a grid of standard patterns under each of the 21 natures."""
 
 from __future__ import annotations
 
@@ -83,33 +72,33 @@ class Priors:
     spread_mass: float = 0.20
     item_mass: float = 0.15
     free_mass: float = 0.20
-    seen_share: float = 0.6  # of the list mass, when the species has both seen and catalog builds
-    grid_share: float = 0.4  # of the spread prior: the standard grid (rest: listed spreads by frequency)
-    item_species_share: float = 0.6  # of the item prior: the species' listed items (rest: global usage)
+    seen_share: float = 0.6
+    grid_share: float = 0.4
+    item_species_share: float = 0.6
     ability_list_share: float = 0.7
-    move_list_share: float = 0.8  # generic move frequencies: listed builds (rest: uniform over the learnset)
-    move_swap: float = 0.15  # a build-tied row showing a move its build lacks: x move_swap x P(move)
+    move_list_share: float = 0.8
+    move_swap: float = 0.15
     eps_order: float = 0.01
     eps_dealt: float = 0.02
     eps_taken: float = 0.04
-    slack_dealt: float = 1.0  # percent points (their HP is read in whole percent)
-    slack_taken: float = 1.0  # HP
+    slack_dealt: float = 1.0
+    slack_taken: float = 1.0
     rel_slack: float = 0.01
-    tau_dealt: float = 2.0  # percent points
-    tau_taken: float = 0.02  # fraction of our max HP
-    crit_unreported: float = 1 / 24  # live: no -crit lines, so any hit may be a critical hit
-    prune: float = 40.0  # rows more than this many nats below the best are dropped (numerically zero)
-    role_power: float = 0.0  # off-list spreads weighted by the species' listed investment pattern (0: off)
+    tau_dealt: float = 2.0
+    tau_taken: float = 0.02
+    crit_unreported: float = 1 / 24
+    prune: float = 40.0
+    role_power: float = 0.0
     role_floor: float = 0.15
 
 
 # ------------------------------------------------------------------------------------------------ spread table
 @dataclass
 class SpreadTable:
-    points: np.ndarray  # [S, 6] int
-    effect: np.ndarray  # [S] int (index into EFFECTS)
-    prior: np.ndarray  # [S] float
-    index: dict  # (points tuple, effect) -> row
+    points: np.ndarray
+    effect: np.ndarray
+    prior: np.ndarray
+    index: dict
 
     def add(self, points: tuple, effect: int) -> int:
         key = (tuple(int(p) for p in points), int(effect))
@@ -211,8 +200,8 @@ class ListBuild:
     item: str
     ability: str
     moves: frozenset
-    spread: int  # row in the spread table
-    prior: float  # within the list
+    spread: int
+    prior: float
     seen: bool
 
 

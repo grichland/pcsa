@@ -1,9 +1,7 @@
 """Getting to the lobby from anywhere outside a battle, and backing out of stray surfaces.
 
-A graph of known screens and the one safe tap that moves toward the lobby from each. Every tap
-goes through the tap policy. In-battle screens are never navigated away from: the turn pipeline
-owns them. An unknown screen is waited on, backed out of with an OCR-confirmed safe control, and
-after a bounded number of rounds raises Recoverable (the supervisor restarts the session).
+A graph of known screens and the one safe tap toward the lobby from each. In-battle screens are never navigated
+away from. An unknown screen is waited on, then backed out of; after a bounded number of rounds it raises Recoverable.
 """
 
 from __future__ import annotations
@@ -25,8 +23,8 @@ Observe = Callable[[str], tuple[Observation, object]]  # tag -> (observation, fr
 
 @dataclass(frozen=True)
 class Edge:
-    tap: str  # region name, or "dismiss" for the OCR-located control in fields["dismiss"]/["close"]/["target"]
-    field: str | None = None  # observation field holding an OCR box target for OCR-located taps
+    tap: str  # region name, or "dismiss" for an OCR-located control
+    field: str | None = None
 
 
 # From each screen, the one tap that leads toward the lobby.
@@ -49,7 +47,7 @@ GRAPH: dict[Screen, Edge] = {
     Screen.TEAM_STATS: Edge("team_details_back"),
     Screen.TEAM_LIST: Edge("team_details_back"),
 }
-DISMISS_FROM_ROUND = 2  # the first unknown round only waits; a dismiss control is tapped from the second
+DISMISS_FROM_ROUND = 2  # the first unknown round only waits
 WAITING = frozenset(
     {
         Screen.TRANSITION,
@@ -82,7 +80,7 @@ class Navigator:
             obs, _ = self.observe("nav")
             if obs.screen == target:
                 return obs
-            if obs.screen in WAITING:  # transitions and waits happen between menus too; poll through them
+            if obs.screen in WAITING:
                 self.clock.sleep(self.poll_s)
                 continue
             if obs.screen in IN_BATTLE:
@@ -135,9 +133,7 @@ class Navigator:
             self.clock.sleep(self.config.edge_settle_s)
 
     def close_move_info(self, obs: Observation) -> Observation:
-        """The moves screen with its Move Info view off. With the view on (13 Nov), the panel covered the screen
-        and neither Back nor a move tap took: the turn timed out. The toggle is tapped first, then the panel's
-        Close; returns the screen after, or `obs` when the view was not on."""
+        """The moves screen with its Move Info view off. With the view on, the panel covers the screen."""
         for tap in ("move_info", "info_close"):
             if obs.screen != Screen.MOVES or not obs.fields.get("info_open"):
                 return obs

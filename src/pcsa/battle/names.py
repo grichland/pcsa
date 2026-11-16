@@ -1,8 +1,4 @@
-"""Game display names to Showdown species names: hand-written tables checked against the pinned dex.
-
-Base species names pass through unchanged. A name that looks like a forme but is not in these tables
-is kept as written and reported; it is never replaced by a different forme.
-"""
+"""Game display names to Showdown species names: hand-written tables checked against the pinned dex."""
 
 from __future__ import annotations
 
@@ -134,7 +130,7 @@ FORM_HINT = re.compile(
 @dataclass
 class NameResult:
     display: str
-    species: str  # Showdown species, or the display name kept as written
+    species: str
     status: str  # base | mapped | ambiguous | unmapped_form
     candidates: tuple = ()
     warnings: list = field(default_factory=list)

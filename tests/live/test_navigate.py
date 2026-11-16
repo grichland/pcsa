@@ -65,7 +65,7 @@ def test_the_move_info_view_is_turned_off_before_back(config: Config, fake_clock
     navigator, device = make(config, fake_clock, steps)
     navigator.back_out(navigator.observe("t")[0])
     assert device.step.screen == Screen.ACTION and device.rejected == []
-    steps = [  # the toggle did nothing: the panel's Close
+    steps = [
         Step(Screen.MOVES, {"info_open": True}, accept=("move_info", "info_close"), advance_on=("info_close",)),
         Step(Screen.MOVES, {"info_open": False}, accept=("move_back",)),
         Step(Screen.ACTION),
@@ -87,7 +87,7 @@ def test_unknown_screen_is_dismissed_then_gives_up(config: Config, fake_clock: F
 
 
 def test_a_screen_that_never_changes_is_recoverable(config: Config, fake_clock: FakeClock) -> None:
-    steps = [Step(Screen.OPTIONS, accept=())]  # taps land but nothing happens
+    steps = [Step(Screen.OPTIONS, accept=())]
     navigator, device = make(config, fake_clock, steps)
     with pytest.raises(Recoverable, match="did not change"):
         navigator.reach(Screen.LOBBY, Deadline.after(fake_clock, 600))
@@ -104,7 +104,7 @@ def test_the_centre_tap_is_allowed_only_on_disconnect_screens_and_never_near_for
         with pytest.raises(SafetyStop):
             policy.check(screen, "screen_centre", cx, cy)
     for corner in ((centre.x1, centre.y1), (centre.x2, centre.y2)):
-        assert policy.blocked("screen_centre", *corner, None) is None  # clear of every forbidden circle
+        assert policy.blocked("screen_centre", *corner, None) is None
     for word in ("Forfeit", "Quit Battling", "Edit Team", "Rating", "Shop", "Double Battle"):
         texts = Texts([TextBox(word, 0.6, (cx + 30, cy + 30, cx + 200, cy + 70))], 0.5)
         assert policy.blocked("screen_centre", cx, cy, texts, BLIND_FORBIDDEN_TEXT, BLIND_TEXT_MARGIN) is not None

@@ -6,7 +6,7 @@ from pcsa.battle.stats import nature_name
 from pcsa.live.team_read import from_sheet
 from pcsa.phone.team_sheet import MemberStats, ReadField, RosterMember, TeamSheet
 
-STATS = {"hp": 185, "atk": 93, "def": 143, "spa": 130, "spd": 106, "spe": 120}  # Charizard, Bold, 32/0/32/1/1/0
+STATS = {"hp": 185, "atk": 93, "def": 143, "spa": 130, "spd": 106, "spe": 120}
 
 
 def field(value: str | None) -> ReadField:

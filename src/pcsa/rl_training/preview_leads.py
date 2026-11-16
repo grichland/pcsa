@@ -1,11 +1,8 @@
-"""Team preview against each of their possible leads (13 Nov 2026, the `robust` preview).
+"""Team preview against each of their possible leads (the `robust` preview).
 
-The critic scores a pick from the turn-0 view (our trio with our lead out, their six), an average over whatever the
-training opponents led with. Here each pick is scored once per lead of theirs instead: the turn-1 Battle right after
-both leads are sent out (nothing revealed yet, full HP), built from the preview Battle the same way the live loop
-builds a decision's Battle (protocol lines, then our request). That is the position every training game's first
-decision saw, so the value head is on familiar ground. A pick's score is the mean of its `worst` lowest values
-over their leads: it does not walk into the lead that counters it.
+Each pick is scored once per lead of theirs on the turn-1 Battle after both leads are out (nothing revealed, full HP);
+a
+pick's score is the mean of its `worst` lowest values, so it does not walk into the lead that counters it.
 """
 
 from __future__ import annotations
@@ -85,7 +82,7 @@ def lead_values(policy, battle, picks) -> tuple[np.ndarray, list[str]]:
     from pcsa.rl_training.former_player import _Game
 
     species = their_species(battle)
-    games = {s: _Game() for s in species}  # one belief per lead of theirs: the same table, about a third faster
+    games = {s: _Game() for s in species}  # one belief per lead of theirs: the same table, faster
     obs = []
     for pick in picks:
         for s in species:

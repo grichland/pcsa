@@ -1,5 +1,4 @@
-# From research/pcsa-belief/belief/fast.py (sha256 dcd849036429, 2026-11-12 14:38), split into keys, grids, board,
-# member_state, member_grids, member_out, member, fast (pcsa's 400-line file limit); pcsa changes are marked "pcsa:".
+# Split from research/pcsa-belief/belief/fast.py (pcsa's file limit); pcsa changes are marked "pcsa:".
 """The incremental board and the tracker (overview: pcsa.belief.fast)."""
 
 from __future__ import annotations
@@ -41,7 +40,7 @@ class IncBoard:
         self.ended: set[str] = set()
         self.errors = 0
         self._moves: dict[tuple[str, str], list] = {}  # (side, name) -> form-changing lines (observed_form's)
-        self._forms: dict[int, tuple] = {}  # id(mon) -> (transitions applied, form, species it started from)
+        self._forms: dict[int, tuple] = {}
         self._request_sig: tuple = ()
 
     def advance(self, lines: list[str], i: int) -> None:

@@ -1,4 +1,4 @@
-# From research/pcsa-rl/rl/features_field.py (sha256 0a99fa3b8994, 2026-11-08 20:13); keep diffable.
+# From research/pcsa-rl/rl/features_field.py; keep diffable.
 """The 126-float field vector: global 16 | weather 6 | terrain 5 | rooms 5 | side conditions 2 x 15 |
 last turn 2 x 8 | their active's last move 21 | tendencies 2 x 4 | threat summary 6 | misc 13."""
 
@@ -79,9 +79,8 @@ def _weather_rooms(f: np.ndarray, battle) -> None:
         if w in WEATHER_INDEX:
             f[16 + WEATHER_INDEX[w]] = 1.0
         f[20] = max(f[20], float(w in STRONG))
-        # pcsa deviation from research (9 Nov): capped at one turn. In the simulator Showdown's end-of-turn
-        # `|-weather|X|[upkeep]` line resets poke-env's start turn, so training only ever saw 0 or 0.125 here;
-        # the phone's battle log has no upkeep line and the value grew to 0.875 (run 20261109-205551).
+        # pcsa deviation from research: capped at one turn (the phone's log has no weather upkeep line, so it would
+        # keep growing)
         f[21] = min(_elapsed(battle, start, 8.0), 0.125)
     for i, t in enumerate(TERRAINS):
         if t in battle.fields:

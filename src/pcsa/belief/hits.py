@@ -1,9 +1,6 @@
-# From research/pcsa-belief/belief/hits.py (sha256 c18a386adf7e, 2026-11-12 14:37); keep diffable.
-# pcsa changes are marked "pcsa:".
-"""Hits read from protocol lines (p1's view): stage 0's reader (stage0/common.py Hit, read_hits, clean, dealt),
-copied verbatim so the belief package needs no stage-0 import, plus an incremental reader (`Reader`) that reads each
-line once: hits, turn orders (evidence.order_events) and Mega lines (evidence.mega_lines), with the same results.
-"""
+# From research/pcsa-belief/belief/hits.py; keep diffable. pcsa changes are marked "pcsa:".
+"""Hits read from protocol lines (p1's view): stage 0's reader (Hit, read_hits, clean, dealt) copied verbatim, plus an
+incremental `Reader` that reads each line once: hits, turn orders (evidence.order_events) and Mega lines, same results."""
 
 from __future__ import annotations
 
@@ -17,25 +14,25 @@ class Hit:
     """One damaging move use read from a turn's protocol lines."""
 
     turn: int
-    line: int  # index of the |move| line in the full protocol
-    side: str  # attacker side, "p1" / "p2"
-    attacker: str  # team key
-    target: str  # team key
-    move: str  # id
-    before: float | None = None  # target HP before (ours: HP; theirs: percent)
+    line: int  # index in the full protocol
+    side: str
+    attacker: str
+    target: str
+    move: str
+    before: float | None = None  # target HP before
     after: float | None = None
-    scale: float = 100.0  # the denominator of the HP readings
+    scale: float = 100.0  # denominator of the HP readings
     hits: int = 0
     crit: bool = False
     miss: bool = False
     immune: bool = False
-    blocked: bool = False  # Protect, Substitute, a failed move
-    item_event: bool = False  # a berry, Focus Sash, Air Balloon ... during the hit
-    survived_by: bool = False  # Sturdy / Endure / Focus Sash / Disguise
+    blocked: bool = False  # Protect, Substitute, failed move
+    item_event: bool = False
+    survived_by: bool = False  # Sturdy / Endure / Sash / Disguise
     ko: bool = False
-    called: bool = False  # a move called by another, or a locked/charging continuation
-    events_before: bool = False  # something changed the board between the decision and this hit
-    first: bool = False  # the first move of the turn
+    called: bool = False  # called or locked continuation
+    events_before: bool = False  # board changed since the decision
+    first: bool = False
 
 
 def _key(ident: str) -> str:
@@ -86,9 +83,7 @@ SHIELDS = ("protect", "substitute", "shield", "bunker", "detect", "obstruct", "s
 
 
 def read_hits(lines: list[str]) -> list[Hit]:
-    """Every move aimed at the other side with its HP effect. HP is tracked per member over the whole protocol.
-    pcsa: stage 0's full scan is the incremental Reader fed every line (the same code; research's
-    tests/test_stage2.py checks the two agree), so the hit rules live in one place."""
+    """Every move aimed at the other side with its HP effect. HP is tracked per member over the whole protocol."""
     reader = Reader(())
     reader.feed(lines, len(lines))
     return reader.hits
@@ -122,12 +117,7 @@ EARLY_TEXT = ("Lagging Tail", "Full Incense")
 
 
 class Reader:
-    """read_hits, evidence.order_events and evidence.mega_lines over a growing protocol, each line read once.
-
-    `feed(lines, end)` reads lines[read:end]. Then `hits` holds every hit whose move line was read (the last one may
-    still be completed by later lines: stage 1 used it as read so far, and so does the tracker), `orders` every
-    finished turn's order event plus, through `orders_until(end)`, the current turn's when both sides have moved
-    (order_events' end-of-lines sentinel), and `megas` every Mega Evolution / forme change line."""
+    """read_hits, evidence.order_events and evidence.mega_lines over a growing protocol, each line read once."""
 
     def __init__(self, early_movers: tuple[str, ...]) -> None:
         self.early_movers = early_movers

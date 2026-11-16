@@ -1,8 +1,6 @@
 """Typed configuration: one schema, one loader, unknown keys rejected.
 
     config = load_config(config_dir() / "agent.yaml", overrides=["timing.max_turn_s=30"])
-    config.agent.timing.max_turn_s          # 30.0
-    config.screen.resolve("fight", viewport) # pixel rectangle for this device
 
 Environment overrides use double underscores: PCSA__timing__max_turn_s=30.
 """
@@ -55,7 +53,7 @@ class TimingConfig(Strict):
     fight_settle_s: float = 0.9
     back_settle_s: float = 0.7
     party_settle_s: float = 0.9  # live/party_switch.py: after Pokémon and after Switch In, before reading the screen
-    move_peek: Literal["always", "when_needed"] = "always"  # live/move_peek.py
+    move_peek: Literal["always", "when_needed"] = "always"
     team_menu_settle_s: float = 0.8
     log_open_settle_s: float = 1.2
     log_swipe_settle_s: float = 0.6
@@ -67,7 +65,7 @@ class TimingConfig(Strict):
 
 
 class DragConfig(Strict):
-    x: tuple[float, float]  # viewport fractions
+    x: tuple[float, float]
     y_start: tuple[float, float]
     y_end: tuple[float, float]
     steps: int = 8
@@ -117,10 +115,10 @@ class PolicyConfig(Strict):
         "neural",
         "endgame",
     ] = "custom_heuristic"
-    heuristic: str = "players/heuristic.yaml"  # the custom heuristic's parameters
+    heuristic: str = "players/heuristic.yaml"
     best_matchup: str = "players/best_matchup.yaml"  # best_matchup_max_damage's switch thresholds
     mixed: str = "players/mixed.yaml"
-    disciplined: str = "players/disciplined.yaml"  # the disciplined player's thresholds
+    disciplined: str = "players/disciplined.yaml"
     endgame: str = "players/endgame.yaml"  # the endgame player's chain trigger (sim only)
     neural: str = "players/neural.yaml"  # the neural player's checkpoint, sampling and fallback
     neural_checkpoint: str | None = None  # when set, replaces neural.yaml's checkpoint (one --set per run)

@@ -1,34 +1,8 @@
 """Switch away from a faster Encore user: the neural player's `encore_switch` guard rule (pcsa.players.neural_rules).
 
-The user's rule (14 Nov 2026, live battles 14 and 35 of run 20261113-215202: a faster opposing Primarina Encored our
-Primarina's Calm Mind every three turns, and on each free turn our Moonblast came after its next Encore): when their
-active is the Pokemon that used Encore on us during its current stay on the field, and we know from earlier turns
-that it moves before our active, we switch (the network picks which switch). It fires whether or not we are
-encored right now; with no legal switch it does nothing.
-
-`why(battle)` names the reason to switch now, or None. It reads the battle's protocol (`battle._replay_data`):
-
-Encore user   their active used Encore (a `|move|` line of its own, not a called move) on our side since it last
-              came in; a failed Encore counts too (it shows the move and the intent)
-move order    a past turn where our active and their active (the same two Pokemon as now) each started the turn on
-              the field and each used a move of its own, of the same priority, without an early-mover effect seen
-              (Quick Claw, Custap Berry, Quick Draw) and without a move either side's possible ability may reorder
-              (Prankster on a status move, Gale Wings on a Flying move, Triage on a healing move, Stall /
-              Mycelium Might, a Lagging Tail or Full Incense); whoever moved first is that turn's observation
-invalidation an observation counts only while the speed state is the one it was made in: both actives' Speed
-              stages, statuses (paralysis, Quick Feet), Tailwind on either side, Trick Room, weather and terrain
-              (speed abilities) are part of a signature compared with the signature now. Events that change speed
-              in ways the signature cannot hold start a new epoch for that Pokemon and drop its earlier
-              observations: a Mega Evolution or other form change, an item lost or swapped (Knock Off, Trick,
-              a berry eaten: Unburden), a Choice Scarf revealed, Protosynthesis / Quark Drive / Slow Start, an
-              odd boost operation (swap, copy, invert), a Baton Pass / Shed Tail switch
-certainty     `known_first` needs no observation of ours moving first in that state, and at least
-              MIN_OBSERVATIONS of theirs first; one observation is enough only when a speed tie and Quick Claw are
-              both ruled out (their item known and not an early mover; plain state and our Speed outside their
-              species' Speed range at level 50, Choice Scarf included unless their item is known). The live log
-              does not show Quick Claw (the translator drops "can act faster than normal"), and a mirror match
-              can tie, so in practice two observations are needed.
-"""
+The user's rule: when their active is the Pokemon that used Encore on us during its current stay on the field, and
+we know from earlier turns that it moves before our active, we switch (the network picks which switch). It fires
+whether or not we are encored right now; with no legal switch it does nothing."""
 
 from __future__ import annotations
 
@@ -61,23 +35,23 @@ PASSING = frozenset({"batonpass", "shedtail"})
 
 @dataclass
 class _Side:
-    active: str = ""  # team key of the active, "p2: Name"
-    spe: int = 0  # its Speed stage
+    active: str = ""
+    spe: int = 0
     tailwind: bool = False
-    passing: bool = False  # its last move passes stages (Baton Pass): the next switch-in's stages are unknown
+    passing: bool = False
 
 
 @dataclass
 class Facts:
     """What the protocol shows about the current pair."""
 
-    ours: str = ""  # our active's key
-    theirs: str = ""  # their active's key
-    encored_us: bool = False  # their active used Encore on us since it came in
-    theirs_first: int = 0  # observations in the current speed state with their active first
+    ours: str = ""
+    theirs: str = ""
+    encored_us: bool = False
+    theirs_first: int = 0
     ours_first: int = 0
-    turns: list[int] = field(default_factory=list)  # the turns of the theirs-first observations
-    plain: bool = True  # the current speed state has no stages, statuses, Tailwind, weather or terrain
+    turns: list[int] = field(default_factory=list)
+    plain: bool = True
 
 
 class _Walk:
@@ -90,12 +64,12 @@ class _Walk:
         self.epoch: dict[str, int] = {}
         self.items: dict[str, str] = {}
         self.trick_room, self.weather, self.terrain = False, "", ""
-        self.observed: dict[tuple, list[tuple[int, str]]] = {}  # signature -> [(turn, first side)]
-        self.encorer: str | None = None  # their key that used Encore on us since it came in
+        self.observed: dict[tuple, list[tuple[int, str]]] = {}
+        self.encorer: str | None = None
         self.turn = 0
-        self.start: dict[str, str] = {}  # the actives at the start of the turn
-        self.movers: list[tuple[str, str, str, tuple]] = []  # (side, key, move id, signature at its move)
-        self.spoiled = False  # an early mover or an unclear action this turn
+        self.start: dict[str, str] = {}
+        self.movers: list[tuple[str, str, str, tuple]] = []
+        self.spoiled = False
 
     def bump(self, key: str) -> None:
         self.epoch[key] = self.epoch.get(key, 0) + 1
@@ -159,7 +133,7 @@ class _Walk:
         return a == b
 
     def line(self, battle, parts: list[str]) -> None:
-        p = [*parts, *[""] * PAD]  # |kind|a|b|c|d ...: every field readable
+        p = [*parts, *[""] * PAD]
         kind, who = p[1], p[WHO]
         side = who[:2]
         key = ident(who) if side in self.side else ""
@@ -174,11 +148,11 @@ class _Walk:
                 self.bump(key)  # Baton Pass / Shed Tail: stages carried over, not tracked
             state.active, state.spe, state.passing = key, 0, False
             if side == self.foe:
-                self.encorer = None  # a new stay on the field
+                self.encorer = None
         elif kind == "move" and key:
             self._move(parts, side, key)
         elif kind == "cant" and key:
-            self.spoiled = True  # a turn lost (paralysis, sleep, flinch): no order seen
+            self.spoiled = True
         elif kind in BOOSTS | CLEARS | ODD_BOOSTS:
             self._boost(kind, p, key)
         else:
@@ -283,7 +257,7 @@ def facts(battle, protocol: Iterable[list[str]] | None = None) -> Facts:
     for parts in protocol if protocol is not None else getattr(battle, "_replay_data", []):
         walk.line(battle, parts)
     walk.end_turn(battle)  # an open turn where both already moved counts too
-    now = walk.signature()  # the speed state at the decision (the open turn has no moves of both yet)
+    now = walk.signature()
     out = Facts(
         ours=_key(battle, battle.active_pokemon, battle.team),
         theirs=_key(battle, battle.opponent_active_pokemon, battle.opponent_team),

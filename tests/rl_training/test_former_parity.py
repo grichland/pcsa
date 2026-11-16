@@ -1,13 +1,9 @@
-"""Parity of the poke-singles-former with research/pcsa-rl (skipped when that folder or the simulator is absent,
-as in CI).
-
-1. Network: research's Net and ours, loaded from the same checkpoint, give identical outputs (policy logits, value,
-   opponent logits, Mega logit, pair matrix, kept columns and their probabilities) on archived decisions of the
-   training run, and our step-by-step path (the live one) equals the whole-game pass.
-2. Inputs and policy: simulator battles where, at every team preview and decision, research's observation code
-   and ours see the same Battle (the arena's p1 view: a live Battle as p1, a replayed one as p2) and must produce
-   identical observations, and research's network stepped on research's observations must give the outputs our
-   player proposes.
+"""Parity of the poke-singles-former with research/pcsa-rl (skipped when that folder or the simulator is absent).
+1. Research's Net and ours from one checkpoint give identical outputs on archived decisions; our step-by-step path
+equals
+   the whole-game pass.
+2. On simulator battles both observation codes see the same Battle and give identical observations, and research's
+   network on them gives the outputs our player proposes.
 """
 
 from __future__ import annotations
@@ -93,7 +89,7 @@ def test_network_parity_on_archived_decisions(research, record_property) -> None
     if not archives or path is None:
         pytest.skip("no archived update or checkpoint of the training run")
     theirs, ours, _ = _nets(research, path)
-    with np.load(archives[-2] if len(archives) > 1 else archives[-1]) as archive:  # the newest may be half-written
+    with np.load(archives[-2] if len(archives) > 1 else archives[-1]) as archive:
         z = {k: archive[k] for k in (*FIELDS, "turn", "forced", "start", "length")}
     a_games, b_games = _games(z, research.features.Obs, 40), _games(z, former_features.Obs, 40)
     with torch.no_grad():

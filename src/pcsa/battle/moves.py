@@ -53,7 +53,7 @@ def _observed_form(battle, mon) -> str:
                 species_entry(candidate).get("baseSpecies") or candidate
             )
             if parts[1] in ("switch", "drag") and persistent and same_base:
-                continue  # phone send-out rows name the base species after a persistent form change
+                continue  # send-out rows name the base species after a persistent form change
             form = reconcile_form(form, candidate)
     return form
 

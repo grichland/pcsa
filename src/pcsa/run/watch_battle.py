@@ -1,8 +1,4 @@
-"""What `pcsa watch` shows about the current battle: read from the newest `battle-N/decisions/` record.
-
-Each decision leaves `NNNN-<kind>.json` (schema pcsa-decision/2: request, order, notes) and, for tracked
-battles, `NNNN-<kind>.txt` (battle.state.battle_text). The page is read-only, so this module only parses.
-"""
+"""What `pcsa watch` shows about the current battle: read from the newest `battle-N/decisions/` record."""
 
 from __future__ import annotations
 
@@ -44,10 +40,7 @@ def battle_dir(run_dir: Path, battle: int | None = None) -> Path | None:
 
 
 def latest_record(run_dir: Path, battle: int | None = None) -> Record | None:
-    """The newest readable decision record of a battle folder (default: the newest folder), or None.
-
-    A record that is still being written does not parse yet: the one before it is shown until it does.
-    """
+    """The newest readable decision record of a battle folder (default: the newest folder), or None."""
     for path in reversed(decision_files(battle_dir(run_dir, battle))):
         data = read_json(path)
         if data is None:

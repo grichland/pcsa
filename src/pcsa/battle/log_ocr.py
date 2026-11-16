@@ -51,8 +51,7 @@ def _ocr_stats(text: str) -> list[str] | None:
 
 
 def ocr_boost_row(msg: str, ev: Maker) -> Event | None:
-    """A stat-change row the OCR damaged ("The onnosing Volcarona’s Sn. Atk Sn. Def, and Sneed rosel"): the
-    sentence shape is kept, each part must still read unambiguously, and the name is resolved later on the roster."""
+    """A stat-change row the OCR damaged: the sentence shape is kept and each part must still read unambiguously."""
     m = re.fullmatch(
         rf"(.+?){APOS}s (.+?) (sharply |harshly |drastically |severely )?(rose|fell?)l?[!.l]*", msg, re.IGNORECASE
     )
@@ -60,7 +59,7 @@ def ocr_boost_row(msg: str, ev: Maker) -> Event | None:
         return None
     words = m[1].split()
     side, name = "p1", m[1].strip()
-    for k in range(min(3, len(words) - 1)):  # "The opposing" read as "The onnosing" or "I ne opposing"
+    for k in range(min(3, len(words) - 1)):
         if difflib.SequenceMatcher(None, words[k].lower(), "opposing").ratio() >= OCR_WORD_MATCH:
             side, name = "p2", " ".join(words[k + 1 :])
             break

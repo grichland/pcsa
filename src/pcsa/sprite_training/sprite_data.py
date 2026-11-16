@@ -1,17 +1,8 @@
 """Training material for the sprite network: reference views and labelled real crops from recorded runs.
 
-Reference views come from the local source indexes (sprite_baseline.py). Real crops come from runs:
-
-- Battle-log rows (`log.jsonl`): the row's own text names the Pokémon ("Move: The opposing Tauros used
-  ..."), independent of any sprite matcher. A row whose text names exactly one species is labelled with
-  that species; with the form the recorded matcher chose when it agreed on the species, otherwise with
-  every form of the species (the loss accepts any of them). Rows the run recorded as showing no sprite
-  are left unlabelled: what segments there is a speck, not the Pokémon the text names.
-- Team-preview cards (`battle.json` + the preview frame): a card is labelled when the species the
-  recorded matcher put first was sent out by the opponent (`showdown.log`), with the forms sent out.
-  Every battle also keeps the opponent's sent-out species, for the recall measure.
-
-Labels are Showdown form ids (`to_id_str` of the Showdown species), shared by both domains.
+Log rows are labelled by the species their own text names (form kept when the recorded matcher agreed, else every
+form; no-sprite rows stay unlabelled); preview cards by the species the opponent sent out (`showdown.log`). Labels are
+Showdown form ids.
 """
 
 from __future__ import annotations
@@ -201,7 +192,7 @@ def _log_crops(crops, key, run, folder, classes, lexicon) -> None:
         if not isinstance(raw, sprites.Feature) and not isinstance(cleaned, sprites.Feature):
             continue
         named = lexicon.species(row.get("text", ""))
-        # rows the run itself saw no sprite on ("Go! Garchomp!") only segment specks: never labelled
+        # rows where the run itself saw no sprite ("Go! Garchomp!") only segment specks: never labelled
         species = next(iter(named)) if len(named) == 1 and sprite.get("status") != "none" else ""
         allowed: set[str] = set()
         if species:

@@ -1,6 +1,5 @@
-# From research/pcsa-rl/rl/model.py (sha256 4a3ef609b004, 2026-11-08 20:19); keep diffable.
-# pcsa: the first network (ModelConfig, SIZES, window planning, Net) is removed; these two building blocks are
-# what former.py uses.
+# From research/pcsa-rl/rl/model.py; keep diffable.
+# pcsa: only the building blocks former.py uses.
 """Building blocks of the policy network (former.py): the MLP helper and the transformer block."""
 
 from __future__ import annotations

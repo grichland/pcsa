@@ -1,12 +1,4 @@
-"""Build assets/sets/top_builds.json from a usage-ranked build list (a ranked_builds.json).
-
-    uv run python scripts/build_top_builds.py <ranked_builds.json> [--keep 8]
-
-Every build is keyed by the species the game shows on team preview (the base species for Mega builds,
-holding its stone). A Mega build that names the Mega ability gets the base species' standard ability.
-Builds are deduplicated and the `keep` highest-scoring ones per species are written, with the species'
-ladder usage count for team sampling.
-"""
+"""Build assets/sets/top_builds.json from a usage-ranked build list (a ranked_builds.json)."""
 
 from __future__ import annotations
 
@@ -83,7 +75,7 @@ def main(argv: list[str] | None = None) -> int:
     out = {
         "schema": "pcsa-top-builds/1",
         "built_at": datetime.now(UTC).isoformat(timespec="seconds"),
-        "source": args.ranked.name,  # the file name only: no machine paths in the tracked catalog
+        "source": args.ranked.name,
         "ladder_battles": ranked["ladder_battles"],
         "score_note": "log10 of the product of the species' ladder shares of moves, item, ability and spread",
         "species": species,

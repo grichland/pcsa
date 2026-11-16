@@ -1,13 +1,7 @@
 """Did the game play the action the controller chose? Checked against the log of that turn once it is read.
 
-15 Nov 2026 (run 20261115-034548, battle 7, turns 12-14): the player chose "switch to Gholdengo" three turns in
-a row, the switch taps landed on a fainted member's row, the move timer ran out and the game played Cinderace's
-locked Pyro Ball each time; nothing noticed. Now the log of the turn an action was chosen for is compared with
-the choice, and a difference is a warning (`action_mismatch`) kept in the battle record.
-
-Only what the log can show is checked: a chosen switch must show our send-out of that member ("Go! X!"); a
-chosen move must not show our active using a different move. A turn whose log shows neither (the active
-fainted first, a row the reader missed) is not called a mismatch.
+A difference is a warning (`action_mismatch`) in the battle record. A chosen switch must show our send-out of that
+member; a chosen move must not show our active using another. A turn showing neither is not a mismatch.
 """
 
 from __future__ import annotations
@@ -50,8 +44,7 @@ def mismatch(rows, last: dict) -> str | None:
         target = last.get("switch_name")
         if not target or not active:
             return None
-        # The switch comes before any move of the member it replaces; a send-out after our active moved is a
-        # replacement (battle 7 turn 14: Pyro Ball, Cinderace fainted, "Go! Gholdengo!"), not the switch.
+        # The switch comes before any move of the member it replaces; a later send-out is a fainted-member replacement.
         for row in rows:
             if any(same_name(name, target) for name in own_send_outs([row])):
                 return None
@@ -69,9 +62,7 @@ def mismatch(rows, last: dict) -> str | None:
 
 
 def verify_last_action(b: BattleRecord) -> str | None:
-    """Compare the last chosen action with its turn's log once that turn has been read; warn on a difference.
-
-    Each action is checked once. Returns the reason when the game played something else."""
+    """Compare the last chosen action with its turn's log once that turn has been read; warn on a difference."""
     last = b.last_action
     if not last or last.get("checked"):
         return None

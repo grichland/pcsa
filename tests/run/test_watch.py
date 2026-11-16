@@ -49,7 +49,7 @@ def test_run_header_record_and_rating(run: Path) -> None:
     assert view["summary"] == "team2-fine-tuned.pt · update 50 · greedy"
     checkpoint = next(p for p in view["params"] if p["key"] == "checkpoint")
     assert checkpoint["value"] == "team2-fine-tuned.pt" and checkpoint["full"].endswith("models\\team2-fine-tuned.pt")
-    assert all(p["key"] != "seed" for p in view["params"])  # null settings are left out
+    assert all(p["key"] != "seed" for p in view["params"])
     assert state["session_record"] == {"wins": 0, "losses": 2, "draws": 0, "forfeits": 0}
     rating = state["rating"]
     assert rating["tier"] == "Master Ball" and rating["rank"] == 4
@@ -60,7 +60,7 @@ def test_run_header_record_and_rating(run: Path) -> None:
 
 def test_battle_list_carries_each_battles_result(run: Path) -> None:
     first, second, third = RunReader(run).state()["battles"]
-    assert (third["index"], third["outcome"], third["rating_before"]) == (3, None, 1542.007)  # still playing
+    assert (third["index"], third["outcome"], third["rating_before"]) == (3, None, 1542.007)
     assert (first["index"], first["outcome"], second["index"], second["outcome"]) == (1, "loss", 2, "loss")
     assert first["opponent"][:2] == ["Dragalge", "Corviknight"] and first["picks"] == [
         "Kingambit",
@@ -118,7 +118,7 @@ def test_value_is_shown_only_where_the_record_has_one(run: Path) -> None:
     latest = reader.state(battle=2)
     assert latest["decision"]["notes"]["v"] == -0.8
     assert [r["notes"]["v"] for r in latest["decisions"]] == [-1.02, -0.8]
-    assert latest["preview"]["notes"]["v"] == -0.0496  # the team pick always had one
+    assert latest["preview"]["notes"]["v"] == -0.0496
     earlier = reader.state(battle=1)
     assert [r["notes"]["v"] for r in earlier["decisions"]] == [None, None, None, None]
     assert earlier["decision"]["notes"]["v"] is None and earlier["decision"]["notes"]["p"] == 0.9776
@@ -160,7 +160,7 @@ def test_orders_use_the_names_the_record_spells_out() -> None:
         "kind": "move",
     }
     assert order_view("switch ninetalesalola", names)["label"] == "Ninetales-Alola"
-    assert order_view("move unheardof", names)["label"] == "unheardof"  # never guessed
+    assert order_view("move unheardof", names)["label"] == "unheardof"
     assert order_view("default", names) == {"order": "default", "label": "default", "kind": "other"}
 
 
@@ -193,7 +193,7 @@ def test_missing_manifest_battle_folder_and_log(run: Path) -> None:
     assert state["battle"]["index"] == 3 and state["decision"] is None and state["decisions"] == []
     assert state["log"]["turns"] == [] and state["log"]["raw"] == "" and state["session_record"]["losses"] == 2
     assert state["battle_state"] == {"battle": "3", "screen": "wait"}
-    assert battle_view(run, {"index": 7}, "prep") == {}  # a battle without a folder: no stale panels of another
+    assert battle_view(run, {"index": 7}, "prep") == {}
 
 
 def test_a_half_written_record_shows_the_one_before_it(run: Path) -> None:
@@ -221,14 +221,14 @@ def test_records_of_an_unexpected_shape_do_not_break_the_page(run: Path) -> None
     state = RunReader(run).state(battle=2)
     assert state["player"] is None and state["session_record"]["losses"] == 2
     assert len(state["decisions"]) == 3 and state["decisions"][-1]["legal"] == []
-    json.dumps(state)  # still serialisable
+    json.dumps(state)
 
 
 def test_a_decision_without_a_snapshot_still_fills_the_decision_panel(run: Path) -> None:
     (run / "battle-2" / "decisions" / "0010-action.txt").unlink()
     state = RunReader(run).state(battle=2)
     assert state["decision"]["label"] == "Close Combat" and state["foes"] == [] and state["opponent"]["name"] is None
-    assert state["active"]["name"] == "Lucario"  # ours comes from the game's request
+    assert state["active"]["name"] == "Lucario"
     assert "no tracked battle snapshot" in state["battle_state"]["battle_object"]
 
 
@@ -240,7 +240,7 @@ def test_newest_settled_frame_is_shown(tmp_path: Path) -> None:
     (frames / "00001-poll-lobby.jpg").write_bytes(b"jpeg")
     first = latest_frame(tmp_path)
     assert first is not None and first[1].name == "00001-poll-lobby.jpg"
-    (frames / "00002-poll-moves.jpg").write_bytes(b"")  # being written: empty
+    (frames / "00002-poll-moves.jpg").write_bytes(b"")
     (frames / "notes.txt").write_text("not a frame", encoding="utf-8")
     again = latest_frame(tmp_path)
     assert again is not None and again[1].name == "00001-poll-lobby.jpg"

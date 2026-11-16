@@ -76,8 +76,8 @@ def test_scarf_correction_when_it_moved_first() -> None:
     assert "tyranitar" in tracker.fast and "tyranitar" not in tracker.strong
     chosen = assumed(b, b.opponent_active_pokemon, default_catalog(), tracker)
     assert (chosen.item, chosen.source) == ("Choice Scarf", "scarf-corrected")
-    assert assumed(b, b.opponent_active_pokemon, default_catalog(), tracker) is chosen  # cached
-    tracker.observe(b)  # nothing new to read
+    assert assumed(b, b.opponent_active_pokemon, default_catalog(), tracker) is chosen
+    tracker.observe(b)
     assert tracker.fast == {"tyranitar"}
 
 

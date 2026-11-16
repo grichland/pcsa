@@ -1,4 +1,4 @@
-# From research/pcsa-rl/rl/entropy.py (sha256 0b01578626e9, 2026-11-08 19:55); keep diffable.
+# From research/pcsa-rl/rl/entropy.py; keep diffable.
 # Inference only: EntropyCoef, approx_kl and cap_fraction (PPO learner) stay in research.
 """Entropy guard: the 0.99 probability cap and normalised entropy."""
 
@@ -12,8 +12,6 @@ CAP = 0.99
 
 def capped_probs(logits: Tensor, mask: Tensor, *, cap: float = CAP, temperature: float = 1.0) -> Tensor:
     """softmax(logits / T) over legal actions mixed with uniform: pi' = (1 - eps) pi + eps / k, eps = (1-cap) k/(k-1).
-
-    k == 1 gives that action probability 1; rows with no legal action come back all zero.
     """
     if temperature <= 0:
         raise ValueError("temperature must be > 0; take the argmax for greedy play")

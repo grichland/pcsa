@@ -1,7 +1,4 @@
-"""Fake Out / First Impression are only offered on the member's first move action, as the simulator's request does.
-
-The game's move screen does not grey them out, so the live request must (the neural player never saw them legal
-on a later turn in training)."""
+"""Fake Out / First Impression are only offered on the member's first move action, as the simulator's request does."""
 
 from __future__ import annotations
 
@@ -34,7 +31,7 @@ def test_first_impression_is_offered_once_per_entry() -> None:
     used = [*START, "|move|p1a: Golisopod|First Impression|p2a: Snorlax", "|turn|2"]
     assert rows(used) == {"firstimpression": True, "ironhead": False, "suckerpunch": False, "leechlife": False}
     other = [*START, "|move|p1a: Golisopod|Iron Head|p2a: Snorlax", "|turn|2"]
-    assert rows(other)["firstimpression"] is True  # any move action ends the first turn
+    assert rows(other)["firstimpression"] is True
     stopped = [*START, "|cant|p1a: Golisopod|flinch", "|turn|2"]
     assert rows(stopped)["firstimpression"] is True and acted_since_entry(replay(stopped, None), "Golisopod")
 

@@ -13,7 +13,7 @@ from pcsa.phone.adb import AdbDevice, decode_raw, parse_devices
 
 def raw_frame(width: int = 4, height: int = 2) -> bytes:
     pixels = np.zeros((height, width, 4), np.uint8)
-    pixels[..., 0] = 255  # red in RGBA
+    pixels[..., 0] = 255
     return struct.pack("<4I", width, height, 1, 0) + pixels.tobytes()
 
 

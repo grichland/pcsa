@@ -1,22 +1,9 @@
 """Moves that surely do nothing to the target: the neural player's `no_effect` guard rule (pcsa.players.neural_rules).
 
-`why(battle, attacker, defender, move)` names the reason, or None when the move may work. Only what is certain
-counts: the type chart, a revealed ability or item, or an ability every possible ability of the species shares (an
-unrevealed Levitate that the species may not have is not certain). Attacker abilities that break these immunities
-(Mold Breaker and its kin, Scrappy, Corrosion) turn the check off.
-
-  priority   a priority move into Psychic Terrain on a grounded target, or into Queenly Majesty / Dazzling /
-             Armor Tail
-  first turn Fake Out / First Impression after the user's first turn out
-  type       an immune type (Ground into Flying, Electric into Ground, Normal and Fighting into Ghost ...);
-             Ground into Levitate, Air Balloon or Magnet Rise; Thunder Wave into Ground
-  ability    an absorbing ability (Volt Absorb, Lightning Rod, Motor Drive, Water Absorb, Storm Drain, Dry Skin, Flash
-             Fire, Well-Baked Body, Sap Sipper, Earth Eater), Bulletproof, Soundproof; Good as Gold against status
-             moves, Magic Bounce against reflectable ones
-  status     a status the target cannot get: its type (Electric: paralysis, Fire: burn, Poison and Steel: poison,
-             Grass: powder moves), its ability (Insomnia, Limber, Water Veil, Immunity, Purifying Salt ...), or the
-             terrain (Misty Terrain: every status; Electric Terrain: sleep and Yawn) on a grounded target
-"""
+`why(battle, attacker, defender, move)` names the reason, or None when the move may work. Only certain things count:
+type chart, a revealed or sure ability or item, priority blocked (Psychic Terrain, Queenly Majesty...), Fake Out after
+the first turn, absorbing abilities, status immunities. Attacker abilities that break them (Mold Breaker, Scrappy,
+Corrosion) turn the check off."""
 
 from __future__ import annotations
 

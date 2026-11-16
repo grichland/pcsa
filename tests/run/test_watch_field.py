@@ -22,7 +22,7 @@ PROTOCOL = [
 def test_field_view_counts_turns_left_and_layers() -> None:
     view = field_view(PROTOCOL, 3)
     assert view["turn"] == 3
-    assert view["weather"] == {"name": "Sun", "left": 3}  # set on turn 1; the upkeep line does not restart it
+    assert view["weather"] == {"name": "Sun", "left": 3}
     assert view["fields"] == [{"name": "Trick Room", "left": 4}]
     assert view["ours"] == [{"name": "Stealth Rock", "layers": None, "left": None}]
     assert view["theirs"] == [
