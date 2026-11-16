@@ -176,10 +176,14 @@ def test_priority_ko_does_not_pick_a_blocked_sucker_punch(threat) -> None:
     attacked = ["|move|p2a: Dragonite|Outrage|p1a: Golisopod", "|-damage|p1a: Golisopod|100/182"]
     b = battle([attacked])
     ranked = (LEECH, PUNCH)
-    assert decide(spot(b, LEECH, ranked, their=ATTACKS))[:2] == (PUNCH, "priority_ko")
-    assert decide(spot(b, LEECH, ranked, their=STALLS)) is None
+    # no switch in their top 3 (priority_ko stands aside otherwise)
+    attacks = (("move", "outrage", 0.7), ("move", "roost", 0.12), ("move", "extremespeed", 0.1), ("switch", "", 0.08))
+    stalls = (("move", "dragondance", 0.45), ("move", "roost", 0.2), ("move", "outrage", 0.2), ("switch", "", 0.15))
+    assert decide(spot(b, LEECH, ranked, their=attacks))[:2] == (PUNCH, "priority_ko")
+    assert decide(spot(b, LEECH, ranked, their=stalls)) is None
     without = tuple(r for r in RULES if r != "sucker_punch")
-    assert decide(spot(b, LEECH, ranked, their=STALLS), without)[:2] == (PUNCH, "priority_ko")
+    assert decide(spot(b, LEECH, ranked, their=stalls), without)[:2] == (PUNCH, "priority_ko")
+    assert decide(spot(b, LEECH, ranked, their=ATTACKS)) is None  # a switch in their top 3
 
 
 def test_the_opponent_heads_switch_columns_name_their_targets() -> None:

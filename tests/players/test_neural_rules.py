@@ -59,6 +59,18 @@ def test_a_priority_ko_replaces_an_attack_that_does_not_ko_first(threat) -> None
     assert decide(ALL, spot(battle("Azumarill"), "/choose move playrough")) == ("/choose move aquajet", "priority_ko")
 
 
+def test_no_priority_override_when_a_switch_is_in_their_top3(threat) -> None:
+    import dataclasses
+
+    threat(priority={("azumarill", "dragonite"): "aquajet"})
+    base = spot(battle("Azumarill"), "/choose move playrough")
+    likely_switch = (("switch", "corviknight", 0.9), ("move", "dragondance", 0.05), ("move", "extremespeed", 0.05))
+    assert decide(ALL, dataclasses.replace(base, their=likely_switch)) is None
+    staying = (("move", "dragondance", 0.5), ("move", "extremespeed", 0.3), ("move", "earthquake", 0.15),
+               ("switch", "corviknight", 0.05))
+    assert decide(ALL, dataclasses.replace(base, their=staying)) == ("/choose move aquajet", "priority_ko")
+
+
 def test_no_priority_override_when_the_networks_attack_kos_first(threat) -> None:
     threat(
         priority={("azumarill", "dragonite"): "aquajet"},
