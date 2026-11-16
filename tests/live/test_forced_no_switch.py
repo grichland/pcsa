@@ -40,7 +40,8 @@ def test_a_replacement_screen_without_a_switch_taps_nothing() -> None:
 
     pipeline = SimpleNamespace(
         _begin_forced=lambda *_a: ((), None, None),
-        _track=lambda *_a, **_k: (None, None, None),
+        _build=lambda *_a, **_k: (None, None),
+        _request=lambda *_a, **_k: None,
         decider=SimpleNamespace(decide=lambda *_a, **_k: decision),
         _save_decision=boom,
         phone=SimpleNamespace(executor=SimpleNamespace(plan_forced=boom, execute=boom)),
