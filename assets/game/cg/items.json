@@ -1,0 +1,513 @@
+{
+ "_header": {
+  "status": "STOPGAP",
+  "note": "one-off dump, to be replaced by CG's JSON export (plan R6, Q5)",
+  "kind": "items",
+  "showdown_commit": "c0845f33d381402dfcb18ce324c20a94f18af075",
+  "legal_ids": "champions-gym/engine/src/sim/data/generated.rs",
+  "values": [
+   "generated.rs display names"
+  ],
+  "schema": "pcsa-controller-cg-items/stopgap-1"
+ },
+ "items": {
+  "abomasite": {
+   "name": "Abomasite"
+  },
+  "absolite": {
+   "name": "Absolite"
+  },
+  "absolitez": {
+   "name": "Absolite Z"
+  },
+  "aerodactylite": {
+   "name": "Aerodactylite"
+  },
+  "aggronite": {
+   "name": "Aggronite"
+  },
+  "airballoon": {
+   "name": "Air Balloon"
+  },
+  "alakazite": {
+   "name": "Alakazite"
+  },
+  "altarianite": {
+   "name": "Altarianite"
+  },
+  "ampharosite": {
+   "name": "Ampharosite"
+  },
+  "aspearberry": {
+   "name": "Aspear Berry"
+  },
+  "audinite": {
+   "name": "Audinite"
+  },
+  "babiriberry": {
+   "name": "Babiri Berry"
+  },
+  "banettite": {
+   "name": "Banettite"
+  },
+  "barbaracite": {
+   "name": "Barbaracite"
+  },
+  "baxcalibrite": {
+   "name": "Baxcalibrite"
+  },
+  "beedrillite": {
+   "name": "Beedrillite"
+  },
+  "bigroot": {
+   "name": "Big Root"
+  },
+  "bindingband": {
+   "name": "Binding Band"
+  },
+  "blackbelt": {
+   "name": "Black Belt"
+  },
+  "blackglasses": {
+   "name": "Black Glasses"
+  },
+  "blastoisinite": {
+   "name": "Blastoisinite"
+  },
+  "blazikenite": {
+   "name": "Blazikenite"
+  },
+  "brightpowder": {
+   "name": "Bright Powder"
+  },
+  "cameruptite": {
+   "name": "Cameruptite"
+  },
+  "chandelurite": {
+   "name": "Chandelurite"
+  },
+  "charcoal": {
+   "name": "Charcoal"
+  },
+  "charizarditex": {
+   "name": "Charizardite X"
+  },
+  "charizarditey": {
+   "name": "Charizardite Y"
+  },
+  "chartiberry": {
+   "name": "Charti Berry"
+  },
+  "cheriberry": {
+   "name": "Cheri Berry"
+  },
+  "chesnaughtite": {
+   "name": "Chesnaughtite"
+  },
+  "chestoberry": {
+   "name": "Chesto Berry"
+  },
+  "chilanberry": {
+   "name": "Chilan Berry"
+  },
+  "chimechite": {
+   "name": "Chimechite"
+  },
+  "choicescarf": {
+   "name": "Choice Scarf"
+  },
+  "chopleberry": {
+   "name": "Chople Berry"
+  },
+  "clefablite": {
+   "name": "Clefablite"
+  },
+  "cobaberry": {
+   "name": "Coba Berry"
+  },
+  "colburberry": {
+   "name": "Colbur Berry"
+  },
+  "crabominite": {
+   "name": "Crabominite"
+  },
+  "damprock": {
+   "name": "Damp Rock"
+  },
+  "delphoxite": {
+   "name": "Delphoxite"
+  },
+  "dragalgite": {
+   "name": "Dragalgite"
+  },
+  "dragonfang": {
+   "name": "Dragon Fang"
+  },
+  "dragoninite": {
+   "name": "Dragoninite"
+  },
+  "drampanite": {
+   "name": "Drampanite"
+  },
+  "eelektrossite": {
+   "name": "Eelektrossite"
+  },
+  "ejectbutton": {
+   "name": "Eject Button"
+  },
+  "electricseed": {
+   "name": "Electric Seed"
+  },
+  "emboarite": {
+   "name": "Emboarite"
+  },
+  "excadrite": {
+   "name": "Excadrite"
+  },
+  "expertbelt": {
+   "name": "Expert Belt"
+  },
+  "fairyfeather": {
+   "name": "Fairy Feather"
+  },
+  "falinksite": {
+   "name": "Falinksite"
+  },
+  "feraligite": {
+   "name": "Feraligite"
+  },
+  "floettite": {
+   "name": "Floettite"
+  },
+  "focusband": {
+   "name": "Focus Band"
+  },
+  "focussash": {
+   "name": "Focus Sash"
+  },
+  "froslassite": {
+   "name": "Froslassite"
+  },
+  "galladite": {
+   "name": "Galladite"
+  },
+  "garchompite": {
+   "name": "Garchompite"
+  },
+  "garchompitez": {
+   "name": "Garchompite Z"
+  },
+  "gardevoirite": {
+   "name": "Gardevoirite"
+  },
+  "gengarite": {
+   "name": "Gengarite"
+  },
+  "glalitite": {
+   "name": "Glalitite"
+  },
+  "glimmoranite": {
+   "name": "Glimmoranite"
+  },
+  "golisopite": {
+   "name": "Golisopite"
+  },
+  "golurkite": {
+   "name": "Golurkite"
+  },
+  "grassyseed": {
+   "name": "Grassy Seed"
+  },
+  "greninjite": {
+   "name": "Greninjite"
+  },
+  "gyaradosite": {
+   "name": "Gyaradosite"
+  },
+  "habanberry": {
+   "name": "Haban Berry"
+  },
+  "hardstone": {
+   "name": "Hard Stone"
+  },
+  "hawluchanite": {
+   "name": "Hawluchanite"
+  },
+  "heatrock": {
+   "name": "Heat Rock"
+  },
+  "heracronite": {
+   "name": "Heracronite"
+  },
+  "houndoominite": {
+   "name": "Houndoominite"
+  },
+  "icyrock": {
+   "name": "Icy Rock"
+  },
+  "ironball": {
+   "name": "Iron Ball"
+  },
+  "kangaskhanite": {
+   "name": "Kangaskhanite"
+  },
+  "kasibberry": {
+   "name": "Kasib Berry"
+  },
+  "kebiaberry": {
+   "name": "Kebia Berry"
+  },
+  "kingsrock": {
+   "name": "King's Rock"
+  },
+  "leek": {
+   "name": "Leek"
+  },
+  "leftovers": {
+   "name": "Leftovers"
+  },
+  "leppaberry": {
+   "name": "Leppa Berry"
+  },
+  "lifeorb": {
+   "name": "Life Orb"
+  },
+  "lightball": {
+   "name": "Light Ball"
+  },
+  "lightclay": {
+   "name": "Light Clay"
+  },
+  "lopunnite": {
+   "name": "Lopunnite"
+  },
+  "lucarionite": {
+   "name": "Lucarionite"
+  },
+  "lucarionitez": {
+   "name": "Lucarionite Z"
+  },
+  "lumberry": {
+   "name": "Lum Berry"
+  },
+  "magnet": {
+   "name": "Magnet"
+  },
+  "malamarite": {
+   "name": "Malamarite"
+  },
+  "manectite": {
+   "name": "Manectite"
+  },
+  "mawilite": {
+   "name": "Mawilite"
+  },
+  "medichamite": {
+   "name": "Medichamite"
+  },
+  "meganiumite": {
+   "name": "Meganiumite"
+  },
+  "mentalherb": {
+   "name": "Mental Herb"
+  },
+  "meowsticite": {
+   "name": "Meowsticite"
+  },
+  "metagrossite": {
+   "name": "Metagrossite"
+  },
+  "metalcoat": {
+   "name": "Metal Coat"
+  },
+  "metronome": {
+   "name": "Metronome"
+  },
+  "miracleseed": {
+   "name": "Miracle Seed"
+  },
+  "mistyseed": {
+   "name": "Misty Seed"
+  },
+  "muscleband": {
+   "name": "Muscle Band"
+  },
+  "mysticwater": {
+   "name": "Mystic Water"
+  },
+  "nevermeltice": {
+   "name": "Never-Melt Ice"
+  },
+  "normalgem": {
+   "name": "Normal Gem"
+  },
+  "occaberry": {
+   "name": "Occa Berry"
+  },
+  "oranberry": {
+   "name": "Oran Berry"
+  },
+  "passhoberry": {
+   "name": "Passho Berry"
+  },
+  "payapaberry": {
+   "name": "Payapa Berry"
+  },
+  "pechaberry": {
+   "name": "Pecha Berry"
+  },
+  "persimberry": {
+   "name": "Persim Berry"
+  },
+  "pidgeotite": {
+   "name": "Pidgeotite"
+  },
+  "pinsirite": {
+   "name": "Pinsirite"
+  },
+  "poisonbarb": {
+   "name": "Poison Barb"
+  },
+  "psychicseed": {
+   "name": "Psychic Seed"
+  },
+  "pyroarite": {
+   "name": "Pyroarite"
+  },
+  "quickclaw": {
+   "name": "Quick Claw"
+  },
+  "raichunitex": {
+   "name": "Raichunite X"
+  },
+  "raichunitey": {
+   "name": "Raichunite Y"
+  },
+  "rawstberry": {
+   "name": "Rawst Berry"
+  },
+  "redcard": {
+   "name": "Red Card"
+  },
+  "rindoberry": {
+   "name": "Rindo Berry"
+  },
+  "rockyhelmet": {
+   "name": "Rocky Helmet"
+  },
+  "roseliberry": {
+   "name": "Roseli Berry"
+  },
+  "sablenite": {
+   "name": "Sablenite"
+  },
+  "salamencite": {
+   "name": "Salamencite"
+  },
+  "sceptilite": {
+   "name": "Sceptilite"
+  },
+  "scizorite": {
+   "name": "Scizorite"
+  },
+  "scolipite": {
+   "name": "Scolipite"
+  },
+  "scopelens": {
+   "name": "Scope Lens"
+  },
+  "scovillainite": {
+   "name": "Scovillainite"
+  },
+  "scraftinite": {
+   "name": "Scraftinite"
+  },
+  "sharpbeak": {
+   "name": "Sharp Beak"
+  },
+  "sharpedonite": {
+   "name": "Sharpedonite"
+  },
+  "shedshell": {
+   "name": "Shed Shell"
+  },
+  "shellbell": {
+   "name": "Shell Bell"
+  },
+  "shucaberry": {
+   "name": "Shuca Berry"
+  },
+  "silkscarf": {
+   "name": "Silk Scarf"
+  },
+  "silverpowder": {
+   "name": "Silver Powder"
+  },
+  "sitrusberry": {
+   "name": "Sitrus Berry"
+  },
+  "skarmorite": {
+   "name": "Skarmorite"
+  },
+  "slowbronite": {
+   "name": "Slowbronite"
+  },
+  "smoothrock": {
+   "name": "Smooth Rock"
+  },
+  "softsand": {
+   "name": "Soft Sand"
+  },
+  "spelltag": {
+   "name": "Spell Tag"
+  },
+  "staraptite": {
+   "name": "Staraptite"
+  },
+  "starminite": {
+   "name": "Starminite"
+  },
+  "steelixite": {
+   "name": "Steelixite"
+  },
+  "swampertite": {
+   "name": "Swampertite"
+  },
+  "tangaberry": {
+   "name": "Tanga Berry"
+  },
+  "terrainextender": {
+   "name": "Terrain Extender"
+  },
+  "twistedspoon": {
+   "name": "Twisted Spoon"
+  },
+  "tyranitarite": {
+   "name": "Tyranitarite"
+  },
+  "venusaurite": {
+   "name": "Venusaurite"
+  },
+  "victreebelite": {
+   "name": "Victreebelite"
+  },
+  "wacanberry": {
+   "name": "Wacan Berry"
+  },
+  "whiteherb": {
+   "name": "White Herb"
+  },
+  "widelens": {
+   "name": "Wide Lens"
+  },
+  "wiseglasses": {
+   "name": "Wise Glasses"
+  },
+  "yacheberry": {
+   "name": "Yache Berry"
+  },
+  "zoomlens": {
+   "name": "Zoom Lens"
+  }
+ }
+}

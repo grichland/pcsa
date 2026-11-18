@@ -1,0 +1,71 @@
+{
+ "schema": "pcsa-sprite-net/1",
+ "weights": {
+  "file": "sprite_net.npz",
+  "sha256": "ca6db1317fbe6d937ad98c8cce55a9652726e0952e11c6ec6c625a70cafa4a84"
+ },
+ "references": {
+  "preview": {
+   "file": "preview_refs.npz",
+   "sha256": "eb2f623b42900e637252546cbc822b654e9b457f7146b0af0d9b4daff2037fe3"
+  },
+  "log": {
+   "file": "log_refs.npz",
+   "sha256": "a2786fec693e25982ebfd4511dfbdecf36e2a116df8a09286143b1e4620c87cd"
+  }
+ },
+ "log_thresholds": {
+  "min_score": 0.64,
+  "min_margin": 0.26
+ },
+ "trained": {
+  "at": "2026-11-05T15:19:53",
+  "steps": 8000,
+  "seed": 0,
+  "classes": 394,
+  "test_runs": [
+   "20261104-015856-run",
+   "20261104-151903-run"
+  ],
+  "test": {
+   "log": {
+    "network": {
+     "rows": 2339,
+     "matched_correct": 2336,
+     "matched_wrong": 0,
+     "unknown": 3,
+     "none": 0,
+     "top1_species_accuracy": 0.9996,
+     "form_agreement": 1.0
+    },
+    "retired": {
+     "rows": 2339,
+     "matched_correct": 2316,
+     "matched_wrong": 0,
+     "unknown": 23,
+     "none": 0,
+     "top1_species_accuracy": 0.9914,
+     "form_agreement": 1.0
+    }
+   },
+   "preview": {
+    "network": {
+     "battles": 76,
+     "sent_out_species": 204,
+     "sent_out_found_in_top1": 197,
+     "sent_out_recall": 0.9657,
+     "confirmed_cards": 194,
+     "confirmed_cards_right": 193
+    },
+    "retired": {
+     "battles": 76,
+     "sent_out_species": 204,
+     "sent_out_found_in_top1": 191,
+     "sent_out_recall": 0.9363,
+     "confirmed_cards": 194,
+     "confirmed_cards_right": 191
+    }
+   }
+  }
+ }
+}

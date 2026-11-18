@@ -1,0 +1,184 @@
+"""Devices and perception that replay a script, so the whole loop runs without a phone."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Any
+
+import numpy as np
+
+from pcsa.common.clock import Clock
+from pcsa.common.config import ScreenConfig, Viewport
+from pcsa.common.errors import Transient
+from pcsa.common.types import Flag, Observation, Screen
+from pcsa.live.device import Transport
+from pcsa.live.fake_log import FakeLogBook
+from pcsa.phone.adb import Frame
+from pcsa.phone.ocr import REFERENCE, TextBox
+
+
+@dataclass
+class Step:
+    screen: Screen
+    fields: dict[str, Any] = field(default_factory=dict)
+    flags: frozenset[Flag] = frozenset()
+    texts: tuple[TextBox, ...] = ()
+    accept: tuple[str, ...] = ()
+    after_s: float | None = None
+    inject: str | None = None
+    note: str = ""
+    advance_on: tuple[str, ...] | None = None
+    log_rows: tuple[str, ...] = ()
+    log_turn: int | None = None
+    log_stop: str = "top_confirmed"
+    log_book: FakeLogBook | None = None  # the battle log behind View Log on this step
+
+
+class ScriptedDevice:
+    """Serves the script's screens; resolves taps to region names through the screen config."""
+
+    serial = "SCRIPTED"
+
+    def __init__(
+        self, steps: list[Step], screen: ScreenConfig, clock: Clock, size: tuple[int, int] = REFERENCE
+    ) -> None:
+        self.steps = steps
+        self.screen = screen
+        self.clock = clock
+        self.size = size
+        self.viewport = Viewport.of_frame(*size)
+        self.index = 0
+        self.entered_at = clock.now()
+        self.taps: list[tuple[int, str | None]] = []  # (step index, region name or None)
+        self.rejected: list[tuple[int, int, int]] = []
+        self.failed_captures = 0
+        self.party_focus: int | None = None  # the Switch In button sits under the tapped row
+
+    @property
+    def step(self) -> Step:
+        return self.steps[min(self.index, len(self.steps) - 1)]
+
+    @property
+    def finished(self) -> bool:
+        return self.index >= len(self.steps)
+
+    def _advance(self) -> None:
+        self.index += 1
+        self.party_focus = None
+        self.entered_at = self.clock.now()
+
+    def _maybe_timeout(self) -> None:
+        step = self.step
+        if step.after_s is not None and self.clock.now() - self.entered_at >= step.after_s:
+            self._advance()
+
+    def region_at(self, x: int, y: int) -> str | None:
+        """Which configured region (name, or name+index for lists) contains a device pixel."""
+        from pcsa.live.taps import ALLOWED
+
+        if self._on_switch_in(x, y):
+            return "switch_in"
+        hits = []
+        for name, value in self.screen.regions.items():
+            regions = value if isinstance(value, list) else [value]
+            for i, region in enumerate(regions):
+                if region.relative:
+                    if self._relative_hit(name, x, y):
+                        hits.append((name, name))
+                    continue
+                rect = self.screen.resolve(name, self.viewport, i if isinstance(value, list) else None)
+                if rect.contains(x, y):
+                    hits.append((name, f"{name}{i}" if isinstance(value, list) else name))
+        allowed = ALLOWED.get(self.step.screen, frozenset())
+        preferred = [label for name, label in hits if name in allowed]
+        return (preferred or [label for _, label in hits] or [None])[0]
+
+    def _on_switch_in(self, x: int, y: int) -> bool:
+        if self.step.screen not in (Screen.FORCED, Screen.PARTY) or self.party_focus is None:
+            return False
+        return self._relative_hit("switch_in", x, y, (self.party_focus,))
+
+    def _relative_hit(self, name: str, x: int, y: int, only: tuple[int, ...] | None = None) -> bool:
+        """A relative region (the Switch In button) placed against every party row centre, or the `only` rows."""
+        rows = self.screen.regions.get("party_rows")
+        if not isinstance(rows, list):
+            return False
+        for i in only if only is not None else range(len(rows)):
+            centre = self.screen.resolve("party_rows", self.viewport, i).center
+            origin = (centre[0] / self.viewport.w, centre[1] / self.viewport.h)
+            if self.screen.resolve_relative(name, self.viewport, origin).contains(x, y):
+                return True
+        return False
+
+    def capture(self) -> Frame:
+        self._maybe_timeout()
+        if self.step.inject == "screencap_fail" and self.failed_captures < 1:
+            self.failed_captures += 1
+            raise Transient("raw screenshot length differs from its dimensions")
+        book = self.step.log_book
+        image = book.capture() if book is not None else None
+        if image is None:
+            image = FakeLogBook.closed_frame(self.size)
+        return Frame(image, self.size, self.clock.now(), 0.05)
+
+    def control_at(self, x: int, y: int) -> str | None:
+        """An OCR-located control of the current step whose box contains the pixel: "@<field>"."""
+        for key, value in self.step.fields.items():
+            if isinstance(value, dict) and "box" in value:
+                left, top, right, bottom = value["box"]
+                if left <= x <= right and top <= y <= bottom:
+                    return f"@{key}"
+        return None
+
+    def tap(self, x: int, y: int) -> Transport:
+        """Accepted names: a region ("fight", "move_rows2" or its list name "move_rows") or "@field"."""
+        step = self.step
+        if step.log_book is not None and step.log_book.tap(self.region_at(x, y)):
+            self.taps.append((self.index, step.log_book.taps[-1]))
+            return Transport("tap", (x, y), 0.02)
+        candidates = [n for n in (self.region_at(x, y), self.control_at(x, y)) if n is not None]
+        matched = [n for n in candidates if n in step.accept or n.rstrip("0123456789") in step.accept]
+        name = matched[0] if matched else (candidates[0] if candidates else None)
+        self.taps.append((self.index, name))
+        if step.inject == "tap_fail" and not any(i == self.index for i, _ in self.taps[:-1]):
+            raise Transient("adb shell input tap failed (exit 1)")
+        if not matched:
+            self.rejected.append((self.index, x, y))
+            return Transport("tap", (x, y), 0.02)
+        self._note_party_focus(matched[0])
+        advance_on = step.accept if step.advance_on is None else step.advance_on
+        if any(n in advance_on or n.rstrip("0123456789") in advance_on for n in matched):
+            self._advance()
+        return Transport("tap", (x, y), 0.02)
+
+    def _note_party_focus(self, name: str) -> None:
+        if self.step.screen in (Screen.FORCED, Screen.PARTY) and name.startswith("party_rows"):
+            self.party_focus = int(name.removeprefix("party_rows"))
+
+    def drag(self, x: int, y1: int, y2: int, steps: int = 8, hold_s: float = 0.35) -> Transport:
+        if self.step.log_book is not None:
+            self.step.log_book.drag(y1, y2)
+        return Transport("drag", (x, y1, y2), 0.1)
+
+    def shell(self, *arguments: str) -> str:
+        return ""
+
+
+class ScriptedPerception:
+    """Returns the current step's observation instead of running OCR."""
+
+    def __init__(self, device: ScriptedDevice) -> None:
+        self.device = device
+
+    def observe(self, image: np.ndarray, frame_id: str = "") -> Observation:
+        self.device._maybe_timeout()
+        step = self.device.step
+        return Observation(
+            step.screen,
+            self.device.size,
+            step.flags,
+            dict(step.fields),
+            f"scripted:{step.note}",
+            step.texts,
+            frame_id,
+        )

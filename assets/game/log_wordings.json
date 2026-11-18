@@ -1,0 +1,930 @@
+{
+ "source": "CG phone-log inventory, cleaned",
+ "wordings": [
+  {
+   "id": "EX-002",
+   "category": "-",
+   "text": "{MON} switched items with its target!"
+  },
+  {
+   "id": "EX-003",
+   "category": "-",
+   "text": "{MON} obtained a {ITEM}."
+  },
+  {
+   "id": "EX-004",
+   "category": "-",
+   "text": "{TRAINER} sent out {TRAINER}'s {MON}!"
+  },
+  {
+   "id": "EX-005",
+   "category": "-",
+   "text": "{MON} obtained a serving of {ITEM}."
+  },
+  {
+   "id": "EX-006",
+   "category": "-",
+   "text": "{MON} is frozen solid!"
+  },
+  {
+   "id": "PL-001",
+   "category": "HP Lost",
+   "text": "{MON}'s HP: {N}% \u2192 {N}%"
+  },
+  {
+   "id": "PL-002",
+   "category": "HP Lost",
+   "text": "{MON}'s HP: {N} \u2192 {N}"
+  },
+  {
+   "id": "PL-003",
+   "category": "Move",
+   "text": "{MON} used {MOVE}!"
+  },
+  {
+   "id": "PL-005",
+   "category": "-",
+   "text": "Go! {MON}!"
+  },
+  {
+   "id": "PL-006",
+   "category": "Held Item",
+   "text": "{MON}'s {ITEM}"
+  },
+  {
+   "id": "PL-007",
+   "category": "-",
+   "text": "{TRAINER} sent out {MON}!"
+  },
+  {
+   "id": "PL-008",
+   "category": "-",
+   "text": "It's super effective!"
+  },
+  {
+   "id": "PL-009",
+   "category": "Ability",
+   "text": "{MON}'s {ABILITY}"
+  },
+  {
+   "id": "PL-010",
+   "category": "HP Restored",
+   "text": "{MON}'s HP: {N} \u2192 {N}"
+  },
+  {
+   "id": "PL-011",
+   "category": "HP Restored",
+   "text": "{MON}'s HP: {N}% \u2192 {N}%"
+  },
+  {
+   "id": "PL-013",
+   "category": "Fainted",
+   "text": "{MON} fainted!"
+  },
+  {
+   "id": "PL-015",
+   "category": "-",
+   "text": "{MON}, come back!"
+  },
+  {
+   "id": "PL-016",
+   "category": "-",
+   "text": "{TRAINER} withdrew {MON}!"
+  },
+  {
+   "id": "PL-018",
+   "category": "-",
+   "text": "{MON}'s {STATS} rose!"
+  },
+  {
+   "id": "PL-019",
+   "category": "Mega Evolution",
+   "text": "{MON} has Mega Evolved into {MON}!"
+  },
+  {
+   "id": "PL-021",
+   "category": "-",
+   "text": "{MON}'s {ITEM} is reacting to {TRAINER}'s Omni Ring!"
+  },
+  {
+   "id": "PL-023",
+   "category": "-",
+   "text": "{TRAINER} sent out {MON} the {TITLE}!"
+  },
+  {
+   "id": "PL-024",
+   "category": "-",
+   "text": "It's not very effective..."
+  },
+  {
+   "id": "PL-025",
+   "category": "-",
+   "text": "{MON}'s {STATS} fell!"
+  },
+  {
+   "id": "PL-027",
+   "category": "-",
+   "text": "{MON}'s {STATS} harshly fell!"
+  },
+  {
+   "id": "PL-029",
+   "category": "-",
+   "text": "{MON} was hurt by its burn!"
+  },
+  {
+   "id": "PL-030",
+   "category": "-",
+   "text": "{MON} had its energy drained!"
+  },
+  {
+   "id": "PL-031",
+   "category": "-",
+   "text": "{MON} floats in the air with its {ITEM}!"
+  },
+  {
+   "id": "PL-032",
+   "category": "-",
+   "text": "{MON} protected itself!"
+  },
+  {
+   "id": "PL-033",
+   "category": "-",
+   "text": "Pointed stones dug into {MON}!"
+  },
+  {
+   "id": "PL-034",
+   "category": "-",
+   "text": "It's extremely effective!"
+  },
+  {
+   "id": "PL-035",
+   "category": "-",
+   "text": "{MON} went back to {TRAINER}!"
+  },
+  {
+   "id": "PL-036",
+   "category": "-",
+   "text": "{MON} is buffeted by the sandstorm!"
+  },
+  {
+   "id": "PL-037",
+   "category": "-",
+   "text": "The Pok\u00e9mon was hit {N} times!"
+  },
+  {
+   "id": "PL-038",
+   "category": "-",
+   "text": "{MON}'s {STATS} rose sharply!"
+  },
+  {
+   "id": "PL-039",
+   "category": "-",
+   "text": "{MON} was hurt by its poisoning!"
+  },
+  {
+   "id": "PL-040",
+   "category": "-",
+   "text": "{MON}'s {ITEM} popped!"
+  },
+  {
+   "id": "PL-041",
+   "category": "-",
+   "text": "{MON} lost some of its HP!"
+  },
+  {
+   "id": "PL-042",
+   "category": "-",
+   "text": "But it failed!"
+  },
+  {
+   "id": "PL-045",
+   "category": "-",
+   "text": "{MON} had its HP restored."
+  },
+  {
+   "id": "PL-047",
+   "category": "-",
+   "text": "A sandstorm kicked up!"
+  },
+  {
+   "id": "PL-049",
+   "category": "-",
+   "text": "{MON} is fast asleep."
+  },
+  {
+   "id": "PL-051",
+   "category": "-",
+   "text": "{MON} hung on using its {ITEM}!"
+  },
+  {
+   "id": "PL-052",
+   "category": "-",
+   "text": "{MON} avoided the attack!"
+  },
+  {
+   "id": "PL-053",
+   "category": "-",
+   "text": "Pointed stones float in the air on {SIDE}!"
+  },
+  {
+   "id": "PL-054",
+   "category": "-",
+   "text": "{MON} transformed into the {TYPE} type!"
+  },
+  {
+   "id": "PL-055",
+   "category": "-",
+   "text": "{MON} was damaged by the recoil!"
+  },
+  {
+   "id": "PL-058",
+   "category": "-",
+   "text": "{MON} grew drowsy!"
+  },
+  {
+   "id": "PL-059",
+   "category": "-",
+   "text": "{MON} was burned!"
+  },
+  {
+   "id": "PL-060",
+   "category": "-",
+   "text": "{MON} fell asleep!"
+  },
+  {
+   "id": "PL-061",
+   "category": "-",
+   "text": "{MON} must do an encore!"
+  },
+  {
+   "id": "PL-062",
+   "category": "-",
+   "text": "The sandstorm subsided."
+  },
+  {
+   "id": "PL-065",
+   "category": "-",
+   "text": "The sunlight turned harsh!"
+  },
+  {
+   "id": "PL-068",
+   "category": "-",
+   "text": "The substitute took damage for {MON}!"
+  },
+  {
+   "id": "PL-069",
+   "category": "-",
+   "text": "{MON}'s {STATS} won't go any higher!"
+  },
+  {
+   "id": "PL-071",
+   "category": "-",
+   "text": "{MON} is hurt by {MOVE}!"
+  },
+  {
+   "id": "PL-074",
+   "category": "-",
+   "text": "{MON}'s health is sapped by {MOVE}!"
+  },
+  {
+   "id": "PL-075",
+   "category": "-",
+   "text": "Grass grew to cover the battlefield!"
+  },
+  {
+   "id": "PL-077",
+   "category": "-",
+   "text": "{MON} put in a substitute!"
+  },
+  {
+   "id": "PL-078",
+   "category": "-",
+   "text": "The battlefield got weird!"
+  },
+  {
+   "id": "PL-081",
+   "category": "-",
+   "text": "{MON} is exerting its pressure!"
+  },
+  {
+   "id": "PL-082",
+   "category": "-",
+   "text": "{MON} flinched and couldn't move!"
+  },
+  {
+   "id": "PL-083",
+   "category": "-",
+   "text": "It started to snow!"
+  },
+  {
+   "id": "PL-084",
+   "category": "-",
+   "text": "{MON} absorbed light!"
+  },
+  {
+   "id": "PL-085",
+   "category": "-",
+   "text": "{MON}'s disguise was busted!"
+  },
+  {
+   "id": "PL-086",
+   "category": "-",
+   "text": "{MON} was dragged out!"
+  },
+  {
+   "id": "PL-087",
+   "category": "-",
+   "text": "{MON}'s substitute faded!"
+  },
+  {
+   "id": "PL-089",
+   "category": "-",
+   "text": "It started to rain!"
+  },
+  {
+   "id": "PL-090",
+   "category": "-",
+   "text": "The harsh sunlight faded."
+  },
+  {
+   "id": "PL-091",
+   "category": "-",
+   "text": "It doesn't affect {MON}..."
+  },
+  {
+   "id": "PL-094",
+   "category": "-",
+   "text": "{MON} ended its encore!"
+  },
+  {
+   "id": "PL-096",
+   "category": "-",
+   "text": "{MON} began charging power!"
+  },
+  {
+   "id": "PL-098",
+   "category": "-",
+   "text": "{MON} woke up!"
+  },
+  {
+   "id": "PL-101",
+   "category": "-",
+   "text": "{MON} was poisoned!"
+  },
+  {
+   "id": "PL-104",
+   "category": "-",
+   "text": "Toxic spikes were scattered on the ground all around {SIDE}!"
+  },
+  {
+   "id": "PL-105",
+   "category": "-",
+   "text": "The grass disappeared from the battlefield."
+  },
+  {
+   "id": "PL-106",
+   "category": "-",
+   "text": "The snow stopped."
+  },
+  {
+   "id": "PL-107",
+   "category": "-",
+   "text": "{MON} is paralyzed, so it may be unable to move!"
+  },
+  {
+   "id": "PL-110",
+   "category": "-",
+   "text": "Light Screen made {SIDE} stronger against special moves!"
+  },
+  {
+   "id": "PL-112",
+   "category": "-",
+   "text": "{MON} has been afflicted with an infestation by {MON}!"
+  },
+  {
+   "id": "PL-114",
+   "category": "-",
+   "text": "Reflect made {SIDE} stronger against physical moves!"
+  },
+  {
+   "id": "PL-115",
+   "category": "-",
+   "text": "Aurora Veil made {SIDE} stronger against physical and special moves!"
+  },
+  {
+   "id": "PL-116",
+   "category": "-",
+   "text": "The weirdness disappeared from the battlefield!"
+  },
+  {
+   "id": "PL-118",
+   "category": "-",
+   "text": "{MON} breaks the mold!"
+  },
+  {
+   "id": "PL-119",
+   "category": "-",
+   "text": "It's mostly ineffective..."
+  },
+  {
+   "id": "PL-120",
+   "category": "-",
+   "text": "{MON} was badly poisoned!"
+  },
+  {
+   "id": "PL-122",
+   "category": "-",
+   "text": "{MON} was revived and is ready to fight again!"
+  },
+  {
+   "id": "PL-123",
+   "category": "-",
+   "text": "{MON} held up its {ITEM} against {MON}!"
+  },
+  {
+   "id": "PL-125",
+   "category": "-",
+   "text": "Spikes were scattered on the ground all around {SIDE}!"
+  },
+  {
+   "id": "PL-128",
+   "category": "-",
+   "text": "The rain stopped."
+  },
+  {
+   "id": "PL-129",
+   "category": "-",
+   "text": "{MON} was hurt by the spikes!"
+  },
+  {
+   "id": "PL-131",
+   "category": "-",
+   "text": "{MON} is afflicted by the curse!"
+  },
+  {
+   "id": "PL-134",
+   "category": "-",
+   "text": "All stat changes were eliminated!"
+  },
+  {
+   "id": "PL-135",
+   "category": "-",
+   "text": "{MON}'s wish came true!"
+  },
+  {
+   "id": "PL-136",
+   "category": "-",
+   "text": "{MON} already has a substitute!"
+  },
+  {
+   "id": "PL-137",
+   "category": "-",
+   "text": "{MON} is about to be attacked by its {ITEM}!"
+  },
+  {
+   "id": "PL-138",
+   "category": "-",
+   "text": "{MON} was seeded!"
+  },
+  {
+   "id": "PL-139",
+   "category": "-",
+   "text": "{SIDE}'s Aurora Veil wore off!"
+  },
+  {
+   "id": "PL-140",
+   "category": "-",
+   "text": "The battlers shared their pain!"
+  },
+  {
+   "id": "PL-141",
+   "category": "-",
+   "text": "{MON} kept going and crashed!"
+  },
+  {
+   "id": "PL-142",
+   "category": "-",
+   "text": "{MON}'s {ITEM} lessened the damage it took!"
+  },
+  {
+   "id": "PL-143",
+   "category": "-",
+   "text": "{MON} gained strength from the fallen!"
+  },
+  {
+   "id": "PL-147",
+   "category": "-",
+   "text": "{MON} is confused!"
+  },
+  {
+   "id": "PL-148",
+   "category": "-",
+   "text": "{MON} twisted the dimensions!"
+  },
+  {
+   "id": "PL-149",
+   "category": "-",
+   "text": "{MON}'s {MOVE} was disabled!"
+  },
+  {
+   "id": "PL-151",
+   "category": "-",
+   "text": "{MON} absorbed electricity!"
+  },
+  {
+   "id": "PL-152",
+   "category": "-",
+   "text": "{SIDE}'s Light Screen wore off!"
+  },
+  {
+   "id": "PL-154",
+   "category": "-",
+   "text": "{MON} became confused due to fatigue!"
+  },
+  {
+   "id": "PL-156",
+   "category": "-",
+   "text": "{MON} was prevented from healing!"
+  },
+  {
+   "id": "PL-157",
+   "category": "-",
+   "text": "{MON} used up all its electricity!"
+  },
+  {
+   "id": "PL-158",
+   "category": "-",
+   "text": "{MON} cut its own HP and put a curse on {MON}!"
+  },
+  {
+   "id": "PL-159",
+   "category": "-",
+   "text": "{MON} is hoping to take its attacker down with it!"
+  },
+  {
+   "id": "PL-161",
+   "category": "-",
+   "text": "{MON}'s perish count fell to {N}!"
+  },
+  {
+   "id": "PL-163",
+   "category": "-",
+   "text": "It traced {MON}'s {ABILITY}!"
+  },
+  {
+   "id": "PL-164",
+   "category": "-",
+   "text": "{SIDE}'s Reflect wore off!"
+  },
+  {
+   "id": "PL-165",
+   "category": "-",
+   "text": "{MON} is already drowsy."
+  },
+  {
+   "id": "PL-168",
+   "category": "-",
+   "text": "{MON} took its attacker down with it!"
+  },
+  {
+   "id": "PL-169",
+   "category": "-",
+   "text": "{MON} is protected by the Psychic Terrain!"
+  },
+  {
+   "id": "PL-172",
+   "category": "-",
+   "text": "{MON} couldn't move because it's paralyzed!"
+  },
+  {
+   "id": "PL-174",
+   "category": "-",
+   "text": "{MON} transformed into {MON}!"
+  },
+  {
+   "id": "PL-176",
+   "category": "-",
+   "text": "{MON} was hurt!"
+  },
+  {
+   "id": "PL-177",
+   "category": "-",
+   "text": "{MON} endured the hit!"
+  },
+  {
+   "id": "PL-179",
+   "category": "-",
+   "text": "{MON} frisked {MON} and found its {ITEM}!"
+  },
+  {
+   "id": "PL-180",
+   "category": "-",
+   "text": "{ABILITY} made {MON} move faster!"
+  },
+  {
+   "id": "PL-181",
+   "category": "-",
+   "text": "{MON} is switched out with the {ITEM}!"
+  },
+  {
+   "id": "PL-186",
+   "category": "-",
+   "text": "It hurt itself in its confusion!"
+  },
+  {
+   "id": "PL-187",
+   "category": "-",
+   "text": "{MON} fell for the taunt!"
+  },
+  {
+   "id": "PL-188",
+   "category": "-",
+   "text": "{MON} returned its stats to normal using its {ITEM}!"
+  },
+  {
+   "id": "PL-190",
+   "category": "-",
+   "text": "{MON} slept and restored its HP!"
+  },
+  {
+   "id": "PL-191",
+   "category": "-",
+   "text": "{MON}'s illusion wore off!"
+  },
+  {
+   "id": "PL-192",
+   "category": "-",
+   "text": "The twisted dimensions returned to normal!"
+  },
+  {
+   "id": "PL-193",
+   "category": "-",
+   "text": "{MON} became confused!"
+  },
+  {
+   "id": "PL-194",
+   "category": "-",
+   "text": "{MON} is no longer prevented from healing!"
+  },
+  {
+   "id": "PL-195",
+   "category": "-",
+   "text": "{MON} shook off the taunt!"
+  },
+  {
+   "id": "PL-197",
+   "category": "Ability Changed",
+   "text": "{MON}: {ABILITY} \u2192 {ABILITY}"
+  },
+  {
+   "id": "PL-198",
+   "category": "-",
+   "text": "{MON} can act faster than normal, thanks to its {ITEM}!"
+  },
+  {
+   "id": "PL-200",
+   "category": "-",
+   "text": "The power of {MON}'s {TYPE}-type moves rose!"
+  },
+  {
+   "id": "PL-201",
+   "category": "-",
+   "text": "{MON} was caught in a sticky web!"
+  },
+  {
+   "id": "PL-202",
+   "category": "-",
+   "text": "{MON} is radiating a fairy aura!"
+  },
+  {
+   "id": "PL-205",
+   "category": "-",
+   "text": "{MON} snapped out of its confusion!"
+  },
+  {
+   "id": "PL-207",
+   "category": "-",
+   "text": "{MON} can't use {MOVE} after the taunt!"
+  },
+  {
+   "id": "PL-208",
+   "category": "-",
+   "text": "The Pok\u00e9mon was hit {N} time!"
+  },
+  {
+   "id": "PL-211",
+   "category": "-",
+   "text": "{MON} was freed from {MOVE}!"
+  },
+  {
+   "id": "PL-213",
+   "category": "-",
+   "text": "{MON}'s HP is full!"
+  },
+  {
+   "id": "PL-214",
+   "category": "-",
+   "text": "{MON} knocked off {MON}'s {ITEM}!"
+  },
+  {
+   "id": "PL-216",
+   "category": "-",
+   "text": "{MON}'s {ITEM} woke it up!"
+  },
+  {
+   "id": "PL-217",
+   "category": "-",
+   "text": "{MON} has no moves left that it can use!"
+  },
+  {
+   "id": "PL-225",
+   "category": "-",
+   "text": "{MON} started heating up its beak!"
+  },
+  {
+   "id": "PL-226",
+   "category": "-",
+   "text": "{MON} is already poisoned!"
+  },
+  {
+   "id": "PL-227",
+   "category": "-",
+   "text": "{MON}'s {STATS} rose drastically!"
+  },
+  {
+   "id": "PL-228",
+   "category": "-",
+   "text": "{MON} became trapped in the fiery vortex!"
+  },
+  {
+   "id": "PL-229",
+   "category": "-",
+   "text": "{MON} was frozen solid!"
+  },
+  {
+   "id": "PL-232",
+   "category": "-",
+   "text": "All Pok\u00e9mon that heard the song will faint in three turns!"
+  },
+  {
+   "id": "PL-236",
+   "category": "-",
+   "text": "{MON} harvested a {ITEM}!"
+  },
+  {
+   "id": "PL-242",
+   "category": "-",
+   "text": "The healing wish came true for {MON}!"
+  },
+  {
+   "id": "PL-244",
+   "category": "-",
+   "text": "A tailwind started blowing on {SIDE}!"
+  },
+  {
+   "id": "PL-248",
+   "category": "-",
+   "text": "A sticky web has been laid out on the ground on {SIDE}!"
+  },
+  {
+   "id": "PL-249",
+   "category": "-",
+   "text": "Your side is too nervous to eat Berries!"
+  },
+  {
+   "id": "PL-251",
+   "category": "-",
+   "text": "{MON} is preparing to tell a chillingly bad joke!"
+  },
+  {
+   "id": "PL-252",
+   "category": "-",
+   "text": "{MON} thawed out!"
+  },
+  {
+   "id": "PL-255",
+   "category": "-",
+   "text": "The {ITEM} strengthened {MOVE}'s power!"
+  },
+  {
+   "id": "PL-257",
+   "category": "-",
+   "text": "{MON}'s stats were not lowered!"
+  },
+  {
+   "id": "PL-258",
+   "category": "-",
+   "text": "{MON}'s {ITEM} defrosted it!"
+  },
+  {
+   "id": "PL-268",
+   "category": "-",
+   "text": "{MON} must recharge!"
+  },
+  {
+   "id": "PL-270",
+   "category": "-",
+   "text": "{MON} braced itself!"
+  },
+  {
+   "id": "PL-276",
+   "category": "-",
+   "text": "{MON} underwent a heroic transformation!"
+  },
+  {
+   "id": "PL-279",
+   "category": "-",
+   "text": "{MON} burned itself out!"
+  },
+  {
+   "id": "PL-283",
+   "category": "-",
+   "text": "It's a one-hit KO!"
+  },
+  {
+   "id": "PL-291",
+   "category": "-",
+   "text": "{MON} shed its tail to create a decoy!"
+  },
+  {
+   "id": "PL-292",
+   "category": "-",
+   "text": "{SIDE}'s tailwind petered out!"
+  },
+  {
+   "id": "PL-295",
+   "category": "-",
+   "text": "{MON} vanished instantly!"
+  },
+  {
+   "id": "PL-296",
+   "category": "-",
+   "text": "{MON}'s {ITEM} cured its poisoning!"
+  },
+  {
+   "id": "PL-299",
+   "category": "-",
+   "text": "{MON} fell straight down!"
+  },
+  {
+   "id": "SD-003",
+   "category": "-",
+   "text": "The sandstorm is raging."
+  },
+  {
+   "id": "SD-006",
+   "category": "-",
+   "text": "Rain continues to fall."
+  },
+  {
+   "id": "SD-009",
+   "category": "-",
+   "text": "The sunlight is strong."
+  },
+  {
+   "id": "SD-012",
+   "category": "-",
+   "text": "Snow continues to fall."
+  },
+  {
+   "id": "SD-013",
+   "category": "-",
+   "text": "An electric current ran across the battlefield!"
+  },
+  {
+   "id": "SD-014",
+   "category": "-",
+   "text": "An electric current ran across the battlefield."
+  },
+  {
+   "id": "SD-017",
+   "category": "-",
+   "text": "Mist swirled around the battlefield!"
+  },
+  {
+   "id": "SD-018",
+   "category": "-",
+   "text": "Mist swirled around the battlefield."
+  },
+  {
+   "id": "SD-021",
+   "category": "-",
+   "text": "The electricity disappeared from the battlefield!"
+  },
+  {
+   "id": "SD-022",
+   "category": "-",
+   "text": "The electricity disappeared from the battlefield."
+  },
+  {
+   "id": "SD-025",
+   "category": "-",
+   "text": "The mist disappeared from the battlefield!"
+  },
+  {
+   "id": "SD-026",
+   "category": "-",
+   "text": "The mist disappeared from the battlefield."
+  }
+ ]
+}

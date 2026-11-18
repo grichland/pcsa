@@ -1,0 +1,27 @@
+# Environment and tools
+.venv/
+.tools/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.import_linter_cache/
+.env
+
+# Everything the agent writes
+output/
+
+# Editors
+.vscode/
+.idea/
+
+# No game screenshots or game art in the repo, except the two demo images
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.bmp
+!docs/images/demo-poster.jpg
+!docs/images/master-ball-rank2.jpg

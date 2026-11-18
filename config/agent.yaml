@@ -1,0 +1,157 @@
+# Agent settings. Every value here can be overridden per run with `--set section.key=value` or
+# the environment variable PCSA__section__key. Unknown keys are rejected at startup.
+screen_config: screen.yaml
+
+decide:
+  player: first           # first: the built-in Player; cg: Champions Gym through pcsa/cg
+
+cg:                       # used when decide.player is cg (LIVE 0.7-0.9 messages, pcsa/cg)
+  transport: subprocess   # subprocess: JSON lines on stdin/stdout; inprocess: a Python entry point
+  entry: null             # inprocess: "package.module:name" (a handle(message) callable, or a class with .handle)
+  command: null           # subprocess: argv list, e.g. [python, -m, champions_gym.live, --player, tower]
+  python_path: []         # directories first on sys.path (inprocess) or in the child's PYTHONPATH; relative: repo root
+  args: {}                # inprocess: keyword arguments when the entry is a class
+  env: {}                 # subprocess: extra environment variables, e.g. {CUDA_VISIBLE_DEVICES: "-1"}
+  run_log_dir: cg         # CG's log_dir (and a model player's) set to <run folder>/cg when CG is made; null: none
+  timeout_s: 8.0          # per call, and never past the decision's deadline less the tap reserve
+  start_timeout_s: 60.0   # CG is made and its status checked before the first battle
+  # CG's own entry point (champions-gym/contracts/LIVE.md section 3), in process (preferred):
+  #   transport: inprocess
+  #   entry: champions_gym.live:Session
+  #   args: {player: tower, seed: 0}
+  #   python_path: [../champions-gym/python]
+  #   run_log_dir: cg
+  #   timeout_s: 8.0
+  # `player` is a built-in name (random, max_damage, tower, best_matchup_max_damage, disciplined, endgame,
+  # pilot_encore, pilot_weather, pilot_hazard, pilot_priority) or "module:attr" with player_args, e.g.
+  #   args: {player: "my_pkg.players:Net", player_args: {checkpoint: assets/net.pt}, seed: 0}
+  # or as a process:
+  #   transport: subprocess
+  #   command: [.venv/Scripts/python.exe, -m, champions_gym.live, --player, tower]
+  #   python_path: [../champions-gym/python]
+  #   run_log_dir: cg
+  #   timeout_s: 8.0
+  # The model player (champions-gym/docs/neural-player.md) needs a Python with torch; .venv has none, so it runs
+  # as a process with the pcsa venv's Python. The checkpoint is the user's choice (CHECKPOINT below):
+  #   transport: subprocess
+  #   command: [C:/Users/geral/Code/pokemon_champions/pcsa/.venv/Scripts/python.exe, -m, champions_gym.live,
+  #             --player, "champions_gym.neural:load", --player-args,
+  #             '{"policy": "pcsa_former_policy:PcsaFormerPolicy", "checkpoint": "CHECKPOINT", "device": "cpu",
+  #               "policy_args": {"threads": 4}, "fallback": "tower", "timeout_s": 2.0, "hard_timeout_s": 6.0}']
+  #   python_path: [../champions-gym/python, ../pcsa-former, ../champions-gym/docs/examples]
+  #   env: {CUDA_VISIBLE_DEVICES: "-1"}
+  #   run_log_dir: cg
+  #   timeout_s: 8.0
+  # Once pcsa_former.cg_policy exists the policy is "pcsa_former.cg_policy:PcsaFormerPolicy" and the examples
+  # folder leaves python_path. Never set allow_mismatch or allow_contract.
+
+device:
+  serial: null            # null: the single authorized device
+  timeout_s: 15
+  stay_awake: true        # svc power stayon usb during runs; previous value restored on exit
+  retry:
+    attempts: 4           # per ADB call before the session is restarted
+    base_s: 0.5           # exponential backoff: base, 2*base, 4*base ... up to max_s
+    max_s: 8.0
+    reconnect_wait_s: 20  # adb wait-for-device bound after a reconnect
+
+run:
+  battles: 10             # battles with a decided outcome before the run finishes
+  max_battles_total: 12   # bound on battles started, including opponent forfeits
+  count_forfeits: false
+  max_restarts_per_hour: 20
+
+timing:
+  inter_tap_s: 0.5
+  post_action_wait_s: 10.0
+  poll_interval_s: 1.0
+  fight_settle_s: 0.9
+  back_settle_s: 0.7
+  party_settle_s: 0.9     # a switch: after Pokemon and after Switch In, before the party screen is read
+  move_peek: when_needed  # always: look at the move list before every action turn (Fight, read, Back).
+                          # when_needed: skip the look (about 3.4 s a turn) and take move names from the team
+                          # sheet, PP from the log count and the Mega button from the log; the move row is then
+                          # tapped twice. The turn still looks when a move's counted PP is 4 or less, the log
+                          # read lost or doubted rows, the last taps did not go through, a Mega chosen last turn
+                          # is not in the log, the battle was picked up midway or could not be tracked.
+  team_menu_settle_s: 0.8
+  log_open_settle_s: 1.2
+  log_swipe_settle_s: 0.6
+  max_turn_s: 40.0        # from the first action-screen capture to the last tap
+  team_budget_s: 45.0     # lineup deadline when the selection timer cannot be read
+  no_progress_s: 420      # no tap and no screen change for this long -> session restart
+  default_screen_timeout_s: 60
+  screen_timeouts:        # seconds on one screen before the session restarts
+    matchmaking: 240
+    prep: 240
+    transition: 150
+    wait: 150
+    rewards: 90
+    result: 90
+    forfeit_msg: 90
+    unknown: 45
+    lobby: 60
+    options: 60
+    team_select: 100
+    action: 120
+    forced: 90
+    party: 30
+    moves: 30
+    log: 30
+    switch_popup: 30
+    rank_up: 120
+    rating_dialog: 30
+    dialog: 30
+    comm_error: 30
+    title: 60
+    home: 60
+    battle_modes: 60
+    ranked_formats: 60
+
+log:                      # in-game battle log collection, per turn
+  captures_max: 10
+  seconds_max: 12.0       # stop scrolling after this; act on what was read
+  drag:                   # drag toward older entries; start and end drawn at random inside these ranges
+    x: [0.513, 0.684]
+    y_start: [0.231, 0.278]
+    y_end: [0.833, 0.870]
+    steps: 8
+    hold_s: 0.35
+  paging:                 # heading jumped past turns with no action screen of ours: page back with the arrows
+    enabled: true         # arrows, headings and greyed edges checked on 4,174 recorded frames
+    settle_s: 0.8         # after an arrow tap, before the heading is read
+    step_s: 1.6           # planning: one arrow tap and its heading check
+    page_min_s: 4.0       # planning: one missed page (and the least time left to start one)
+    seconds_max: 10.0     # climb budget per missed page
+
+taps:
+  focused_move_taps: 1    # a focused move row submits on the next tap
+  unfocused_move_taps: 2  # first tap focuses, second submits
+  focused_party_taps: 1
+  unfocused_party_taps: 2
+
+navigator:
+  unknown_wait_s: 5.0
+  unknown_max_rounds: 6
+  edge_settle_s: 1.5
+  max_taps_per_edge: 3
+  # Disconnect during a battle: while a battle is in progress and the phone shows an unknown screen, a
+  # communication error, a dialog or a long blank/loading frame, tap the screen centre (or an OCR-confirmed
+  # OK / Close / Continue / Cancel / Not now) once per round until a battle, post-battle or lobby screen returns.
+  disconnect_max_taps: 40     # rounds (taps, or skipped taps when forbidden text is under the centre) before restart
+  disconnect_max_s: 180.0     # seconds of the whole ride-out before the session restarts
+  disconnect_settle_s: 3.0    # wait after each round before observing again
+  disconnect_blank_s: 45.0    # a transition (black/loading) frame mid-battle counts as a disconnect after this long
+
+degrade:
+  tap_reserve_s: 2.5
+  decide_reserve_s: 3.0
+  emergency_reserve_s: 1.0
+  peek_attempts: 2
+
+ocr:
+  det_model: ch_PP-OCRv5_det_mobile.onnx
+  rec_model: en_PP-OCRv5_rec_mobile.onnx
+  det_limit_side_len: 736
+  threads: 4
+  min_confidence: 0.80

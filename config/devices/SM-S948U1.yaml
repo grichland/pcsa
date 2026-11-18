@@ -1,0 +1,11 @@
+model: SM-S948U1
+frame_size:
+- 2340
+- 1080
+viewport:
+  x: 0
+  y: 0
+  w: 2340
+  h: 1080
+calibrated_at: '2026-11-02T00:34:26+00:00'
+note: full frame

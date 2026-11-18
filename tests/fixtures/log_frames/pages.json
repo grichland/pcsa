@@ -1,0 +1,84 @@
+{
+ "source": "pcsa/output/runs/20261115-034548-run/battle-13",
+ "pages": {
+  "2": {
+   "frames": [
+    "t2-visit03-0.jpg",
+    "t2-visit03-2.jpg"
+   ],
+   "rows": [
+    "The opposing Garchomp’s Garchompite Z is reacting to <trainer>'s Omni Ring!",
+    "Mega Evolution: The opposing Garchomp has Mega Evolved into Mega Garchomp!",
+    "Move: The opposing Garchomp used Flamethrower!",
+    "HP Lost: Gholdengo’s HP: 135 → 17",
+    "It’s super effective!",
+    "Move: Gholdengo used Make It Rain!",
+    "HP Lost: Garchomp’s HP: 100% → 19%",
+    "Gholdengo’s Sp. Atk harshly fell!"
+   ]
+  },
+  "3": {
+   "frames": [
+    "t3-visit04-0.jpg"
+   ],
+   "rows": [
+    "Gholdengo, come back!",
+    "Go! Primarina!",
+    "Move: The opposing Garchomp used Dragon Pulse!",
+    "It doesn’t affect Primarina.."
+   ]
+  },
+  "4": {
+   "frames": [
+    "t4-visit05-0.jpg",
+    "t4-visit05-3.jpg",
+    "t4-visit05-5.jpg"
+   ],
+   "rows": [
+    "Move: The opposing Garchomp used Poison Jab!",
+    "HP Lost: Primarina’s HP: 187 → 93",
+    "It’s super effective!",
+    "Move: Primarina used Moonblast!",
+    "HP Lost: Garchomp’s HP: 19% → 0%",
+    "It’s super effective!",
+    "Fainted: The opposing Garchomp fainted!",
+    "Held Item: Primarina’s Leftovers",
+    "HP Restored: Primarina’s HP: 93 → 104",
+    "<trainer> sent out Archaludon!"
+   ]
+  },
+  "5": {
+   "frames": [
+    "t5-visit06-0.jpg"
+   ],
+   "rows": [
+    "Primarina, come back!",
+    "Go! Garchomp!",
+    "Move: The opposing Archaludon used Thunderbolt!",
+    "It doesn’t affect Garchomp..."
+   ]
+  },
+  "6": {
+   "frames": [
+    "t6-visit07-0.jpg",
+    "t6-visit07-3.jpg",
+    "t6-visit07-5.jpg"
+   ],
+   "rows": [
+    "Garchomp’s Garchompite Z is reacting to <trainer>’s Omni Ring!",
+    "Mega Evolution: Garchomp has Mega Evolved into Mega Garchomp!",
+    "Move: Garchomp used Earth Power!",
+    "HP Lost: Archaludon’s HP: 100% → 31%",
+    "It’s super effective!",
+    "The opposing Archaludon’s Sp. Def fell!",
+    "Ability: Archaludon’s Stamina",
+    "The opposing Archaludon’s Defense rose!",
+    "Held Item: Archaludon’s Sitrus Berry",
+    "HP Restored: Archaludon’s HP: 31% → 56%",
+    "Move: The opposing Archaludon used Dragon Pulse!",
+    "HP Lost: Garchomp’s HP: 185 → 45",
+    "It’s super effective!"
+   ]
+  }
+ }
+}
