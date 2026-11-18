@@ -138,7 +138,31 @@ def test_cg_step_rejects_another_version(monkeypatch) -> None:
     lock = tools.load_lock()
     _fake_cg(monkeypatch, "0.0.1")
     status = setup.ChampionsGymStep().check(lock)
-    assert not status.ok and "pinned" in status.detail and status.fix == "uv sync --extra torch"
+    assert not status.ok and "pinned" in status.detail and status.fix == setup.SYNC
+
+
+def test_sync_hint_keeps_other_projects_packages() -> None:
+    assert setup.SYNC == "uv sync --inexact --extra torch"
+    assert setup.TorchStep.group == "torch"
+
+
+def test_torch_step_installs_with_an_inexact_sync(monkeypatch) -> None:
+    ran: list[list[str]] = []
+    monkeypatch.setattr(setup, "_run", lambda command, cwd=None: ran.append(command))
+    setup.TorchStep().install({})
+    assert ran == [["uv", "sync", "--inexact", "--extra", "torch"]]
+
+
+def test_cg_step_reports_a_broken_wheel(monkeypatch) -> None:
+    lock = tools.load_lock()
+
+    def broken(name: str):
+        raise OSError("DLL load failed while importing _cg")
+
+    monkeypatch.setattr(setup, "_import", broken)
+    monkeypatch.setattr(sys, "platform", setup.CG_PLATFORM)
+    status = setup.ChampionsGymStep().check(lock)
+    assert not status.ok and "OSError: DLL load failed" in status.detail and status.fix == setup.SYNC
 
 
 def test_cg_step_when_missing_or_off_windows(monkeypatch) -> None:

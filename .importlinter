@@ -14,6 +14,7 @@ forbidden_modules =
 name = torch only in pcsa.network and pcsa.sprite_training
 type = forbidden
 source_modules =
+    pcsa.cli
     pcsa.common
     pcsa.battle
     pcsa.phone
@@ -24,11 +25,14 @@ source_modules =
     pcsa.cg
 forbidden_modules =
     torch
+ignore_imports =
+    pcsa.cli -> pcsa.sprite_training.sprite_train
 
-[importlinter:contract:champions-gym-behind-cg]
-name = champions_gym only in pcsa.cg and pcsa.network
+[importlinter:contract:champions-gym-in-the-player-process]
+name = champions_gym only in pcsa.cg.serve, pcsa.cg.view and pcsa.network
 type = forbidden
 source_modules =
+    pcsa.cli
     pcsa.common
     pcsa.battle
     pcsa.phone
@@ -36,6 +40,14 @@ source_modules =
     pcsa.decide
     pcsa.live
     pcsa.run
+    pcsa.sprite_training
+    pcsa.cg.adapter
+    pcsa.cg.fake_cg
+    pcsa.cg.messages_log
+    pcsa.cg.slots
+    pcsa.cg.startup
+    pcsa.cg.stream
+    pcsa.cg.transport
 forbidden_modules =
     champions_gym
 
@@ -54,3 +66,44 @@ forbidden_modules =
     pcsa.cg
 ignore_imports =
     pcsa.decide.load -> pcsa.cg.adapter
+
+[importlinter:contract:network-is-loaded-by-name]
+name = Nothing imports pcsa.network (the player process loads the policy by name)
+type = forbidden
+source_modules =
+    pcsa.cli
+    pcsa.common
+    pcsa.battle
+    pcsa.phone
+    pcsa.events
+    pcsa.decide
+    pcsa.live
+    pcsa.run
+    pcsa.cg
+    pcsa.sprite_training
+forbidden_modules =
+    pcsa.network
+
+[importlinter:contract:the-dashboard-only-reads-files]
+name = The pcsa watch modules import no phone, live, Champions Gym or network code
+type = forbidden
+source_modules =
+    pcsa.run.watch
+    pcsa.run.watch_battle
+    pcsa.run.watch_belief
+    pcsa.run.watch_decisions
+    pcsa.run.watch_events
+    pcsa.run.watch_log
+    pcsa.run.watch_matrix
+    pcsa.run.watch_names
+    pcsa.run.watch_view
+forbidden_modules =
+    pcsa.phone
+    pcsa.live
+    pcsa.cg
+    pcsa.network
+    pcsa.decide
+    pcsa.events
+    champions_gym
+    torch
+    cv2

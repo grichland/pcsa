@@ -56,7 +56,7 @@ def search(rows: list[dict], label: str, pattern: str, kinds: tuple[str, ...] | 
 def previous_kinds(rows: list[dict], kind: str) -> dict:
     """Parsed kind of the row just before each `kind` row in the same battle and turn."""
     out: Counter = Counter()
-    for prev, row in zip([None] + rows[:-1], rows):
+    for prev, row in zip([None] + rows[:-1], rows, strict=True):
         if row["event"].kind != kind:
             continue
         same = prev is not None and prev["battle"] == row["battle"] and prev["turn"] == row["turn"]

@@ -6,6 +6,7 @@ build-backend = "hatchling.build"
 name = "pcsa"
 version = "0.2.0"
 description = "Plays Pokémon Champions singles from a phone screen, on Champions Gym"
+readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE", "NOTICE.md"]
 authors = [{ name = "grichland" }]
@@ -100,7 +101,6 @@ max-statements = 50
 "src/pcsa/battle/moves.py" = ["PLR2004"]
 # Turn and decision functions take the request's fields as keyword arguments.
 "src/pcsa/live/turn.py" = ["PLR0913"]
-"src/pcsa/live/decide.py" = ["PLR0913"]
 "src/pcsa/live/orders.py" = ["PLR0913"]
 "src/pcsa/live/play.py" = ["PLR0913"]
 "src/pcsa/live/handlers.py" = ["PLR2004"]
@@ -109,7 +109,11 @@ max-statements = 50
 # The log-row to LIVE-event converters: one branch per event kind, the event's fields as arguments.
 "src/pcsa/events/**" = ["E501", "PLR0913", "PLR2004", "C901", "SIM102", "SIM910", "UP033"]
 # The network, copied from pcsa-former and kept diffable with it: feature layouts are numbered slots.
-"src/pcsa/network/**" = ["PLR2004", "PLR0913", "PLR0915", "E731", "E501", "C901"]
+"src/pcsa/network/model.py" = ["PLR2004", "PLR0913", "PLR0915", "E731", "E501", "C901"]
+"src/pcsa/network/layout.py" = ["PLR2004", "PLR0913", "PLR0915", "E731", "E501", "C901"]
+"src/pcsa/network/decide.py" = ["PLR2004", "PLR0913", "PLR0915", "E731", "E501", "C901"]
+"src/pcsa/network/checkpoint.py" = ["PLR2004", "PLR0913", "PLR0915", "E731", "E501", "C901"]
+"src/pcsa/network/cg_adapter.py" = ["PLR2004", "PLR0913", "PLR0915", "E731", "E501", "C901"]
 "src/pcsa/cli.py" = ["T20"]
 "src/pcsa/common/setup.py" = ["T20"]
 "tests/**" = ["PLR2004", "E501", "PLR0913"]

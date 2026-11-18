@@ -130,7 +130,6 @@ navigator:
 degrade:
   tap_reserve_s: 2.5
   decide_reserve_s: 3.0
-  emergency_reserve_s: 1.0
   peek_attempts: 2
 
 ocr:

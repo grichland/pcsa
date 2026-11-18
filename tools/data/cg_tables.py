@@ -1,12 +1,25 @@
-"""Read CG's generated Rust tables (read-only): the legal id sets and the values used for cross-checks."""
+"""Read CG's generated Rust tables (read-only): the legal id sets and the values used for cross-checks.
+
+The tables come from a Champions Gym checkout: the environment variable CG_SOURCE (or a tool's --source), else
+../cg-publish next to this repository (the public clone). The file is engine/src/sim/data/generated.rs in it.
+"""
 
 from __future__ import annotations
 
+import os
 import re
 import sys
 from pathlib import Path
 
-GENERATED_RS = Path(__file__).resolve().parents[3] / "champions-gym/engine/src/sim/data/generated.rs"
+DEFAULT_CHECKOUT = Path(__file__).resolve().parents[3] / "cg-publish"
+GENERATED = Path("engine") / "src" / "sim" / "data" / "generated.rs"
+
+
+def generated_rs(checkout: Path | str | None = None) -> Path:
+    """generated.rs of the checkout given, else of CG_SOURCE, else of ../cg-publish."""
+    return Path(checkout or os.environ.get("CG_SOURCE") or DEFAULT_CHECKOUT) / GENERATED
+
+
 TABLES = {"species": "SPECIES", "moves": "MOVES", "items": "ITEMS", "abilities": "ABILITIES", "natures": "NATURES"}
 TYPE_ORDER = (
     "bug dark dragon electric fairy fighting fire flying ghost grass ground ice normal poison psychic rock steel "
@@ -18,8 +31,8 @@ def say(*parts: object) -> None:
     sys.stdout.write(" ".join(str(p) for p in parts) + "\n")
 
 
-def source(path: Path = GENERATED_RS) -> str:
-    return path.read_text(encoding="utf-8")
+def source(path: Path | None = None) -> str:
+    return (path or generated_rs()).read_text(encoding="utf-8")
 
 
 def _block(src: str, name: str) -> tuple[int, str]:

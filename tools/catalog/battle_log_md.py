@@ -187,7 +187,7 @@ def recorded_section(data: dict) -> list[str]:
     out += ["Every recorded reason:", ""]
     out += table(["reason", "entries"], [[cell(k), n] for k, n in r["recorded_reasons"].items()])
     still = r["parser_entries_still_unknown_today"]
-    out += [f"Parser entries still unknown today: "
+    out += ["Parser entries still unknown today: "
             + (", ".join(f"{k} {n}" for k, n in still.items()) or "none") + ".", ""]
     handled = r["parser_entries_handled_today"]
     out += [f"### Rows today's parser now handles ({len(handled)})", ""]

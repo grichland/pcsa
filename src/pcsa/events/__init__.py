@@ -1,1 +1,1 @@
-"""Log rows to CG live-contract events (champions-gym/contracts/LIVE.md)."""
+"""Log rows to events of Champions Gym's LIVE contract."""

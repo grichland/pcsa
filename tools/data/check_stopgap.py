@@ -1,7 +1,13 @@
-"""Compare the STOPGAP dump with CG's own values in generated.rs and print every difference (read-only)."""
+"""Compare the STOPGAP dump with CG's own values in generated.rs and print every difference (read-only).
+
+    .venv/Scripts/python.exe tools/data/check_stopgap.py [--source CG_CHECKOUT]
+
+The Champions Gym checkout is --source, else CG_SOURCE, else ../cg-publish (cg_tables.generated_rs).
+"""
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
 import sys
@@ -29,15 +35,20 @@ def move_diffs(src: str) -> list[str]:
     return out
 
 
+def _list(line: str, key: str) -> str:
+    m = re.search(rf"{key}: \[([^\]]*)\]", line)
+    if m is None:
+        raise SystemExit(f"no {key} in {line[:60]}")
+    return m.group(1)
+
+
 def species_diffs(src: str) -> list[str]:
     ours = table("species")
     out = []
     for line in cg_tables.rows(src, "SPECIES")[1]:
         key = cg_tables.field(line, "id")
-        stats = [int(x) for x in re.search(r"base_stats: \[([^\]]*)\]", line).group(1).split(",")]
-        types = [
-            t.removeprefix("Type::").lower() for t in re.search(r"types: \[([^\]]*)\]", line).group(1).split(", ")
-        ]
+        stats = [int(x) for x in _list(line, "base_stats").split(",")]
+        types = [t.removeprefix("Type::").lower() for t in _list(line, "types").split(", ")]
         e = ours[key]
         mine = [e["baseStats"][s] for s in ("hp", "atk", "def", "spa", "spd", "spe")]
         if mine != stats:
@@ -59,8 +70,10 @@ def chart_diffs(src: str) -> list[str]:
     ]
 
 
-def main() -> int:
-    src = cg_tables.source()
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="STOPGAP dump against CG's generated.rs")
+    parser.add_argument("--source", type=Path, default=None, help="a Champions Gym checkout")
+    src = cg_tables.source(cg_tables.generated_rs(parser.parse_args(argv).source))
     diffs = move_diffs(src) + species_diffs(src) + chart_diffs(src)
     names = {k: v["name"] for k, v in table("moves").items()}
     diffs += [

@@ -111,7 +111,6 @@ class NavigatorConfig(Strict):
 class DegradeConfig(Strict):
     tap_reserve_s: float = 2.5
     decide_reserve_s: float = 3.0
-    emergency_reserve_s: float = 1.0
     peek_attempts: int = 2
 
 

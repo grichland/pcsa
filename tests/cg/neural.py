@@ -52,6 +52,8 @@ def config(checkpoint: Path | str = CHECKPOINT, timeout_s: float = 8.0) -> CGCon
 @cache
 def missing() -> str | None:
     """Why the model player cannot run here, or None."""
+    if importlib.util.find_spec("champions_gym") is None and Path(sys.executable) == PYTHON:
+        return "the model player needs Champions Gym (its wheel is Windows x64 only)"
     if importlib.util.find_spec("torch") is None and Path(sys.executable) == PYTHON:
         return "the model player needs torch (the torch extra)"
     if TRANSPORT == "inprocess" and os.environ.get("CUDA_VISIBLE_DEVICES") != ENV["CUDA_VISIBLE_DEVICES"]:

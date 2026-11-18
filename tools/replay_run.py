@@ -5,8 +5,9 @@
 Per battle the messages the controller sent (battle-N/cg-messages.jsonl, `dir: "sent"`; else cg/<tag>.jsonl) go,
 one CG generation at a time, to a fresh pcsa.cg.serve Server with the neural player and the checkpoint the run used
 (from the manifest, looked up in assets/models). The copy (<run>-replay) gets, per decision record, `notes.cg.view`
-and `notes.cg.net` (schema pcsa-decision/4), `cg` in team_preview.json, flat `v`/`ms` on the team `decision`
-events, and the manifest in the flat neural form. Reported: whether every replayed answer equals the recorded one,
+and `notes.cg.net` (schema pcsa-decision/4; `net.ms` is the replay's own decision time), `cg` in
+team_preview.json, flat `v`/`ms` on the team `decision` events, and a manifest naming what produced the replay
+(the original run's player under `replay.original`). Reported: whether every replayed answer equals the recorded one,
 and how often the belief's top item, top ability and top-4 moves agree with what the battle revealed by its end.
 """
 
@@ -140,6 +141,17 @@ class Belief:
                 for k, (a, n) in self.counts.items()}  # fmt: skip
 
 
+def additions(reply: dict) -> dict:
+    """The replayed reply's `view` and `net`; `net.ms` is the replay's own decision time (the record's
+    `notes.cg.model.ms` stays the live one)."""
+    notes = reply.get("notes") or {}
+    out = {k: notes[k] for k in ("view", "net") if k in notes}
+    ms = (notes.get("model") or {}).get("ms")
+    if "net" in out and ms is not None:
+        out["net"] = {**out["net"], "ms": ms}
+    return out
+
+
 def rewrite_battle(out: Path, replies: dict, recorded: list[dict]) -> dict:
     """The battle's decision records and team_preview.json in the copy; returns counts."""
     done = {"records": 0, "with_view": 0, "with_net": 0}
@@ -148,9 +160,7 @@ def rewrite_battle(out: Path, replies: dict, recorded: list[dict]) -> dict:
         rec["schema"] = DECISION_SCHEMA
         cg, reply = (rec.get("notes") or {}).get("cg"), replies.get(rec.get("request_id"))
         if isinstance(cg, dict) and reply is not None:
-            for k in ("view", "net"):
-                if k in reply["notes"]:
-                    cg[k] = reply["notes"][k]
+            cg.update(additions(reply))
         done["records"] += 1
         done["with_view"] += int(isinstance(cg, dict) and "view" in cg)
         done["with_net"] += int(isinstance(cg, dict) and "net" in cg)
@@ -159,7 +169,7 @@ def rewrite_battle(out: Path, replies: dict, recorded: list[dict]) -> dict:
     if preview.is_file() and reply is not None:
         tp = json.loads(preview.read_text(encoding="utf-8"))
         original = next((r for r in recorded if "picks" in r), None)
-        tp["cg"] = {**reply["notes"], "model": (original or reply).get("notes", {}).get("model")}
+        tp["cg"] = {**reply["notes"], **additions(reply), "model": (original or reply).get("notes", {}).get("model")}
         write_json(preview, tp)
     return done
 
@@ -178,15 +188,24 @@ def team_events(out: Path, models: dict) -> None:
     path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
 
-def manifest(out: Path, run: Path, checkpoint: Path, status: dict | None) -> None:
+def manifest(out: Path, run: Path, args: dict, status: dict | None) -> None:
+    """The copy's manifest describes what produced the replay (pcsa.cg.serve, this policy and checkpoint) in the
+    flat neural form; the original run's player and player_params are kept under `replay.original`."""
     path = out / "manifest.json"
     m = json.loads(path.read_text(encoding="utf-8"))
-    params = dict(m.get("player_params") or {})
-    if status is not None and isinstance(params.get("start_status"), dict):
-        params["start_status"] = {**params["start_status"], "status": status}
-    m["player"], m["player_params"] = neural_player(str(m.get("player")), params)
+    original = {"player": m.get("player"), "player_params": m.get("player_params"), "config": m.get("config")}
+    params = {
+        "transport": "inprocess",
+        "entry": "pcsa.cg.serve:Server",
+        "command": [sys.executable, "-m", "pcsa.cg.serve", "--player", NEURAL, "--player-args", json.dumps(args)],
+        "env": {"CUDA_VISIBLE_DEVICES": os.environ.get("CUDA_VISIBLE_DEVICES", "")},
+        "start_status": {"status": status, "problems": []},
+    }
+    m["player"], m["player_params"] = neural_player("cg", params)
     m["decision_schema"] = DECISION_SCHEMA
-    m["replay"] = {"of": run.name, "checkpoint": checkpoint.name, "tool": "tools/replay_run.py"}
+    m["config"] = None
+    m["replay"] = {"of": run.name, "checkpoint": Path(args["checkpoint"]).name, "tool": "tools/replay_run.py",
+                   "original": original}  # fmt: skip
     write_json(path, m)
 
 
@@ -221,7 +240,7 @@ def main(argv: list[str] | None = None) -> int:
         if status is None and server is not None:
             status = server.session.status()
     team_events(out, models)
-    manifest(out, run, checkpoint, status)
+    manifest(out, run, args, status)
     report["belief"] = belief.report()
     write_json(out / "replay-report.json", report)
     sys.stdout.write(json.dumps(report, indent=2) + "\n")

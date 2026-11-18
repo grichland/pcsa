@@ -18,10 +18,10 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
-from pcsa.battle.log_rows import parse_row, rows_from_texts, who  # noqa: E402
-
 from battle_log_checks import never_shown  # noqa: E402
 from battle_log_md import render  # noqa: E402
+
+from pcsa.battle.log_rows import parse_row, rows_from_texts, who  # noqa: E402
 
 COMMAND = "uv run python tools\\catalog\\battle_log.py"
 # Data keys listed in full as sub-types (names, numbers and move names are not sub-types).
@@ -47,7 +47,7 @@ def load_battle(path: Path) -> list[dict]:
     for turn in sorted(by_turn):
         recs = sorted(by_turn[turn], key=lambda r: r["index"])
         raw = rows_from_texts(turn, [r["text"] for r in recs], [r.get("sprite") for r in recs])
-        for rec, row in zip(recs, raw):
+        for rec, row in zip(recs, raw, strict=False):
             out.append({"battle": key, "turn": turn, "index": rec["index"], "text": rec["text"],
                         "sprite": rec.get("sprite"), "event": parse_row(row)})
     return out

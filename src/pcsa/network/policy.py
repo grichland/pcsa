@@ -84,8 +84,15 @@ class Policy:
         self.info: dict[str, Any] = {
             "contract": lt.get("contract"),
             "layout_hash": lt["hash"],
-            "shapes": {"rows": [L.ROWS, w["rows"]], "row_ids": [L.ROWS, w["row_ids"]], "field": [w["field"]], "last": [w["last"]],
-                       "last_ids": [w["last_ids"]], "mask": [L.OWN_ACTIONS], "opp_prior": [L.OPP_ACTIONS]},  # fmt: skip
+            "shapes": {
+                "rows": [L.ROWS, w["rows"]],
+                "row_ids": [L.ROWS, w["row_ids"]],
+                "field": [w["field"]],
+                "last": [w["last"]],
+                "last_ids": [w["last_ids"]],
+                "mask": [L.OWN_ACTIONS],
+                "opp_prior": [L.OPP_ACTIONS],
+            },
             "vocab": {VOCAB_NAMES[k]: int(v) for k, v in lt["vocab"].items()},
             "model_id": os.path.abspath(checkpoint),
             "checkpoint": os.path.abspath(checkpoint),
@@ -136,31 +143,55 @@ class Policy:
         b = self.batch(arrays)
         with self.lock:
             out = self._forward(b, slots)
-        scores = torch.cat([decide_log(out["pi"]), decide_log(out["preview_pi"])], dim=1)  # [B, 71]
+        scores = torch.cat([decide_log(out["pi"]), decide_log(out["preview_pi"])], dim=1).cpu()  # [B, 71]
+        value = out["value"].cpu()
+        try:
+            extras = self.all_extras(arrays, b, out, len(slots))
+        except Exception as error:  # display only: the decision stands without them
+            extras = [{"error": f"extras: {type(error).__name__}: {error}"} for _ in slots]
+        return {"scores": scores, "value": value, "extras": extras}
+
+    def all_extras(self, arrays: Any, b: dict, out: dict, n: int) -> list[dict]:
         kind = _tensor(arrays.kind, self.device)
         tau = float(self.net.temperature())
         out = {k: v.cpu() for k, v in out.items()}
         ids, rows = b["row_ids"].cpu().long(), b["rows"].cpu()
-        extras = [self.extras(out, r, int(kind[r]), ids[r], rows[r], tau) for r in range(len(slots))]
-        return {"scores": scores.cpu(), "value": out["value"], "extras": extras}
+        return [self.extras(out, r, int(kind[r]), ids[r], rows[r], tau) for r in range(n)]
 
     def extras(self, out: dict, r: int, kind: int, ids: torch.Tensor, rows: torch.Tensor, tau: float) -> dict:
-        """Row r's outputs as plain JSON (module docstring)."""
+        """Row r's outputs as plain JSON (module docstring). Never raises: a part that cannot be made is left out
+        and named in `error`."""
         if kind == L.KIND_PREVIEW:
-            top = out["preview_pi"][r].topk(TOP_PICKS)
-            combos = L.preview_combos()
-            picks = [[list(combos[int(a)]), float(p)] for p, a in zip(*top, strict=True) if p > 0]
-            return {"belief": self.belief(out, r, ids, preview=True), "picks_top": picks}
-        return {
-            "tau": tau,
-            "pi": out["pi"][r].tolist(),
-            "score": out["score"][r].tolist(),
-            "p_opp": out["p_opp"][r].tolist(),
-            "matrix": out["matrix"][r].tolist(),
-            "rows": self.own_names(ids, rows),
-            "cols": self.opp_names(ids),
-            "belief": self.belief(out, r, ids, preview=False),
-        }
+            parts = {
+                "belief": lambda: self.belief(out, r, ids, preview=True),
+                "picks_top": lambda: self.picks_top(out, r),
+            }
+        else:
+            parts = {
+                "tau": lambda: tau,
+                "pi": lambda: out["pi"][r].tolist(),
+                "score": lambda: out["score"][r].tolist(),
+                "p_opp": lambda: out["p_opp"][r].tolist(),
+                "matrix": lambda: out["matrix"][r].tolist(),
+                "rows": lambda: self.own_names(ids, rows),
+                "cols": lambda: self.opp_names(ids),
+                "belief": lambda: self.belief(out, r, ids, preview=False),
+            }
+        made, errors = {}, []
+        for key, make in parts.items():
+            try:
+                made[key] = make()
+            except Exception as error:
+                errors.append(f"{key}: {type(error).__name__}: {error}")
+        if errors:
+            made["error"] = "; ".join(errors)
+        return made
+
+    def picks_top(self, out: dict, r: int) -> list[list]:
+        """The likeliest (lead, second, third) picks as [[team indices], p]."""
+        top = out["preview_pi"][r].topk(TOP_PICKS)
+        combos = L.preview_combos()
+        return [[list(combos[int(a)]), float(p)] for p, a in zip(*top, strict=True) if p > 0]
 
     def _species(self, ids: torch.Tensor, row: int) -> str | None:
         return vocab.name("species", int(ids[row, self.cols["species"]]))

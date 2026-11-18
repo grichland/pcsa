@@ -5,13 +5,12 @@ other picks than CG's (the preview fallback, and CG's switches are to what was b
 watched (real_session.Watched): no anomalies and no corrections of the picks.
 
 The phone is scripted from tower's own preview answer, so a change in tower's picks does not break the tests.
-Skipped when champions_gym is not importable (CHAMPIONS_GYM_PYTHON, else ../champions-gym/python)."""
+Skipped when champions_gym (the installed wheel) is not importable."""
 
 from __future__ import annotations
 
 import importlib
 import json
-import os
 import sys
 from functools import cache
 from pathlib import Path
@@ -30,12 +29,8 @@ from tests.cg.helpers import START as BATTLE_START
 from tests.live.t7_rig import action, end_of_battle, forced, lobby_to_team_select, peeked_action, run_battles
 from tests.live.turn_rig import TEAM
 
-CG_PYTHON = Path(os.environ.get("CHAMPIONS_GYM_PYTHON") or repo_root().parent / "champions-gym" / "python")
-
 
 def _importable() -> bool:
-    if str(CG_PYTHON) not in sys.path and CG_PYTHON.is_dir():
-        sys.path.append(str(CG_PYTHON))
     try:
         importlib.import_module("champions_gym.live")
     except ImportError:
@@ -43,7 +38,7 @@ def _importable() -> bool:
     return True
 
 
-pytestmark = pytest.mark.skipif(not _importable(), reason=f"champions_gym not importable from {CG_PYTHON}")
+pytestmark = pytest.mark.skipif(not _importable(), reason="champions_gym is not installed")
 
 TRANSPORTS = ["inprocess", "subprocess"]
 TIMEOUT_S = 6.0
@@ -103,7 +98,7 @@ class Rig:
         command = [sys.executable, "-m", "champions_gym.live", "--player", "tower", "--log-dir", str(self.cg_logs)]
         cg = CGConfig(transport=transport, entry=WATCHED,  # type: ignore[arg-type]
                       args={"player": "tower", "log_dir": str(self.cg_logs)} if transport == "inprocess" else {},
-                      command=command, python_path=[str(CG_PYTHON)], timeout_s=TIMEOUT_S)  # fmt: skip
+                      command=command, timeout_s=TIMEOUT_S)  # fmt: skip
         self.config: Config = config.model_copy(update={"agent": config.agent.model_copy(update={"cg": cg})})
         self.player = CGPlayer(self.config, clock=self.clock, run_dir=tmp_path / "run")
 

@@ -84,3 +84,34 @@ def test_beliefs_change_nothing_else(policy: Policy, kind: int) -> None:
     assert "belief_item" in on and "belief_item" not in off
     for pi, legal in (("pi", "legal"), ("preview_pi", "preview_legal")):
         assert torch.equal(decide.choose(on[pi], on[legal], True)[0], decide.choose(off[pi], off[legal], True)[0])
+
+
+def test_a_failing_extra_never_changes_the_decision(policy: Policy, monkeypatch) -> None:
+    """Names and belief decoding failing: scores and value are those of an unpatched call (a fresh slot each, so
+    the memory is the same), and the extras keep what could be made, with `error`."""
+    for kind, slots in ((cg.KIND_TURN, (2, 3)), (cg.KIND_PREVIEW, (4, 5))):
+        arrays = observation(kind, turns=1)
+        want = policy.decide(arrays, [slots[0]])
+
+        def boom(*args, **kw):
+            raise RuntimeError("decode broke")
+
+        with monkeypatch.context() as m:
+            for name in ("own_names", "opp_names", "belief", "picks_top"):
+                m.setattr(Policy, name, boom)
+            got = policy.decide(arrays, [slots[1]])
+        assert torch.equal(got["scores"], want["scores"]) and torch.equal(got["value"], want["value"])
+        e = got["extras"][0]
+        assert "decode broke" in e["error"] and "belief" not in e
+        if kind == cg.KIND_TURN:
+            assert {"tau", "pi", "score", "p_opp", "matrix"} <= set(e) and "rows" not in e and "cols" not in e
+            assert e["score"] == want["extras"][0]["score"]
+
+
+def test_extras_failing_entirely_still_return_the_decision(policy: Policy, monkeypatch) -> None:
+    arrays = observation(cg.KIND_TURN, turns=1)
+    want = policy.decide(arrays, [6])
+    monkeypatch.setattr(Policy, "all_extras", lambda *a: (_ for _ in ()).throw(RuntimeError("all broke")))
+    got = policy.decide(arrays, [7])
+    assert torch.equal(got["scores"], want["scores"]) and torch.equal(got["value"], want["value"])
+    assert got["extras"] == [{"error": "extras: RuntimeError: all broke"}]

@@ -1,6 +1,9 @@
 """Write assets/game/cg/vocab.json: CG's numeric embedding ids -> CG string ids, from CG's generated.rs.
 
-    .venv/Scripts/python.exe tools/data/cg_vocab.py [--source path/to/generated.rs]
+    .venv/Scripts/python.exe tools/data/cg_vocab.py [--source CG_CHECKOUT]
+
+The Champions Gym checkout is --source, else the environment variable CG_SOURCE, else ../cg-publish (the public
+clone); its engine/src/sim/data/generated.rs is read (cg_tables.generated_rs).
 
 Numbering (CG obs/src/vocab.rs, contracts/MODEL.md section 2), every list indexed by the id:
 - species: id = table index + 1; id 0 is unknown (null)
@@ -18,8 +21,9 @@ import re
 import sys
 from pathlib import Path
 
+import cg_tables
+
 REPO = Path(__file__).resolve().parents[2]
-DEFAULT_SOURCE = REPO.parent / "cg-publish" / "engine" / "src" / "sim" / "data" / "generated.rs"
 OUT = REPO / "assets" / "game" / "cg" / "vocab.json"
 TABLES = {"species": "SPECIES", "moves": "MOVES", "items": "ITEMS", "abilities": "ABILITIES"}
 
@@ -58,10 +62,10 @@ def cg_version() -> str | None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
-    parser.add_argument("--source", type=Path, default=DEFAULT_SOURCE)
+    parser.add_argument("--source", type=Path, default=None, help="a Champions Gym checkout (default: CG_SOURCE, else ../cg-publish)")
     parser.add_argument("--out", type=Path, default=OUT)
     args = parser.parse_args(argv)
-    src = args.source.read_text(encoding="utf-8")
+    src = cg_tables.source(cg_tables.generated_rs(args.source))
     commit = re.search(r'pub const SHOWDOWN_COMMIT: &str = "([0-9a-f]+)";', src)
     out = {
         "schema": "pcsa-cg-vocab/1",

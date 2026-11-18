@@ -95,7 +95,7 @@ def brought_names(meta: dict, roster: list[str], picks: list[int] | None) -> lis
 
 
 def teams_for_rows(meta: dict, brought: list[str], preview_names: list[str | None]) -> Teams:
-    """What the row converter is given: the same as tools/cg_events/convert_runs.py."""
+    """What the row converter is given: our brought members (else the roster) and their preview."""
     own = brought or meta.get("roster") or []
     return Teams(tuple(n for n in own if n), tuple(preview_names))
 

@@ -22,35 +22,66 @@ $ErrorActionPreference = "Stop"
 $Repo = Split-Path -Parent $PSScriptRoot
 Set-Location $Repo
 
-# Leftovers from a run that ended abruptly: a phone agent started from THIS repo would still hold pcsa.exe (so the
-# environment cannot be synced). Other commands (pcsa train ...) are left alone. With $Watch on, a dashboard left
-# over from an earlier launch is stopped too (it would keep port 8765); with it off, dashboards are left alone.
-$repoPattern = [regex]::Escape($Repo + '\')  # the trailing separator leaves out sibling folders
-$agentPattern = 'pcsa\.exe"? run\b|pcsa\.cli"? run\b'
-if ($Watch) { $agentPattern = 'pcsa\.exe"? (run|watch)\b|pcsa\.cli"? (run|watch)\b' }
-$all = Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -and $_.CommandLine -match $repoPattern -and $_.ProcessId -ne $PID }
-$leftovers = @($all | Where-Object { $_.CommandLine -match $agentPattern })
+# Leftovers from a run that ended abruptly: a phone agent started from THIS repo's venv would still hold pcsa.exe
+# (so the environment cannot be synced). Only processes whose executable is in this repo's .venv\Scripts count, so
+# a command started from another checkout is left alone, whatever folder it names. Other commands (pcsa train ...)
+# are left alone. With $Watch on, a dashboard left over from an earlier launch is stopped too (it would keep port
+# 8765), and so is a dashboard waiter window still waiting for its run folder; with it off, dashboards are left alone.
+$Scripts = Join-Path $Repo ".venv\Scripts"
+$Pcsa = Join-Path $Scripts "pcsa.exe"
+$venvExes = @("pcsa.exe", "python.exe", "pythonw.exe") | ForEach-Object { (Join-Path $Scripts $_).ToLowerInvariant() }
+$commands = if ($Watch) { "(run|watch)" } else { "run" }
+$agentPattern = "(pcsa(\.exe)?""?|-m\s+pcsa\.cli)\s+$commands\b"
+$waiterPattern = [regex]::Escape("& '$Pcsa' watch")  # the waiter window this script starts below
+$processes = @(Get-CimInstance Win32_Process | Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine })
+function Test-VenvExe($p) { $p.ExecutablePath -and $venvExes -contains $p.ExecutablePath.ToLowerInvariant() }
+$leftovers = @($processes | Where-Object { (Test-VenvExe $_) -and $_.CommandLine -match $agentPattern })
+if ($Watch) {
+    $leftovers += @($processes | Where-Object { $_.Name -eq "powershell.exe" -and $_.CommandLine -match $waiterPattern })
+}
 foreach ($p in $leftovers) {
     $shown = $p.CommandLine.Substring(0, [Math]::Min(100, $p.CommandLine.Length))
     Write-Host "Stopping leftover process $($p.ProcessId): $shown"
     Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue
 }
-if ($leftovers.Count -gt 0) { Start-Sleep -Seconds 2 }
+if ($leftovers.Count -gt 0) {
+    Start-Sleep -Seconds 2
+    # The CG server of a stopped `pcsa run` exits when its stdin closes; one whose parent is gone and that is still
+    # running (busy loading or deciding) is stopped here, by the same executable rule.
+    $alive = @(Get-CimInstance Win32_Process | ForEach-Object { $_.ProcessId })
+    $orphans = @(Get-CimInstance Win32_Process | Where-Object {
+        $_.CommandLine -and (Test-VenvExe $_) -and $_.CommandLine -match "-m\s+pcsa\.cg\.serve\b" -and $alive -notcontains $_.ParentProcessId
+    })
+    foreach ($p in $orphans) {
+        Write-Host "Stopping leftover CG server $($p.ProcessId)"
+        Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue
+    }
+}
 
 # Runner: sync the environment with uv when it is installed, then launch the project's own executable directly.
 # (Launching through `uv run` is what fails with "Access is denied" when something still holds pcsa.exe.)
 # --extra torch always: the neural player needs it, and other projects that use this venv need torch kept.
-$Pcsa = Join-Path $Repo ".venv\Scripts\pcsa.exe"
 $Uv = Get-Command uv -ErrorAction SilentlyContinue
 if ($Uv) {
     & $Uv.Source sync --inexact --extra torch --quiet
     if ($LASTEXITCODE -ne 0) { Write-Host "uv sync failed; continuing with the existing environment" }
 }
-if (-not (Test-Path -LiteralPath $Pcsa)) { throw "pcsa.exe not found at $Pcsa. Run: winget install astral-sh.uv; uv sync --extra torch; uv run pcsa setup" }
+if (-not (Test-Path -LiteralPath $Pcsa)) { throw "pcsa.exe not found at $Pcsa. Run: winget install astral-sh.uv; uv sync --inexact --extra torch; uv run pcsa setup" }
 
-# Phone: the device answers and the current screen is classified (no taps).
+# Phone: exactly one authorized device, with the game in front and no screen sharing stealing taps.
 $Adb = Join-Path $Repo ".tools\adb\adb.exe"
 if (-not (Test-Path -LiteralPath $Adb)) { throw "adb not found at $Adb. Run: uv run pcsa setup" }
+$devices = & $Adb devices | Select-String "\tdevice$"
+if (@($devices).Count -ne 1) { throw "Expected one authorized ADB device, found $(@($devices).Count). Connect and authorize the phone." }
+$Serial = ($devices[0] -split "`t")[0]
+Write-Host "Phone: $Serial"
+$focus = (& $Adb shell dumpsys window | Select-String "mCurrentFocus=Window" | Select-Object -First 1) -as [string]
+if ($focus -notmatch "pokemonchampions") { throw "The game is not in front ($focus). Open it on Begin Matchmaking." }
+if ((& $Adb shell dumpsys window windows | Select-String "WakeLockScreenLayout")) {
+    throw "Link to Windows screen sharing is blocking taps. Stop it (notification shade or Phone Link) and retry."
+}
+
+# Then the agent's own check: the device answers and the current screen is classified (no taps).
 $checkArguments = @("check", "--config", $Config)
 foreach ($setting in $Overrides) { $checkArguments += @("--set", $setting) }
 $ErrorActionPreference = "Continue"  # Python logs to stderr; Windows PowerShell would treat each line as an error
@@ -85,7 +116,7 @@ if ($Mirror) {
         $env:ADB = $Adb
         # Start-Process joins -ArgumentList with spaces and does not quote, so the title carries its own quotes;
         # unquoted, scrcpy sees "phone" as a stray argument and exits at once.
-        $mirrorArguments = @("--window-title", '"pcsa phone"', "--no-audio")
+        $mirrorArguments = @("--serial", $Serial, "--window-title", '"pcsa phone"', "--no-audio")
         Start-Process -FilePath $Scrcpy -ArgumentList $mirrorArguments -WorkingDirectory $Repo | Out-Null
         Write-Host "Mirror: $Scrcpy"
     }

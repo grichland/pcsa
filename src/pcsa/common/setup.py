@@ -18,7 +18,7 @@ from typing import Any
 from pcsa.common import paths, tools
 from pcsa.common.errors import ConfigError
 
-OPTIONAL_GROUPS = ("torch",)
+SYNC = "uv sync --inexact --extra torch"  # inexact: keeps packages other projects on this venv installed
 CG_PLATFORM = "win32"
 
 
@@ -49,7 +49,7 @@ class PythonStep(Step):
         return Status(ok, f"{version} at {sys.executable}", None if ok else "run through `uv run` (Python 3.12)")
 
     def install(self, lock: dict[str, Any]) -> None:
-        raise ConfigError("the Python environment is managed by uv: run `uv sync --extra torch`, then `pcsa setup`")
+        raise ConfigError(f"the Python environment is managed by uv: run `{SYNC}`, then `pcsa setup`")
 
 
 class AdbStep(Step):
@@ -165,15 +165,15 @@ class ChampionsGymStep(Step):
             return Status(False, f"no Champions Gym wheel for {sys.platform} (Windows x64 only)", None)
         try:
             cg = _import("champions_gym")
-        except ImportError as error:
-            return Status(False, f"not importable: {error}", "uv sync --extra torch")
+        except Exception as error:  # a broken wheel can raise OSError (a missing DLL) as well as ImportError
+            return Status(False, f"not importable: {type(error).__name__}: {error}", SYNC)
         version = getattr(cg, "__version__", "?")
         if version != pinned:
-            return Status(False, f"{version} installed, pinned {pinned}", "uv sync --extra torch")
+            return Status(False, f"{version} installed, pinned {pinned}", SYNC)
         return Status(True, f"{version}; {_contracts()}")
 
     def install(self, lock: dict[str, Any]) -> None:
-        raise ConfigError("Champions Gym is a project dependency: run `uv sync --extra torch`")
+        raise ConfigError(f"Champions Gym is a project dependency: run `{SYNC}`")
 
 
 class TorchStep(Step):
@@ -184,11 +184,11 @@ class TorchStep(Step):
         try:
             torch = _import("torch")
         except ImportError:
-            return Status(False, "not installed", "uv sync --extra torch")
+            return Status(False, "not installed", SYNC)
         return Status(True, f"{torch.__version__}, cuda {torch.cuda.is_available()}")
 
     def install(self, lock: dict[str, Any]) -> None:
-        _run(["uv", "sync", "--extra", "torch"], cwd=paths.repo_root())
+        _run([str(part) for part in SYNC.split()], cwd=paths.repo_root())
 
 
 STEPS: tuple[Step, ...] = (
@@ -246,7 +246,7 @@ def _contracts() -> str:
     ):
         try:
             value = getattr(_import(module), attribute, None)
-        except ImportError:
+        except Exception:  # reported as unknown; the import check above already passed
             value = None
         found.append(f"{label} contract {value or '?'}")
     return ", ".join(found)
