@@ -36,7 +36,7 @@ dev = [
 ]
 
 [project.scripts]
-pcsa = "pcsa.live.cli:main"
+pcsa = "pcsa.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/pcsa"]
@@ -108,6 +108,8 @@ max-statements = 50
 "src/pcsa/live/log_reader.py" = ["PLR0913"]
 # The log-row to LIVE-event converters: one branch per event kind, the event's fields as arguments.
 "src/pcsa/events/**" = ["E501", "PLR0913", "PLR2004", "C901", "SIM102", "SIM910", "UP033"]
+# The network, copied from pcsa-former and kept diffable with it: feature layouts are numbered slots.
+"src/pcsa/network/**" = ["PLR2004", "PLR0913", "PLR0915", "E731", "E501", "C901"]
 "src/pcsa/cli.py" = ["T20"]
 "src/pcsa/common/setup.py" = ["T20"]
 "tests/**" = ["PLR2004", "E501", "PLR0913"]

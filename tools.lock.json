@@ -43,6 +43,12 @@
       }
     ]
   },
+  "champions_gym": {
+    "version": "0.4.0",
+    "url": "https://github.com/grichland/poke-champions-gym/releases/download/v0.4.0/champions_gym-0.4.0-cp312-cp312-win_amd64.whl",
+    "sha256": "3cee276f695b52bff7f62a4465fa4d26370ba196e4fe6061e8cdaa9b5a7b8ca9",
+    "note": "installed by uv from pyproject.toml; setup checks the installed version against this pin"
+  },
   "showdown": {
     "commit": "c0845f33d381402dfcb18ce324c20a94f18af075",
     "note": "game data provenance only; Showdown is not installed or run"

@@ -1,47 +1,51 @@
-"""`pcsa run` plays Ranked Singles on the phone; `pcsa check` connects to the
-device and classifies the current screen without a tap."""
+"""`pcsa run`, `pcsa check` and `pcsa nav`: the live-play commands, registered by `pcsa.cli`.
+
+Building the parsers imports no phone code; each command imports its module when it runs.
+"""
 
 from __future__ import annotations
 
 import argparse
-import sys
+from collections.abc import Callable
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from pcsa.common import paths
-from pcsa.common.config import load_config
-from pcsa.common.errors import ConfigError
 from pcsa.decide.load import PLAYERS
 
-COMMANDS = ("run", "check")
+if TYPE_CHECKING:
+    from pcsa.common.config import Config
+
+COMMANDS = ("run", "check", "nav")
 
 
-def config_args(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--config", default=str(paths.config_dir() / "agent.yaml"))
-    parser.add_argument("--set", action="append", default=[], metavar="SECTION.KEY=VALUE", help="config override")
+def add_parsers(commands, config_args: Callable[[argparse.ArgumentParser], None]) -> None:
+    run = commands.add_parser("run", help="play Ranked Singles battles on the phone")
+    config_args(run)
+    run.add_argument("--player", choices=PLAYERS, default=None, help="Player (default: agent.yaml decide.player)")
+    run.add_argument("--battles", type=int, default=None, help="decided battles before the run finishes")
+    run.add_argument("--max-total", type=int, default=None, help="bound on battles started, forfeits included")
+    run.add_argument("--seed", type=int, default=None)
+    run.add_argument("--name", default="run")
+    run.add_argument("--resume", default=None, help="an existing run directory to continue")
 
-
-def parser() -> argparse.ArgumentParser:
-    root = argparse.ArgumentParser(prog="pcsa", description=__doc__)
-    commands = root.add_subparsers(dest="command", required=True)
-    play = commands.add_parser("run", help="play Ranked Singles battles on the phone")
-    config_args(play)
-    play.add_argument("--player", choices=PLAYERS, default=None, help="Player (default: agent.yaml decide.player)")
-    play.add_argument("--battles", type=int, default=None, help="decided battles before the run finishes")
-    play.add_argument("--max-total", type=int, default=None, help="bound on battles started, forfeits included")
-    play.add_argument("--seed", type=int, default=None)
-    play.add_argument("--name", default="run")
-    play.add_argument("--resume", default=None, help="an existing run directory to continue")
     check = commands.add_parser("check", help="connect to the device and classify the current screen (no taps)")
     config_args(check)
-    return root
+
+    nav = commands.add_parser("nav", help="navigate to a screen (default: the lobby)")
+    config_args(nav)
+    nav.add_argument("--to", default="lobby")
+    nav.add_argument("--seconds", type=float, default=180.0)
 
 
-def dispatch(args: argparse.Namespace) -> int:
-    config = load_config(args.config, overrides=args.set)
+def dispatch(args: argparse.Namespace, config: Config) -> int:
     if args.command == "check":
         from pcsa.live.play import check_command
 
         return check_command(config)
+    if args.command == "nav":
+        from pcsa.live.phone import nav_command
+
+        return nav_command(config, args.to, args.seconds)
     from pcsa.live.play import play_command
 
     return play_command(
@@ -53,16 +57,3 @@ def dispatch(args: argparse.Namespace) -> int:
         name=args.name,
         resume=Path(args.resume) if args.resume else None,
     )
-
-
-def main(argv: list[str] | None = None) -> int:
-    args = parser().parse_args(argv)
-    try:
-        return dispatch(args)
-    except ConfigError as error:
-        sys.stderr.write(f"pcsa: {error}\n")
-        return 2
-
-
-if __name__ == "__main__":
-    sys.exit(main())
