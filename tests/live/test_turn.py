@@ -78,7 +78,7 @@ def test_turn_without_a_peek_sends_rows_events_and_the_sheet_moves(config: Confi
     assert second.opponent_preview == ("glimmora", "lucario", "garchomp")
     assert len(rig.taps()) == 6 and rig.taps()[:2] == ["fight", "move_rows1"]  # Fight, then the row twice
     records = rig.records()
-    assert [r["schema"] for r in records] == ["pcsa-decision/3"] * 2
+    assert [r["schema"] for r in records] == ["pcsa-decision/4"] * 2
     rec = records[1]
     assert (rec["sequence"], rec["kind"], rec["turn"], rec["choice"], rec["order"]) == (
         1, "action", 2, "move1", "/choose move earthquake"

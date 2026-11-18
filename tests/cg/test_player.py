@@ -221,12 +221,13 @@ def test_subprocess_battle_crash_and_late_answer(tmp_path: Path) -> None:
 def test_config_section_is_checked(tmp_path: Path) -> None:
     agent = repo_root() / "config" / "agent.yaml"
     with pytest.raises(ConfigError, match="cg.command"):
-        load_config(agent, ["decide.player=cg"], environ={})
+        load_config(agent, ["decide.player=cg", "cg.command=null"], environ={})
     with pytest.raises(ConfigError, match="entry"):
         load_config(agent, ["cg.entry=not an entry"], environ={})
     with pytest.raises(ConfigError, match="timeout_s"):
         load_config(agent, ["decide.player=cg", "cg.command=[x]", "cg.timeout_s=39"], environ={})
-    config = load_config(agent, ["decide.player=cg", "cg.transport=inprocess", f"cg.entry={ENTRY}"], environ={})
+    inprocess = ["decide.player=cg", "cg.transport=inprocess", f"cg.entry={ENTRY}", "cg.env={}"]
+    config = load_config(agent, inprocess, environ={})
     player = load_player("cg", config, clock=FakeClock(0.0), run_dir=tmp_path)
     assert isinstance(player, CGPlayer) and player.params()["entry"] == ENTRY
     with pytest.raises(ConfigError, match="cg.args is for the inprocess"):

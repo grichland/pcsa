@@ -3,8 +3,8 @@
 Nothing in src/ imports this module except decide/load.py, lazily. Per battle a Stream keeps what this CG has been
 sent; a CG that restarted (new process, new handle, new Player) gets the whole stream again from battle_start.
 Anything CG answers that cannot be placed raises CGError, the runner falls back, and the next `events` message
-carries that fallback (Request.history). CG's replies (LIVE section 3): picks; an order with `notes` (kept in the
-decision's notes as "cg"); `{"error"}` for a message it cannot read (the call falls back); a stale seq's error with
+carries that fallback (Request.history). CG's replies (LIVE section 3): picks and an order with `notes` (kept in
+the notes as "cg"); `{"error"}` for a message it cannot read (the call falls back); a stale seq's error with
 the order CG gave before (used, the error noted). Errors about other messages are noted as "cg_errors".
 `start` makes CG before any battle and checks its status answer (pcsa/cg/startup.py). Per battle the model's
 fallbacks (notes.model) are counted and written with CG's status to the battle's cg-summary.json.
@@ -45,7 +45,7 @@ class CGPlayer:
 
     def __init__(self, config: Any = None, *, clock=None, run_dir: Path | None = None,
                  transport: Transport | None = None) -> None:  # fmt: skip
-        self.cfg = cg_config(config)
+        self.cfg = startup.resolved(cg_config(config))
         degrade = getattr(getattr(config, "agent", config), "degrade", None)
         self.tap_reserve = getattr(degrade, "tap_reserve_s", TAP_RESERVE_S)
         self.clock = clock
@@ -112,7 +112,7 @@ class CGPlayer:
         picks = slots.picks_of(reply)
         self._stream(request.battle_tag).picks = picks
         self._watch(request.battle_tag, reply)
-        return picks, notes
+        return picks, {**notes, "cg": reply["notes"]} if isinstance(reply.get("notes"), dict) else notes
 
     def choose_move(self, request: Request) -> Answer:
         stream, seq = self._stream(request.battle_tag), request.request_id
@@ -249,7 +249,8 @@ class CGPlayer:
             self.streams = {tag: Stream(tag, brought=s.brought) for tag, s in self.streams.items()}
 
     def _answer(self, reply: dict, request: Request, notes: dict) -> Answer:
-        error, cg = reply.get("error"), reply.get("notes") if isinstance(reply.get("notes"), dict) else {}
+        error, given = reply.get("error"), reply.get("notes")
+        cg: dict = given if isinstance(given, dict) else {}
         if error is not None and not isinstance(reply.get("order"), dict):
             raise CGError(f"CG error: {error}")
         try:

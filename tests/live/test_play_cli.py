@@ -5,10 +5,10 @@ from __future__ import annotations
 import pytest
 
 from pcsa.battle.teams import team_from_record
+from pcsa.cli import build_parser as parser
 from pcsa.common.clock import FakeClock
 from pcsa.common.config import Config, load_config
 from pcsa.common.errors import ConfigError, Recoverable
-from pcsa.live.cli import parser
 from pcsa.live.supervisor import supervise
 from pcsa.live.team_read import own_team
 from pcsa.run.battle_state import RunState
@@ -24,14 +24,21 @@ def test_play_and_check_parse() -> None:
         parser().parse_args(["run", "--player", "random"])
 
 
-def test_decide_player_defaults_to_first_and_rejects_others(config: Config) -> None:
-    assert config.agent.decide.player == "first"
+def test_decide_player_is_cg_in_the_shipped_config_and_rejects_others(config: Config) -> None:
+    assert config.agent.decide.player == "cg" and config.agent.cg.command is not None
     path = REPO / "config" / "agent.yaml"
-    assert load_config(path, ["decide.player=cg", "cg.command=[cg]"], environ={}).agent.decide.player == "cg"
+    assert load_config(path, ["decide.player=first"], environ={}).agent.decide.player == "first"
+    assert load_config(path, ["decide.player=first", "cg.command=null"], environ={}).agent.cg.command is None
     with pytest.raises(ConfigError, match="cg.command"):  # cg needs a way to reach CG
-        load_config(path, ["decide.player=cg"], environ={})
+        load_config(path, ["cg.command=null"], environ={})
     with pytest.raises(ConfigError):
         load_config(path, ["decide.player=neural"], environ={})
+
+
+def test_the_shipped_cg_command_has_no_machine_paths(config: Config) -> None:
+    command = config.agent.cg.command or []
+    assert command[0] == "{python}" and command[1:3] == ["-m", "pcsa.cg.serve"]
+    assert not any(":/" in part or ":\\" in part for part in command) and config.agent.cg.python_path == []
 
 
 def test_own_team_lists_the_unread_fields() -> None:

@@ -1,6 +1,6 @@
-"""The `pcsa-decision/3` record, one per decision: the /2 fields pcsa's dashboard reads (where they still exist),
-plus the Request's rows, events, offer and hints, the Player, its time and the visit's gaps, and `live`: the LIVE
-decision_request and fallback this decision stands for. No Showdown `protocol` or `request`."""
+"""The `pcsa-decision/4` record, one per decision: the fields pcsa's dashboard reads, the Request's rows, events,
+offer and hints, the Player, its time and the visit's gaps, `live`: the LIVE decision_request and fallback this
+decision stands for, and in `notes.cg` CG's reply notes (with `view` and `net` from pcsa.cg.serve)."""
 
 from __future__ import annotations
 
@@ -103,6 +103,18 @@ def event_notes(notes: dict) -> dict:
         and not isinstance(value, dict)
         and not (isinstance(value, list | tuple | set | frozenset) and len(value) > EVENT_LIST_LIMIT)
     }
+
+
+def preview_cg(notes: dict) -> tuple[dict, dict | None, dict]:
+    """The preview's notes split: the rest, CG's reply notes (team_preview.json `cg`: view, net, model) and the flat
+    `v` (value) and `ms` the `decision` event of kind team carries."""
+    cg = notes.get("cg")
+    if not isinstance(cg, dict):
+        return notes, None, {}
+    found = cg.get("model")
+    model: dict = found if isinstance(found, dict) else {}
+    flat = {key: model[name] for key, name in (("v", "value"), ("ms", "ms")) if model.get(name) is not None}
+    return {k: v for k, v in notes.items() if k != "cg"}, cg, flat
 
 
 def record(

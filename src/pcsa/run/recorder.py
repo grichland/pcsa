@@ -90,11 +90,30 @@ class Recorder:
         self._thread.join(timeout=30)
 
 
-DECISION_SCHEMA = "pcsa-decision/3"
+DECISION_SCHEMA = "pcsa-decision/4"
+
+
+def neural_player(player_name: str, player_params: dict) -> tuple[str, dict]:
+    """The cg Player running a neural model is described flat ("neural", its checkpoint, run, iteration, sampling
+    and fallback from CG's start-up status, the cg config under `cg`); any other player is left as it is."""
+    start = player_params.get("start_status") if player_name == "cg" else None
+    status = (start or {}).get("status") if isinstance(start, dict) else None
+    found = status.get("player_status") if isinstance(status, dict) else None
+    if not isinstance(found, dict) or not found.get("checkpoint"):
+        return player_name, player_params
+    return "neural", {
+        "checkpoint": Path(str(found["checkpoint"]).replace("\\", "/")).name,
+        "run": found.get("run"),
+        "update": found.get("iteration"),
+        "sampling": found.get("mode"),
+        "fallback": found.get("fallback_player"),
+        "cg": player_params,
+    }
 
 
 def manifest(seed: int, player_name: str, player_params: dict, config_path: Path, device: dict) -> dict:
     """What produced this run: code and asset hashes, pins, player, device."""
+    player_name, player_params = neural_player(player_name, player_params)
     src = paths.repo_root() / "src" / "pcsa"
     digest = hashlib.sha256()
     for path in sorted(src.rglob("*.py")):

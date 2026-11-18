@@ -1,6 +1,6 @@
 """Rules that keep the code readable, enforced on every source file.
 
-- no file over MAX_FILE_LINES, no function over MAX_FUNCTION_LINES
+- no file over MAX_FILE_LINES, no function over MAX_FUNCTION_LINES (the network's verbatim copies excepted)
 - `Path(...).parents` only in common/paths.py; `time.*` only in common/clock.py (so tests control time)
 - `print` only in cli.py and common/setup.py
 """
@@ -16,6 +16,8 @@ MAX_FILE_LINES = 400
 MAX_FUNCTION_LINES = 60
 SRC = paths.repo_root() / "src" / "pcsa"
 PRINT_ALLOWED = {"cli.py", "setup.py"}
+# Copied verbatim from pcsa-former and kept diffable with it: no length limits.
+VERBATIM = {SRC / "network" / f"{name}.py" for name in ("model", "layout", "decide", "checkpoint", "cg_adapter")}
 
 
 def source_files() -> list[Path]:
@@ -25,6 +27,8 @@ def source_files() -> list[Path]:
 def test_file_and_function_lengths() -> None:
     problems = []
     for path in source_files():
+        if path in VERBATIM:
+            continue
         lines = path.read_text(encoding="utf-8").splitlines()
         if len(lines) > MAX_FILE_LINES:
             problems.append(f"{path.relative_to(SRC)}: {len(lines)} lines")

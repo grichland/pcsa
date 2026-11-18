@@ -1,4 +1,5 @@
-"""Making CG for a run (LIVE 0.9 section 3): its log_dir in the run folder, and the start-up status check.
+"""Making CG for a run (LIVE 0.9 section 3): the command resolved, its log_dir in the run folder, and the start-up
+status check.
 
 The model player (`champions_gym.neural:load`) must report a clean contract check, no fallback hand-over and the
 configured checkpoint in `status.player_status`; anything else stops the run before a battle.
@@ -8,13 +9,16 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from pathlib import Path
 from typing import Any
 
 from pcsa.common.config import CGConfig
+from pcsa.common.paths import repo_root
 
 NEURAL = "champions_gym.neural:load"
 STATUS = {"type": "status"}
+PYTHON = "{python}"  # in cg.command: the interpreter running pcsa
 
 
 def _flag(command: list[str], name: str) -> int | None:
@@ -41,6 +45,27 @@ def expects_model(cfg: CGConfig) -> bool:
 
 def checkpoint(cfg: CGConfig) -> str | None:
     return _player(cfg)[1].get("checkpoint")
+
+
+def _from_repo(path: str) -> str:
+    return str(Path(path) if Path(path).is_absolute() else (repo_root() / path).resolve())
+
+
+def resolved(cfg: CGConfig) -> CGConfig:
+    """The config as CG is made from it: `{python}` in cg.command is this interpreter, and a relative checkpoint in
+    the player_args is taken from the repo root."""
+    args = _player(cfg)[1]
+    if isinstance(args.get("checkpoint"), str):
+        args = {**args, "checkpoint": _from_repo(args["checkpoint"])}
+    if cfg.transport == "inprocess":
+        if "player_args" not in cfg.args:
+            return cfg
+        return cfg.model_copy(update={"args": {**cfg.args, "player_args": args}})
+    command = [sys.executable if part == PYTHON else part for part in cfg.command or []]
+    args_at = _flag(command, "--player-args")
+    if args_at is not None and "checkpoint" in args:
+        command[args_at + 1] = json.dumps(args)
+    return cfg.model_copy(update={"command": command})
 
 
 def with_log_dir(cfg: CGConfig, folder: Path) -> CGConfig:

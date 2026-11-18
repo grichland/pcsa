@@ -3,47 +3,31 @@
 screen_config: screen.yaml
 
 decide:
-  player: first           # first: the built-in Player; cg: Champions Gym through pcsa/cg
+  player: cg              # cg: Champions Gym through pcsa/cg (the neural player below); first: the built-in Player
 
 cg:                       # used when decide.player is cg (LIVE 0.7-0.9 messages, pcsa/cg)
   transport: subprocess   # subprocess: JSON lines on stdin/stdout; inprocess: a Python entry point
   entry: null             # inprocess: "package.module:name" (a handle(message) callable, or a class with .handle)
-  command: null           # subprocess: argv list, e.g. [python, -m, champions_gym.live, --player, tower]
+  # The neural player (CG's champions_gym.neural shell, pcsa.network.policy) in pcsa.cg.serve, which adds the
+  # Battle and the network's outputs to each reply. {python} is this venv's interpreter; the checkpoint is taken
+  # from the repo root. A built-in player instead: [{python}, -m, pcsa.cg.serve, --player, tower].
+  command:
+  - '{python}'
+  - -m
+  - pcsa.cg.serve
+  - --player
+  - champions_gym.neural:load
+  - --player-args
+  - '{"policy": "pcsa.network.policy:Policy", "checkpoint": "assets/models/league-20261118-h-iter-00140.pt",
+    "device": "cpu", "policy_args": {"threads": 4}, "fallback": "tower", "timeout_s": 2.0, "hard_timeout_s": 6.0}'
   python_path: []         # directories first on sys.path (inprocess) or in the child's PYTHONPATH; relative: repo root
   args: {}                # inprocess: keyword arguments when the entry is a class
-  env: {}                 # subprocess: extra environment variables, e.g. {CUDA_VISIBLE_DEVICES: "-1"}
-  run_log_dir: cg         # CG's log_dir (and a model player's) set to <run folder>/cg when CG is made; null: none
+  env:                    # subprocess: extra environment variables
+    CUDA_VISIBLE_DEVICES: '-1'  # CPU only
+  run_log_dir: cg         # CG's log_dir (and the model's) set to <run folder>/cg when CG is made; null: none
   timeout_s: 8.0          # per call, and never past the decision's deadline less the tap reserve
   start_timeout_s: 60.0   # CG is made and its status checked before the first battle
-  # CG's own entry point (champions-gym/contracts/LIVE.md section 3), in process (preferred):
-  #   transport: inprocess
-  #   entry: champions_gym.live:Session
-  #   args: {player: tower, seed: 0}
-  #   python_path: [../champions-gym/python]
-  #   run_log_dir: cg
-  #   timeout_s: 8.0
-  # `player` is a built-in name (random, max_damage, tower, best_matchup_max_damage, disciplined, endgame,
-  # pilot_encore, pilot_weather, pilot_hazard, pilot_priority) or "module:attr" with player_args, e.g.
-  #   args: {player: "my_pkg.players:Net", player_args: {checkpoint: assets/net.pt}, seed: 0}
-  # or as a process:
-  #   transport: subprocess
-  #   command: [.venv/Scripts/python.exe, -m, champions_gym.live, --player, tower]
-  #   python_path: [../champions-gym/python]
-  #   run_log_dir: cg
-  #   timeout_s: 8.0
-  # The model player (champions-gym/docs/neural-player.md) needs a Python with torch; .venv has none, so it runs
-  # as a process with the pcsa venv's Python. The checkpoint is the user's choice (CHECKPOINT below):
-  #   transport: subprocess
-  #   command: [C:/Users/geral/Code/pokemon_champions/pcsa/.venv/Scripts/python.exe, -m, champions_gym.live,
-  #             --player, "champions_gym.neural:load", --player-args,
-  #             '{"policy": "pcsa_former_policy:PcsaFormerPolicy", "checkpoint": "CHECKPOINT", "device": "cpu",
-  #               "policy_args": {"threads": 4}, "fallback": "tower", "timeout_s": 2.0, "hard_timeout_s": 6.0}']
-  #   python_path: [../champions-gym/python, ../pcsa-former, ../champions-gym/docs/examples]
-  #   env: {CUDA_VISIBLE_DEVICES: "-1"}
-  #   run_log_dir: cg
-  #   timeout_s: 8.0
-  # Once pcsa_former.cg_policy exists the policy is "pcsa_former.cg_policy:PcsaFormerPolicy" and the examples
-  # folder leaves python_path. Never set allow_mismatch or allow_contract.
+  # Never set allow_mismatch or allow_contract in the player_args.
 
 device:
   serial: null            # null: the single authorized device

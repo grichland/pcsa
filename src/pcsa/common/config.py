@@ -129,7 +129,8 @@ class DecideConfig(Strict):
 
 class CGConfig(Strict):
     """pcsa/cg: how CG is reached. `entry` "module:attr" (a handle(message) callable, or a class or object with
-    .handle) for `inprocess`; `command` (argv, JSON lines on stdin/stdout) for `subprocess`. `python_path`:
+    .handle) for `inprocess`; `command` (argv, JSON lines on stdin/stdout) for `subprocess`, where `{python}` is the
+    interpreter running pcsa; a relative `checkpoint` in the player_args is taken from the repo root. `python_path`:
     directories put first on sys.path (inprocess) or in the child's PYTHONPATH (subprocess); relative ones from the
     repo root. `args`: keyword arguments for an entry that is a class, e.g. {player: tower, seed: 0}. `env`: extra
     environment variables for the subprocess. `run_log_dir`: a folder in the run folder given to CG as its log_dir

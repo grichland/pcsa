@@ -99,7 +99,7 @@ def test_t7_1_a_full_battle(config: Config, tmp_path: Path, monkeypatch) -> None
     assert [(r["kind"], r["turn"], r["sequence"]) for r in records] == [
         ("action", 1, 0), ("action", 2, 1), ("forced", 2, 2), ("action", 3, 3)
     ]  # fmt: skip
-    assert all(r["schema"] == "pcsa-decision/3" and r["battle_id"] == tag for r in records)
+    assert all(r["schema"] == "pcsa-decision/4" and r["battle_id"] == tag for r in records)
     assert all("protocol" not in r and "request" not in r for r in records)
     assert [r["order"] for r in records] == [
         "/choose move makeitrain", "/choose move makeitrain", "/choose switch Garchomp", "/choose move earthquake"

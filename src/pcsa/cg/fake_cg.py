@@ -196,7 +196,7 @@ class FakeCG:
     def _picks(self, b: Seen, msg: dict) -> dict:
         played = (msg.get("played") or {}).get("picks")
         if b.given is not None or played:
-            b.picks = list(b.given or played)
+            b.picks = list(b.given or played or ())
             return {"picks": list(b.picks), "notes": {"given": True}}
         if msg.get("replay"):
             return {"picks": list(b.picks), "replayed": True} if b.picks else {"replayed": True}

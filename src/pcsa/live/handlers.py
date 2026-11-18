@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import re
 import uuid
+from dataclasses import replace
 from datetime import datetime
 
 from pcsa.battle.teams import export_text, teambuilder_team
@@ -12,6 +13,7 @@ from pcsa.common import log
 from pcsa.common.clock import Deadline
 from pcsa.common.types import Observation, Screen, jsonable
 from pcsa.decide.api import OUTCOMES, TeamPreviewRequest
+from pcsa.live.decision_record import preview_cg
 from pcsa.live.log_save import write_log
 from pcsa.live.team_read import TeamReadSession, own_team
 from pcsa.phone.log_merge import BattleLog
@@ -150,7 +152,9 @@ def submit_team(s, obs: Observation, frame, t0: float, b: BattleRecord) -> None:
     team = list(decision.picks)
     b.requested = team
     b.team_submitted = True
-    s.rec.write_json(f"{b.dir}/team_preview.json", {"request": request, "decision": decision, "frame": obs.frame_id})
+    notes, cg, flat = preview_cg(decision.notes)
+    preview = {"request": request, "decision": replace(decision, notes=notes), "frame": obs.frame_id}
+    s.rec.write_json(f"{b.dir}/team_preview.json", {**preview, "cg": cg} if cg is not None else preview)
     log.event(
         "decision",
         battle=b.index,
@@ -159,7 +163,8 @@ def submit_team(s, obs: Observation, frame, t0: float, b: BattleRecord) -> None:
         names=[b.roster[i] if i < len(b.roster) else None for i in team],
         source=decision.source,
         player_ms=decision.player_ms,
-        **event_notes(decision.notes),
+        **event_notes(notes),
+        **flat,
     )
     s.execute(s.phone.executor.plan_team(team), Screen.TEAM_SELECT, obs)
 

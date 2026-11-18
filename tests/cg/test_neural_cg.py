@@ -107,6 +107,14 @@ def test_neural_a_full_battle(tmp_path: Path, monkeypatch) -> None:
     played = rig.play(monkeypatch)
     assert_model_answered(rig, played, 4)
     assert tuple(lines(played, "received")[0]["picks"]) == rig.script.picks
+    for r in played.records():  # pcsa.cg.serve's additions reach the decision records
+        assert r["schema"] == "pcsa-decision/4" and r["notes"]["cg"]["view"]["kind"] in ("turn", "replace")
+        assert r["notes"]["cg"]["net"]["decision"] == r["request_id"] and len(r["notes"]["cg"]["net"]["belief"]) == 6
+    preview = played.json("battle-1/team_preview.json")
+    assert preview["cg"]["view"]["kind"] == "preview" and preview["cg"]["net"]["decision"] == -1
+    assert "cg" not in preview["decision"]["notes"]
+    team = next(e for e in played.log_events() if e.get("event") == "decision" and e.get("kind") == "team")
+    assert team["v"] == preview["cg"]["model"]["value"] and team["ms"] == preview["cg"]["model"]["ms"]
     total = played.json("summary.json") if (played.recorder.dir / "summary.json").is_file() else None
     assert total is None or "cg" not in total  # run_battles writes no run summary; play_command does
 
