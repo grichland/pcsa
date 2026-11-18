@@ -84,7 +84,8 @@ def test_rows_names_and_the_row_played() -> None:
     assert view["row_labels"][8:] == ["Hippowdon", "Metagross", "Primarina"]
     assert view["chosen"] == 6 and view["played"] == 6 and view["tau"] is not None and view["blend"] is None
     switch = matrix_view(net_of("battle-1/decisions/0006-action.json"), order="/choose switch Primarina", action=10)
-    assert switch is not None and switch["played"] == 10 and switch["rows"][4:8] == [""] * 4  # no Mega offered
+    assert switch is not None and switch["played"] == 10 and switch["chosen"] == 10
+    assert switch["rows"][9] == "metagrossmega" and switch["row_labels"][9] == "Metagross"  # a Mega switch target
     assert (
         row_of_order("move unknownmove", switch["rows"]) is None and row_of_order("default", switch["rows"]) is None
     )

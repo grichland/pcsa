@@ -60,6 +60,21 @@ def _species_types() -> dict[str, list[str]]:
     return out
 
 
+@lru_cache(maxsize=1)
+def _mega_bases() -> dict[str, str]:
+    """Mega form id -> its base species' written name (Dragonite-Mega -> Dragonite)."""
+    out = {}
+    for key, entry in _table("species").items():
+        if isinstance(entry, dict) and "mega" in str(entry.get("forme") or "").lower() and entry.get("baseSpecies"):
+            out[str(key)] = str(entry["baseSpecies"])
+    return out
+
+
+def species_label(species: str, names: dict[str, str] | None = None) -> str:
+    """The written name of a species, a Mega form named by its base species (the team cards' name)."""
+    return _mega_bases().get(to_id(species)) or pretty(species, names)
+
+
 def species_types(species: str) -> list[str]:
     return list(_species_types().get(to_id(species), []))
 

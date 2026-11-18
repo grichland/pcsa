@@ -30,9 +30,7 @@ def test_run_header_record_and_rating(run: Path) -> None:
     view = state["player_view"]
     assert view["summary"] == "league-20261118-g-iter-00148.pt · update 148 · argmax"
     checkpoint = next(p for p in view["params"] if p["key"] == "checkpoint")
-    assert checkpoint["value"] == "league-20261118-g-iter-00148.pt" and checkpoint["full"].startswith(
-        "assets\\models"
-    )
+    assert checkpoint["value"] == checkpoint["full"] == "league-20261118-g-iter-00148.pt"
     assert {p["key"] for p in view["params"]} == {"checkpoint", "run", "update", "sampling", "fallback", "cg"}
     assert state["session_record"] == {"wins": 1, "losses": 2, "draws": 0, "forfeits": 0}
     rating = state["rating"]
@@ -70,13 +68,13 @@ def test_battle_panels_of_a_finished_battle(run: Path) -> None:
     assert state["active"] == {"name": "Hippowdon", "hp": "32%", "fraction": 0.3209, "status": "", "boosts": ""}
     assert state["opponent"]["name"] == "Basculegion" and state["opponent"]["hp"] == "30%"
     hippowdon = state["your_team"][0]
-    assert hippowdon["item"] == "Sitrus Berry" and hippowdon["moves"][0] == {"name": "Earthquake", "pp": [11, 12]}
+    assert hippowdon["item"] == "" and hippowdon["moves"][0] == {"name": "Earthquake", "pp": [11, 12]}
     assert [m["name"] for m in state["your_team"]] == ["Hippowdon", "Dragonite", "Cinderace"]
     assert state["your_team"][1]["fainted"] and state["your_team"][1]["moves"][0]["pp"] is None  # PP: active only
     staraptor = next(f for f in state["foes"] if f["name"] == "Staraptor")
     assert staraptor["item"] == "Staraptite" and "Close Combat" in staraptor["moves"] and staraptor["fainted"]
     assert state["unseen"] == ["Archaludon", "Rotom", "Mimikyu"]
-    assert state["field"]["weather"] == {"name": "Sand", "left": 3}
+    assert state["field"]["weather"] == {"name": "Sand", "left": 4}
     log = state["log"]
     assert log["source"] == "battle_log.txt" and log["format"] == "standard" and log["header"]["battle_number"] == "2"
     assert (

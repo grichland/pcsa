@@ -12,6 +12,7 @@ import pytest
 from pcsa.common import paths
 from pcsa.run.watch import RunReader
 from pcsa.run.watch_belief import belief_index, belief_view
+from pcsa.run.watch_matrix import matrix_view, row_of_order
 from pcsa.run.watch_names import game_names, max_pp, names_of, pretty, shown
 from pcsa.run.watch_view import battle_text, field_view, view_panels
 
@@ -231,3 +232,52 @@ def test_an_old_run_opens_with_what_it_has(tmp_path: Path, schema: str, notes: d
     assert state["field"]["weather"] is None and [t["turn"] for t in state["log"]["turns"]] == [1]
     assert "predates the Champions Gym port" in state["battle_state"]["battle_object"]
     json.dumps(state)
+
+
+# The real replayed records: what they hold that the contract text did not say -----------------------
+
+
+def real(name: str) -> dict:
+    return json.loads((FIXTURE / name).read_text(encoding="utf-8"))
+
+
+def panels_of(name: str) -> dict:
+    data = real(name)
+    cg = data["notes"]["cg"]
+    return view_panels(cg["view"], data["own_export"], names_of(data), cg["net"]["belief"])
+
+
+@pytest.mark.parametrize("name", ["battle-3/decisions/0002-action.json", "battle-3/decisions/0010-action.json"])
+def test_a_revealed_life_orb_replaces_the_believed_mega_stone(name: str) -> None:
+    belief = next(e for e in real(name)["notes"]["cg"]["net"]["belief"] if e["species"] == "salamence")
+    assert belief["item"][0][0] == "salamencite"  # the network still believes the stone
+    salamence = next(f for f in panels_of(name)["foes"] if f["name"] == "Salamence")
+    assert salamence["item"] == "Life Orb" and salamence["belief"]["item"] == []
+
+
+def test_mega_form_ids_in_rows_and_columns_are_named_by_the_base_species() -> None:
+    data = real("battle-2/decisions/0011-action.json")
+    net = data["notes"]["cg"]["net"]
+    assert net["rows"][9] == "dragonitemega" and net["cols"][8] == "staraptormega"
+    view = matrix_view(net, names_of(data), data["order"], data["notes"]["cg"]["action"])
+    assert view is not None and view["row_labels"][9] == "Dragonite" and view["col_labels"][4] == "Staraptor"
+    assert (
+        view["row_labels"][4] == "Earthquake + Mega" and row_of_order("/choose switch Dragonite", view["rows"]) == 9
+    )
+
+
+def test_their_form_equal_to_the_species_reads_like_no_form() -> None:
+    data = real("battle-2/decisions/0011-action.json")
+    opp = data["notes"]["cg"]["view"]["opp"]
+    assert opp[0]["species"] == opp[0]["form"] == "basculegion" and opp[1]["form"] == "staraptormega"
+    foes = {f["name"]: f for f in panels_of("battle-2/decisions/0011-action.json")["foes"]}
+    assert foes["Basculegion"]["types"] == "Water/Ghost" and foes["Staraptor"]["types"] == "Fighting/Flying"
+    assert set(foes) == {"Basculegion", "Staraptor", "Metagross"}
+
+
+def test_a_used_item_shows_as_gone_with_no_belief() -> None:
+    swampert = next(f for f in panels_of("battle-1/decisions/0006-action.json")["foes"] if f["name"] == "Swampert")
+    assert swampert["item"] == "" and swampert["belief"]["item"] == []  # its Sitrus Berry: "" in the view
+    assert [a["name"] for a in swampert["belief"]["ability"]][0] == "Torrent"  # the ability is still believed
+    hippowdon = panels_of("battle-2/decisions/0011-action.json")["your_team"][0]
+    assert hippowdon["name"] == "Hippowdon" and hippowdon["item"] == ""  # ours too: not the team sheet's

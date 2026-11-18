@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from math import isfinite
 
-from pcsa.run.watch_names import pretty, to_id
+from pcsa.run.watch_names import pretty, species_label, to_id
 
 ROWS, NET_COLS, COLS = 11, 13, 9
 MEGA_AT, SWITCH_AT = 4, 8
@@ -100,6 +100,12 @@ def _cols(ids: list[str | None]) -> list[str]:
     return moves + [ident or "" for ident in ids[SWITCH_AT:]]
 
 
+def _col_label(ident: str, kind: str, names: dict[str, str] | None) -> str:
+    if ident == UNSEEN:
+        return UNSEEN_LABEL
+    return species_label(ident, names) if kind == "switch" and ident else pretty(ident, names)
+
+
 def _legal(value) -> list[bool]:
     indices = {i for i in value if type(i) is int} if isinstance(value, list) else set(range(ROWS))
     return [i in indices for i in range(ROWS)]
@@ -134,10 +140,12 @@ def matrix_view(net, names: dict[str, str] | None = None, order=None, action=Non
     kinds = ["move"] * MOVES + ["switch"] * (COLS - MOVES)
     return {
         "rows": rows,
-        "row_labels": [row_label(r, names) for r in rows],
+        "row_labels": [
+            species_label(r, names) if i >= SWITCH_AT else row_label(r, names) for i, r in enumerate(rows)
+        ],
         "legal": _legal(net.get("legal")),
         "cols": cols,
-        "col_labels": [UNSEEN_LABEL if c == UNSEEN else pretty(c, names) for c in cols],
+        "col_labels": [_col_label(c, k, names) for c, k in zip(cols, kinds, strict=True)],
         "col_kind": kinds,
         "shown": [bool(c) and c != UNSEEN for c in cols[:MOVES]] + [False] * (COLS - MOVES),
         # a column they cannot take: an empty slot, or a switch the network gives no chance at all
