@@ -1,0 +1,132 @@
+# Pokemon Champions battle log (Ranked Singles)
+# format: pcsa-battle-log/1
+battle_id: 20261118T164551-f22f626f
+battle_number: 3
+started: 2026-11-18 16:45:51
+own_team: Team 2
+own_rank_before: tier=Master Ball; rank=unknown; placement=69006; rating=1646.403
+own_rank_after: unknown
+team_requested: Hippowdon (roster row 1), Dragonite (roster row 3), Cinderace (roster row 4)
+lead_observed: Hippowdon
+opponents_seen: Salamence, Golisopod, Tyranitar
+opponent_preview: Venusaur, Golisopod, Tyranitar, Salamence, Armarouge, Gyarados
+outcome: loss
+outcome_source: result screen
+seed: 1888494232
+turns_collected: 1, 2, 3, 4, 5, 6, 7, 8
+
+=== Turn 1 ===
+[-] sent out Salamence!
+[-] Go! Hippowdon!
+[Ability] Salamence’s Intimidate
+[-] Hippowdon’s Attack fell!
+[Ability] Hippowdon’s Sand Stream
+[-] A sandstorm kicked up!
+[Move] The opposing Salamence used Hydro Pump!
+[HP Lost] Hippowdon’s HP: 215 → 38
+[-] It’s super effective!
+[Held Item] Salamence’s Life Orb
+[HP Lost] Salamence’s HP: 100% → 90%
+[-] The opposing Salamence lost some of its HP!
+[Held Item] Hippowdon’s Sitrus Berry
+[HP Restored] Hippowdon’s HP: 38 → 91
+[Move] Hippowdon used Yawn!
+[-] The opposing Salamence grew drowsy!
+[-] The opposing Salamence is buffeted by the sandstorm!
+[HP Lost] Salamence’s HP: 90% → 84%
+# controller: chose move 3 (yawn)
+
+=== Turn 2 ===
+[-] withdrew Salamence!
+[-] sent out Golisopod!
+[-] Hippowdon, come back!
+[-] Go! Dragonite!
+[-] Dragonite is buffeted by the sandstorm!
+[HP Lost] Dragonite’s HP: 167 → 157
+[-] The opposing Golisopod is buffeted by the sandstorm!
+[HP Lost] Golisopod’s HP: 100% → 93%
+# controller: chose switch to Dragonite
+
+=== Turn 3 ===
+[-] withdrew Golisopod!
+[-] sent out Tyranitar!
+[-] Dragonite’s Dragoninite is reacting to ’s Omni Ring!
+[Mega Evolution] Dragonite has Mega Evolved into Mega Dragonite!
+[Move] Dragonite used Flamethrower!
+[HP Lost] Tyranitar’s HP: 100% → 88%
+[-] It’s not very effective...
+[-] The opposing Tyranitar was burned!
+[-] Dragonite is buffeted by the sandstorm!
+[HP Lost] Dragonite’s HP: 157 → 147
+[-] The opposing Tyranitar was hurt by its burn!
+[HP Lost] Tyranitar’s HP: 88% → 82%
+# controller: chose move 3 (flamethrower) with Mega Evolution
+
+=== Turn 4 ===
+[-] Dragonite, come back!
+[-] Go! Hippowdon!
+[-] The opposing Tyranitar’s Tyranitarite is reacting to ’s Omni Ring!
+[Mega Evolution] The opposing Tyranitar has Mega Evolved into Mega Tyranitar!
+[Move] The opposing Tyranitar used Ice Punch!
+[HP Lost] Hippowdon’s HP: 91 → 47
+[-] It’s super effective!
+[-] The opposing Tyranitar was hurt by its burn!
+[HP Lost] Tyranitar’s HP: 82% → 76%
+# controller: chose switch to Hippowdon
+
+=== Turn 5 ===
+[Move] The opposing Tyranitar used Ice Punch!
+[HP Lost] Hippowdon’s HP: 47 → 0
+[-] It’s super effective!
+[Fainted] Hippowdon fainted!
+[-] The sandstorm subsided.
+[-] The opposing Tyranitar was hurt by its burn!
+[HP Lost] Tyranitar’s HP: 76% → 71%
+[-] Go! Cinderace!
+# controller: chose move 1 (earthquake)
+# controller: forced replacement: sent in Cinderace
+
+=== Turn 6 ===
+[-] withdrew Tyranitar!
+[-] sent out Salamence!
+[Ability] Salamence’s Intimidate
+[-] Cinderace’s Attack fell!
+[Move] Cinderace used High Jump Kick!
+[Ability] Cinderace’s Libero
+[-] Cinderace transformed into the Fighting type!
+[HP Lost] Salamence’s HP: 84% → 61%
+[-] It’s not very effective...
+# controller: chose move 2 (highjumpkick)
+
+=== Turn 7 ===
+[-] Cinderace, come back!
+[-] Go! Dragonite!
+[Move] The opposing Salamence used Draco Meteor!
+[HP Lost] Dragonite’s HP: 147 → 0
+[-] It’s super effective!
+[-] The opposing Salamence’s Sp. Atk harshly fell!
+[Fainted] Dragonite fainted!
+[Held Item] Salamence’s Life Orb
+[HP Lost] Salamence’s HP: 61% → 51%
+[-] The opposing Salamence lost some of its HP!
+[-] Go! Cinderace!
+# controller: chose switch to Dragonite
+# controller: forced replacement: sent in Cinderace
+
+=== Turn 8 ===
+[Move] Cinderace used Gunk Shot!
+[Ability] Cinderace’s Libero
+[-] Cinderace transformed into the Poison type!
+[HP Lost] Salamence’s HP: 51% → 0%
+[Fainted] The opposing Salamence fainted!
+[-] sent out Tyranitar!
+[Ability] Tyranitar’s Sand Stream
+[-] A sandstorm kicked up!
+# controller: chose move 3 (gunkshot)
+
+=== Turn 9 ===
+# (no log for this turn: turn 9: the final turn is not collectable)
+# controller: chose move 2 (highjumpkick)
+
+=== Coverage notes ===
+# final_turn: turn 9: the final turn is not collectable

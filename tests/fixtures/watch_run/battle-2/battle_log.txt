@@ -1,0 +1,140 @@
+# Pokemon Champions battle log (Ranked Singles)
+# format: pcsa-battle-log/1
+battle_id: 20261118T163651-924e3595
+battle_number: 2
+started: 2026-11-18 16:36:51
+own_team: Team 2
+own_rank_before: tier=Master Ball; rank=unknown; placement=57292; rating=1664.853
+own_rank_after: unknown
+team_requested: Hippowdon (roster row 1), Dragonite (roster row 3), Cinderace (roster row 4)
+lead_observed: Hippowdon
+opponents_seen: Staraptor, Metagross, Basculegion
+opponent_preview: Basculegion Male, Staraptor, Archaludon, Metagross, Rotom Heat, Mimikyu
+outcome: loss
+outcome_source: result screen
+seed: 1888494232
+turns_collected: 1, 2, 3, 4, 5, 6, 7, 8, 9
+
+=== Turn 1 ===
+[-] sent out Staraptor!
+[-] Go! Hippowdon!
+[Ability] Staraptor’s Intimidate
+[-] Hippowdon’s Attack fell!
+[Ability] Hippowdon’s Sand Stream
+[-] A sandstorm kicked up!
+[-] The opposing Staraptor’s Staraptite is reacting to ’s Omni Ring!
+[Mega Evolution] The opposing Staraptor has Mega Evolved into Mega Staraptor!
+[Move] The opposing Staraptor used Close Combat!
+[HP Lost] Hippowdon’s HP: 215 → 122
+[-] The opposing Staraptor’s Defense and Sp. Def rose!
+[Move] Hippowdon used Yawn!
+[-] The opposing Staraptor grew drowsy!
+[-] The opposing Staraptor is buffeted by the sandstorm!
+[HP Lost] Staraptor’s HP: 100% → 93%
+# controller: chose move 3 (yawn)
+
+=== Turn 2 ===
+[-] Hippowdon, come back!
+[-] Go! Dragonite!
+[Move] The opposing Staraptor used Close Combat!
+[HP Lost] Dragonite’s HP: 167 → 136
+[-] It’s not very effective...
+[-] The opposing Staraptor’s Defense and Sp. Def rose!
+[-] The opposing Staraptor is buffeted by the sandstorm!
+[HP Lost] Staraptor’s HP: 93% → 87%
+[-] Dragonite is buffeted by the sandstorm!
+[HP Lost] Dragonite’s HP: 136 → 126
+[-] The opposing Staraptor fell asleep!
+# controller: chose switch to Dragonite
+
+=== Turn 3 ===
+[-] Dragonite’s Dragoninite is reacting to ’s Omni Ring!
+[Mega Evolution] Dragonite has Mega Evolved into Mega Dragonite!
+[-] The opposing Staraptor is fast asleep.
+[Move] Dragonite used Thunderbolt!
+[HP Lost] Staraptor’s HP: 87% → 40%
+[-] It’s super effective!
+[-] The opposing Staraptor is buffeted by the sandstorm!
+[HP Lost] Staraptor’s HP: 40% → 34%
+[-] Dragonite is buffeted by the sandstorm!
+[HP Lost] Dragonite’s HP: 126 → 116
+# controller: chose move 4 (thunderbolt) with Mega Evolution
+
+=== Turn 4 ===
+[-] The opposing Staraptor woke up!
+[Move] The opposing Staraptor used Roost!
+[HP Restored] Staraptor’s HP: 34% → 84%
+[Move] Dragonite used Thunderbolt!
+[HP Lost] Staraptor’s HP: 84% → 63%
+[-] The opposing Staraptor is paralyzed, so it may be unable to move!
+[-] Dragonite is buffeted by the sandstorm!
+[HP Lost] Dragonite’s HP: 116 → 106
+[-] The opposing Staraptor is buffeted by the sandstorm!
+[HP Lost] Staraptor’s HP: 63% → 57%
+# controller: chose move 4 (thunderbolt)
+
+=== Turn 5 ===
+[Move] Dragonite used Thunderbolt!
+[HP Lost] Staraptor’s HP: 57% → 14%
+[-] It’s super effective!
+[Move] The opposing Staraptor used Brave Bird!
+[HP Lost] Dragonite’s HP: 106 → 0
+[Fainted] Dragonite fainted!
+[-] The opposing Staraptor was damaged by the recoil!
+[HP Lost] Staraptor’s HP: 14% → 0%
+[Fainted] The opposing Staraptor fainted!
+[-] The sandstorm subsided.
+[-] sent out Metagross!
+[-] Go! Cinderace!
+# controller: chose move 4 (thunderbolt)
+# controller: forced replacement: sent in Cinderace
+
+=== Turn 6 ===
+[Move] Cinderace used Pyro Ball!
+[HP Lost] Metagross’s HP: 100% → 19%
+[-] It’s super effective!
+[Move] The opposing Metagross used Psychic Fangs!
+[HP Lost] Cinderace’s HP: 157 → 69
+# controller: chose move 1 (pyroball)
+
+=== Turn 7 ===
+[Move +1 Priority] The opposing Metagross used Bullet Punch!
+[HP Lost] Cinderace’s HP: 69 → 45
+[-] It’s not very effective...
+[Move] Cinderace used Pyro Ball!
+[HP Lost] Metagross’s HP: 19% → 0%
+[-] It’s super effective!
+[Fainted] The opposing Metagross fainted!
+[-] sent out Basculegion!
+# controller: chose move 1 (pyroball)
+
+=== Turn 8 ===
+[Move] Cinderace used Pyro Ball!
+[HP Lost] Basculegion’s HP: 100% → 71%
+[-] It’s not very effective...
+[Move] The opposing Basculegion used Last Respects!
+[HP Lost] Cinderace’s HP: 45 → 0
+[Fainted] Cinderace fainted!
+[-] Go! Hippowdon!
+[Ability] Hippowdon’s Sand Stream
+[-] A sandstorm kicked up!
+# controller: chose move 1 (pyroball)
+# controller: forced replacement: sent in Hippowdon
+
+=== Turn 9 ===
+[Move] The opposing Basculegion used Last Respects!
+[HP Lost] Hippowdon’s HP: 122 → 16
+[Held Item] Hippowdon’s Sitrus Berry
+[HP Restored] Hippowdon’s HP: 16 → 69
+[Move] Hippowdon used Earthquake!
+[HP Lost] Basculegion’s HP: 71% → 36%
+[-] The opposing Basculegion is buffeted by the sandstorm!
+[HP Lost] Basculegion’s HP: 36% → 30%
+# controller: chose move 1 (earthquake)
+
+=== Turn 10 ===
+# (no log for this turn: turn 10: the final turn is not collectable)
+# controller: chose move 1 (earthquake)
+
+=== Coverage notes ===
+# final_turn: turn 10: the final turn is not collectable

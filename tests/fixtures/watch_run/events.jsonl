@@ -1,0 +1,466 @@
+{"ts": "2026-11-18T21:29:02.858+00:00", "level": "INFO", "event": "player_started", "player": "cg", "status": {"battle": null, "held": true, "ended": false, "restarts": 0, "messages": 0, "open_request": null, "anomalies": [], "corrections": [], "player": "neural:league-20261118-g-iter-00148.pt", "player_status": {"name": "neural:league-20261118-g-iter-00148.pt", "model_id": "C:\\Users\\geral\\Code\\pokemon_champions\\pcsa-controller\\output\\models\\league-20261118-g-iter-00148.pt", "model_hash": "f717bff16d27f62c", "checkpoint": "C:\\Users\\geral\\Code\\pokemon_champions\\pcsa-controller\\output\\models\\league-20261118-g-iter-00148.pt", "contract": "0.6", "layout_ok": true, "mismatch": [], "allow_mismatch": false, "fallback_player": "tower", "mode": "argmax", "battle": {"decisions": 0, "policy_calls": 0, "fallbacks": 0, "fallback_reasons": {}, "slow": 0, "reused": 0, "observed": 0, "ms_median": null, "ms_max": null}, "total": {"decisions": 0, "policy_calls": 0, "fallbacks": 0, "fallback_reasons": {}, "slow": 0, "reused": 0, "observed": 0, "ms_median": null, "ms_max": null}, "handed_to_fallback": false, "warmup_ms": [11.7, 6.0]}, "contract": "0.9", "version": "0.4.0"}}
+{"ts": "2026-11-18T21:29:06.485+00:00", "level": "INFO", "event": "run_start", "run": "C:\\Users\\geral\\Code\\pokemon_champions\\pcsa-controller\\output\\runs\\20261118-162900-neural-148", "player": "cg", "battles": 3, "max_total": 4, "seed": 1888494232}
+{"ts": "2026-11-18T21:29:08.075+00:00", "level": "INFO", "event": "observation", "frame": "00001-start", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.625}
+{"ts": "2026-11-18T21:29:08.075+00:00", "level": "INFO", "event": "rank", "tier": "Master Ball", "rank": 4, "placement": 68891, "rating": 1646.544}
+{"ts": "2026-11-18T21:29:08.075+00:00", "level": "INFO", "event": "session_start", "screen": "lobby", "restarts": 0, "pending_battle": null, "carried_battle": null}
+{"ts": "2026-11-18T21:29:09.600+00:00", "level": "INFO", "event": "observation", "frame": "00002-poll", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.609}
+{"ts": "2026-11-18T21:29:11.858+00:00", "level": "INFO", "event": "observation", "frame": "00003-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.578}
+{"ts": "2026-11-18T21:29:14.333+00:00", "level": "INFO", "event": "observation", "frame": "00004-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.578}
+{"ts": "2026-11-18T21:29:16.673+00:00", "level": "INFO", "event": "observation", "frame": "00005-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.563}
+{"ts": "2026-11-18T21:29:18.952+00:00", "level": "INFO", "event": "observation", "frame": "00006-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.563}
+{"ts": "2026-11-18T21:29:21.222+00:00", "level": "INFO", "event": "observation", "frame": "00007-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.547}
+{"ts": "2026-11-18T21:29:23.542+00:00", "level": "INFO", "event": "observation", "frame": "00008-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.609}
+{"ts": "2026-11-18T21:29:26.035+00:00", "level": "INFO", "event": "observation", "frame": "00009-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.578}
+{"ts": "2026-11-18T21:29:28.344+00:00", "level": "INFO", "event": "observation", "frame": "00010-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.594}
+{"ts": "2026-11-18T21:29:30.630+00:00", "level": "INFO", "event": "observation", "frame": "00011-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.547}
+{"ts": "2026-11-18T21:29:32.876+00:00", "level": "INFO", "event": "observation", "frame": "00012-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.61}
+{"ts": "2026-11-18T21:29:32.878+00:00", "level": "INFO", "event": "session_restart", "restart": 1, "reason": "team pages did not reach ['list', 'menu']", "delay_s": 5.0}
+{"ts": "2026-11-18T21:29:39.581+00:00", "level": "INFO", "event": "observation", "frame": "00013-start", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.594}
+{"ts": "2026-11-18T21:29:39.581+00:00", "level": "INFO", "event": "rank", "tier": "Master Ball", "rank": 4, "placement": 68891, "rating": 1646.544}
+{"ts": "2026-11-18T21:29:39.581+00:00", "level": "INFO", "event": "session_start", "screen": "lobby", "restarts": 1, "pending_battle": null, "carried_battle": null}
+{"ts": "2026-11-18T21:29:41.233+00:00", "level": "INFO", "event": "observation", "frame": "00014-poll", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.61}
+{"ts": "2026-11-18T21:29:43.746+00:00", "level": "INFO", "event": "observation", "frame": "00015-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.609}
+{"ts": "2026-11-18T21:29:46.289+00:00", "level": "INFO", "event": "observation", "frame": "00016-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.563}
+{"ts": "2026-11-18T21:29:48.593+00:00", "level": "INFO", "event": "observation", "frame": "00017-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.579}
+{"ts": "2026-11-18T21:29:50.954+00:00", "level": "INFO", "event": "observation", "frame": "00018-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.578}
+{"ts": "2026-11-18T21:29:53.294+00:00", "level": "INFO", "event": "observation", "frame": "00019-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.547}
+{"ts": "2026-11-18T21:29:55.580+00:00", "level": "INFO", "event": "observation", "frame": "00020-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.563}
+{"ts": "2026-11-18T21:29:58.010+00:00", "level": "INFO", "event": "observation", "frame": "00021-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.563}
+{"ts": "2026-11-18T21:30:00.366+00:00", "level": "INFO", "event": "observation", "frame": "00022-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.61}
+{"ts": "2026-11-18T21:30:02.622+00:00", "level": "INFO", "event": "observation", "frame": "00023-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.593}
+{"ts": "2026-11-18T21:30:04.865+00:00", "level": "INFO", "event": "observation", "frame": "00024-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.609}
+{"ts": "2026-11-18T21:30:04.865+00:00", "level": "INFO", "event": "session_restart", "restart": 2, "reason": "team pages did not reach ['list', 'menu']", "delay_s": 15.0}
+{"ts": "2026-11-18T21:30:21.473+00:00", "level": "INFO", "event": "observation", "frame": "00025-start", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.609}
+{"ts": "2026-11-18T21:30:21.475+00:00", "level": "INFO", "event": "rank", "tier": "Master Ball", "rank": 4, "placement": 68891, "rating": 1646.544}
+{"ts": "2026-11-18T21:30:21.475+00:00", "level": "INFO", "event": "session_start", "screen": "lobby", "restarts": 2, "pending_battle": null, "carried_battle": null}
+{"ts": "2026-11-18T21:30:23.218+00:00", "level": "INFO", "event": "observation", "frame": "00026-poll", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.563}
+{"ts": "2026-11-18T21:30:23.218+00:00", "level": "INFO", "event": "rank", "tier": null, "rank": 4, "placement": 68891, "rating": 1646.544}
+{"ts": "2026-11-18T21:30:27.011+00:00", "level": "INFO", "event": "observation", "frame": "00027-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.609}
+{"ts": "2026-11-18T21:30:31.159+00:00", "level": "INFO", "event": "observation", "frame": "00028-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.594}
+{"ts": "2026-11-18T21:30:35.225+00:00", "level": "INFO", "event": "observation", "frame": "00029-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.594}
+{"ts": "2026-11-18T21:30:39.435+00:00", "level": "INFO", "event": "observation", "frame": "00030-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.562}
+{"ts": "2026-11-18T21:30:42.572+00:00", "level": "INFO", "event": "observation", "frame": "00031-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.562}
+{"ts": "2026-11-18T21:30:44.952+00:00", "level": "INFO", "event": "observation", "frame": "00032-team-read", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.593}
+{"ts": "2026-11-18T21:30:47.358+00:00", "level": "INFO", "event": "observation", "frame": "00033-team-read", "screen": "team_list", "reason": "team list", "capture_s": 0.61}
+{"ts": "2026-11-18T21:30:49.766+00:00", "level": "INFO", "event": "observation", "frame": "00034-team-read", "screen": "team_menu", "reason": "team menu", "capture_s": 0.609}
+{"ts": "2026-11-18T21:30:51.863+00:00", "level": "INFO", "event": "observation", "frame": "00035-team-read", "screen": "transition", "reason": "black frame", "capture_s": 0.547}
+{"ts": "2026-11-18T21:30:54.596+00:00", "level": "INFO", "event": "observation", "frame": "00036-team-read", "screen": "team_details", "reason": "team details", "capture_s": 0.593}
+{"ts": "2026-11-18T21:30:58.612+00:00", "level": "INFO", "event": "observation", "frame": "00037-team-read", "screen": "team_stats", "reason": "team stats", "capture_s": 0.578}
+{"ts": "2026-11-18T21:31:02.442+00:00", "level": "INFO", "event": "observation", "frame": "00038-nav", "screen": "team_stats", "reason": "team stats", "capture_s": 0.641}
+{"ts": "2026-11-18T21:31:02.442+00:00", "level": "INFO", "event": "navigate", "frm": "team_stats", "tap": "team_details_back"}
+{"ts": "2026-11-18T21:31:05.517+00:00", "level": "INFO", "event": "observation", "frame": "00039-nav", "screen": "team_list", "reason": "team list", "capture_s": 0.563}
+{"ts": "2026-11-18T21:31:05.519+00:00", "level": "INFO", "event": "navigate", "frm": "team_list", "tap": "team_details_back"}
+{"ts": "2026-11-18T21:31:08.735+00:00", "level": "INFO", "event": "observation", "frame": "00040-nav", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.579}
+{"ts": "2026-11-18T21:31:08.735+00:00", "level": "INFO", "event": "team_read", "name": "Team 2", "completeness": 1.0, "issues": [], "stats_issues": []}
+{"ts": "2026-11-18T21:31:10.427+00:00", "level": "INFO", "event": "observation", "frame": "00041-poll", "screen": "lobby", "reason": "Begin Matchmaking", "capture_s": 0.593}
+{"ts": "2026-11-18T21:31:10.427+00:00", "level": "INFO", "event": "rank", "tier": "Master Ball", "rank": 4, "placement": 68891, "rating": 1646.544}
+{"ts": "2026-11-18T21:31:14.851+00:00", "level": "INFO", "event": "observation", "frame": "00042-poll", "screen": "matchmaking", "reason": "matchmaking overlay", "capture_s": 0.563}
+{"ts": "2026-11-18T21:31:18.211+00:00", "level": "INFO", "event": "observation", "frame": "00043-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.531}
+{"ts": "2026-11-18T21:31:21.199+00:00", "level": "INFO", "event": "observation", "frame": "00044-poll", "screen": "transition", "reason": "black frame", "capture_s": 0.563}
+{"ts": "2026-11-18T21:31:23.631+00:00", "level": "INFO", "event": "observation", "frame": "00045-poll", "screen": "transition", "reason": "black frame", "capture_s": 0.547}
+{"ts": "2026-11-18T21:31:26.557+00:00", "level": "INFO", "event": "observation", "frame": "00046-poll", "screen": "team_select", "reason": "N/3 counter and Done", "capture_s": 0.578}
+{"ts": "2026-11-18T21:31:26.557+00:00", "level": "INFO", "event": "battle_start", "battle": 1, "battle_id": "20261118T163126-617400e8", "roster": ["Hippowdon", "Metagross", "Dragonite", "Cinderace", "Primarina", "Mimikyu"]}
+{"ts": "2026-11-18T21:31:26.735+00:00", "level": "INFO", "event": "team_preview", "battle": 1, "opponent": ["Blaziken", "Meganium", "Gholdengo", "Swampert", "Hydreigon", "Glimmora"]}
+{"ts": "2026-11-18T21:31:26.771+00:00", "level": "INFO", "event": "decision", "battle": 1, "kind": "team", "team": [0, 1, 4], "names": ["Hippowdon", "Metagross", "Primarina"], "source": "player", "player_ms": 33.2, "cg_ms": 47.0, "sent": 2, "dropped_replies": 0, "attempt": 1, "v": 0.6741, "ms": 8.61}
+{"ts": "2026-11-18T21:31:30.164+00:00", "level": "INFO", "event": "observation", "frame": "00047-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.578}
+{"ts": "2026-11-18T21:31:32.818+00:00", "level": "INFO", "event": "observation", "frame": "00048-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.562}
+{"ts": "2026-11-18T21:31:35.408+00:00", "level": "INFO", "event": "observation", "frame": "00049-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.578}
+{"ts": "2026-11-18T21:31:38.122+00:00", "level": "INFO", "event": "observation", "frame": "00050-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.578}
+{"ts": "2026-11-18T21:31:40.776+00:00", "level": "INFO", "event": "observation", "frame": "00051-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.562}
+{"ts": "2026-11-18T21:31:43.420+00:00", "level": "INFO", "event": "observation", "frame": "00052-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.578}
+{"ts": "2026-11-18T21:31:46.084+00:00", "level": "INFO", "event": "observation", "frame": "00053-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.578}
+{"ts": "2026-11-18T21:31:48.693+00:00", "level": "INFO", "event": "observation", "frame": "00054-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.579}
+{"ts": "2026-11-18T21:31:51.201+00:00", "level": "INFO", "event": "observation", "frame": "00055-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.578}
+{"ts": "2026-11-18T21:31:53.735+00:00", "level": "INFO", "event": "observation", "frame": "00056-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.578}
+{"ts": "2026-11-18T21:31:56.199+00:00", "level": "INFO", "event": "observation", "frame": "00057-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.531}
+{"ts": "2026-11-18T21:31:59.269+00:00", "level": "INFO", "event": "observation", "frame": "00058-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.562}
+{"ts": "2026-11-18T21:32:02.713+00:00", "level": "INFO", "event": "observation", "frame": "00059-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.562}
+{"ts": "2026-11-18T21:32:05.326+00:00", "level": "INFO", "event": "observation", "frame": "00060-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.547}
+{"ts": "2026-11-18T21:32:07.715+00:00", "level": "INFO", "event": "observation", "frame": "00061-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:32:10.289+00:00", "level": "INFO", "event": "observation", "frame": "00062-poll", "screen": "transition", "reason": "VS intro trainer cards", "capture_s": 0.579}
+{"ts": "2026-11-18T21:32:12.712+00:00", "level": "INFO", "event": "observation", "frame": "00063-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:32:15.308+00:00", "level": "INFO", "event": "observation", "frame": "00064-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.579}
+{"ts": "2026-11-18T21:32:17.887+00:00", "level": "INFO", "event": "observation", "frame": "00065-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.594}
+{"ts": "2026-11-18T21:32:20.421+00:00", "level": "INFO", "event": "observation", "frame": "00066-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:32:22.890+00:00", "level": "INFO", "event": "observation", "frame": "00067-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.609}
+{"ts": "2026-11-18T21:32:25.524+00:00", "level": "INFO", "event": "observation", "frame": "00068-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.563}
+{"ts": "2026-11-18T21:32:29.869+00:00", "level": "INFO", "event": "log_visit", "battle": 1, "visit": 1, "turn": 1, "rows": 4, "appended": 4, "anchor": "new", "complete": true, "stop": "settled_no_scrollbar", "seconds": 4.34, "errors": 0}
+{"ts": "2026-11-18T21:32:29.903+00:00", "level": "INFO", "event": "decision", "battle": 1, "kind": "action", "choice": "move2", "degrade": "player", "legal": 6, "dropped": 0, "cg_ms": 16.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:32:31.136+00:00", "level": "INFO", "event": "turn", "battle": 1, "reason": "player answer", "elapsed_s": 7.2, "log_turn": 1, "visit": 1, "turn": 1, "action": "move2", "degrade": "player", "log_s": 4.34, "first_capture_to_last_tap_s": 7.19, "same_turn_retry": false, "peek": "skipped"}
+{"ts": "2026-11-18T21:32:42.988+00:00", "level": "INFO", "event": "observation", "frame": "00069-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.562}
+{"ts": "2026-11-18T21:32:46.111+00:00", "level": "INFO", "event": "observation", "frame": "00070-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.562}
+{"ts": "2026-11-18T21:32:48.984+00:00", "level": "INFO", "event": "observation", "frame": "00071-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.562}
+{"ts": "2026-11-18T21:32:51.558+00:00", "level": "INFO", "event": "observation", "frame": "00072-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.625}
+{"ts": "2026-11-18T21:32:53.951+00:00", "level": "INFO", "event": "observation", "frame": "00073-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.562}
+{"ts": "2026-11-18T21:32:56.488+00:00", "level": "INFO", "event": "observation", "frame": "00074-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.594}
+{"ts": "2026-11-18T21:32:59.130+00:00", "level": "INFO", "event": "observation", "frame": "00075-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.609}
+{"ts": "2026-11-18T21:33:01.700+00:00", "level": "INFO", "event": "observation", "frame": "00076-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.594}
+{"ts": "2026-11-18T21:33:04.237+00:00", "level": "INFO", "event": "observation", "frame": "00077-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.594}
+{"ts": "2026-11-18T21:33:07.191+00:00", "level": "INFO", "event": "observation", "frame": "00078-poll", "screen": "forced", "reason": "party rows", "capture_s": 0.547}
+{"ts": "2026-11-18T21:33:07.221+00:00", "level": "INFO", "event": "decision", "battle": 1, "kind": "forced", "choice": "switch1", "degrade": "player", "legal": 2, "dropped": 0, "cg_ms": 15.0, "sent": 1, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:33:08.419+00:00", "level": "INFO", "event": "turn", "battle": 1, "turn": 1, "action": "forced-switch1", "degrade": "player", "reason": "player answer", "pivot": false}
+{"ts": "2026-11-18T21:33:20.073+00:00", "level": "INFO", "event": "observation", "frame": "00079-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.563}
+{"ts": "2026-11-18T21:33:35.004+00:00", "level": "INFO", "event": "log_visit", "battle": 1, "visit": 2, "turn": 1, "rows": 12, "appended": 11, "anchor": "overlap1", "complete": true, "stop": "deadline", "seconds": 14.94, "errors": 0}
+{"ts": "2026-11-18T21:33:37.790+00:00", "level": "INFO", "event": "observation", "frame": "00080-peek", "screen": "moves", "reason": "move rows with PP", "capture_s": 0.578}
+{"ts": "2026-11-18T21:33:38.575+00:00", "level": "INFO", "event": "decision", "battle": 1, "kind": "action", "choice": "mega+move2", "degrade": "player", "legal": 9, "dropped": 0, "cg_ms": 0.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:33:40.367+00:00", "level": "INFO", "event": "turn", "battle": 1, "reason": "player answer", "elapsed_s": 21.9, "log_turn": 1, "visit": 2, "turn": 2, "action": "mega+move2", "degrade": "player", "log_s": 14.94, "first_capture_to_last_tap_s": 21.86, "same_turn_retry": false, "peek": "log_stop_deadline"}
+{"ts": "2026-11-18T21:33:51.707+00:00", "level": "INFO", "event": "observation", "frame": "00081-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.593}
+{"ts": "2026-11-18T21:33:54.039+00:00", "level": "INFO", "event": "observation", "frame": "00082-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.547}
+{"ts": "2026-11-18T21:33:56.388+00:00", "level": "INFO", "event": "observation", "frame": "00083-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:33:58.837+00:00", "level": "INFO", "event": "observation", "frame": "00084-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.578}
+{"ts": "2026-11-18T21:34:01.220+00:00", "level": "INFO", "event": "observation", "frame": "00085-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.579}
+{"ts": "2026-11-18T21:34:03.651+00:00", "level": "INFO", "event": "observation", "frame": "00086-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.594}
+{"ts": "2026-11-18T21:34:05.917+00:00", "level": "INFO", "event": "observation", "frame": "00087-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:34:08.269+00:00", "level": "INFO", "event": "observation", "frame": "00088-poll", "screen": "wait", "reason": "Communicating", "capture_s": 0.578}
+{"ts": "2026-11-18T21:34:10.740+00:00", "level": "INFO", "event": "observation", "frame": "00089-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.578}
+{"ts": "2026-11-18T21:34:13.819+00:00", "level": "INFO", "event": "observation", "frame": "00090-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.562}
+{"ts": "2026-11-18T21:34:16.928+00:00", "level": "INFO", "event": "observation", "frame": "00091-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.547}
+{"ts": "2026-11-18T21:34:24.933+00:00", "level": "INFO", "event": "log_visit", "battle": 1, "visit": 3, "turn": 2, "rows": 8, "appended": 8, "anchor": "new", "complete": true, "stop": "top_confirmed", "seconds": 8.0, "errors": 0}
+{"ts": "2026-11-18T21:34:24.953+00:00", "level": "INFO", "event": "decision", "battle": 1, "kind": "action", "choice": "move1", "degrade": "player", "legal": 5, "dropped": 0, "cg_ms": 16.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:34:26.193+00:00", "level": "INFO", "event": "turn", "battle": 1, "reason": "player answer", "elapsed_s": 11.3, "log_turn": 2, "visit": 3, "turn": 3, "action": "move1", "degrade": "player", "log_s": 8.0, "first_capture_to_last_tap_s": 11.3, "same_turn_retry": false, "peek": "skipped"}
+{"ts": "2026-11-18T21:34:37.606+00:00", "level": "INFO", "event": "observation", "frame": "00092-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.562}
+{"ts": "2026-11-18T21:34:40.010+00:00", "level": "INFO", "event": "observation", "frame": "00093-poll", "screen": "wait", "reason": "Communicating", "capture_s": 0.578}
+{"ts": "2026-11-18T21:34:42.561+00:00", "level": "INFO", "event": "observation", "frame": "00094-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.61}
+{"ts": "2026-11-18T21:34:46.832+00:00", "level": "INFO", "event": "log_visit", "battle": 1, "visit": 4, "turn": 3, "rows": 4, "appended": 4, "anchor": "new", "complete": true, "stop": "settled_no_scrollbar", "seconds": 4.28, "errors": 0}
+{"ts": "2026-11-18T21:34:46.853+00:00", "level": "INFO", "event": "decision", "battle": 1, "kind": "action", "choice": "move1", "degrade": "player", "legal": 5, "dropped": 0, "cg_ms": 0.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:34:48.068+00:00", "level": "INFO", "event": "turn", "battle": 1, "reason": "player answer", "elapsed_s": 7.0, "log_turn": 3, "visit": 4, "turn": 4, "action": "move1", "degrade": "player", "log_s": 4.28, "first_capture_to_last_tap_s": 6.99, "same_turn_retry": false, "peek": "skipped"}
+{"ts": "2026-11-18T21:34:59.641+00:00", "level": "INFO", "event": "observation", "frame": "00095-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.547}
+{"ts": "2026-11-18T21:35:02.448+00:00", "level": "INFO", "event": "observation", "frame": "00096-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.547}
+{"ts": "2026-11-18T21:35:04.926+00:00", "level": "INFO", "event": "observation", "frame": "00097-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.562}
+{"ts": "2026-11-18T21:35:07.310+00:00", "level": "INFO", "event": "observation", "frame": "00098-poll", "screen": "wait", "reason": "Communicating", "capture_s": 0.578}
+{"ts": "2026-11-18T21:35:09.910+00:00", "level": "INFO", "event": "observation", "frame": "00099-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.547}
+{"ts": "2026-11-18T21:35:17.905+00:00", "level": "INFO", "event": "log_visit", "battle": 1, "visit": 5, "turn": 4, "rows": 7, "appended": 7, "anchor": "new", "complete": true, "stop": "top_confirmed", "seconds": 7.98, "errors": 0}
+{"ts": "2026-11-18T21:35:17.939+00:00", "level": "INFO", "event": "decision", "battle": 1, "kind": "action", "choice": "move1", "degrade": "player", "legal": 5, "dropped": 0, "cg_ms": 31.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:35:19.143+00:00", "level": "INFO", "event": "turn", "battle": 1, "reason": "player answer", "elapsed_s": 10.8, "log_turn": 4, "visit": 5, "turn": 5, "action": "move1", "degrade": "player", "log_s": 7.98, "first_capture_to_last_tap_s": 10.76, "same_turn_retry": false, "peek": "skipped"}
+{"ts": "2026-11-18T21:35:30.535+00:00", "level": "INFO", "event": "observation", "frame": "00100-poll", "screen": "wait", "reason": "Communicating", "capture_s": 0.578}
+{"ts": "2026-11-18T21:35:32.918+00:00", "level": "INFO", "event": "observation", "frame": "00101-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.578}
+{"ts": "2026-11-18T21:35:35.261+00:00", "level": "INFO", "event": "observation", "frame": "00102-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:35:38.204+00:00", "level": "INFO", "event": "observation", "frame": "00103-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.563}
+{"ts": "2026-11-18T21:35:41.646+00:00", "level": "INFO", "event": "observation", "frame": "00104-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.562}
+{"ts": "2026-11-18T21:35:49.448+00:00", "level": "INFO", "event": "log_visit", "battle": 1, "visit": 6, "turn": 5, "rows": 6, "appended": 6, "anchor": "new", "complete": true, "stop": "top_confirmed", "seconds": 7.8, "errors": 0}
+{"ts": "2026-11-18T21:35:49.471+00:00", "level": "INFO", "event": "decision", "battle": 1, "kind": "action", "choice": "switch2", "degrade": "player", "legal": 5, "dropped": 0, "cg_ms": 0.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:35:52.332+00:00", "level": "INFO", "event": "observation", "frame": "00105-switch", "screen": "party", "reason": "party rows", "capture_s": 0.562}
+{"ts": "2026-11-18T21:35:55.810+00:00", "level": "INFO", "event": "observation", "frame": "00106-switch", "screen": "wait", "reason": "Communicating", "capture_s": 0.547}
+{"ts": "2026-11-18T21:35:55.810+00:00", "level": "INFO", "event": "turn", "battle": 1, "reason": "player answer", "elapsed_s": 14.3, "log_turn": 5, "visit": 6, "turn": 6, "action": "switch2", "degrade": "player", "log_s": 7.8, "first_capture_to_last_tap_s": 14.26, "same_turn_retry": false, "peek": "skipped"}
+{"ts": "2026-11-18T21:36:07.196+00:00", "level": "INFO", "event": "observation", "frame": "00107-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.562}
+{"ts": "2026-11-18T21:36:09.663+00:00", "level": "INFO", "event": "observation", "frame": "00108-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.562}
+{"ts": "2026-11-18T21:36:12.139+00:00", "level": "INFO", "event": "observation", "frame": "00109-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:36:14.448+00:00", "level": "INFO", "event": "observation", "frame": "00110-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.562}
+{"ts": "2026-11-18T21:36:16.723+00:00", "level": "INFO", "event": "observation", "frame": "00111-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.563}
+{"ts": "2026-11-18T21:36:19.215+00:00", "level": "INFO", "event": "observation", "frame": "00112-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.609}
+{"ts": "2026-11-18T21:36:22.394+00:00", "level": "INFO", "event": "observation", "frame": "00113-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.547}
+{"ts": "2026-11-18T21:36:25.171+00:00", "level": "INFO", "event": "observation", "frame": "00114-poll", "screen": "result", "reason": "gold banner in one half", "capture_s": 0.562}
+{"ts": "2026-11-18T21:36:25.182+00:00", "level": "INFO", "event": "battle_end", "battle": 1, "outcome": "win", "source": "result screen", "completed": 1, "played": 1, "degrade": {"player": 7}}
+{"ts": "2026-11-18T21:36:28.078+00:00", "level": "INFO", "event": "observation", "frame": "00115-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:36:30.753+00:00", "level": "INFO", "event": "observation", "frame": "00116-poll", "screen": "rewards", "reason": "rank and VP", "capture_s": 0.547}
+{"ts": "2026-11-18T21:36:30.755+00:00", "level": "INFO", "event": "rank", "tier": "Master Ball", "rank": null, "placement": 68891, "rating": 1646.544}
+{"ts": "2026-11-18T21:36:33.393+00:00", "level": "INFO", "event": "observation", "frame": "00117-poll", "screen": "options", "reason": "post-battle options", "capture_s": 0.563}
+{"ts": "2026-11-18T21:36:33.393+00:00", "level": "INFO", "event": "rank", "tier": "Master Ball", "rank": null, "placement": 57292, "rating": 1664.853}
+{"ts": "2026-11-18T21:36:38.321+00:00", "level": "INFO", "event": "observation", "frame": "00118-poll", "screen": "matchmaking", "reason": "matchmaking overlay", "capture_s": 0.563}
+{"ts": "2026-11-18T21:36:41.084+00:00", "level": "INFO", "event": "observation", "frame": "00119-poll", "screen": "matchmaking", "reason": "matchmaking overlay", "capture_s": 0.562}
+{"ts": "2026-11-18T21:36:43.724+00:00", "level": "INFO", "event": "observation", "frame": "00120-poll", "screen": "matchmaking", "reason": "matchmaking overlay", "capture_s": 0.547}
+{"ts": "2026-11-18T21:36:45.935+00:00", "level": "INFO", "event": "observation", "frame": "00121-poll", "screen": "transition", "reason": "black frame", "capture_s": 0.469}
+{"ts": "2026-11-18T21:36:48.230+00:00", "level": "INFO", "event": "observation", "frame": "00122-poll", "screen": "transition", "reason": "loading or VS", "capture_s": 0.578}
+{"ts": "2026-11-18T21:36:51.092+00:00", "level": "INFO", "event": "observation", "frame": "00123-poll", "screen": "team_select", "reason": "N/3 counter and Done", "capture_s": 0.547}
+{"ts": "2026-11-18T21:36:51.094+00:00", "level": "INFO", "event": "battle_start", "battle": 2, "battle_id": "20261118T163651-924e3595", "roster": ["Hippowdon", "Metagross", "Dragonite", "Cinderace", "Primarina", "Mimikyu"]}
+{"ts": "2026-11-18T21:36:51.137+00:00", "level": "INFO", "event": "team_preview", "battle": 2, "opponent": ["Basculegion Male", "Staraptor", "Archaludon", "Metagross", "Rotom Heat", "Mimikyu"]}
+{"ts": "2026-11-18T21:36:51.179+00:00", "level": "INFO", "event": "decision", "battle": 2, "kind": "team", "team": [0, 2, 3], "names": ["Hippowdon", "Dragonite", "Cinderace"], "source": "player", "player_ms": 37.8, "cg_ms": 47.0, "sent": 2, "dropped_replies": 0, "attempt": 1, "v": 0.2982, "ms": 8.2}
+{"ts": "2026-11-18T21:36:54.532+00:00", "level": "INFO", "event": "observation", "frame": "00124-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.594}
+{"ts": "2026-11-18T21:36:57.157+00:00", "level": "INFO", "event": "observation", "frame": "00125-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.594}
+{"ts": "2026-11-18T21:36:59.681+00:00", "level": "INFO", "event": "observation", "frame": "00126-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.562}
+{"ts": "2026-11-18T21:37:02.180+00:00", "level": "INFO", "event": "observation", "frame": "00127-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.563}
+{"ts": "2026-11-18T21:37:04.709+00:00", "level": "INFO", "event": "observation", "frame": "00128-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.594}
+{"ts": "2026-11-18T21:37:08.208+00:00", "level": "INFO", "event": "observation", "frame": "00129-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.579}
+{"ts": "2026-11-18T21:37:11.324+00:00", "level": "INFO", "event": "observation", "frame": "00130-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.579}
+{"ts": "2026-11-18T21:37:14.577+00:00", "level": "INFO", "event": "observation", "frame": "00131-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.562}
+{"ts": "2026-11-18T21:37:17.204+00:00", "level": "INFO", "event": "observation", "frame": "00132-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.578}
+{"ts": "2026-11-18T21:37:19.838+00:00", "level": "INFO", "event": "observation", "frame": "00133-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.547}
+{"ts": "2026-11-18T21:37:22.500+00:00", "level": "INFO", "event": "observation", "frame": "00134-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.579}
+{"ts": "2026-11-18T21:37:25.094+00:00", "level": "INFO", "event": "observation", "frame": "00135-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.578}
+{"ts": "2026-11-18T21:37:27.864+00:00", "level": "INFO", "event": "observation", "frame": "00136-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.563}
+{"ts": "2026-11-18T21:37:30.561+00:00", "level": "INFO", "event": "observation", "frame": "00137-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.578}
+{"ts": "2026-11-18T21:37:33.239+00:00", "level": "INFO", "event": "observation", "frame": "00138-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.563}
+{"ts": "2026-11-18T21:37:35.839+00:00", "level": "INFO", "event": "observation", "frame": "00139-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.547}
+{"ts": "2026-11-18T21:37:38.470+00:00", "level": "INFO", "event": "observation", "frame": "00140-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.579}
+{"ts": "2026-11-18T21:37:41.107+00:00", "level": "INFO", "event": "observation", "frame": "00141-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.547}
+{"ts": "2026-11-18T21:37:43.665+00:00", "level": "INFO", "event": "observation", "frame": "00142-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.594}
+{"ts": "2026-11-18T21:37:46.345+00:00", "level": "INFO", "event": "observation", "frame": "00143-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.562}
+{"ts": "2026-11-18T21:37:48.949+00:00", "level": "INFO", "event": "observation", "frame": "00144-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.578}
+{"ts": "2026-11-18T21:37:51.762+00:00", "level": "INFO", "event": "observation", "frame": "00145-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.594}
+{"ts": "2026-11-18T21:37:54.648+00:00", "level": "INFO", "event": "observation", "frame": "00146-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.594}
+{"ts": "2026-11-18T21:37:57.004+00:00", "level": "INFO", "event": "observation", "frame": "00147-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.562}
+{"ts": "2026-11-18T21:37:59.855+00:00", "level": "INFO", "event": "observation", "frame": "00148-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:38:02.390+00:00", "level": "INFO", "event": "observation", "frame": "00149-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:38:05.004+00:00", "level": "INFO", "event": "observation", "frame": "00150-poll", "screen": "transition", "reason": "VS intro trainer cards", "capture_s": 0.562}
+{"ts": "2026-11-18T21:38:07.578+00:00", "level": "INFO", "event": "observation", "frame": "00151-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.563}
+{"ts": "2026-11-18T21:38:10.318+00:00", "level": "INFO", "event": "observation", "frame": "00152-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:38:12.763+00:00", "level": "INFO", "event": "observation", "frame": "00153-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.547}
+{"ts": "2026-11-18T21:38:15.388+00:00", "level": "INFO", "event": "observation", "frame": "00154-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.563}
+{"ts": "2026-11-18T21:38:17.867+00:00", "level": "INFO", "event": "observation", "frame": "00155-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.563}
+{"ts": "2026-11-18T21:38:20.416+00:00", "level": "INFO", "event": "observation", "frame": "00156-poll", "screen": "wait", "reason": "Communicating", "capture_s": 0.578}
+{"ts": "2026-11-18T21:38:23.030+00:00", "level": "INFO", "event": "observation", "frame": "00157-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.562}
+{"ts": "2026-11-18T21:38:30.843+00:00", "level": "INFO", "event": "log_visit", "battle": 2, "visit": 1, "turn": 1, "rows": 6, "appended": 6, "anchor": "new", "complete": true, "stop": "top_confirmed", "seconds": 7.81, "errors": 0}
+{"ts": "2026-11-18T21:38:30.859+00:00", "level": "INFO", "event": "decision", "battle": 2, "kind": "action", "choice": "move2", "degrade": "player", "legal": 6, "dropped": 0, "cg_ms": 16.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:38:32.075+00:00", "level": "INFO", "event": "turn", "battle": 2, "reason": "player answer", "elapsed_s": 10.6, "log_turn": 1, "visit": 1, "turn": 1, "action": "move2", "degrade": "player", "log_s": 7.81, "first_capture_to_last_tap_s": 10.59, "same_turn_retry": false, "peek": "skipped"}
+{"ts": "2026-11-18T21:38:43.772+00:00", "level": "INFO", "event": "observation", "frame": "00158-poll", "screen": "wait", "reason": "Communicating", "capture_s": 0.562}
+{"ts": "2026-11-18T21:38:46.391+00:00", "level": "INFO", "event": "observation", "frame": "00159-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.562}
+{"ts": "2026-11-18T21:38:48.681+00:00", "level": "INFO", "event": "observation", "frame": "00160-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.594}
+{"ts": "2026-11-18T21:38:51.052+00:00", "level": "INFO", "event": "observation", "frame": "00161-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.594}
+{"ts": "2026-11-18T21:38:53.347+00:00", "level": "INFO", "event": "observation", "frame": "00162-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:38:55.715+00:00", "level": "INFO", "event": "observation", "frame": "00163-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.563}
+{"ts": "2026-11-18T21:38:58.179+00:00", "level": "INFO", "event": "observation", "frame": "00164-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.547}
+{"ts": "2026-11-18T21:39:00.793+00:00", "level": "INFO", "event": "observation", "frame": "00165-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:39:03.207+00:00", "level": "INFO", "event": "observation", "frame": "00166-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.546}
+{"ts": "2026-11-18T21:39:05.787+00:00", "level": "INFO", "event": "observation", "frame": "00167-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.563}
+{"ts": "2026-11-18T21:39:08.385+00:00", "level": "INFO", "event": "observation", "frame": "00168-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:39:10.974+00:00", "level": "INFO", "event": "observation", "frame": "00169-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.594}
+{"ts": "2026-11-18T21:39:13.563+00:00", "level": "INFO", "event": "observation", "frame": "00170-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.531}
+{"ts": "2026-11-18T21:39:29.155+00:00", "level": "INFO", "event": "log_visit", "battle": 2, "visit": 2, "turn": 1, "rows": 13, "appended": 9, "anchor": "overlap4", "complete": true, "stop": "deadline", "seconds": 15.58, "errors": 0}
+{"ts": "2026-11-18T21:39:32.305+00:00", "level": "INFO", "event": "observation", "frame": "00171-peek", "screen": "moves", "reason": "move rows with PP", "capture_s": 0.562}
+{"ts": "2026-11-18T21:39:32.305+00:00", "level": "INFO", "event": "move_info_close", "tap": "move_info"}
+{"ts": "2026-11-18T21:39:35.727+00:00", "level": "INFO", "event": "observation", "frame": "00172-info", "screen": "moves", "reason": "move rows with PP", "capture_s": 0.578}
+{"ts": "2026-11-18T21:39:36.522+00:00", "level": "INFO", "event": "decision", "battle": 2, "kind": "action", "choice": "switch1", "degrade": "player", "legal": 6, "dropped": 0, "cg_ms": 16.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:39:39.307+00:00", "level": "INFO", "event": "observation", "frame": "00173-switch", "screen": "party", "reason": "party rows", "capture_s": 0.531}
+{"ts": "2026-11-18T21:39:42.825+00:00", "level": "INFO", "event": "observation", "frame": "00174-switch", "screen": "wait", "reason": "Communicating", "capture_s": 0.562}
+{"ts": "2026-11-18T21:39:42.825+00:00", "level": "INFO", "event": "turn", "battle": 2, "reason": "player answer", "elapsed_s": 28.5, "log_turn": 1, "visit": 2, "turn": 2, "action": "switch1", "degrade": "player", "log_s": 15.58, "first_capture_to_last_tap_s": 28.47, "same_turn_retry": false, "peek": "log_stop_deadline"}
+{"ts": "2026-11-18T21:39:54.419+00:00", "level": "INFO", "event": "observation", "frame": "00175-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.563}
+{"ts": "2026-11-18T21:39:56.825+00:00", "level": "INFO", "event": "observation", "frame": "00176-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.546}
+{"ts": "2026-11-18T21:39:59.214+00:00", "level": "INFO", "event": "observation", "frame": "00177-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.562}
+{"ts": "2026-11-18T21:40:01.793+00:00", "level": "INFO", "event": "observation", "frame": "00178-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.563}
+{"ts": "2026-11-18T21:40:04.101+00:00", "level": "INFO", "event": "observation", "frame": "00179-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.547}
+{"ts": "2026-11-18T21:40:06.750+00:00", "level": "INFO", "event": "observation", "frame": "00180-poll", "screen": "wait", "reason": "battle HUD clocks", "capture_s": 0.578}
+{"ts": "2026-11-18T21:40:09.999+00:00", "level": "INFO", "event": "observation", "frame": "00181-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.609}
+{"ts": "2026-11-18T21:40:22.754+00:00", "level": "INFO", "event": "log_visit", "battle": 2, "visit": 3, "turn": 2, "rows": 11, "appended": 11, "anchor": "new", "complete": true, "stop": "top_confirmed", "seconds": 12.76, "errors": 0}
+{"ts": "2026-11-18T21:40:25.649+00:00", "level": "INFO", "event": "observation", "frame": "00182-peek", "screen": "moves", "reason": "move rows with PP", "capture_s": 0.578}
+{"ts": "2026-11-18T21:40:26.446+00:00", "level": "INFO", "event": "decision", "battle": 2, "kind": "action", "choice": "mega+move3", "degrade": "player", "legal": 10, "dropped": 0, "cg_ms": 16.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:40:28.230+00:00", "level": "INFO", "event": "turn", "battle": 2, "reason": "player answer", "elapsed_s": 20.4, "log_turn": 2, "visit": 3, "turn": 3, "action": "mega+move3", "degrade": "player", "log_s": 12.76, "first_capture_to_last_tap_s": 20.41, "same_turn_retry": false, "peek": "mega_button"}
+{"ts": "2026-11-18T21:40:39.581+00:00", "level": "INFO", "event": "observation", "frame": "00183-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.609}
+{"ts": "2026-11-18T21:40:42.078+00:00", "level": "INFO", "event": "observation", "frame": "00184-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.563}
+{"ts": "2026-11-18T21:40:44.442+00:00", "level": "INFO", "event": "observation", "frame": "00185-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.547}
+{"ts": "2026-11-18T21:40:46.819+00:00", "level": "INFO", "event": "observation", "frame": "00186-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.547}
+{"ts": "2026-11-18T21:40:49.162+00:00", "level": "INFO", "event": "observation", "frame": "00187-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.562}
+{"ts": "2026-11-18T21:40:52.356+00:00", "level": "INFO", "event": "observation", "frame": "00188-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.578}
+{"ts": "2026-11-18T21:40:55.103+00:00", "level": "INFO", "event": "observation", "frame": "00189-poll", "screen": "wait", "reason": "Communicating", "capture_s": 0.563}
+{"ts": "2026-11-18T21:40:57.977+00:00", "level": "INFO", "event": "observation", "frame": "00190-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.563}
+{"ts": "2026-11-18T21:41:10.730+00:00", "level": "INFO", "event": "log_visit", "battle": 2, "visit": 4, "turn": 3, "rows": 10, "appended": 10, "anchor": "new", "complete": true, "stop": "top_confirmed", "seconds": 12.75, "errors": 0}
+{"ts": "2026-11-18T21:41:10.753+00:00", "level": "INFO", "event": "decision", "battle": 2, "kind": "action", "choice": "move3", "degrade": "player", "legal": 6, "dropped": 0, "cg_ms": 31.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:41:11.978+00:00", "level": "INFO", "event": "turn", "battle": 2, "reason": "player answer", "elapsed_s": 15.8, "log_turn": 3, "visit": 4, "turn": 4, "action": "move3", "degrade": "player", "log_s": 12.75, "first_capture_to_last_tap_s": 15.8, "same_turn_retry": false, "peek": "skipped"}
+{"ts": "2026-11-18T21:41:23.414+00:00", "level": "INFO", "event": "observation", "frame": "00191-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:41:25.774+00:00", "level": "INFO", "event": "observation", "frame": "00192-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.546}
+{"ts": "2026-11-18T21:41:28.180+00:00", "level": "INFO", "event": "observation", "frame": "00193-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.531}
+{"ts": "2026-11-18T21:41:30.564+00:00", "level": "INFO", "event": "observation", "frame": "00194-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.547}
+{"ts": "2026-11-18T21:41:33.082+00:00", "level": "INFO", "event": "observation", "frame": "00195-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.562}
+{"ts": "2026-11-18T21:41:45.933+00:00", "level": "INFO", "event": "log_visit", "battle": 2, "visit": 5, "turn": 4, "rows": 10, "appended": 10, "anchor": "new", "complete": true, "stop": "top_confirmed", "seconds": 12.84, "errors": 0}
+{"ts": "2026-11-18T21:41:45.958+00:00", "level": "INFO", "event": "decision", "battle": 2, "kind": "action", "choice": "move3", "degrade": "player", "legal": 6, "dropped": 0, "cg_ms": 0.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:41:47.165+00:00", "level": "INFO", "event": "turn", "battle": 2, "reason": "player answer", "elapsed_s": 15.5, "log_turn": 4, "visit": 5, "turn": 5, "action": "move3", "degrade": "player", "log_s": 12.84, "first_capture_to_last_tap_s": 15.53, "same_turn_retry": false, "peek": "skipped"}
+{"ts": "2026-11-18T21:41:58.527+00:00", "level": "INFO", "event": "observation", "frame": "00196-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.562}
+{"ts": "2026-11-18T21:42:01.079+00:00", "level": "INFO", "event": "observation", "frame": "00197-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.562}
+{"ts": "2026-11-18T21:42:03.524+00:00", "level": "INFO", "event": "observation", "frame": "00198-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.563}
+{"ts": "2026-11-18T21:42:05.915+00:00", "level": "INFO", "event": "observation", "frame": "00199-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:42:08.359+00:00", "level": "INFO", "event": "observation", "frame": "00200-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.562}
+{"ts": "2026-11-18T21:42:10.713+00:00", "level": "INFO", "event": "observation", "frame": "00201-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:42:13.137+00:00", "level": "INFO", "event": "observation", "frame": "00202-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.563}
+{"ts": "2026-11-18T21:42:15.899+00:00", "level": "INFO", "event": "observation", "frame": "00203-poll", "screen": "forced", "reason": "party rows", "capture_s": 0.578}
+{"ts": "2026-11-18T21:42:15.918+00:00", "level": "INFO", "event": "decision", "battle": 2, "kind": "forced", "choice": "switch2", "degrade": "player", "legal": 2, "dropped": 0, "cg_ms": 16.0, "sent": 1, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:42:17.137+00:00", "level": "INFO", "event": "turn", "battle": 2, "turn": 5, "action": "forced-switch2", "degrade": "player", "reason": "player answer", "pivot": false}
+{"ts": "2026-11-18T21:42:28.602+00:00", "level": "INFO", "event": "observation", "frame": "00204-poll", "screen": "wait", "reason": "Communicating", "capture_s": 0.594}
+{"ts": "2026-11-18T21:42:31.099+00:00", "level": "INFO", "event": "observation", "frame": "00205-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.594}
+{"ts": "2026-11-18T21:42:33.473+00:00", "level": "INFO", "event": "observation", "frame": "00206-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:42:36.153+00:00", "level": "INFO", "event": "observation", "frame": "00207-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.578}
+{"ts": "2026-11-18T21:42:39.031+00:00", "level": "INFO", "event": "observation", "frame": "00208-poll", "screen": "wait", "reason": "Communicating", "capture_s": 0.594}
+{"ts": "2026-11-18T21:42:41.869+00:00", "level": "INFO", "event": "observation", "frame": "00209-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.562}
+{"ts": "2026-11-18T21:42:54.817+00:00", "level": "INFO", "event": "log_visit", "battle": 2, "visit": 6, "turn": 5, "rows": 12, "appended": 12, "anchor": "new", "complete": true, "stop": "top_confirmed", "seconds": 12.95, "errors": 0}
+{"ts": "2026-11-18T21:42:54.848+00:00", "level": "INFO", "event": "decision", "battle": 2, "kind": "action", "choice": "move0", "degrade": "player", "legal": 5, "dropped": 0, "cg_ms": 15.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:42:56.065+00:00", "level": "INFO", "event": "turn", "battle": 2, "reason": "player answer", "elapsed_s": 16.0, "log_turn": 5, "visit": 6, "turn": 6, "action": "move0", "degrade": "player", "log_s": 12.95, "first_capture_to_last_tap_s": 15.97, "same_turn_retry": false, "peek": "skipped"}
+{"ts": "2026-11-18T21:43:08.085+00:00", "level": "INFO", "event": "observation", "frame": "00210-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.547}
+{"ts": "2026-11-18T21:43:11.148+00:00", "level": "INFO", "event": "observation", "frame": "00211-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.563}
+{"ts": "2026-11-18T21:43:14.235+00:00", "level": "INFO", "event": "observation", "frame": "00212-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.578}
+{"ts": "2026-11-18T21:43:18.621+00:00", "level": "INFO", "event": "log_visit", "battle": 2, "visit": 7, "turn": 6, "rows": 5, "appended": 5, "anchor": "new", "complete": true, "stop": "settled_no_scrollbar", "seconds": 4.39, "errors": 0}
+{"ts": "2026-11-18T21:43:18.645+00:00", "level": "INFO", "event": "decision", "battle": 2, "kind": "action", "choice": "move0", "degrade": "player", "legal": 5, "dropped": 0, "cg_ms": 15.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:43:19.861+00:00", "level": "INFO", "event": "turn", "battle": 2, "reason": "player answer", "elapsed_s": 7.6, "log_turn": 6, "visit": 7, "turn": 7, "action": "move0", "degrade": "player", "log_s": 4.39, "first_capture_to_last_tap_s": 7.64, "same_turn_retry": false, "peek": "skipped"}
+{"ts": "2026-11-18T21:43:31.618+00:00", "level": "INFO", "event": "observation", "frame": "00213-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:43:34.195+00:00", "level": "INFO", "event": "observation", "frame": "00214-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.531}
+{"ts": "2026-11-18T21:43:36.659+00:00", "level": "INFO", "event": "observation", "frame": "00215-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.594}
+{"ts": "2026-11-18T21:43:39.112+00:00", "level": "INFO", "event": "observation", "frame": "00216-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.562}
+{"ts": "2026-11-18T21:43:41.588+00:00", "level": "INFO", "event": "observation", "frame": "00217-poll", "screen": "wait", "reason": "Communicating", "capture_s": 0.578}
+{"ts": "2026-11-18T21:43:44.034+00:00", "level": "INFO", "event": "observation", "frame": "00218-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.579}
+{"ts": "2026-11-18T21:43:46.598+00:00", "level": "INFO", "event": "observation", "frame": "00219-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.546}
+{"ts": "2026-11-18T21:43:54.714+00:00", "level": "INFO", "event": "log_visit", "battle": 2, "visit": 8, "turn": 7, "rows": 8, "appended": 8, "anchor": "new", "complete": true, "stop": "top_confirmed", "seconds": 8.11, "errors": 0}
+{"ts": "2026-11-18T21:43:54.748+00:00", "level": "INFO", "event": "decision", "battle": 2, "kind": "action", "choice": "move0", "degrade": "player", "legal": 5, "dropped": 0, "cg_ms": 16.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:43:55.964+00:00", "level": "INFO", "event": "turn", "battle": 2, "reason": "player answer", "elapsed_s": 10.8, "log_turn": 7, "visit": 8, "turn": 8, "action": "move0", "degrade": "player", "log_s": 8.11, "first_capture_to_last_tap_s": 10.84, "same_turn_retry": false, "peek": "skipped"}
+{"ts": "2026-11-18T21:44:07.465+00:00", "level": "INFO", "event": "observation", "frame": "00220-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.579}
+{"ts": "2026-11-18T21:44:09.996+00:00", "level": "INFO", "event": "observation", "frame": "00221-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.563}
+{"ts": "2026-11-18T21:44:12.458+00:00", "level": "INFO", "event": "observation", "frame": "00222-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:44:15.254+00:00", "level": "INFO", "event": "observation", "frame": "00223-poll", "screen": "forced", "reason": "party rows", "capture_s": 0.563}
+{"ts": "2026-11-18T21:44:15.279+00:00", "level": "INFO", "event": "decision", "battle": 2, "kind": "forced", "choice": "switch0", "degrade": "player", "legal": 1, "dropped": 0, "cg_ms": 16.0, "sent": 1, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:44:16.484+00:00", "level": "INFO", "event": "turn", "battle": 2, "turn": 8, "action": "forced-switch0", "degrade": "player", "reason": "player answer", "pivot": false}
+{"ts": "2026-11-18T21:44:28.116+00:00", "level": "INFO", "event": "observation", "frame": "00224-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.593}
+{"ts": "2026-11-18T21:44:36.007+00:00", "level": "INFO", "event": "log_visit", "battle": 2, "visit": 9, "turn": 8, "rows": 9, "appended": 9, "anchor": "new", "complete": true, "stop": "top_confirmed", "seconds": 7.89, "errors": 0}
+{"ts": "2026-11-18T21:44:36.046+00:00", "level": "INFO", "event": "decision", "battle": 2, "kind": "action", "choice": "move0", "degrade": "player", "legal": 4, "dropped": 0, "cg_ms": 0.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:44:37.269+00:00", "level": "INFO", "event": "turn", "battle": 2, "reason": "player answer", "elapsed_s": 10.7, "log_turn": 8, "visit": 9, "turn": 9, "action": "move0", "degrade": "player", "log_s": 7.89, "first_capture_to_last_tap_s": 10.7, "same_turn_retry": false, "peek": "skipped"}
+{"ts": "2026-11-18T21:44:48.747+00:00", "level": "INFO", "event": "observation", "frame": "00225-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.609}
+{"ts": "2026-11-18T21:44:51.285+00:00", "level": "INFO", "event": "observation", "frame": "00226-poll", "screen": "transition", "reason": "black frame", "capture_s": 0.562}
+{"ts": "2026-11-18T21:44:53.837+00:00", "level": "INFO", "event": "observation", "frame": "00227-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.562}
+{"ts": "2026-11-18T21:44:56.610+00:00", "level": "INFO", "event": "observation", "frame": "00228-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.579}
+{"ts": "2026-11-18T21:45:04.832+00:00", "level": "INFO", "event": "log_visit", "battle": 2, "visit": 10, "turn": 9, "rows": 8, "appended": 8, "anchor": "new", "complete": true, "stop": "top_confirmed", "seconds": 8.23, "errors": 0}
+{"ts": "2026-11-18T21:45:04.863+00:00", "level": "INFO", "event": "decision", "battle": 2, "kind": "action", "choice": "move0", "degrade": "player", "legal": 4, "dropped": 0, "cg_ms": 0.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:45:06.069+00:00", "level": "INFO", "event": "turn", "battle": 2, "reason": "player answer", "elapsed_s": 11.2, "log_turn": 9, "visit": 10, "turn": 10, "action": "move0", "degrade": "player", "log_s": 8.23, "first_capture_to_last_tap_s": 11.16, "same_turn_retry": false, "peek": "skipped"}
+{"ts": "2026-11-18T21:45:18.348+00:00", "level": "INFO", "event": "observation", "frame": "00229-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.562}
+{"ts": "2026-11-18T21:45:20.769+00:00", "level": "INFO", "event": "observation", "frame": "00230-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.547}
+{"ts": "2026-11-18T21:45:23.314+00:00", "level": "INFO", "event": "observation", "frame": "00231-poll", "screen": "result", "reason": "WON/LOST banner", "capture_s": 0.578}
+{"ts": "2026-11-18T21:45:23.326+00:00", "level": "INFO", "event": "battle_end", "battle": 2, "outcome": "loss", "source": "result screen", "completed": 2, "played": 2, "degrade": {"player": 12}}
+{"ts": "2026-11-18T21:45:26.460+00:00", "level": "INFO", "event": "observation", "frame": "00232-poll", "screen": "result", "reason": "gold banner in one half", "capture_s": 0.562}
+{"ts": "2026-11-18T21:45:29.333+00:00", "level": "INFO", "event": "observation", "frame": "00233-poll", "screen": "rewards", "reason": "rank and VP", "capture_s": 0.594}
+{"ts": "2026-11-18T21:45:32.147+00:00", "level": "INFO", "event": "observation", "frame": "00234-poll", "screen": "rewards", "reason": "rank and VP", "capture_s": 0.579}
+{"ts": "2026-11-18T21:45:32.147+00:00", "level": "INFO", "event": "rank", "tier": "Master Ball", "rank": null, "placement": 69006, "rating": 1646.403}
+{"ts": "2026-11-18T21:45:34.903+00:00", "level": "INFO", "event": "observation", "frame": "00235-poll", "screen": "options", "reason": "post-battle options", "capture_s": 0.578}
+{"ts": "2026-11-18T21:45:39.899+00:00", "level": "INFO", "event": "observation", "frame": "00236-poll", "screen": "matchmaking", "reason": "matchmaking overlay", "capture_s": 0.578}
+{"ts": "2026-11-18T21:45:42.840+00:00", "level": "INFO", "event": "observation", "frame": "00237-poll", "screen": "matchmaking", "reason": "matchmaking overlay", "capture_s": 0.594}
+{"ts": "2026-11-18T21:45:45.893+00:00", "level": "INFO", "event": "observation", "frame": "00238-poll", "screen": "matchmaking", "reason": "matchmaking overlay", "capture_s": 0.547}
+{"ts": "2026-11-18T21:45:48.522+00:00", "level": "INFO", "event": "observation", "frame": "00239-poll", "screen": "transition", "reason": "black frame", "capture_s": 0.562}
+{"ts": "2026-11-18T21:45:51.618+00:00", "level": "INFO", "event": "observation", "frame": "00240-poll", "screen": "team_select", "reason": "N/3 counter and Done", "capture_s": 0.578}
+{"ts": "2026-11-18T21:45:51.620+00:00", "level": "INFO", "event": "battle_start", "battle": 3, "battle_id": "20261118T164551-f22f626f", "roster": ["Hippowdon", "Metagross", "Dragonite", "Cinderace", "Primarina", "Mimikyu"]}
+{"ts": "2026-11-18T21:45:51.655+00:00", "level": "INFO", "event": "team_preview", "battle": 3, "opponent": ["Venusaur", "Golisopod", "Tyranitar", "Salamence", "Armarouge", "Gyarados"]}
+{"ts": "2026-11-18T21:45:51.703+00:00", "level": "INFO", "event": "decision", "battle": 3, "kind": "team", "team": [0, 2, 3], "names": ["Hippowdon", "Dragonite", "Cinderace"], "source": "player", "player_ms": 32.5, "cg_ms": 31.0, "sent": 2, "dropped_replies": 0, "attempt": 1, "v": 0.5297, "ms": 7.69}
+{"ts": "2026-11-18T21:45:55.160+00:00", "level": "INFO", "event": "observation", "frame": "00241-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.547}
+{"ts": "2026-11-18T21:45:57.788+00:00", "level": "INFO", "event": "observation", "frame": "00242-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.562}
+{"ts": "2026-11-18T21:46:00.424+00:00", "level": "INFO", "event": "observation", "frame": "00243-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.578}
+{"ts": "2026-11-18T21:46:03.426+00:00", "level": "INFO", "event": "observation", "frame": "00244-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.594}
+{"ts": "2026-11-18T21:46:06.215+00:00", "level": "INFO", "event": "observation", "frame": "00245-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.563}
+{"ts": "2026-11-18T21:46:08.861+00:00", "level": "INFO", "event": "observation", "frame": "00246-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.563}
+{"ts": "2026-11-18T21:46:11.380+00:00", "level": "INFO", "event": "observation", "frame": "00247-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.562}
+{"ts": "2026-11-18T21:46:14.064+00:00", "level": "INFO", "event": "observation", "frame": "00248-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.578}
+{"ts": "2026-11-18T21:46:17.230+00:00", "level": "INFO", "event": "observation", "frame": "00249-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.578}
+{"ts": "2026-11-18T21:46:20.428+00:00", "level": "INFO", "event": "observation", "frame": "00250-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.563}
+{"ts": "2026-11-18T21:46:23.540+00:00", "level": "INFO", "event": "observation", "frame": "00251-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.578}
+{"ts": "2026-11-18T21:46:26.161+00:00", "level": "INFO", "event": "observation", "frame": "00252-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.562}
+{"ts": "2026-11-18T21:46:28.762+00:00", "level": "INFO", "event": "observation", "frame": "00253-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.562}
+{"ts": "2026-11-18T21:46:31.815+00:00", "level": "INFO", "event": "observation", "frame": "00254-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.594}
+{"ts": "2026-11-18T21:46:34.772+00:00", "level": "INFO", "event": "observation", "frame": "00255-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.562}
+{"ts": "2026-11-18T21:46:37.543+00:00", "level": "INFO", "event": "observation", "frame": "00256-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.578}
+{"ts": "2026-11-18T21:46:40.126+00:00", "level": "INFO", "event": "observation", "frame": "00257-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.562}
+{"ts": "2026-11-18T21:46:42.969+00:00", "level": "INFO", "event": "observation", "frame": "00258-poll", "screen": "prep", "reason": "Preparing / Standing By", "capture_s": 0.594}
+{"ts": "2026-11-18T21:46:45.360+00:00", "level": "INFO", "event": "observation", "frame": "00259-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.594}
+{"ts": "2026-11-18T21:46:47.798+00:00", "level": "INFO", "event": "observation", "frame": "00260-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.563}
+{"ts": "2026-11-18T21:46:50.251+00:00", "level": "INFO", "event": "observation", "frame": "00261-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:46:52.823+00:00", "level": "INFO", "event": "observation", "frame": "00262-poll", "screen": "transition", "reason": "VS intro trainer cards", "capture_s": 0.547}
+{"ts": "2026-11-18T21:46:55.224+00:00", "level": "INFO", "event": "observation", "frame": "00263-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.562}
+{"ts": "2026-11-18T21:46:57.677+00:00", "level": "INFO", "event": "observation", "frame": "00264-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:47:00.116+00:00", "level": "INFO", "event": "observation", "frame": "00265-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.578}
+{"ts": "2026-11-18T21:47:02.599+00:00", "level": "INFO", "event": "observation", "frame": "00266-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.563}
+{"ts": "2026-11-18T21:47:05.769+00:00", "level": "INFO", "event": "observation", "frame": "00267-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.516}
+{"ts": "2026-11-18T21:47:08.758+00:00", "level": "INFO", "event": "observation", "frame": "00268-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.547}
+{"ts": "2026-11-18T21:47:11.663+00:00", "level": "INFO", "event": "observation", "frame": "00269-poll", "screen": "wait", "reason": "Communicating", "capture_s": 0.578}
+{"ts": "2026-11-18T21:47:14.312+00:00", "level": "INFO", "event": "observation", "frame": "00270-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.546}
+{"ts": "2026-11-18T21:47:22.084+00:00", "level": "INFO", "event": "log_visit", "battle": 3, "visit": 1, "turn": 1, "rows": 6, "appended": 6, "anchor": "new", "complete": true, "stop": "top_confirmed", "seconds": 7.78, "errors": 0}
+{"ts": "2026-11-18T21:47:22.095+00:00", "level": "INFO", "event": "decision", "battle": 3, "kind": "action", "choice": "move2", "degrade": "player", "legal": 6, "dropped": 0, "cg_ms": 0.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:47:23.311+00:00", "level": "INFO", "event": "turn", "battle": 3, "reason": "player answer", "elapsed_s": 10.6, "log_turn": 1, "visit": 1, "turn": 1, "action": "move2", "degrade": "player", "log_s": 7.78, "first_capture_to_last_tap_s": 10.58, "same_turn_retry": false, "peek": "skipped"}
+{"ts": "2026-11-18T21:47:34.777+00:00", "level": "INFO", "event": "observation", "frame": "00271-poll", "screen": "wait", "reason": "HP plates without menus", "capture_s": 0.562}
+{"ts": "2026-11-18T21:47:37.220+00:00", "level": "INFO", "event": "observation", "frame": "00272-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.531}
+{"ts": "2026-11-18T21:47:39.562+00:00", "level": "INFO", "event": "observation", "frame": "00273-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.579}
+{"ts": "2026-11-18T21:47:41.919+00:00", "level": "INFO", "event": "observation", "frame": "00274-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.562}
+{"ts": "2026-11-18T21:47:44.273+00:00", "level": "INFO", "event": "observation", "frame": "00275-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.593}
+{"ts": "2026-11-18T21:47:46.863+00:00", "level": "INFO", "event": "observation", "frame": "00276-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.609}
+{"ts": "2026-11-18T21:47:49.913+00:00", "level": "INFO", "event": "observation", "frame": "00277-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.547}
+{"ts": "2026-11-18T21:48:05.327+00:00", "level": "INFO", "event": "log_visit", "battle": 3, "visit": 2, "turn": 1, "rows": 14, "appended": 12, "anchor": "overlap2", "complete": true, "stop": "deadline", "seconds": 15.41, "errors": 0}
+{"ts": "2026-11-18T21:48:08.528+00:00", "level": "INFO", "event": "observation", "frame": "00278-peek", "screen": "moves", "reason": "move rows with PP", "capture_s": 0.547}
+{"ts": "2026-11-18T21:48:08.528+00:00", "level": "INFO", "event": "move_info_close", "tap": "move_info"}
+{"ts": "2026-11-18T21:48:12.519+00:00", "level": "INFO", "event": "observation", "frame": "00279-info", "screen": "moves", "reason": "move rows with PP", "capture_s": 0.563}
+{"ts": "2026-11-18T21:48:13.311+00:00", "level": "INFO", "event": "decision", "battle": 3, "kind": "action", "choice": "switch1", "degrade": "player", "legal": 6, "dropped": 0, "cg_ms": 15.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:48:16.389+00:00", "level": "INFO", "event": "observation", "frame": "00280-switch", "screen": "party", "reason": "party rows", "capture_s": 0.547}
+{"ts": "2026-11-18T21:48:20.102+00:00", "level": "INFO", "event": "observation", "frame": "00281-switch", "screen": "wait", "reason": "Communicating", "capture_s": 0.578}
+{"ts": "2026-11-18T21:48:20.102+00:00", "level": "INFO", "event": "turn", "battle": 3, "reason": "player answer", "elapsed_s": 29.7, "log_turn": 1, "visit": 2, "turn": 2, "action": "switch1", "degrade": "player", "log_s": 15.41, "first_capture_to_last_tap_s": 29.66, "same_turn_retry": false, "peek": "log_stop_deadline"}
+{"ts": "2026-11-18T21:48:31.477+00:00", "level": "INFO", "event": "observation", "frame": "00282-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.578}
+{"ts": "2026-11-18T21:48:33.854+00:00", "level": "INFO", "event": "observation", "frame": "00283-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:48:36.949+00:00", "level": "INFO", "event": "observation", "frame": "00284-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.563}
+{"ts": "2026-11-18T21:48:40.025+00:00", "level": "INFO", "event": "observation", "frame": "00285-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.578}
+{"ts": "2026-11-18T21:48:47.741+00:00", "level": "INFO", "event": "log_visit", "battle": 3, "visit": 3, "turn": 2, "rows": 8, "appended": 8, "anchor": "new", "complete": true, "stop": "top_confirmed", "seconds": 7.72, "errors": 0}
+{"ts": "2026-11-18T21:48:50.563+00:00", "level": "INFO", "event": "observation", "frame": "00286-peek", "screen": "moves", "reason": "move rows with PP", "capture_s": 0.579}
+{"ts": "2026-11-18T21:48:51.356+00:00", "level": "INFO", "event": "decision", "battle": 3, "kind": "action", "choice": "mega+move2", "degrade": "player", "legal": 10, "dropped": 0, "cg_ms": 0.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:48:53.145+00:00", "level": "INFO", "event": "turn", "battle": 3, "reason": "player answer", "elapsed_s": 15.1, "log_turn": 2, "visit": 3, "turn": 3, "action": "mega+move2", "degrade": "player", "log_s": 7.72, "first_capture_to_last_tap_s": 15.12, "same_turn_retry": false, "peek": "mega_button"}
+{"ts": "2026-11-18T21:49:04.601+00:00", "level": "INFO", "event": "observation", "frame": "00287-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.562}
+{"ts": "2026-11-18T21:49:06.945+00:00", "level": "INFO", "event": "observation", "frame": "00288-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.594}
+{"ts": "2026-11-18T21:49:09.280+00:00", "level": "INFO", "event": "observation", "frame": "00289-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:49:11.587+00:00", "level": "INFO", "event": "observation", "frame": "00290-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.562}
+{"ts": "2026-11-18T21:49:13.858+00:00", "level": "INFO", "event": "observation", "frame": "00291-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.563}
+{"ts": "2026-11-18T21:49:16.236+00:00", "level": "INFO", "event": "observation", "frame": "00292-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.625}
+{"ts": "2026-11-18T21:49:18.782+00:00", "level": "INFO", "event": "observation", "frame": "00293-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.593}
+{"ts": "2026-11-18T21:49:21.552+00:00", "level": "INFO", "event": "observation", "frame": "00294-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.546}
+{"ts": "2026-11-18T21:49:24.654+00:00", "level": "INFO", "event": "observation", "frame": "00295-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.563}
+{"ts": "2026-11-18T21:49:27.356+00:00", "level": "INFO", "event": "observation", "frame": "00296-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.578}
+{"ts": "2026-11-18T21:49:29.950+00:00", "level": "INFO", "event": "observation", "frame": "00297-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.563}
+{"ts": "2026-11-18T21:49:42.591+00:00", "level": "INFO", "event": "log_visit", "battle": 3, "visit": 4, "turn": 3, "rows": 12, "appended": 12, "anchor": "new", "complete": true, "stop": "top_confirmed", "seconds": 12.64, "errors": 0}
+{"ts": "2026-11-18T21:49:42.613+00:00", "level": "INFO", "event": "decision", "battle": 3, "kind": "action", "choice": "switch0", "degrade": "player", "legal": 6, "dropped": 0, "cg_ms": 0.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:49:45.425+00:00", "level": "INFO", "event": "observation", "frame": "00298-switch", "screen": "party", "reason": "party rows", "capture_s": 0.547}
+{"ts": "2026-11-18T21:49:48.972+00:00", "level": "INFO", "event": "observation", "frame": "00299-switch", "screen": "wait", "reason": "Communicating", "capture_s": 0.562}
+{"ts": "2026-11-18T21:49:48.973+00:00", "level": "INFO", "event": "turn", "battle": 3, "reason": "player answer", "elapsed_s": 18.2, "log_turn": 3, "visit": 4, "turn": 4, "action": "switch0", "degrade": "player", "log_s": 12.64, "first_capture_to_last_tap_s": 18.22, "same_turn_retry": false, "peek": "skipped"}
+{"ts": "2026-11-18T21:50:00.279+00:00", "level": "INFO", "event": "observation", "frame": "00300-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.609}
+{"ts": "2026-11-18T21:50:03.450+00:00", "level": "INFO", "event": "observation", "frame": "00301-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.594}
+{"ts": "2026-11-18T21:50:06.402+00:00", "level": "INFO", "event": "observation", "frame": "00302-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.562}
+{"ts": "2026-11-18T21:50:09.340+00:00", "level": "INFO", "event": "observation", "frame": "00303-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.562}
+{"ts": "2026-11-18T21:50:11.796+00:00", "level": "INFO", "event": "observation", "frame": "00304-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.547}
+{"ts": "2026-11-18T21:50:14.326+00:00", "level": "INFO", "event": "observation", "frame": "00305-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.563}
+{"ts": "2026-11-18T21:50:16.911+00:00", "level": "INFO", "event": "observation", "frame": "00306-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.578}
+{"ts": "2026-11-18T21:50:24.826+00:00", "level": "INFO", "event": "log_visit", "battle": 3, "visit": 5, "turn": 4, "rows": 9, "appended": 9, "anchor": "new", "complete": true, "stop": "top_confirmed", "seconds": 7.91, "errors": 0}
+{"ts": "2026-11-18T21:50:24.845+00:00", "level": "INFO", "event": "decision", "battle": 3, "kind": "action", "choice": "move0", "degrade": "player", "legal": 6, "dropped": 0, "cg_ms": 15.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:50:26.066+00:00", "level": "INFO", "event": "turn", "battle": 3, "reason": "player answer", "elapsed_s": 10.7, "log_turn": 4, "visit": 5, "turn": 5, "action": "move0", "degrade": "player", "log_s": 7.91, "first_capture_to_last_tap_s": 10.67, "same_turn_retry": false, "peek": "skipped"}
+{"ts": "2026-11-18T21:50:37.579+00:00", "level": "INFO", "event": "observation", "frame": "00307-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.578}
+{"ts": "2026-11-18T21:50:40.036+00:00", "level": "INFO", "event": "observation", "frame": "00308-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.578}
+{"ts": "2026-11-18T21:50:42.691+00:00", "level": "INFO", "event": "observation", "frame": "00309-poll", "screen": "forced", "reason": "party rows", "capture_s": 0.578}
+{"ts": "2026-11-18T21:50:42.708+00:00", "level": "INFO", "event": "decision", "battle": 3, "kind": "forced", "choice": "switch2", "degrade": "player", "legal": 2, "dropped": 0, "cg_ms": 0.0, "sent": 1, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:50:43.912+00:00", "level": "INFO", "event": "turn", "battle": 3, "turn": 5, "action": "forced-switch2", "degrade": "player", "reason": "player answer", "pivot": false}
+{"ts": "2026-11-18T21:50:55.372+00:00", "level": "INFO", "event": "observation", "frame": "00310-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.562}
+{"ts": "2026-11-18T21:51:03.206+00:00", "level": "INFO", "event": "log_visit", "battle": 3, "visit": 6, "turn": 5, "rows": 8, "appended": 8, "anchor": "new", "complete": true, "stop": "top_confirmed", "seconds": 7.83, "errors": 0}
+{"ts": "2026-11-18T21:51:03.232+00:00", "level": "INFO", "event": "decision", "battle": 3, "kind": "action", "choice": "move1", "degrade": "player", "legal": 5, "dropped": 0, "cg_ms": 16.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:51:04.461+00:00", "level": "INFO", "event": "turn", "battle": 3, "reason": "player answer", "elapsed_s": 10.5, "log_turn": 5, "visit": 6, "turn": 6, "action": "move1", "degrade": "player", "log_s": 7.83, "first_capture_to_last_tap_s": 10.47, "same_turn_retry": false, "peek": "skipped"}
+{"ts": "2026-11-18T21:51:16.035+00:00", "level": "INFO", "event": "observation", "frame": "00311-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.579}
+{"ts": "2026-11-18T21:51:18.486+00:00", "level": "INFO", "event": "observation", "frame": "00312-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:51:21.004+00:00", "level": "INFO", "event": "observation", "frame": "00313-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:51:23.433+00:00", "level": "INFO", "event": "observation", "frame": "00314-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.563}
+{"ts": "2026-11-18T21:51:25.804+00:00", "level": "INFO", "event": "observation", "frame": "00315-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.578}
+{"ts": "2026-11-18T21:51:28.432+00:00", "level": "INFO", "event": "observation", "frame": "00316-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.61}
+{"ts": "2026-11-18T21:51:36.372+00:00", "level": "INFO", "event": "log_visit", "battle": 3, "visit": 7, "turn": 6, "rows": 9, "appended": 9, "anchor": "new", "complete": true, "stop": "top_confirmed", "seconds": 7.94, "errors": 0}
+{"ts": "2026-11-18T21:51:36.404+00:00", "level": "INFO", "event": "decision", "battle": 3, "kind": "action", "choice": "switch1", "degrade": "player", "legal": 5, "dropped": 0, "cg_ms": 16.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:51:39.564+00:00", "level": "INFO", "event": "observation", "frame": "00317-switch", "screen": "party", "reason": "party rows", "capture_s": 0.563}
+{"ts": "2026-11-18T21:51:43.342+00:00", "level": "INFO", "event": "observation", "frame": "00318-switch", "screen": "wait", "reason": "Communicating", "capture_s": 0.578}
+{"ts": "2026-11-18T21:51:43.342+00:00", "level": "INFO", "event": "turn", "battle": 3, "reason": "player answer", "elapsed_s": 13.9, "log_turn": 6, "visit": 7, "turn": 7, "action": "switch1", "degrade": "player", "log_s": 7.94, "first_capture_to_last_tap_s": 13.91, "same_turn_retry": false, "peek": "skipped"}
+{"ts": "2026-11-18T21:51:54.791+00:00", "level": "INFO", "event": "observation", "frame": "00319-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.61}
+{"ts": "2026-11-18T21:51:57.361+00:00", "level": "INFO", "event": "observation", "frame": "00320-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:51:59.699+00:00", "level": "INFO", "event": "observation", "frame": "00321-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.547}
+{"ts": "2026-11-18T21:52:02.115+00:00", "level": "INFO", "event": "observation", "frame": "00322-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.562}
+{"ts": "2026-11-18T21:52:04.462+00:00", "level": "INFO", "event": "observation", "frame": "00323-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.562}
+{"ts": "2026-11-18T21:52:06.923+00:00", "level": "INFO", "event": "observation", "frame": "00324-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.563}
+{"ts": "2026-11-18T21:52:09.337+00:00", "level": "INFO", "event": "observation", "frame": "00325-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.578}
+{"ts": "2026-11-18T21:52:12.106+00:00", "level": "INFO", "event": "observation", "frame": "00326-poll", "screen": "forced", "reason": "party rows", "capture_s": 0.563}
+{"ts": "2026-11-18T21:52:12.106+00:00", "level": "INFO", "event": "order_resync", "battle": 3, "before": [1, 2, 0], "after": [2, 1, 0]}
+{"ts": "2026-11-18T21:52:12.124+00:00", "level": "INFO", "event": "decision", "battle": 3, "kind": "forced", "choice": "switch2", "degrade": "player", "legal": 1, "dropped": 0, "cg_ms": 16.0, "sent": 1, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:52:12.766+00:00", "level": "INFO", "event": "turn", "battle": 3, "turn": 7, "action": "forced-switch2", "degrade": "player", "reason": "player answer", "pivot": false}
+{"ts": "2026-11-18T21:52:24.203+00:00", "level": "INFO", "event": "observation", "frame": "00327-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.547}
+{"ts": "2026-11-18T21:52:38.061+00:00", "level": "INFO", "event": "log_visit", "battle": 3, "visit": 8, "turn": 7, "rows": 11, "appended": 11, "anchor": "new", "complete": true, "stop": "top_confirmed", "seconds": 13.86, "errors": 0}
+{"ts": "2026-11-18T21:52:38.090+00:00", "level": "INFO", "event": "decision", "battle": 3, "kind": "action", "choice": "move2", "degrade": "player", "legal": 4, "dropped": 0, "cg_ms": 15.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:52:39.316+00:00", "level": "INFO", "event": "turn", "battle": 3, "reason": "player answer", "elapsed_s": 16.5, "log_turn": 7, "visit": 8, "turn": 8, "action": "move2", "degrade": "player", "log_s": 13.86, "first_capture_to_last_tap_s": 16.47, "same_turn_retry": false, "peek": "skipped"}
+{"ts": "2026-11-18T21:52:50.732+00:00", "level": "INFO", "event": "observation", "frame": "00328-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.594}
+{"ts": "2026-11-18T21:52:53.027+00:00", "level": "INFO", "event": "observation", "frame": "00329-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:52:55.418+00:00", "level": "INFO", "event": "observation", "frame": "00330-poll", "screen": "wait", "reason": "Communicating", "capture_s": 0.609}
+{"ts": "2026-11-18T21:52:58.367+00:00", "level": "INFO", "event": "observation", "frame": "00331-poll", "screen": "wait", "reason": "Communicating", "capture_s": 0.578}
+{"ts": "2026-11-18T21:53:01.268+00:00", "level": "INFO", "event": "observation", "frame": "00332-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.578}
+{"ts": "2026-11-18T21:53:04.120+00:00", "level": "INFO", "event": "observation", "frame": "00333-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.562}
+{"ts": "2026-11-18T21:53:06.586+00:00", "level": "INFO", "event": "observation", "frame": "00334-poll", "screen": "action", "reason": "Fight and Pokemon", "capture_s": 0.578}
+{"ts": "2026-11-18T21:53:14.650+00:00", "level": "INFO", "event": "log_visit", "battle": 3, "visit": 9, "turn": 8, "rows": 8, "appended": 8, "anchor": "new", "complete": true, "stop": "top_confirmed", "seconds": 8.06, "errors": 0}
+{"ts": "2026-11-18T21:53:14.676+00:00", "level": "INFO", "event": "decision", "battle": 3, "kind": "action", "choice": "move1", "degrade": "player", "legal": 4, "dropped": 0, "cg_ms": 16.0, "sent": 2, "dropped_replies": 0, "attempt": 1}
+{"ts": "2026-11-18T21:53:15.885+00:00", "level": "INFO", "event": "turn", "battle": 3, "reason": "player answer", "elapsed_s": 10.7, "log_turn": 8, "visit": 9, "turn": 9, "action": "move1", "degrade": "player", "log_s": 8.06, "first_capture_to_last_tap_s": 10.7, "same_turn_retry": false, "peek": "skipped"}
+{"ts": "2026-11-18T21:53:27.273+00:00", "level": "INFO", "event": "observation", "frame": "00335-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.578}
+{"ts": "2026-11-18T21:53:29.611+00:00", "level": "INFO", "event": "observation", "frame": "00336-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.547}
+{"ts": "2026-11-18T21:53:32.153+00:00", "level": "INFO", "event": "observation", "frame": "00337-poll", "screen": "wait", "reason": "battle message", "capture_s": 0.547}
+{"ts": "2026-11-18T21:53:34.388+00:00", "level": "INFO", "event": "observation", "frame": "00338-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.547}
+{"ts": "2026-11-18T21:53:36.723+00:00", "level": "INFO", "event": "observation", "frame": "00339-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.563}
+{"ts": "2026-11-18T21:53:39.009+00:00", "level": "INFO", "event": "observation", "frame": "00340-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.547}
+{"ts": "2026-11-18T21:53:41.756+00:00", "level": "INFO", "event": "observation", "frame": "00341-poll", "screen": "result", "reason": "WON/LOST banner", "capture_s": 0.578}
+{"ts": "2026-11-18T21:53:41.769+00:00", "level": "INFO", "event": "battle_end", "battle": 3, "outcome": "loss", "source": "result screen", "completed": 3, "played": 3, "degrade": {"player": 11}}
+{"ts": "2026-11-18T21:53:44.614+00:00", "level": "INFO", "event": "observation", "frame": "00342-poll", "screen": "result", "reason": "WON/LOST banner", "capture_s": 0.547}
+{"ts": "2026-11-18T21:53:47.268+00:00", "level": "INFO", "event": "observation", "frame": "00343-poll", "screen": "transition", "reason": "sparse text", "capture_s": 0.578}
+{"ts": "2026-11-18T21:53:49.825+00:00", "level": "INFO", "event": "observation", "frame": "00344-poll", "screen": "rewards", "reason": "rank and VP", "capture_s": 0.547}
+{"ts": "2026-11-18T21:53:49.825+00:00", "level": "INFO", "event": "rank", "tier": "Master Ball", "rank": null, "placement": 79370, "rating": 1629.402}
+{"ts": "2026-11-18T21:53:52.490+00:00", "level": "INFO", "event": "observation", "frame": "00345-poll", "screen": "options", "reason": "post-battle options", "capture_s": 0.562}
+{"ts": "2026-11-18T21:53:52.490+00:00", "level": "INFO", "event": "session_done", "completed": 3, "played": 3}
+{"ts": "2026-11-18T21:53:52.567+00:00", "level": "INFO", "event": "run_end", "ending": "completed", "completed": 3, "played": 3, "outcomes": ["win", "loss", "loss"], "restarts": 2, "run_dir": "C:\\Users\\geral\\Code\\pokemon_champions\\pcsa-controller\\output\\runs\\20261118-162900-neural-148", "cg": {"start": {"status": {"battle": null, "held": true, "ended": false, "restarts": 0, "messages": 0, "open_request": null, "anomalies": [], "corrections": [], "player": "neural:league-20261118-g-iter-00148.pt", "player_status": {"name": "neural:league-20261118-g-iter-00148.pt", "model_id": "C:\\Users\\geral\\Code\\pokemon_champions\\pcsa-controller\\output\\models\\league-20261118-g-iter-00148.pt", "model_hash": "f717bff16d27f62c", "checkpoint": "C:\\Users\\geral\\Code\\pokemon_champions\\pcsa-controller\\output\\models\\league-20261118-g-iter-00148.pt", "contract": "0.6", "layout_ok": true, "mismatch": [], "allow_mismatch": false, "fallback_player": "tower", "mode": "argmax", "battle": {"decisions": 0, "policy_calls": 0, "fallbacks": 0, "fallback_reasons": {}, "slow": 0, "reused": 0, "observed": 0, "ms_median": null, "ms_max": null}, "total": {"decisions": 0, "policy_calls": 0, "fallbacks": 0, "fallback_reasons": {}, "slow": 0, "reused": 0, "observed": 0, "ms_median": null, "ms_max": null}, "handed_to_fallback": false, "warmup_ms": [11.7, 6.0]}, "contract": "0.9", "version": "0.4.0"}, "problems": []}, "model_fallbacks": 0, "battles": {"20261118T163126-617400e8": {"decisions": 8, "fallbacks": 0, "reasons": {}, "ms_median": 7.965, "ms_max": 12.37}, "20261118T163651-924e3595": {"decisions": 13, "fallbacks": 0, "reasons": {}, "ms_median": 9.67, "ms_max": 12.44}, "20261118T164551-f22f626f": {"decisions": 12, "fallbacks": 0, "reasons": {}, "ms_median": 7.36, "ms_max": 11.55}}}}

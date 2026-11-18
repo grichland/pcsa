@@ -1,0 +1,79 @@
+# Pokemon Champions battle log (Ranked Singles)
+# format: pcsa-battle-log/1
+battle_id: 20261118T163126-617400e8
+battle_number: 1
+started: 2026-11-18 16:31:26
+own_team: Team 2
+own_rank_before: tier=Master Ball; rank=4; placement=68891; rating=1646.544
+own_rank_after: unknown
+team_requested: Hippowdon (roster row 1), Metagross (roster row 2), Primarina (roster row 5)
+lead_observed: Hippowdon
+opponents_seen: Meganium, Swampert, Hydreigon
+opponent_preview: Blaziken, Meganium, Gholdengo, Swampert, Hydreigon, Glimmora
+outcome: win
+outcome_source: result screen
+seed: 1888494232
+turns_collected: 1, 2, 3, 4, 5
+
+=== Turn 1 ===
+[-] sent out Meganium!
+[-] Go! Hippowdon!
+[Ability] Hippowdon’s Sand Stream
+[-] A sandstorm kicked up!
+[-] The opposing Meganium’s Meganiumite is reacting to ’s Omni Ring!
+[Mega Evolution] The opposing Meganium has Mega Evolved into Mega Meganium!
+[Move] The opposing Meganium used Solar Beam!
+[-] The opposing Meganium absorbed light!
+[Ability] Meganium’s Mega Sol
+[HP Lost] Hippowdon’s HP: 215 → 0
+[-] It’s super effective!
+[Fainted] Hippowdon fainted!
+[-] The opposing Meganium is buffeted by the sandstorm!
+[HP Lost] Meganium’s HP: 100% → 94%
+[-] Go! Metagross!
+# controller: chose move 3 (yawn)
+# controller: forced replacement: sent in Metagross
+
+=== Turn 2 ===
+[-] Metagross’s Metagrossite is reacting to ’s Omni Ring!
+[Mega Evolution] Metagross has Mega Evolved into Mega Metagross!
+[Move] Metagross used Meteor Mash!
+[HP Lost] Meganium’s HP: 94% → 0%
+[-] It’s super effective!
+[-] Metagross’s Attack rose!
+[Fainted] The opposing Meganium fainted!
+[-] sent out Swampert!
+# controller: chose move 3 (meteormash) with Mega Evolution
+
+=== Turn 3 ===
+[Move] Metagross used Earthquake!
+[HP Lost] Swampert’s HP: 100% → 58%
+[Move] The opposing Swampert used Yawn!
+[-] Metagross grew drowsy!
+# controller: chose move 2 (earthquake)
+
+=== Turn 4 ===
+[Move] Metagross used Earthquake!
+[HP Lost] Swampert’s HP: 58% → 20%
+[Held Item] Swampert’s Sitrus Berry
+[HP Restored] Swampert’s HP: 20% → 44%
+[Move] The opposing Swampert used Stealth Rock!
+[-] Pointed stones float in the air on your side!
+[-] Metagross fell asleep!
+# controller: chose move 2 (earthquake)
+
+=== Turn 5 ===
+[-] Metagross is fast asleep.
+[Move] The opposing Swampert used Flip Turn!
+[HP Lost] Metagross’s HP: 187 → 156
+[-] The opposing Swampert went back to!
+[-] sent out Hydreigon!
+[-] The sandstorm subsided.
+# controller: chose move 2 (earthquake)
+
+=== Turn 6 ===
+# (no log for this turn: turn 6: the final turn is not collectable)
+# controller: chose switch to Primarina
+
+=== Coverage notes ===
+# final_turn: turn 6: the final turn is not collectable

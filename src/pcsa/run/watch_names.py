@@ -1,17 +1,67 @@
-"""Display names for `pcsa watch`, taken from the decision record itself."""
+"""Display names for `pcsa watch`: the team sheet and the record first, then CG's tables (assets/game/cg/*.json)."""
 
 from __future__ import annotations
 
+import json
 import re
+from functools import lru_cache
 
-SPECIES_LINES = {"poke": 3, "switch": 3, "drag": 3, "replace": 3, "detailschange": 3, "-formechange": 3}
-NAME_LINES = {"move": 3, "-ability": 3, "-item": 3, "-enditem": 3}
-TAGGED = re.compile(r"^(?:move|ability|item): (.+)$")
+from pcsa.common import paths
+
+TABLES = ("species", "moves", "items", "abilities")
 ORDER_PARTS = 2
 
 
 def to_id(text: str) -> str:
     return re.sub(r"[^a-z0-9]", "", str(text).lower())
+
+
+def _table(kind: str) -> dict:
+    try:
+        data = json.loads((paths.assets_dir() / "game" / "cg" / f"{kind}.json").read_text(encoding="utf-8"))
+        table = data[kind]
+    except (OSError, ValueError, KeyError, TypeError):  # the page still works: ids are shown with a capital
+        return {}
+    return table if isinstance(table, dict) else {}
+
+
+@lru_cache(maxsize=1)
+def game_names() -> dict[str, str]:
+    """id -> written name of every species, move, item and ability in CG's tables; {} when they cannot be read."""
+    out: dict[str, str] = {}
+    for kind in TABLES:
+        for key, entry in _table(kind).items():
+            if isinstance(entry, dict) and isinstance(entry.get("name"), str):
+                out.setdefault(str(key), entry["name"])
+    return out
+
+
+@lru_cache(maxsize=1)
+def _moves_pp() -> dict[str, int]:
+    out = {}
+    for key, entry in _table("moves").items():
+        pp = entry.get("pp") if isinstance(entry, dict) else None
+        if isinstance(pp, int) and not isinstance(pp, bool):
+            out[str(key)] = pp
+    return out
+
+
+def max_pp(move: str) -> int | None:
+    return _moves_pp().get(to_id(move))
+
+
+@lru_cache(maxsize=1)
+def _species_types() -> dict[str, list[str]]:
+    out = {}
+    for key, entry in _table("species").items():
+        types = entry.get("types") if isinstance(entry, dict) else None
+        if isinstance(types, list):
+            out[str(key)] = [str(t) for t in types]
+    return out
+
+
+def species_types(species: str) -> list[str]:
+    return list(_species_types().get(to_id(species), []))
 
 
 def own_sets(export: str | None) -> dict[str, dict]:
@@ -30,46 +80,29 @@ def own_sets(export: str | None) -> dict[str, dict]:
     return sets
 
 
-def _protocol_names(protocol) -> list[str]:
-    out = []
-    for line in protocol if isinstance(protocol, list) else []:
-        parts = line.split("|") if isinstance(line, str) else []
-        kind = parts[1] if len(parts) > 1 else ""
-        if kind in SPECIES_LINES and len(parts) > SPECIES_LINES[kind]:
-            out.append(parts[SPECIES_LINES[kind]].split(",")[0])
-        elif kind in NAME_LINES and len(parts) > NAME_LINES[kind]:
-            out.append(parts[NAME_LINES[kind]])
-        out += [m.group(1) for part in parts[2:] if (m := TAGGED.match(part.strip()))]
-    return out
-
-
-def _request_names(request) -> list[str]:
-    request = request if isinstance(request, dict) else {}
-    out = []
-    for active in request.get("active") or []:
-        moves = active.get("moves") if isinstance(active, dict) else None
-        out += [m["move"] for m in moves or [] if isinstance(m, dict) and isinstance(m.get("move"), str)]
-    side = request.get("side")
-    for member in (side.get("pokemon") if isinstance(side, dict) else None) or []:
-        if isinstance(member, dict) and isinstance(member.get("details"), str):
-            out.append(member["details"].split(",")[0])
-    return out
-
-
 def names_of(data: dict) -> dict[str, str]:
-    """id -> written name, for every species, move, item and ability the record spells out."""
-    found = _protocol_names(data.get("protocol")) + _request_names(data.get("request"))
-    export = data.get("own_export")
+    """id -> written name, for every species, move, item and ability the record's team sheet spells out."""
+    found: list[str] = []
+    export = data.get("own_export") if isinstance(data, dict) else None
     for name, sheet in own_sets(export if isinstance(export, str) else None).items():
         found += [name, sheet["item"], sheet["ability"], *sheet["moves"]]
-    own = data.get("own_names")
+    own = data.get("own_names") if isinstance(data, dict) else None
     found += [n for n in own if isinstance(n, str)] if isinstance(own, list) else []
     return {to_id(name): name.strip() for name in found if name and name.strip()}
 
 
 def shown(text: str, names: dict[str, str]) -> str:
-    """The written name of an id, or the text unchanged when the record never spells it out."""
-    return names.get(to_id(text), text)
+    """The written name of an id (the record's, else CG's), or the text unchanged when neither knows it."""
+    key = to_id(text)
+    return names.get(key) or game_names().get(key) or text
+
+
+def pretty(ident: str, names: dict[str, str] | None = None) -> str:
+    """The written name of an id; an id no table knows is shown with a capital; '' for an empty slot."""
+    if not ident:
+        return ""
+    found = shown(ident, names or {})
+    return found if found != ident else ident[:1].upper() + ident[1:]
 
 
 def order_view(order: str, names: dict[str, str]) -> dict:
