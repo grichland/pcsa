@@ -1,4 +1,4 @@
-"""Saved results of pcsa's own code (tools/data/dump_cases.py, dump_parity.py), loaded once."""
+"""Saved reference results (recorded before the Champions Gym port), loaded once."""
 
 from __future__ import annotations
 

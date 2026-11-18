@@ -1,4 +1,4 @@
-"""Level-50 stat arithmetic under Champions rules, natures, and the current form of a tracked Pokémon."""
+"""Level-50 stat arithmetic under Champions rules, and natures."""
 
 from __future__ import annotations
 
@@ -6,8 +6,7 @@ import itertools
 from functools import lru_cache
 
 from pcsa.battle import game
-from pcsa.battle.game import STATS, species_entry
-from pcsa.battle.ids import to_id
+from pcsa.battle.game import STATS
 
 IV = 31
 NATURE_DOWN, NATURE_NEUTRAL, NATURE_UP = 90, 100, 110
@@ -60,66 +59,3 @@ def nature_name(nature: dict[str, int]) -> str | None:
         if entry["plus"] == plus and entry["minus"] == minus:
             return entry["name"]
     return None
-
-
-def form_of(mon, battle=None) -> tuple[str, bool]:
-    """(dex key of the current form, is a Mega); with the Tracker, the form its lines show wins."""
-    if battle is not None:
-        from pcsa.battle.moves import observed_form
-
-        observed = observed_form(battle, mon)
-        if observed != mon.species:
-            return observed, game.is_mega(observed)
-    busted = any(getattr(e, "name", e) == "DISGUISE" for e in mon.effects)
-    return form_from_species(mon.species, mon.base_stats, busted)
-
-
-def form_from_species(species: str, base_stats: dict, disguise_busted: bool = False) -> tuple[str, bool]:
-    """The pure part of form_of: a Mega entry is found by its base stats (a tracker may keep the base species)."""
-    if game.base_name(species) == "mimikyu" and disguise_busted:
-        return "mimikyubusted", False
-    if game.is_mega(species):
-        return species, True
-    for key in game.megas()[0].get(game.base_name(species), []):
-        if species_entry(key)["baseStats"] == base_stats:
-            return key, True
-    return species, False
-
-
-def our_stats(mon, form: str, is_mega: bool) -> tuple[dict, dict]:
-    """Exact stats and stat points; a Mega's stats from the solved points."""
-    stats = dict(mon.stats or {})
-    if not stats.get("hp") and mon.max_hp:
-        stats["hp"] = mon.max_hp
-    solved = solve_points(species_entry(mon.species).get("baseStats") or mon.base_stats, stats)
-    if is_mega and solved:
-        points, nature = solved
-        base = species_entry(form)["baseStats"]
-        stats = {
-            s: (hp_value(base[s], points[s]) if s == "hp" else stat_value(base[s], points[s], nature[s]))
-            if points[s] is not None
-            else None
-            for s in STATS
-        }
-    exact = {s: (int(v) if v is not None else None) for s, v in stats.items()}
-    return exact, (solved[0] if solved else {})
-
-
-def known_ability(battle, mon) -> str:
-    """The ability a log row showed (or a Mega's single ability); never a guess from the species."""
-    if not hasattr(battle, "replay_data"):
-        raise NotImplementedError("stats.known_ability needs a Tracker; use known_ability_from")
-    if any(member is mon for member in battle.team.values()):
-        return to_id(mon.ability or "")
-    form, mega = form_of(mon)
-    return known_ability_from(form, mega, mon.name, battle.replay_data)
-
-
-def known_ability_from(form: str, is_mega: bool, name: str, lines) -> str:
-    """The pure part of known_ability for an opponent: a Mega's single ability, else the last -ability line."""
-    if is_mega:
-        return to_id(next(iter(species_entry(form).get("abilities", {}).values()), ""))
-    for parts in reversed(list(lines)):
-        if len(parts) > 3 and parts[1] == "-ability" and parts[2].endswith(": " + name):
-            return to_id(parts[3])
-    return ""

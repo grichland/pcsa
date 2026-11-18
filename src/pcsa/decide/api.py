@@ -1,6 +1,6 @@
 """The one interface between the controller and whatever decides. Standard library only.
 
-Terms follow poke-env and CG: Player, Order, choose_move, teampreview. Unread screen fields are None, never a
+Terms follow CG: Player, Order, choose_move, teampreview. Unread screen fields are None, never a
 guess. Legal choices are the Offer (what the screen shows); Hints are the controller's reading of the log and
 never narrow the Offer.
 """
@@ -100,7 +100,6 @@ class Request:
     events: tuple[dict, ...] = ()  # the battle's LIVE events so far, battle_start first
     live: dict | None = None  # the LIVE decision_request this decision stands for
     history: tuple[dict, ...] = ()  # earlier decisions the Player was asked: {events, decision_request, [fallback]}
-    showdown_lines: tuple[str, ...] | None = None  # optional, controller-internal
 
 
 @dataclass(frozen=True)

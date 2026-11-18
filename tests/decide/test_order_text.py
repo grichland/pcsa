@@ -1,4 +1,4 @@
-"""The record's '/choose' strings and legal list equal pcsa's on every reference decision."""
+"""The record's '/choose' strings and legal list equal the recorded ones on every reference decision."""
 
 from __future__ import annotations
 

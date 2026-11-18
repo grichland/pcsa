@@ -1,4 +1,4 @@
-"""Stat arithmetic and nature names (test_nature_names from pcsa's tests/live/test_team_read_points.py)."""
+"""Stat arithmetic and nature names."""
 
 from __future__ import annotations
 

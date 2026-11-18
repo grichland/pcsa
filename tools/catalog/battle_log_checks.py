@@ -32,7 +32,7 @@ NOTES = {
         "matched a lock search."
     ),
     "N11": (
-        "'X protected itself!' is shown. Per plan F29, pcsa's translator chooses not to write it as "
+        "'X protected itself!' is shown. It is sent to Champions Gym as a `protect` event, not as "
         "-activate."
     ),
 }

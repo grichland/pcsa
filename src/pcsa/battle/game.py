@@ -23,7 +23,7 @@ ABILITY_MATCH_FLOOR_ANY = 0.9
 ITEM_MATCH_FLOOR = 0.9
 MATCH_MARGIN = 0.08
 NO_ABILITY = "noability"  # CG's placeholder, never a log row's ability
-EXTRA_SPECIES_KEYS = ("otherFormes", "cosmeticFormes")  # in the dump, not in pcsa's entries
+EXTRA_SPECIES_KEYS = ("otherFormes", "cosmeticFormes")  # in the dump, not in the species entries
 
 
 def _asset(name: str) -> dict:
@@ -156,7 +156,7 @@ def canonical_ability(value: str, species: str | None = None) -> str | None:
         mons = [m for m in dex().values() if to_id(m.get("baseSpecies") or m.get("name", "")) == base]
     if mons:
         choices = {to_id(a): a for m in mons for a in m.get("abilities", {}).values()}
-    else:  # every legal ability competes (pcsa: every ability in poke-env's whole dex)
+    else:  # every legal ability competes
         choices = {key: e["name"] for key, e in cg_table("abilities").items() if key != NO_ABILITY}
     return _closest(to_id(value), choices, ABILITY_MATCH_FLOOR if species is not None else ABILITY_MATCH_FLOOR_ANY)
 

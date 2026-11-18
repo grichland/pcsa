@@ -46,7 +46,7 @@ class Team:
 
 @dataclass
 class ExportMember:
-    """The fields of poke-env's TeambuilderPokemon that the export uses."""
+    """One member's fields as the team export writes them."""
 
     nickname: str | None = None
     species: str | None = None

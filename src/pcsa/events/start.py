@@ -11,8 +11,8 @@ from pcsa.battle.ids import to_id
 from pcsa.events.live_ids import VERSION, Teams, ability_id, base_id, item_id, move_id, species_id
 
 STATS = ("hp", "atk", "def", "spa", "spd", "spe")
-INFERRED = "inferred from"
-MOVES_PER_SET = 4  # pcsa's wording for a stat point that was computed, not read
+INFERRED = "inferred from"  # the wording for a stat point that was computed, not read
+MOVES_PER_SET = 4
 
 
 def _member_set(sheet: dict, team: dict) -> tuple[dict, list[str]]:

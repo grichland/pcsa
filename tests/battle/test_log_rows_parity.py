@@ -1,4 +1,4 @@
-"""Every distinct recorded row text parses to pcsa's event (kind, side, name, data)."""
+"""Every distinct recorded row text parses to the recorded reference event (kind, side, name, data)."""
 
 from __future__ import annotations
 

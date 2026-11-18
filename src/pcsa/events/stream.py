@@ -161,7 +161,7 @@ class _Builder:
     def visit(self, v: dict) -> None:
         for g in visit_gaps(v):
             self.event(g)
-        queue = self.queues.get(v.get("turn"), deque())
+        queue = self.queues.get(v.get("turn"), deque())  # pyright: ignore[reportCallIssue, reportArgumentType]
         for _ in range(int(v.get("appended") or 0)):
             if not queue:
                 self.out.counts["visit_rows_missing"] += 1
@@ -234,7 +234,7 @@ class _Builder:
             self.release("battle_end")
         self.new_turn(self.last)
         self.close_turn(self.last)
-        result = RESULTS.get(self.rec.meta.get("outcome"), "unknown")
+        result = RESULTS.get(str(self.rec.meta.get("outcome")), "unknown")
         self.event({"k": "end", "result": result})
         self.flush()
         self.send({"v": VERSION, "battle": self.out.tag, "type": "battle_end", "result": result})

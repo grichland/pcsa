@@ -1,7 +1,7 @@
 """decision_request, the order answer, refusals and fallbacks from pcsa decision records (LIVE.md).
 
-A record's `order` is pcsa's Showdown order ("/choose move earthquake", "/choose move X mega",
-"/choose switch Garchomp") or, when there was no tracked Battle, a screen label ("move2", "mega+move0",
+A record's `order` is the '/choose' text ("/choose move earthquake", "/choose move X mega",
+"/choose switch Garchomp") or, in records made from the screen alone, a screen label ("move2", "mega+move0",
 "switch1": a move row of the active Pokemon, a slot of the brought three).
 """
 
@@ -70,7 +70,7 @@ def kind_of(record: dict) -> str:
 def refused_by(record: dict, previous: dict | None) -> bool:
     """True when this record's screen came back after `previous` (a refusal or a tap that did not register).
 
-    Action: pcsa's `same_turn` (the action screen came back in the same log turn with no new rows).
+    Action: the record's `same_turn` (the action screen came back in the same log turn with no new rows).
     Replace: `attempt` > 1 (the replacement screen came back in the same turn)."""
     if previous is None or previous.get("kind") != record.get("kind"):
         return False
@@ -92,8 +92,8 @@ def repeat_of(record: dict, previous: dict | None, previous_order: dict | None) 
 def fallback_reason(record: dict) -> str | None:
     """Why the controller chose instead of the player, or None when the player answered.
 
-    `deadline`: the deadline was nearly gone and pcsa took the first legal action without asking.
-    `player_fallback`: the player had no tracked Battle (rung screen or legal_random) and its fallback chose.
+    `deadline`: the deadline was nearly gone and the first legal action was taken without asking.
+    `player_fallback`: the record's rung was screen or legal_random and the fallback chose.
     """
     notes = record.get("notes") or {}
     if record.get("degrade") == "emergency":
@@ -128,7 +128,7 @@ def answer(record: dict, order: dict) -> dict:
 
 
 def game_turn(record: dict) -> int | None:
-    """The turn a `turn` decision was for: the tracker's turn, else the log turn read plus one."""
+    """The turn a `turn` decision was for: the recorded turn, else the log turn read plus one."""
     if isinstance(record.get("turn"), int):
         return record["turn"]
     if isinstance(record.get("log_turn"), int):

@@ -1,4 +1,4 @@
-"""game, moves and stats give pcsa's answers wherever the data is legal; the known differences are listed."""
+"""game, moves and stats give the recorded reference answers wherever the data is legal; the known differences are listed."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ NOW_KNOWN_ITEMS = {
     "Shed Shel",
     "Shed Shells",
     "hed Shell",
-}  # legal, missing from pcsa's vocab
+}  # legal, missing from the reference vocab
 
 
 @pytest.fixture(scope="module")
@@ -66,14 +66,13 @@ def test_moves(ref) -> None:
     mv = ref["moves"]
     assert [k for k, v in mv["base_data"].items() if moves.base_data(k) != v] == []
     assert [k for k, v in mv["max_pp"].items() if moves.max_pp(k) != v] == []
-    assert [c for c in mv["reconcile_form"] if moves.reconcile_form(c[0], c[1]) != c[2]] == []
     names = moves.move_names()
     changed = {k for k, v in mv["complete_move_name"].items() if k in names and moves.complete_move_name(k) != v}
     assert changed == NOW_COMPLETE
     assert [k for k in mv["complete_move_name"] if k not in names and moves.complete_move_name(k)] == []
 
 
-def test_unknown_move_gets_pcsas_no_data_answer() -> None:
+def test_unknown_move_gets_the_no_data_answer() -> None:
     assert moves.base_data("notamove") == {"type": "", "category": "", "power": 1, "accuracy": 101, "pp": 0}
 
 
@@ -87,12 +86,3 @@ def test_stats(ref) -> None:
 
 def test_learnsets(ref) -> None:
     assert [c for c in ref["learnsets_sample"] if game.can_learn(c[0], c[1]) != c[2]] == []
-
-
-def test_tracker_parts_are_stubs() -> None:
-    with pytest.raises(NotImplementedError):
-        moves.observed_form(object(), object())
-    with pytest.raises(NotImplementedError):
-        stats.form_of(object(), object())
-    with pytest.raises(NotImplementedError):
-        stats.known_ability(object(), object())

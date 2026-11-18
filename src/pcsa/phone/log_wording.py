@@ -89,7 +89,8 @@ def wordings() -> tuple[Wording, ...]:
     out = []
     for row in rows:
         text = row["text"]
-        tail = TAIL.search(text)[0]
+        found = TAIL.search(text)
+        tail = found[0] if found else ""
         body = text[: len(text) - len(tail)] if tail else text
         holes, patterns = _compile(body)
         category = "" if row["category"] == "-" else row["category"]

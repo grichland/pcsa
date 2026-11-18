@@ -1,4 +1,4 @@
-"""ids.to_id equals poke-env's to_id_str on every recorded and asset name."""
+"""ids.to_id gives the recorded id for every recorded and asset name."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from pcsa.battle.ids import to_id
 from tests.battle.data_files import load
 
 
-def test_to_id_matches_poke_env_on_every_name() -> None:
+def test_to_id_matches_every_recorded_id() -> None:
     cases = load("to_id_cases.json.gz")["cases"]
     assert len(cases) > 15000
     assert [(text, want) for text, want in cases if to_id(text) != want] == []

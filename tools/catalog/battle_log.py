@@ -1,6 +1,6 @@
-"""D1 generator: measures every recorded battle-log row with pcsa's parser.
+"""Measures every recorded battle-log row with the row parser.
 
-Writes docs/battle-log.md and docs/investigation/catalog/battle_log.json. Read-only on pcsa.
+Writes docs/battle-log.md and output/catalog/battle_log.json. Only reads the runs.
 """
 
 from __future__ import annotations
@@ -15,19 +15,15 @@ from pathlib import Path
 sys.dont_write_bytecode = True
 
 ROOT = Path(__file__).resolve().parents[2]
-PCSA = ROOT.parent / "pcsa"
-if str(PCSA / "src") not in sys.path:
-    sys.path.insert(0, str(PCSA / "src"))
+if str(ROOT / "src") not in sys.path:
+    sys.path.insert(0, str(ROOT / "src"))
 
 from pcsa.battle.log_rows import parse_row, rows_from_texts, who  # noqa: E402
 
 from battle_log_checks import never_shown  # noqa: E402
 from battle_log_md import render  # noqa: E402
 
-COMMAND = (
-    "$env:PYTHONPATH='C:\\Users\\geral\\Code\\pokemon_champions\\pcsa\\src'; $env:PYTHONDONTWRITEBYTECODE=1; "
-    "C:\\Users\\geral\\Code\\pokemon_champions\\pcsa\\.venv\\Scripts\\python.exe -B tools\\catalog\\battle_log.py"
-)
+COMMAND = "uv run python tools\\catalog\\battle_log.py"
 # Data keys listed in full as sub-types (names, numbers and move names are not sub-types).
 NOT_SUBTYPE = {"before", "after", "count", "amount", "trainer", "target", "target_name", "title", "move"}
 # Reasons that come from the row parser itself; the rest are translator reasons.
@@ -39,7 +35,7 @@ def battle_dirs(runs: Path) -> list[Path]:
 
 
 def load_battle(path: Path) -> list[dict]:
-    """Rows of one battle's log.jsonl, parsed per turn with pcsa's parser."""
+    """Rows of one battle's log.jsonl, parsed per turn."""
     by_turn: dict[int, list[dict]] = defaultdict(list)
     with (path / "log.jsonl").open(encoding="utf-8") as stream:
         for line in stream:
@@ -228,9 +224,9 @@ def unknown_rows(rows: list[dict]) -> list[dict]:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--runs", type=Path, default=PCSA / "output" / "runs")
+    ap.add_argument("--runs", type=Path, default=ROOT / "output" / "runs")
     ap.add_argument("--md", type=Path, default=ROOT / "docs" / "battle-log.md")
-    ap.add_argument("--json", type=Path, default=ROOT / "docs" / "investigation" / "catalog" / "battle_log.json")
+    ap.add_argument("--json", type=Path, default=ROOT / "output" / "catalog" / "battle_log.json")
     args = ap.parse_args()
     dirs = battle_dirs(args.runs)
     with_log = [p for p in dirs if (p / "log.jsonl").is_file()]

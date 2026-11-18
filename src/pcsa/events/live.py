@@ -57,7 +57,7 @@ class Converter:
         out = {"mon": ident}
         return {"side": side, **out} if side else out
 
-    def _named(self, name: str, text: str) -> dict:
+    def _named(self, name: str | None, text: str) -> dict:
         """Side for a row whose text names no side (Held Item, Ability): the colour of its category pill."""
         if self._pill is None:
             self.side_unknown.append(text)
@@ -297,7 +297,7 @@ class Converter:
             return {"k": "mega_stone", **mon, "stone": self._item(d["stone"], text)}
         if kind == "mega":
             out = {"k": "mega", **mon}
-            form = mega_form(d["mega"], e.name)
+            form = mega_form(d["mega"], e.name) if e.name else None
             return {**out, "form": form} if form else out
         return None
 

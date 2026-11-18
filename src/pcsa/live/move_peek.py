@@ -148,7 +148,7 @@ def remember(b: BattleRecord, t: Turn, peek: Observation, was_pending: bool) -> 
 
 
 def settle_mega(b: BattleRecord, t: Turn, peek: Observation | None, why: str | None) -> None:
-    """The Mega bookkeeping of a turn, with or without the look (pcsa's rules)."""
+    """The Mega bookkeeping of a turn, with or without the look ."""
     was_pending = b.mega_pending
     b.log_doubts = max(b.log_doubts, unread(t.events))
     if why is not None:

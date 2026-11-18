@@ -1,4 +1,4 @@
-"""The '/choose' strings of the decision record, written exactly as pcsa writes them (poke-env's order message).
+"""The '/choose' strings of the decision record: 'move <id> [mega]' and 'switch <Name>'.
 
 A move is "/choose move <id>", with " mega" appended for Mega Evolution; recharge is "/choose move 1". A switch is
 "/choose switch <Name>". A move row with no id at all is written as its label ("move2"), as pcsa writes an order
@@ -32,7 +32,7 @@ def order_text(order: Order, offer: Offer) -> str:
 
 
 def legal_orders(offer: Offer) -> list[Order]:
-    """Everything the screen offers, in pcsa's legal-list order."""
+    """Everything the screen offers, in the record's legal-list order."""
     orders = [Order.switch(s.name) for s in offer.switches if s.name != offer.leaving]
     if offer.forced:
         return orders

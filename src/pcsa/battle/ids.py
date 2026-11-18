@@ -1,4 +1,4 @@
-"""Showdown ids: the same rule as poke-env's to_id_str, so ids match pcsa's records."""
+"""Showdown-style ids (lower case, letters and digits only): the ids Champions Gym and the records use."""
 
 from __future__ import annotations
 
