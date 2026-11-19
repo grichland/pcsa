@@ -103,6 +103,17 @@ when the pinned CG version changes.
 that battle's memory and returns the policy; the belief heads run in the same forward pass and change no
 other output.
 
+`network/search.py` (the tree), `network/worlds.py` (the guesses of their hidden team) and
+`network/searching.py` (the policy's side) are the optional decision-time search (`cg.search` in
+`config/agent.yaml`, off by default; Champions Gym 0.5.0). `startup.resolved` puts the section into the policy's arguments and lifts the shell's
+time limits above the search time; `cg/serve.py` hands the policy the request's `deadline_ms` and the
+Session's `game` (an engine Game at the open request from a guess at their three). At a turn request the
+policy, after its own forward pass and the rule masks, samples the guesses from its belief outputs, runs one
+tree per guess (simultaneous moves, regret matching from the network's priors, the network's value at new
+nodes, each with the memory of its path) and returns the log of the averaged root strategy as its scores, so
+the shell's argmax plays the search's pick. Any failure, too little time or too few simulations leaves the
+network's scores as they were; the reason is in `net.search.why`.
+
 ## Output
 
 Everything the package writes lives under `output/` (`common/paths.py`). A run is
@@ -138,6 +149,10 @@ net     the network's outputs (absent on a fallback or a replayed request):
         value, tau, pi[11], score[11], rows[11], cols[13], p_opp[13], matrix[11][13],
         closed (our actions a rule mask closed), opp_seen[4] (belief_slots checkpoints only: which of
         their move columns were shown; the others are named by the belief head),
+        search (turn requests with cg.search.enabled): used, why (when the model's answer stood), sims,
+                worlds, dropped, dropped_why, depth, nodes, batches, ms, budget_ms, model_pick, pick, changed,
+                strategy[11], visits[11], q[11][13] (the root's payoff table by network column, null where
+                no guess had that pair), p_them[13], p_other (their play outside the columns),
         belief[6]: species, brought, lead (preview only), item [[id, p] x3], ability [[id, p] x3],
                    moves [[id, p] up to 8]
 ```

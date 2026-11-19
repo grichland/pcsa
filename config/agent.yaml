@@ -30,6 +30,16 @@ cg:                       # used when decide.player is cg (LIVE 0.7-0.9 messages
   timeout_s: 8.0          # per call, and never past the decision's deadline less the tap reserve
   start_timeout_s: 60.0   # CG is made and its status checked before the first battle
   # Never set allow_mismatch or allow_contract in the player_args.
+  search:                 # decision-time search of the neural player at turn requests (pcsa.network.search)
+    enabled: false        # true: search; needs Champions Gym 0.5.0, else every turn records why and the model plays
+    ms: 1500              # time per turn request; never past the request's deadline (less the tap reserve)
+    worlds: 6             # guesses of their hidden team, one tree each
+    depth: 3              # turns looked ahead
+    outcomes: 3           # random outcomes drawn per pair of actions
+    c: 1.5                # weight of the network's priors in the choice of what to try
+    n0: 1                 # weight of the network's matrix cell in each pair's value
+    batch: 16             # positions per network call
+    min_sims: 64          # fewer simulations than this in total: the model's own answer is played
 
 device:
   serial: null            # null: the single authorized device

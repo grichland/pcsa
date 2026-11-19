@@ -23,6 +23,7 @@ import sys
 from typing import Any
 
 from pcsa.cg.view import view
+from pcsa.common.clock import precise_now
 
 try:
     from champions_gym import live as _live
@@ -93,6 +94,8 @@ class Proxy:
         if isinstance(out, dict) and isinstance(info, dict):
             try:
                 out = {**out, "run": _plain(info.get("run")), "iteration": _plain(info.get("iteration"))}
+                if "search" in info:
+                    out["search"] = _plain(info["search"])
             except (TypeError, ValueError) as error:
                 _say(f"status: run/iteration left out ({error})")
         return out
@@ -143,6 +146,23 @@ class Server:
         self.session.capture_builtin = self.proxy is None
         self.failures = 0
         self.last_failure: str | None = None
+        self.policy: Any = getattr(player, "policy", None) if self.proxy is not None else None
+        if hasattr(self.policy, "game_of") and callable(getattr(self.session, "game", None)):
+            # the search's Games come from the Session (Champions Gym 0.5.0)
+            self.policy.game_of = lambda battle, guess, seed: self.session.game(guess, seed=seed)
+
+    def _deadline(self, message: Any) -> None:
+        """The request's `deadline_ms`, as a clock time, for a policy that searches."""
+        if not hasattr(self.policy, "deadline"):
+            return
+        self.policy.deadline = None
+        if isinstance(message, str):
+            if '"deadline_ms"' not in message:
+                return
+            message = json.loads(message)
+        ms = message.get("deadline_ms") if isinstance(message, dict) else None
+        if isinstance(ms, int | float) and not isinstance(ms, bool) and ms > 0:
+            self.policy.deadline = precise_now() + ms / 1000.0
 
     def _failed(self, what: str, error: BaseException) -> None:
         self.failures += 1
@@ -158,6 +178,7 @@ class Server:
             self.session.captured = None
             if self.proxy is not None:
                 self.proxy.battle = None
+            self._deadline(message)
         except Exception as error:
             self._failed("before the request", error)
             before = None

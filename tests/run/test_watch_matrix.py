@@ -105,6 +105,33 @@ def test_a_row_closed_by_a_rule_mask_is_not_legal() -> None:
     assert matrix_view(small_net())["rule_closed"] == [False] * 11  # type: ignore[index]
 
 
+def test_the_search_note_becomes_the_pages_search_view() -> None:
+    net = small_net()
+    q = [[None] * 13 for _ in range(11)]
+    q[0][0], q[0][4], q[1][0] = 0.4, -0.2, 0.9
+    net["search"] = {
+        "used": True, "why": None, "changed": True, "model_pick": 0, "pick": 1, "sims": 640, "worlds": 6, "dropped": 1,
+        "depth": 4, "nodes": 600, "ms": 1480.0, "budget_ms": 1500.0, "p_other": 0.0, "visits": [200.0, 440.0] + [0.0] * 9,
+        "strategy": [0.3, 0.7] + [0.0] * 9, "q": q, "p_them": [0.5, 0.0, 0.0, 0.0, 0.5] + [0.0] * 8,
+    }  # fmt: skip
+    view = matrix_view(net, order="/choose move swordsdance", action=1)
+    assert view is not None
+    s = view["search"]
+    assert view["chosen"] == 0 and view["played"] == 1  # the network's own row, and the search's
+    assert s["used"] and s["changed"] and (s["sims"], s["worlds"], s["dropped"], s["depth"]) == (640, 6, 1, 4)
+    assert s["probs"] == net["search"]["strategy"] and len(s["cells"]) == 11 and len(s["cells"][0]) == 9
+    assert s["p_cols"][0] == pytest.approx(1.0) and s["cells"][0][0] == pytest.approx(0.1)  # 0.4 and -0.2 folded evenly
+    assert s["cells"][1][0] == pytest.approx(0.5 * 0.9 + 0.5 * -1.0)  # a cell the search never held: the network's
+    assert s["cells"][0][4] == 0.5  # so is a column the search gave nothing
+    net["search"] = {"used": False, "why": "a budget of 12 ms is too small for one pass", "model_pick": 0, "pick": 0}
+    off = matrix_view(net, order="/choose move earthquake", action=0)
+    assert off is not None and off["search"]["used"] is False and "budget" in off["search"]["why"]
+    assert off["search"]["cells"] is None and off["chosen"] == 0 == off["played"]
+    assert matrix_view(small_net())["search"] is None  # type: ignore[index]
+    net["search"] = "x"
+    assert matrix_view(net)["search"] is None  # type: ignore[index]
+
+
 def test_rows_names_and_the_row_played() -> None:
     view = matrix_view(net_of("battle-1/decisions/0002-action.json"), order="/choose move meteormash mega", action=6)
     assert view is not None

@@ -286,6 +286,7 @@ button[data-tip], summary[data-tip] { cursor: pointer; }
 .mx-sc.is-best { color: var(--you-ink); font-weight: 800; background: var(--you-soft); box-shadow: inset 0 0 0 1.5px var(--you-edge); }
 /* LOOK: the lookahead's value per row (matrix_blend); at depth 2 the turn-2 part underneath */
 .mx-lk { display: grid; place-content: center end; justify-items: end; min-width: 0; padding: 0 0.4rem 0 0; border-radius: 0.3rem; font-size: 0.82rem; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink-2); line-height: 1.05; }
+.mx-seg[hidden], .mx-what-label[hidden] { display: none; }
 .mx-lk small { color: var(--muted); font-size: 0.62rem; font-weight: 550; }
 .mx-lk.is-best { color: var(--you-ink); font-weight: 800; background: var(--you-soft); box-shadow: inset 0 0 0 1.5px var(--you-edge); }
 .is-playing .mx-lk { animation: fade .3s ease-out both; animation-delay: var(--d); }

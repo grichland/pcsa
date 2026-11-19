@@ -19,6 +19,11 @@ The rule masks of training (rules.py) are applied to the mask the network reads:
 `max_same_move` turns in a row, at most `max_switches` switches by choice in a row. What was played is recorded
 once per decision: the network's own choice when it answers, corrected by `played` (called by pcsa.cg.serve with
 the action that went out, so a fallback's answer or the second answer after a refusal replaces the first).
+
+With `search` on (searching.py, Champions Gym 0.5.0), a turn request is also searched: the scores returned are the
+log of the search's root strategy, so the shell's argmax is the search's pick, and the extras carry `search`
+(simulations, worlds, time, depth, the root strategy and Q table, the model's pick and the search's). When the
+search cannot run or does too little, the model's answer stands and `search.why` says so.
 """
 
 from __future__ import annotations
@@ -33,9 +38,10 @@ from typing import Any
 import numpy as np
 import torch
 
-from . import cg_adapter, model, rules, vocab
+from . import cg_adapter, model, rules, searching, vocab
 from . import checkpoint as ckpt
 from . import layout as L
+from . import search as mcts
 
 VOCAB_NAMES = {"species": "species", "item": "items", "ability": "abilities", "move": "moves"}  # ours -> CG's
 TOP_ITEMS, TOP_ABILITIES, TOP_MOVES, TOP_PICKS = 3, 3, 8, 5
@@ -93,11 +99,15 @@ class Policy:
     """`checkpoint`: a .pt saved by checkpoint.save. `device`: "cpu" for live play. `threads`: torch CPU threads.
     `requery_refused`: ask the network again after a refused choice instead of the shell reusing the first answer.
     `allow_contract`: load a checkpoint made under another contract version; CG's own check still reports it.
-    `rule_masks`: training's rule masks, with the limits `max_same_move` and `max_switches` (0: no such rule)."""
+    `rule_masks`: training's rule masks, with the limits `max_same_move` and `max_switches` (0: no such rule).
+    `search`: search every turn request (searching.py); `search_ms`, `worlds`, `depth`, `outcomes`, `c`, `n0`,
+    `batch`, `min_sims`, `search_sims` and `search_seed` are its settings (search.SearchConfig)."""
 
     def __init__(self, checkpoint: str, device: str = "cpu", threads: int = 4, requery_refused: bool = False,  # noqa: PLR0913
                  allow_contract: bool = False, rule_masks: bool = True, max_same_move: int = 4,
-                 max_switches: int = 3):  # fmt: skip
+                 max_switches: int = 3, search: bool = False, search_ms: float = 1500.0, worlds: int = 6,
+                 depth: int = 3, outcomes: int = 3, c: float = 1.5, n0: float = 1.0, batch: int = 16,
+                 min_sims: int = 64, search_sims: int = 0, search_seed: int = 0):  # fmt: skip
         torch.set_num_threads(int(threads))
         self.device = device
         lay = cg_adapter.layout()  # the layout from champions_gym.FEATURES, checked against CG
@@ -109,6 +119,11 @@ class Policy:
         self.layout = lay
         self.rule_cfg = rules.RuleConfig(int(max_same_move), int(max_switches)) if rule_masks else None
         self.seats: dict[int, _Seat] = {}
+        cfg = mcts.SearchConfig(float(search_ms), int(worlds), int(depth), int(outcomes), float(c), float(n0),
+                                int(batch), int(min_sims), int(search_sims), int(search_seed))  # fmt: skip
+        self.searcher = searching.Searcher(self, cfg) if search else None
+        self.game_of: Any = None  # (battle, guess, seed) -> (Game, rejected); pcsa.cg.serve sets the Session's
+        self.deadline: float | None = None  # precise_now() by which the open request must be answered
         self.cols = {"species": lay.col(L.F_SPECIES), "moves": lay[L.F_MOVE_ID].columns(),
                      "active": lay.col(L.F_IS_ACTIVE)}  # fmt: skip
         lt = ck["layout"]
@@ -136,6 +151,7 @@ class Policy:
             "belief_slots": bool(self.net.cfg.belief_slots),
             "rule_masks": None if self.rule_cfg is None else
             {"max_same_move": self.rule_cfg.max_same_move, "max_switches": self.rule_cfg.max_switches},
+            "search": mcts.settings(cfg) if search else None,
         }
 
     def _grow(self, need: int) -> model.Memory:
@@ -152,6 +168,8 @@ class Policy:
         with self.lock:
             for s in slots:
                 self.seats.pop(s, None)
+                if self.searcher is not None:
+                    self.searcher.leads.pop(s, None)
             if self.memory is not None:
                 ok = [s for s in slots if s < self.memory.hist.shape[0]]
                 if ok:
@@ -207,6 +225,24 @@ class Policy:
         b["mask"] = mask
         return closed
 
+    def _searched(self, arrays: Any, slots: Sequence[int], kinds: np.ndarray, b: dict, out: dict,  # noqa: PLR0913
+                  battles: Any,
+                  scores: torch.Tensor) -> list[dict | None]:  # fmt: skip
+        """With search on: each turn row searched, its scores replaced by the search's; the notes per row."""
+        notes: list[dict | None] = [None] * len(slots)
+        if self.searcher is None:
+            return notes
+        self.searcher.note_leads(b, kinds, slots)
+        decisions = np.asarray(arrays.decision).reshape(-1)
+        for r, slot in enumerate(slots):
+            if int(kinds[r]) == L.KIND_TURN:
+                battle = battles[r] if battles is not None else None
+                row, notes[r] = self.searcher.run(r, slot, int(decisions[r]), b, out, battle, scores[r])
+                if row is not None:
+                    scores[r, : L.OWN_ACTIONS] = row
+        self.deadline = None
+        return notes
+
     def _record(self, seat: _Seat, action: int) -> None:
         seat.restore()
         if seat.obs is not None:
@@ -231,6 +267,8 @@ class Policy:
             self._close(arrays, b, slots)
             self._forward(b, slots)
             kinds = np.asarray(arrays.kind).reshape(-1)
+            if self.searcher is not None:
+                self.searcher.note_leads(b, kinds, slots)
             for r, (slot, action) in enumerate(zip(slots, actions, strict=False)):
                 seat = self.seats.get(slot)
                 if seat is not None and action is not None and int(kinds[r]) == L.KIND_TURN:
@@ -244,6 +282,7 @@ class Policy:
             out = self._forward(b, slots)
             scores = torch.cat([decide_log(out["pi"]), decide_log(out["preview_pi"])], dim=1).cpu()  # [B, 71]
             kinds = np.asarray(arrays.kind).reshape(-1)
+            searched = self._searched(arrays, slots, kinds, b, out, battles, scores)
             for r, slot in enumerate(slots):  # the shell's argmax, until `played` says what went out
                 seat = self.seats.get(slot)
                 if seat is not None and int(kinds[r]) == L.KIND_TURN:
@@ -255,6 +294,9 @@ class Policy:
                 for e, c in zip(extras, closed, strict=True):
                     if "pi" in e:
                         e["closed"] = c
+            for e, note in zip(extras, searched, strict=True):
+                if note is not None:
+                    e["search"] = note
         except Exception as error:  # display only: the decision stands without them
             extras = [{"error": f"extras: {type(error).__name__}: {error}"} for _ in slots]
         return {"scores": scores, "value": value, "extras": extras}

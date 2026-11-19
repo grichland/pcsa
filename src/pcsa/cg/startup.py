@@ -51,21 +51,38 @@ def _from_repo(path: str) -> str:
     return str(Path(path) if Path(path).is_absolute() else (repo_root() / path).resolve())
 
 
+SEARCH_SLOW_S, SEARCH_HARD_S = 1.0, 4.0  # over cg.search.ms: the shell's slow and hard limits
+
+
 def resolved(cfg: CGConfig) -> CGConfig:
-    """The config as CG is made from it: `{python}` in cg.command is this interpreter, and a relative checkpoint in
-    the player_args is taken from the repo root."""
-    args = _player(cfg)[1]
+    """The config as CG is made from it: `{python}` in cg.command is this interpreter, a relative checkpoint in
+    the player_args is taken from the repo root, and with cg.search.enabled the neural player's policy_args carry
+    the search settings."""
+    player, args = _player(cfg)
     if isinstance(args.get("checkpoint"), str):
         args = {**args, "checkpoint": _from_repo(args["checkpoint"])}
+    if cfg.search.enabled and player == NEURAL:
+        args = {**args, "policy_args": {**(args.get("policy_args") or {}), **search_args(cfg)}}
+        # the shell hands the battle to its fallback after slow answers: its limits must clear the search time
+        seconds = cfg.search.ms / 1000.0
+        args["timeout_s"] = max(float(args.get("timeout_s") or 0.0), seconds + SEARCH_SLOW_S)
+        args["hard_timeout_s"] = max(float(args.get("hard_timeout_s") or 0.0), seconds + SEARCH_HARD_S)
     if cfg.transport == "inprocess":
         if "player_args" not in cfg.args:
             return cfg
         return cfg.model_copy(update={"args": {**cfg.args, "player_args": args}})
     command = [sys.executable if part == PYTHON else part for part in cfg.command or []]
     args_at = _flag(command, "--player-args")
-    if args_at is not None and "checkpoint" in args:
+    if args_at is not None and ("checkpoint" in args or cfg.search.enabled):
         command[args_at + 1] = json.dumps(args)
     return cfg.model_copy(update={"command": command})
+
+
+def search_args(cfg: CGConfig) -> dict:
+    """cg.search as the policy's keyword arguments."""
+    s = cfg.search
+    return {"search": True, "search_ms": s.ms, "worlds": s.worlds, "depth": s.depth, "outcomes": s.outcomes,
+            "c": s.c, "n0": s.n0, "batch": s.batch, "min_sims": s.min_sims}  # fmt: skip
 
 
 def with_log_dir(cfg: CGConfig, folder: Path) -> CGConfig:

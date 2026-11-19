@@ -7,6 +7,10 @@ the two probabilities, so every row's score (the sum over columns of probability
 
 Their move columns: a checkpoint without belief_slots has one column for every move not yet seen ("Unrevealed
 move"); with belief_slots (`opp_seen` in the net) each column is a move, shown or named by the belief head.
+
+With decision-time search (`search` in the net) the view also carries what the search found, folded the same way:
+its root strategy for our rows, its Q table and their strategy by column, and how it ran. `chosen` is then the
+network's own pick and `played` the search's.
 """
 
 from __future__ import annotations
@@ -142,6 +146,50 @@ def _grid(net: dict) -> tuple[list[float], list[list[float]], list[float]] | Non
     return pi, lines, p_opp  # type: ignore[return-value]
 
 
+def _table(value) -> list[list[float | None]] | None:
+    """An [11][13] table of numbers or None."""
+    if not isinstance(value, list) or len(value) != ROWS:
+        return None
+    out = []
+    for line in value:
+        if not isinstance(line, list) or len(line) != NET_COLS:
+            return None
+        out.append([_number(x) for x in line])
+    return out
+
+
+def _row_index(value) -> int | None:
+    return value if type(value) is int and 0 <= value < ROWS else None
+
+
+def search_view(net: dict, matrix: list[list[float]]) -> dict | None:
+    """The page's view of the search note: how it ran and, when it has them, its strategy per row and its Q table
+    folded to the page's columns (a cell the search never held keeps the network's)."""
+    found = net.get("search")
+    if not isinstance(found, dict):
+        return None
+    out: dict = {
+        "used": bool(found.get("used")),
+        "why": str(found["why"])[:200] if found.get("why") else None,
+        "changed": bool(found.get("changed")),
+        "model_pick": _row_index(found.get("model_pick")),
+        "pick": _row_index(found.get("pick")),
+        "probs": None,
+        "cells": None,
+        "p_cols": None,
+    }
+    for key in ("sims", "worlds", "dropped", "depth", "nodes", "ms", "budget_ms", "p_other"):
+        out[key] = _number(found.get(key))
+    probs, p_them = _numbers(found.get("strategy"), ROWS), _numbers(found.get("p_them"), NET_COLS)
+    q = _table(found.get("q"))
+    if probs is None or p_them is None or q is None:
+        return out
+    filled = [[x if x is not None else matrix[a][c] for c, x in enumerate(line)] for a, line in enumerate(q)]
+    p_cols, cells, _ = fold(p_them, filled)
+    out.update(probs=probs, cells=cells, p_cols=p_cols, visits=_numbers(found.get("visits"), ROWS))
+    return out
+
+
 def matrix_view(net, names: dict[str, str] | None = None, order=None, action=None) -> dict | None:
     """The page's matrix from the net: rows and columns with written names, the folded cells, our policy, the row
     CG played (`chosen`, from `action`) and the row the record's order played (`played`)."""
@@ -157,6 +205,10 @@ def matrix_view(net, names: dict[str, str] | None = None, order=None, action=Non
     seen = _seen(net, cols)
     chosen = action if type(action) is int and 0 <= action < ROWS else None
     played = row_of_order(order, rows)
+    search = search_view(net, matrix)
+    if search is not None and search["used"] and search["model_pick"] is not None:
+        played = played if played is not None else chosen
+        chosen = search["model_pick"]  # the network's own row; the row played is the search's
     kinds = ["move"] * MOVES + ["switch"] * (COLS - MOVES)
     return {
         "rows": rows,
@@ -185,4 +237,5 @@ def matrix_view(net, names: dict[str, str] | None = None, order=None, action=Non
         "opp_temperature": None,
         "blend": None,
         "masked": None,
+        "search": search,
     }

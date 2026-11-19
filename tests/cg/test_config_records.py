@@ -42,7 +42,7 @@ def test_the_manifest_names_the_neural_player_flat() -> None:
     params = {"transport": "subprocess", "start_status": {"status": status, "problems": []}}
     name, flat = neural_player("cg", params)
     assert name == "neural" and flat == {"checkpoint": "league-x-iter-00140.pt", "run": "league-x", "update": 140,
-                                         "sampling": "argmax", "fallback": "tower", "cg": params}  # fmt: skip
+                                         "sampling": "argmax", "fallback": "tower", "search": None, "cg": params}  # fmt: skip
     built_in = {"transport": "subprocess", "start_status": {"status": {"player_status": None}, "problems": []}}
     assert neural_player("cg", built_in) == ("cg", built_in) and neural_player("first", {}) == ("first", {})
 
@@ -52,3 +52,24 @@ def test_the_preview_notes_split() -> None:
     rest, found, flat = preview_cg({"cg_ms": 47.0, "cg": cg})
     assert rest == {"cg_ms": 47.0} and found is cg and flat == {"v": 0.67, "ms": 8.6}
     assert preview_cg({"cached": True}) == ({"cached": True}, None, {})
+
+
+def test_the_search_section_turns_search_on_in_the_players_arguments() -> None:
+    path = repo_root() / "config" / "agent.yaml"
+    off = startup.resolved(load_config(path, environ={}).agent.cg)
+    args = json.loads((off.command or [])[(off.command or []).index("--player-args") + 1])
+    assert "search" not in args["policy_args"] and args["timeout_s"] == 2.0  # off: the arguments as written
+    environ = {"PCSA__cg__search__enabled": "true", "PCSA__cg__search__ms": "2500", "PCSA__cg__search__worlds": "4"}
+    on = startup.resolved(load_config(path, environ=environ).agent.cg)
+    args = json.loads((on.command or [])[(on.command or []).index("--player-args") + 1])
+    assert args["policy_args"] == {"threads": 4, "search": True, "search_ms": 2500.0, "worlds": 4, "depth": 3,
+                                   "outcomes": 3, "c": 1.5, "n0": 1.0, "batch": 16, "min_sims": 64}  # fmt: skip
+    assert args["timeout_s"] == 3.5 and args["hard_timeout_s"] == 6.5  # the shell's limits clear the search time
+    tower = CGConfig(command=["{python}", "-m", "pcsa.cg.serve", "--player", "tower"], search={"enabled": True})
+    assert startup.resolved(tower).command == [sys.executable, "-m", "pcsa.cg.serve", "--player", "tower"]
+
+
+def test_the_manifest_names_the_search_settings() -> None:
+    status = {"status": {"player_status": {"checkpoint": "C:/m/x.pt", "search": {"ms": 1500.0, "worlds": 6}}}}
+    name, params = neural_player("cg", {"start_status": status})
+    assert name == "neural" and params["search"] == {"ms": 1500.0, "worlds": 6}

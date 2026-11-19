@@ -17,6 +17,40 @@ let mxTimer = null;
 let mxTop = mxReadTop();
 let mxOpp = mxReadOpp(); // null: their probabilities as recorded
 let mxShown = null; // the matrix on screen: the controls redraw it without a new decision
+let mxSrc = "net"; // whose cells the grid shows: the network's, or the search's
+
+/** The matrix the grid draws: the network's, or with the search's cells, column weights and strategy in place. */
+function mxSource(m) {
+  const s = m.search;
+  if (mxSrc !== "search" || !s?.cells) return m;
+  return { ...m, cells: s.cells, p_cols: s.p_cols, probs: s.probs, tau: null, from_search: true };
+}
+
+const mxMs = (ms) => (ms >= 1000 ? `${(ms / 1000).toFixed(1)} s` : `${ms.toFixed(0)} ms`);
+
+/** How the search ran: simulations, guesses of their team, time; or why the network's answer stood. */
+function mxSearchStat(s) {
+  if (!s) return null;
+  if (!s.used) return mxStat("Search", "not used", `The search did not decide this turn: ${s.why || "no reason recorded"}. The network's own answer was played.`, null, "down");
+  const dropped = s.dropped ? `, ${s.dropped} more dropped because the engine refused part of the guess` : "";
+  const time = isNum(s.ms) ? ` in ${mxMs(s.ms)}${isNum(s.budget_ms) ? ` of a ${mxMs(s.budget_ms)} budget` : ""}` : "";
+  return mxStat("Search", `${s.sims} sims · ${s.worlds} worlds`, `${s.sims} simulated lines${time}, over ${s.worlds} guesses of their hidden team${dropped}, up to ${s.depth} steps deep. ${s.changed ? "It changed the pick." : "It kept the network's pick."}`, null, s.changed ? "up" : undefined);
+}
+
+/** The row's SEARCH value: how often the search plays it at the root, over all its guesses of their team. */
+function mxSearchCell(m, i, rowOrder) {
+  const s = m.search;
+  const cell = node("b", "mx-lk");
+  cell.setAttribute("role", "cell");
+  cell.style.setProperty("--d", `${MX_T.bars + rowOrder * MX_T.bar}ms`);
+  if (!m.legal[i] || !s?.probs) return cell;
+  const best = s.pick === i;
+  cell.classList.toggle("is-best", best);
+  cell.append(node("span", "", pct(s.probs[i])));
+  const visits = isNum(s.visits?.[i]) ? ` (${s.visits[i]} of its ${s.sims} simulated lines started with it)` : "";
+  const net = s.model_pick === i ? " · the network alone would pick this" : "";
+  return tip(cell, `${m.row_labels[i]}: the search plays it ${pct(s.probs[i])} of the time${visits}${best ? " · the search's pick" : ""}${net}`);
+}
 
 const orderLabel = (kind, label) => (kind === "switch" ? `⇄ ${label}` : label);
 const rowKind = (i) => (i >= MX.switchAt ? "switch" : i >= MX.megaAt ? "mega" : "move");
@@ -127,6 +161,8 @@ function mxStats(decision) {
   if (isNum(n.p) && !m) stats.push(mxStat("Confidence", pct(n.p), "Probability the network gave the action it chose"));
   const look = mxLookStat(m?.blend);
   if (look) stats.push(look);
+  const searched = mxSearchStat(m?.search);
+  if (searched) stats.push(searched);
   const masked = (m?.masked || []).map((x, i) => (x ? `${m.row_labels[i]}: ${x[0]} (${x[1]})` : null)).filter(Boolean);
   if (masked.length) stats.push(mxStat("Rule masks", `${masked.length} row${masked.length > 1 ? "s" : ""}`, `The guard rules took these actions out before the network chose: ${masked.join(" · ")}`));
   if (isNum(n.ms)) stats.push(mxStat("Decided in", n.ms >= 1000 ? `${(n.ms / 1000).toFixed(1)} s` : `${n.ms.toFixed(0)} ms`, "Time the player took to decide"));
@@ -171,8 +207,16 @@ function mxBanner(decision) {
   const m = n.matrix;
   const banner = el("mx-banner");
   const maskedPick = !n.override && !n.fallback && m && isNum(m.chosen) ? mxMasked(m, m.chosen) : null;
-  banner.hidden = !(n.override || n.fallback || maskedPick);
+  const searched = !n.override && !n.fallback && !maskedPick && m?.search?.used && m.search.changed ? m.search : null;
+  banner.hidden = !(n.override || n.fallback || maskedPick || searched);
   banner.className = `mx-banner${n.fallback ? " is-fallback" : " is-override"}`;
+  if (searched) {
+    const wanted = isNum(searched.model_pick) ? rowName(m, searched.model_pick) : "another action";
+    const share = isNum(searched.pick) && searched.probs ? `${pct(searched.probs[searched.pick])} of its play, against ${pct(searched.probs[searched.model_pick] ?? 0)} for the network's` : "";
+    banner.replaceChildren(node("b", "", "SEARCH"), node("strong", "", "changed the pick"), node("span", "", share), node("em", "", `network wanted ${wanted}`));
+    tip(banner, `The search (${searched.sims} simulated lines over ${searched.worlds} guesses of their team) preferred the action played to the network's own first choice (${wanted})`);
+    return;
+  }
   if (n.fallback) {
     const by = (n.rest || []).filter((r) => r.key === "fallback" || r.key === "fallback_rule").map((r) => r.value).join(" · ");
     banner.replaceChildren(node("b", "", "FALLBACK"), node("span", "", n.why || "the network did not decide; the fallback player did"), ...(by ? [node("em", "", `played by ${by}`)] : []));
@@ -306,7 +350,7 @@ function mxRow(m, i, rowOrder, g, groupStart) {
   if (overridden && i === m.played) label.append(node("span", "mx-tag", "played"));
   if (masked && !(overridden && i === m.chosen)) label.append(node("span", "mx-tag is-mask", "masked"));
   const why = masked ? ` · masked by the guard rule ${masked[0]}: ${masked[1]}` : "";
-  tip(label, `${kind === "switch" ? `Switch to ${m.row_labels[i]}` : m.row_labels[i]}: ${m.legal[i] ? `our policy gives it ${pct(m.probs[i])}${why}` : m.rule_closed?.[i] ? "closed by a rule this turn (the same move or too many switches in a row)" : "not legal this turn"}${i === m.played ? " · the action played" : ""}${overridden && i === m.chosen ? " · the network's choice, replaced by a guard rule" : ""}${pick ? ` · the highest SCORE under ${whatName(g.what)}: what we would pick` : ""}`);
+  tip(label, `${kind === "switch" ? `Switch to ${m.row_labels[i]}` : m.row_labels[i]}: ${m.legal[i] ? `our policy gives it ${pct(m.probs[i])}${why}` : m.rule_closed?.[i] ? "closed by a rule this turn (the same move or too many switches in a row)" : "not legal this turn"}${i === m.played ? " · the action played" : ""}${overridden && i === m.chosen ? (m.search?.used ? " · the network's own choice, before the search" : " · the network's choice, replaced by a guard rule") : ""}${pick ? ` · the highest SCORE under ${whatName(g.what)}: what we would pick` : ""}`);
   row.append(label);
   g.cols.forEach((j, at) => {
     if (at > 0 && m.col_kind[j] !== m.col_kind[g.cols[at - 1]]) row.append(node("span", "mx-div"));
@@ -314,6 +358,7 @@ function mxRow(m, i, rowOrder, g, groupStart) {
   });
   row.append(mxScore(m, i, rowOrder, g.what));
   if (m.blend?.q) row.append(mxLook(m, i, rowOrder));
+  if (m.search?.probs) row.append(mxSearchCell(m, i, rowOrder));
   row.append(mxPolicy(m, i, rowOrder, g));
   return row;
 }
@@ -348,7 +393,7 @@ function mxFoot(m, g, rowOrder) {
     }
     return row.append(tip(cell, `${m.col_labels[j]} ${mxNum(v)}: if they do this, how it turns out for them on average over what we are likely to do · plain average over our ${g.what.legal.length} legal actions: ${mxNum(them.mean[j])}${j === them.best ? " · their best action" : ""}${j === them.likely ? " · the one we think most likely" : ""}`));
   });
-  row.append(node("span", "mx-sc"), ...(m.blend?.q ? [node("span", "mx-lk")] : []), node("span", "mx-rp"));
+  row.append(node("span", "mx-sc"), ...(m.blend?.q ? [node("span", "mx-lk")] : []), ...(m.search?.probs ? [node("span", "mx-lk")] : []), node("span", "mx-rp"));
   return row;
 }
 
@@ -360,7 +405,7 @@ function mxTemplate(m, cols) {
   if (moves) parts.push(`repeat(${moves}, minmax(0, 1fr))`);
   if (moves && switches) parts.push("var(--mx-gap)");
   if (switches) parts.push(`repeat(${switches}, minmax(0, 1fr))`);
-  parts.push("var(--mx-score)", ...(m.blend?.q ? ["var(--mx-look)"] : []), "var(--mx-prob)");
+  parts.push("var(--mx-score)", ...(m.blend?.q ? ["var(--mx-look)"] : []), ...(m.search?.probs ? ["var(--mx-look)"] : []), "var(--mx-prob)");
   return parts.join(" ");
 }
 
@@ -388,10 +433,17 @@ function mxTotalsHead(what, m) {
       ? "Two-turn lookahead from the damage calculator: this turn's value plus the turn after (the small t2 number), added × the blend weight to the network's logits before the policy. The highest is marked."
       : "One-turn lookahead from the damage calculator: each action's value this turn, added × the blend weight to the network's logits before the policy. The highest is marked."));
   }
-  return [...heads, tip(policy, `The probability the network gives each of our actions after weighing every column: the action played is outlined.${alt}`)];
+  if (m?.search?.probs) heads.push(tip(node("span", "mx-shead", "SEARCH"), "How often the search plays each of our actions at the root, averaged over its guesses of their hidden team. The action played is its highest."));
+  const whose = m?.from_search ? "The search's strategy for each of our actions (the same numbers as the SEARCH column)" : "The probability the network gives each of our actions after weighing every column";
+  return [...heads, tip(policy, `${whose}: the action played is outlined.${alt}`)];
 }
 
 function mxGrid(m) {
+  const canSwitch = Boolean(m.search?.cells);
+  el("mx-src").hidden = !canSwitch;
+  el("mx-src-label").hidden = !canSwitch;
+  el("mx-src").querySelectorAll("button").forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.src === (canSwitch ? mxSrc : "net"))));
+  m = mxSource(m);
   const megaLegal = m.legal.slice(MX.megaAt, MX.switchAt).some(Boolean);
   const rows = m.rows.map((_, i) => i).filter((i) => m.rows[i] && (rowKind(i) !== "mega" || megaLegal));
   // A column they cannot take is not drawn: an empty slot, or a switch target that has fainted (col_legal from the
@@ -583,6 +635,12 @@ document.addEventListener("DOMContentLoaded", () => {
   el("mx-top").addEventListener("click", (event) => {
     const button = event.target.closest("button[data-top]");
     if (button) mxSetTop(Number(button.dataset.top));
+  });
+  el("mx-src").addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-src]");
+    if (!button) return;
+    mxSrc = button.dataset.src;
+    mxRedraw();
   });
   mxPaintOpp();
   el("mx-opp").addEventListener("click", (event) => {

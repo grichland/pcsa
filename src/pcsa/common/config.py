@@ -126,6 +126,36 @@ class DecideConfig(Strict):
     player: Literal["first", "cg"] = "first"  # decide/load.py PLAYERS
 
 
+class CGSearch(Strict):
+    """Decision-time search of the neural player (pcsa.network.search; Champions Gym 0.5.0). `enabled` puts these
+    into the player's policy_args: `ms` per turn request, `worlds` guesses of their team, `depth` turns, `outcomes`
+    per action pair, `c` and `n0` weigh the network's priors and matrix, `min_sims` is the least that counts."""
+
+    enabled: bool = False
+    ms: float = 1500.0
+    worlds: int = 6
+    depth: int = 3
+    outcomes: int = 3
+    c: float = 1.5
+    n0: float = 1.0
+    batch: int = 16
+    min_sims: int = 64
+
+    @field_validator("ms", "worlds", "depth", "outcomes", "batch")
+    @classmethod
+    def _positive(cls, value: float) -> float:
+        if value <= 0:
+            raise ValueError("must be positive")
+        return value
+
+    @field_validator("c", "n0", "min_sims")
+    @classmethod
+    def _not_negative(cls, value: float) -> float:
+        if value < 0:
+            raise ValueError("must not be negative")
+        return value
+
+
 class CGConfig(Strict):
     """pcsa/cg: how CG is reached. `entry` "module:attr" (a handle(message) callable, or a class or object with
     .handle) for `inprocess`; `command` (argv, JSON lines on stdin/stdout) for `subprocess`, where `{python}` is the
@@ -133,7 +163,8 @@ class CGConfig(Strict):
     directories put first on sys.path (inprocess) or in the child's PYTHONPATH (subprocess); relative ones from the
     repo root. `args`: keyword arguments for an entry that is a class, e.g. {player: tower, seed: 0}. `env`: extra
     environment variables for the subprocess. `run_log_dir`: a folder in the run folder given to CG as its log_dir
-    (and to a model player's player_args.log_dir) when CG is made. `start_timeout_s`: the start-up status check."""
+    (and to a model player's player_args.log_dir) when CG is made. `start_timeout_s`: the start-up status check.
+    `search`: the neural player's decision-time search (CGSearch)."""
 
     transport: Literal["inprocess", "subprocess"] = "subprocess"
     entry: str | None = None
@@ -144,6 +175,7 @@ class CGConfig(Strict):
     run_log_dir: str | None = None
     timeout_s: float = 8.0  # per call; also capped by the decision's deadline
     start_timeout_s: float = 60.0
+    search: CGSearch = CGSearch()
 
     @field_validator("timeout_s", "start_timeout_s")
     @classmethod

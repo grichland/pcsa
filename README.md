@@ -177,6 +177,18 @@ predict the opponent, then choose.
 - **Rule masks.** As in training, a move used 4 turns in a row is closed while another move is open, and after
   3 switches by choice in a row switching is closed while a move is open. `policy_args` in `config/agent.yaml`
   takes `rule_masks` (false: off), `max_same_move` and `max_switches`.
+- **Search (optional, off by default).** With `cg.search.enabled: true` in `config/agent.yaml` (or
+  `--set cg.search.enabled=true` for one run) every turn request is also searched before it is answered. The
+  player samples a few guesses of the opponent's hidden team from the belief head (6 by default), builds an engine
+  game for each from the live Battle, and grows a tree per guess: both sides choose at once at every node, by
+  regret matching started from the network's policy, its prediction of their action and its matrix; new positions
+  are valued by the network. The action played is the one the search's strategy at the root favours most, inside
+  the legal and rule masks. It stops at `cg.search.ms` (1500) or the request's deadline, whichever is sooner, and
+  when it cannot run or runs too little the network's own answer is played and the record says why. Team preview
+  and replacements are never searched. It needs Champions Gym 0.5.0, which builds the engine game; with the pinned
+  0.4.0 the setting only records that it could not run. On the dashboard a searched decision shows a Search figure
+  (simulations, guesses, time), a SEARCH column with the search's share for each of our actions, a banner when
+  it changed the pick, and a switch that redraws the matrix cells with the search's own values.
 - **The matrix.** Our 11 actions (4 moves, the same 4 with Mega Evolution, 3 switches) are the rows and their
   13 actions the columns; a cell scores our action against theirs. Each row is averaged over the columns,
   weighted by how likely each column is, and a softmax over those scores gives the policy. No action gets more

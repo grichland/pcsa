@@ -125,3 +125,23 @@ def test_the_policy_is_told_the_action_that_went_out_and_a_failure_there_changes
     player.policy.played = boom
     assert serve.Proxy(player).choose_move(battle) == 3 and "played: RuntimeError" in capsys.readouterr().err
     assert serve.Proxy(SimpleNamespace(name="q", choose_move=lambda b: 5)).choose_move(battle) == 5  # no policy
+
+
+def test_a_searching_policy_gets_the_requests_deadline_and_the_sessions_games(monkeypatch) -> None:
+    policy = SimpleNamespace(deadline=None, game_of=None)
+    player = Hooked()
+    player.policy = policy
+    server = Server(player)
+    server._deadline(json.dumps({"type": "decision_request", "deadline_ms": 4000}))
+    assert policy.deadline is not None and 3.0 < policy.deadline - serve.precise_now() <= 4.0
+    server._deadline({"type": "events"})
+    assert policy.deadline is None
+    server._deadline('{"deadline_ms": "soon"}')
+    assert policy.deadline is None
+    if callable(getattr(server.session, "game", None)):
+        seen = []
+        monkeypatch.setattr(server.session, "game", lambda guess, seed=0: seen.append((guess, seed)) or ("game", []))
+        assert policy.game_of("battle", [{"slot": 0}], 5) == ("game", []) and seen == [([{"slot": 0}], 5)]
+    else:
+        assert policy.game_of is None  # before Champions Gym 0.5.0 the Session builds no Game
+    assert Server("tower").policy is None
