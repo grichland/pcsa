@@ -54,6 +54,8 @@ class SearchConfig:
     min_sims: int = 64  # fewer in total: the model's answer stands
     sims: int = 0  # stop after this many (0: by time only)
     seed: int = 0
+    top_ours: int = 0  # at each node only our N likeliest actions by the network's policy (0: all)
+    top_theirs: int = 0  # at each node only their N likeliest actions by the network's prediction (0: all)
 
 
 class Node:
@@ -123,11 +125,21 @@ def _normal(x: np.ndarray) -> np.ndarray:
     return x / total if total > 0 else np.full(len(x), 1.0 / len(x))
 
 
+def _likeliest(actions: list, weight: Sequence[float], top: int) -> list:
+    """The `top` actions with the largest weight, in their own order (all of them when top is 0)."""
+    if top <= 0 or len(actions) <= top:
+        return actions
+    keep = sorted(range(len(actions)), key=lambda k: (-float(np.nan_to_num(weight[k])), k))[:top]
+    return [actions[k] for k in sorted(keep)]
+
+
 def expand(
-    node: Node, leaf: Leaf, world: World, tables: Tables, n0: float, allowed: np.ndarray | None = None
+    node: Node, leaf: Leaf, world: World, tables: Tables, cfg: SearchConfig, allowed: np.ndarray | None = None
 ) -> None:
     """The node's actions, priors, value and Q's start from the network row. `allowed` (the root): our actions
-    the request and the rule masks leave open."""
+    the request and the rule masks leave open. cfg.top_ours and cfg.top_theirs keep only each side's likeliest
+    actions."""
+    n0 = cfg.n0
     game = node.game
     kinds, masks = game.kinds(), np.asarray(game.masks()).reshape(2, L.OWN_ACTIONS)
     us = [int(a) for a in np.flatnonzero(masks[0])] if kinds[0] in KIND_ASKED else []
@@ -135,14 +147,19 @@ def expand(
         us = [a for a in us if allowed[a]]
         if not us:
             raise NoSearch("the Game offers none of the request's legal actions")
+    us = _likeliest(us, [leaf.pi[a] for a in us], cfg.top_ours)
     with_pi = [a for a in us if leaf.pi[a] > 0]
     node.us = us or [None]
     them = [int(a) for a in np.flatnonzero(masks[1])] if kinds[1] in KIND_ASKED else []
+    active = int(np.asarray(game.readout().active).reshape(-1)[1])
+    if cfg.top_theirs > 0 and len(them) > cfg.top_theirs:
+        cols, share = their_columns(leaf, world, active, them, tables)
+        weight = [leaf.p_opp[c] * s if c >= 0 else FLOOR for c, s in zip(cols, share, strict=True)]
+        them = _likeliest(them, weight, cfg.top_theirs)
     node.them = them or [None]
     v = float(np.clip(leaf.value, -1.0, 1.0)) if np.isfinite(leaf.value) else 0.0
     node.v = v
     node.P_u = _normal(np.array([leaf.pi[a] if a in with_pi else 0.0 for a in us])) if us else np.ones(1)
-    active = int(np.asarray(game.readout().active).reshape(-1)[1])
     cols, share = their_columns(leaf, world, active, node.them, tables)
     node.cols = cols
     prior = np.array([leaf.p_opp[c] * s if c >= 0 else FLOOR for c, s in zip(cols, share, strict=True)], np.float64)
@@ -236,7 +253,7 @@ class Search:
         nodes = list(waiting.values())
         leaves, memories = self.forward([n for n, _, _ in nodes], [parent.mem for _, parent, _ in nodes])
         for (node, parent, world), leaf, mem in zip(nodes, leaves, memories, strict=True):
-            expand(node, leaf, world, self.tables, self.cfg.n0)
+            expand(node, leaf, world, self.tables, self.cfg)
             asked = node.game.kinds()[0] in KIND_ASKED
             deep = node.turn - world.root.turn >= self.cfg.depth
             node.mem = None if deep else (mem if asked else parent.mem)

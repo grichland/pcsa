@@ -111,7 +111,7 @@ class Searcher:
         memory, allowed = search.memory_of(p.memory, slot), (b["mask"][r] > 0).cpu().numpy()
         for w in built:
             w.root = search.Node(w.game)
-            search.expand(w.root, leaf, w, tables, self.cfg.n0, allowed)
+            search.expand(w.root, leaf, w, tables, self.cfg, allowed)
             w.root.mem = memory
         return built
 

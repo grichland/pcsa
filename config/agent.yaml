@@ -40,6 +40,8 @@ cg:                       # used when decide.player is cg (LIVE 0.7-0.9 messages
     n0: 1                 # weight of the network's matrix cell in each pair's value
     batch: 16             # positions per network call
     min_sims: 64          # fewer simulations than this in total: the model's own answer is played
+    top_ours: 0           # at every position only our N likeliest actions by the network's policy (0: all)
+    top_theirs: 3         # at every position only their N likeliest actions by the network's prediction (0: all)
 
 device:
   serial: null            # null: the single authorized device

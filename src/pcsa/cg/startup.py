@@ -82,7 +82,8 @@ def search_args(cfg: CGConfig) -> dict:
     """cg.search as the policy's keyword arguments."""
     s = cfg.search
     return {"search": True, "search_ms": s.ms, "worlds": s.worlds, "depth": s.depth, "outcomes": s.outcomes,
-            "c": s.c, "n0": s.n0, "batch": s.batch, "min_sims": s.min_sims}  # fmt: skip
+            "c": s.c, "n0": s.n0, "batch": s.batch, "min_sims": s.min_sims, "top_ours": s.top_ours,
+            "top_theirs": s.top_theirs}  # fmt: skip
 
 
 def with_log_dir(cfg: CGConfig, folder: Path) -> CGConfig:

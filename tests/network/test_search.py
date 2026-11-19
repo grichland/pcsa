@@ -209,3 +209,23 @@ def test_the_search_stops_inside_its_time(position) -> None:
     policy.deadline = precise_now() + 0.45  # the request's own deadline is nearer than search_ms
     note = policy.decide(arrays._replace(decision=np.array([78])), [0], [battle])["extras"][0]["search"]
     assert note["budget_ms"] < 250.0 and note["ms"] <= note["budget_ms"] + 60.0 and policy.deadline is None
+
+
+def test_the_likeliest_actions_are_kept_in_their_own_order() -> None:
+    assert search._likeliest([0, 1, 2, 8], [0.1, 0.5, 0.0, 0.4], 2) == [1, 8]
+    assert search._likeliest([0, 1, 2], [0.2, 0.2, 0.6], 2) == [0, 2]  # a tie: the earlier action
+    assert search._likeliest([0, 1], [0.5, 0.5], 0) == [0, 1] and search._likeliest([3], [float("nan")], 1) == [3]
+
+
+@needs_games
+def test_top_ours_and_top_theirs_bound_what_the_search_looks_at(position) -> None:
+    arrays, battle, _ = position
+    wide = make(search=True, search_sims=128).decide(arrays, [0], [battle])["extras"][0]
+    out = make(search=True, search_sims=128, top_ours=2, top_theirs=2).decide(arrays, [0], [battle])["extras"][0]
+    note = out["search"]
+    assert note["used"] and sum(x > 0 for x in note["strategy"]) <= 2 and sum(x > 0 for x in note["visits"]) <= 2
+    top2 = sorted(range(11), key=lambda a: -out["pi"][a])[:2]
+    assert all(note["strategy"][a] == 0 for a in range(11) if a not in top2)
+    assert sum(x > 0 for x in note["p_them"]) <= 2 * 6  # two of their actions per guess of their team
+    assert sum(x > 0 for x in wide["search"]["p_them"]) >= sum(x > 0 for x in note["p_them"])
+    assert make(search=True, top_theirs=3).info["search"]["top_theirs"] == 3

@@ -132,28 +132,16 @@ class CGSearch(Strict):
     per action pair, `c` and `n0` weigh the network's priors and matrix, `min_sims` is the least that counts."""
 
     enabled: bool = False
-    ms: float = 1500.0
-    worlds: int = 6
-    depth: int = 3
-    outcomes: int = 3
-    c: float = 1.5
-    n0: float = 1.0
-    batch: int = 16
-    min_sims: int = 64
-
-    @field_validator("ms", "worlds", "depth", "outcomes", "batch")
-    @classmethod
-    def _positive(cls, value: float) -> float:
-        if value <= 0:
-            raise ValueError("must be positive")
-        return value
-
-    @field_validator("c", "n0", "min_sims")
-    @classmethod
-    def _not_negative(cls, value: float) -> float:
-        if value < 0:
-            raise ValueError("must not be negative")
-        return value
+    ms: float = Field(default=1500.0, gt=0)
+    worlds: int = Field(default=6, gt=0)
+    depth: int = Field(default=3, gt=0)
+    outcomes: int = Field(default=3, gt=0)
+    c: float = Field(default=1.5, ge=0)
+    n0: float = Field(default=1.0, ge=0)
+    batch: int = Field(default=16, gt=0)
+    min_sims: int = Field(default=64, ge=0)
+    top_ours: int = Field(default=0, ge=0)  # only our likeliest N actions at each node (0: all)
+    top_theirs: int = Field(default=0, ge=0)  # only their likeliest N actions at each node (0: all)
 
 
 class CGConfig(Strict):
