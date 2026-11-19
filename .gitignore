@@ -25,3 +25,6 @@ output/
 *.bmp
 !docs/images/demo-poster.jpg
 !docs/images/master-ball-rank2.jpg
+
+# Local demo video
+docs/media/
