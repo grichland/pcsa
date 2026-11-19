@@ -114,3 +114,14 @@ def test_without_champions_gym_it_exits_2_with_a_clear_line() -> None:
     done = run_blocked("champions_gym", "--player", "tower")
     assert done.returncode == 2 and done.stdout == ""
     assert "Champions Gym (champions_gym) is not installed" in done.stderr and "Traceback" not in done.stderr
+
+
+def test_the_policy_is_told_the_action_that_went_out_and_a_failure_there_changes_nothing(capsys) -> None:
+    told = []
+    battle = SimpleNamespace(decision=7)
+    player = SimpleNamespace(name="p", policy=SimpleNamespace(played=lambda d, a: told.append((d, a))),
+                             choose_move=lambda b: 3)  # fmt: skip
+    assert serve.Proxy(player).choose_move(battle) == 3 and told == [(7, 3)]
+    player.policy.played = boom
+    assert serve.Proxy(player).choose_move(battle) == 3 and "played: RuntimeError" in capsys.readouterr().err
+    assert serve.Proxy(SimpleNamespace(name="q", choose_move=lambda b: 5)).choose_move(battle) == 5  # no policy

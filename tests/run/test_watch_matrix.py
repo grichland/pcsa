@@ -77,6 +77,34 @@ def test_a_move_and_its_mega_variant_fold_into_one_column() -> None:
     assert p_cols == [0.0] * 9 and cells == [[2.0] * 9] and mega == 0
 
 
+def test_belief_named_columns_are_moves_marked_shown_or_believed() -> None:
+    net = small_net()
+    net["cols"] = ["flamethrower", "willowisp", "roost", None, "flamethrower", "willowisp", "roost", None] + net["cols"][8:]
+    net["opp_seen"] = [True, False, False, False]
+    view = matrix_view(net)
+    assert view is not None
+    assert view["cols"][:4] == ["flamethrower", "willowisp", "roost", ""] and "Unrevealed move" not in view["col_labels"]
+    assert view["col_labels"][:3] == ["Flamethrower", "Will-O-Wisp", "Roost"]
+    assert view["shown"][:4] == [True, False, False, False] and view["believed"][:4] == [False, True, True, False]
+    assert view["col_legal"][:4] == [True, True, True, False] and not any(view["believed"][4:])
+    old = matrix_view(small_net())  # no belief slots: the one unseen column, nothing believed
+    assert old is not None and old["believed"] == [False] * 9 and old["col_labels"][1] == "Unrevealed move"
+    net["cols"][1] = net["cols"][5] = ""  # a slot the belief head could not name stays the unseen one
+    mixed = matrix_view(net)
+    assert mixed is not None and mixed["cols"][1] == "unseen" and mixed["believed"][:3] == [False, False, True]
+    net["opp_seen"] = "x"  # unreadable: every named column counts as shown, as before
+    assert matrix_view(net)["believed"] == [False] * 9  # type: ignore[index]
+
+
+def test_a_row_closed_by_a_rule_mask_is_not_legal() -> None:
+    net = small_net()
+    net["closed"] = [1]
+    view = matrix_view(net)
+    assert view is not None and view["legal"][:2] == [True, False] and view["legal"][8] is True
+    assert view["rule_closed"] == [False, True] + [False] * 9
+    assert matrix_view(small_net())["rule_closed"] == [False] * 11  # type: ignore[index]
+
+
 def test_rows_names_and_the_row_played() -> None:
     view = matrix_view(net_of("battle-1/decisions/0002-action.json"), order="/choose move meteormash mega", action=6)
     assert view is not None

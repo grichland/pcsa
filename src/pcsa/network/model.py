@@ -46,6 +46,9 @@ class Config:
     tau: float = 0.05  # starting policy temperature: the matrix is in game-outcome units (-1..1), so small
     # differences in expected outcome must be able to make a sharp policy
     memory: int = 32  # earlier decisions of the game whose field and last-turn tokens a decision can see; 0 = none
+    # the empty move slots of their active are named by the belief head, most likely move first (user, 19 Nov);
+    # False: the first empty slot stands for every move not yet seen
+    belief_slots: bool = False
 
 
 def _steps(n_in: int, n_out: int, act: bool) -> list[nn.Module]:
@@ -290,6 +293,31 @@ class Net(nn.Module):
         mega = move_net(torch.cat([p, moves, zero + 1], dim=-1))
         return torch.cat([plain, mega, switch_net(bench)], dim=1)
 
+    def _believed_slots(self, b: dict, token: Tensor, moves: Tensor, prior: Tensor) -> tuple[Tensor, Tensor, Tensor]:
+        """Their active's empty move slots named by the belief head: the most likely moves it has not shown, in
+        that order. -> (slot vectors [N, 4, d], opponent prior [N, 13], move ids [N, 4]). A named slot's prior is
+        how likely that move is among the hidden ones (times what the Battle gave the first empty slot, and its
+        Mega share); a slot that cannot be named (unknown species) stays as the Battle gave it."""
+        ids = b["row_ids"][:, L.OPP_ACTIVE].long()
+        known = ids[:, self.i_moves]  # seen moves first, then 0
+        logits = self.belief_moves(token.detach()).masked_fill(~self.learnset[ids[:, self.i_species]], decide.NEG_INF)
+        logits = logits.scatter(1, known, decide.NEG_INF)  # a seen move is not a hidden one (also closes id 0)
+        can = (logits > decide.NEG_INF).any(-1, keepdim=True)
+        top_p, top_id = torch.where(can, logits, torch.zeros_like(logits)).softmax(-1).topk(L.MOVE_SLOTS, -1)
+        empty = known == 0
+        rank = (empty.cumsum(-1) - 1).clamp_min(0)  # the first empty slot takes the most likely move
+        cand, cand_p = top_id.gather(1, rank), top_p.gather(1, rank)
+        use = empty & can & (cand > 0)
+        feats = moves.new_zeros(*known.shape, self.slot_stride)
+        vec = self.slot_net(torch.cat([feats, self.move(cand)], dim=-1)) + self.slot_pos + self.empty_slot
+        first = empty.float().argmax(-1, keepdim=True)  # the first empty slot: where the Battle put "not yet seen"
+        base, mega = prior.gather(1, first), prior.gather(1, first + L.MOVE_SLOTS)
+        share = (cand_p * empty.sum(-1, keepdim=True)).clamp(0.02, 1.0)  # chance the move is one of the hidden ones
+        new = prior.clone()
+        new[:, : L.MOVE_SLOTS] = torch.where(use, base * share, prior[:, : L.MOVE_SLOTS])
+        new[:, L.MOVE_SLOTS : 2 * L.MOVE_SLOTS] = torch.where(use, mega * share, prior[:, L.MOVE_SLOTS : 2 * L.MOVE_SLOTS])
+        return torch.where(use[..., None], vec, moves), new, torch.where(use, cand, known)
+
     def forward(self, b: dict, seq: Tensor | None = None, memory: Memory | None = None, slots: Tensor | None = None,
                 beliefs: bool = True) -> dict:  # fmt: skip
         """Reads only the keys in INPUTS. Every output is per decision; which ones apply depends on the request kind.
@@ -314,12 +342,15 @@ class Net(nn.Module):
         u_own = self._action_vectors(
             pokemon[at, active], moves[at, active], pokemon[:, : L.OWN_PICKS], self.own_move, self.own_switch
         )  # [N, 11, d]
+        their_moves, opp_prior, named = moves[:, L.OPP_ACTIVE], b["opp_prior"].float(), None
+        if self.cfg.belief_slots:
+            their_moves, opp_prior, named = self._believed_slots(b, pokemon[:, L.OPP_ACTIVE], their_moves, opp_prior)
         u_opp = self._action_vectors(
-            pokemon[:, L.OPP_ACTIVE], moves[:, L.OPP_ACTIVE], pokemon[:, L.OPP_BENCH], self.opp_move, self.opp_switch
+            pokemon[:, L.OPP_ACTIVE], their_moves, pokemon[:, L.OPP_BENCH], self.opp_move, self.opp_switch
         )  # [N, 13, d]
 
         opp_logits = (self.opp_query(state)[:, None] * u_opp).sum(-1) * self.cfg.d**-0.5
-        p_opp, opp_logp, prior_all_zero = decide.opp_distribution(opp_logits, b["opp_prior"].float(), self.cfg.max_prob)
+        p_opp, opp_logp, prior_all_zero = decide.opp_distribution(opp_logits, opp_prior, self.cfg.max_prob)
 
         a, bb = self.a_proj(u_own), self.b_proj(u_opp)
         matrix = (
@@ -354,6 +385,9 @@ class Net(nn.Module):
             "preview_pi": preview_pi,
             "preview_legal": preview_legal,
         }
+        if named is not None:
+            out["opp_named"] = named  # [N, 4] move ids of their active's slots, seen or believed; 0 = none
+            out["opp_seen"] = b["row_ids"][:, L.OPP_ACTIVE].long()[:, self.i_moves] != 0  # [N, 4] the seen ones
         if beliefs:
             theirs = pokemon[:, L.OPP_ROWS]
             species = b["row_ids"][:, L.OPP_ROWS, self.i_species].long()

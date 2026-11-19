@@ -213,6 +213,7 @@ button[data-tip], summary[data-tip] { cursor: pointer; }
 .t-matrix .tile-body { gap: 0.45rem; }
 .mx-legend { display: flex; align-items: center; gap: 0.4rem; margin-left: 0.6rem; color: var(--muted); font-size: 0.74rem; white-space: nowrap; min-width: 0; overflow: hidden; }
 .mx-scale { width: 4.2rem; height: 0.5rem; border-radius: 99px; flex: none; background: linear-gradient(90deg, var(--bad), var(--cell-mid) 50%, var(--good)); }
+.mx-key[hidden] { display: none; }
 .mx-key { display: inline-flex; align-items: center; gap: 0.3rem; margin-left: 0.7rem; }
 .dot-shown { display: inline-block; width: 0.5rem; height: 0.5rem; border-radius: 50%; flex: none; background: var(--opp); box-shadow: 0 0 0 2px var(--opp-fade); }
 .mx-hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex: none; min-width: 0; }
@@ -252,6 +253,7 @@ button[data-tip], summary[data-tip] { cursor: pointer; }
 .mx-cbar i { display: block; width: 100%; min-height: 2px; border-radius: 4px 4px 0 0; background: var(--opp); transform-origin: bottom; }
 .mx-cname { display: flex; align-items: flex-start; justify-content: center; gap: 0.25rem; width: 100%; height: 2.95em; padding: 0.22rem 0.1rem 0; border-top: 2px solid var(--opp); font-size: 0.74rem; font-weight: 600; line-height: 1.12; text-align: center; overflow: hidden; overflow-wrap: anywhere; }
 .mx-cname .dot-shown { margin-top: 0.2em; }
+.mx-cname .is-believed, .mx-key .is-believed { font-style: italic; opacity: .8; text-decoration: underline dashed; text-underline-offset: 0.2em; }
 .mx-col.is-switch .mx-cname { font-weight: 500; color: var(--ink-2); border-top-style: dashed; }
 .mx-div { background: linear-gradient(var(--line), var(--line)) center / 1px 100% no-repeat; }
 .mx-phead, .mx-shead { align-self: end; padding: 0 0 0.3rem 0.6rem; color: var(--muted); font-size: 0.7rem; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; min-width: 0; }

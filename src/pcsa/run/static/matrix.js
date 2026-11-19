@@ -226,12 +226,13 @@ function mxColumn(m, j, order, top, what) {
     bars.append(alt);
   }
   const name = node("span", "mx-cname");
+  const believed = Boolean(m.believed?.[j]);
   if (m.shown[j]) name.append(node("i", "dot-shown"));
-  name.append(node("span", "", m.col_labels[j]));
+  name.append(node("span", believed ? "is-believed" : "", m.col_labels[j]));
   col.append(nums, bars, name);
   const does = m.col_kind[j] === "switch" ? `They switch to ${m.col_labels[j]}` : `They use ${m.col_labels[j]}`;
   const counted = !what.differs ? "" : used ? ` · counts for ${pct(what.weight[j])} under ${whatName(what)}` : ` · left out under ${whatName(what)}`;
-  return tip(col, `${does}: ${pct(m.p_cols[j])} likely${m.shown[j] ? " (a move they have already shown)" : m.col_kind[j] === "switch" ? "" : " (not shown yet: the network expects it)"}${counted}`);
+  return tip(col, `${does}: ${pct(m.p_cols[j])} likely${m.shown[j] ? " (a move they have already shown)" : believed ? " (not shown yet: the move the network believes they have)" : m.col_kind[j] === "switch" ? "" : " (not shown yet: the network expects it)"}${counted}`);
 }
 
 function mxCell(m, i, j, rank, rowOrder, what) {
@@ -305,7 +306,7 @@ function mxRow(m, i, rowOrder, g, groupStart) {
   if (overridden && i === m.played) label.append(node("span", "mx-tag", "played"));
   if (masked && !(overridden && i === m.chosen)) label.append(node("span", "mx-tag is-mask", "masked"));
   const why = masked ? ` · masked by the guard rule ${masked[0]}: ${masked[1]}` : "";
-  tip(label, `${kind === "switch" ? `Switch to ${m.row_labels[i]}` : m.row_labels[i]}: ${m.legal[i] ? `our policy gives it ${pct(m.probs[i])}${why}` : "not legal this turn"}${i === m.played ? " · the action played" : ""}${overridden && i === m.chosen ? " · the network's choice, replaced by a guard rule" : ""}${pick ? ` · the highest SCORE under ${whatName(g.what)}: what we would pick` : ""}`);
+  tip(label, `${kind === "switch" ? `Switch to ${m.row_labels[i]}` : m.row_labels[i]}: ${m.legal[i] ? `our policy gives it ${pct(m.probs[i])}${why}` : m.rule_closed?.[i] ? "closed by a rule this turn (the same move or too many switches in a row)" : "not legal this turn"}${i === m.played ? " · the action played" : ""}${overridden && i === m.chosen ? " · the network's choice, replaced by a guard rule" : ""}${pick ? ` · the highest SCORE under ${whatName(g.what)}: what we would pick` : ""}`);
   row.append(label);
   g.cols.forEach((j, at) => {
     if (at > 0 && m.col_kind[j] !== m.col_kind[g.cols[at - 1]]) row.append(node("span", "mx-div"));
@@ -541,6 +542,7 @@ function renderMatrix(state, isPinned) {
   const waiting = picked || (state.battle ? "Waiting for this battle's first decision" : "Waiting for the first decision");
   tile("t-matrix", Boolean(decision), waiting, "mx-empty");
   el("mx-legend").hidden = !decision?.notes?.matrix;
+  el("mx-key-believed").hidden = !decision?.notes?.matrix?.believed?.some(Boolean);
   el("mx-what").hidden = !decision?.notes?.matrix;
   if (!decision) {
     el("mx-meta").textContent = "";

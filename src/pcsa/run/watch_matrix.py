@@ -4,6 +4,9 @@ The network scores our 11 actions (4 moves, the same 4 with Mega, 3 switches) ag
 with Mega, 5 switches). The page draws 9 columns: each of their moves is folded with its Mega variant, weighted by
 the two probabilities, so every row's score (the sum over columns of probability times cell) stays the network's
 `score`; the Mega share is `mega_p`. A net of another shape gives no matrix.
+
+Their move columns: a checkpoint without belief_slots has one column for every move not yet seen ("Unrevealed
+move"); with belief_slots (`opp_seen` in the net) each column is a move, shown or named by the belief head.
 """
 
 from __future__ import annotations
@@ -106,9 +109,25 @@ def _col_label(ident: str, kind: str, names: dict[str, str] | None) -> str:
     return species_label(ident, names) if kind == "switch" and ident else pretty(ident, names)
 
 
-def _legal(value) -> list[bool]:
+def _legal(value, closed=None) -> list[bool]:
+    """Our legal rows, without those a rule mask closed."""
     indices = {i for i in value if type(i) is int} if isinstance(value, list) else set(range(ROWS))
-    return [i in indices for i in range(ROWS)]
+    shut = {i for i in closed if type(i) is int} if isinstance(closed, list) else set()
+    return [i in indices and i not in shut for i in range(ROWS)]
+
+
+def _closed(value) -> list[bool]:
+    shut = {i for i in value if type(i) is int} if isinstance(value, list) else set()
+    return [i in shut for i in range(ROWS)]
+
+
+def _seen(net: dict, cols: list[str]) -> list[bool]:
+    """Which of their move columns were shown: the net's `opp_seen`, else every named one."""
+    named = [bool(c) and c != UNSEEN for c in cols[:MOVES]]
+    seen = net.get("opp_seen")
+    if isinstance(seen, list) and len(seen) == MOVES and all(isinstance(x, bool) for x in seen):
+        return [n and s for n, s in zip(named, seen, strict=True)]
+    return named
 
 
 def _grid(net: dict) -> tuple[list[float], list[list[float]], list[float]] | None:
@@ -135,6 +154,7 @@ def matrix_view(net, names: dict[str, str] | None = None, order=None, action=Non
     pi, matrix, p_opp = grid
     p_cols, cells, mega_p = fold(p_opp, matrix)
     rows, cols = _rows(row_ids), _cols(col_ids)
+    seen = _seen(net, cols)
     chosen = action if type(action) is int and 0 <= action < ROWS else None
     played = row_of_order(order, rows)
     kinds = ["move"] * MOVES + ["switch"] * (COLS - MOVES)
@@ -143,11 +163,15 @@ def matrix_view(net, names: dict[str, str] | None = None, order=None, action=Non
         "row_labels": [
             species_label(r, names) if i >= SWITCH_AT else row_label(r, names) for i, r in enumerate(rows)
         ],
-        "legal": _legal(net.get("legal")),
+        "legal": _legal(net.get("legal"), net.get("closed")),
+        "rule_closed": _closed(net.get("closed")),  # legal in the game, closed by a rule mask
         "cols": cols,
         "col_labels": [_col_label(c, k, names) for c, k in zip(cols, kinds, strict=True)],
         "col_kind": kinds,
-        "shown": [bool(c) and c != UNSEEN for c in cols[:MOVES]] + [False] * (COLS - MOVES),
+        "shown": seen + [False] * (COLS - MOVES),
+        # a move column named by the belief head, not shown yet
+        "believed": [bool(c) and c != UNSEEN and not s for c, s in zip(cols[:MOVES], seen, strict=True)]
+        + [False] * (COLS - MOVES),
         # a column they cannot take: an empty slot, or a switch the network gives no chance at all
         "col_legal": [bool(c) and (k == "move" or p > 0) for c, k, p in zip(cols, kinds, p_cols, strict=True)],
         "p_cols": p_cols,

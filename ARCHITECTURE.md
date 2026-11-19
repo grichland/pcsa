@@ -136,6 +136,8 @@ view    the Battle the player decided on:
                      item (null unknown, "" gone), ability, types, active, revealed
 net     the network's outputs (absent on a fallback or a replayed request):
         value, tau, pi[11], score[11], rows[11], cols[13], p_opp[13], matrix[11][13],
+        closed (our actions a rule mask closed), opp_seen[4] (belief_slots checkpoints only: which of
+        their move columns were shown; the others are named by the belief head),
         belief[6]: species, brought, lead (preview only), item [[id, p] x3], ability [[id, p] x3],
                    moves [[id, p] up to 8]
 ```

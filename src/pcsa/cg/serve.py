@@ -53,7 +53,8 @@ def _say(text: str) -> None:
 
 class Proxy:
     """The player as CG's Session sees it: every attribute and hook forwarded; `battle` is the Battle of the last
-    request it was asked to decide. `status()` also carries the checkpoint's run and iteration."""
+    request it was asked to decide. `status()` also carries the checkpoint's run and iteration. A policy with
+    `played` (pcsa.network.policy) is told the action that went out for each turn or replace request."""
 
     def __init__(self, player: Any) -> None:
         self.player = player
@@ -70,7 +71,18 @@ class Proxy:
     def choose_move(self, battle: Any) -> Any:
         self.battle = battle
         choose = getattr(self.player, "choose_move", None) or self.player.choose
-        return choose(battle)
+        action = choose(battle)
+        self._played(battle, action)
+        return action
+
+    def _played(self, battle: Any, action: Any) -> None:
+        played = getattr(getattr(self.player, "policy", None), "played", None)
+        if not callable(played):
+            return
+        try:
+            played(int(battle.decision), action)
+        except Exception as error:  # the order stands
+            _say(f"played: {type(error).__name__}: {error}")
 
     def status(self) -> Any:
         found = getattr(self.player, "status", None)

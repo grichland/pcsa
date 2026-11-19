@@ -10,8 +10,15 @@ is the memory the model had. One lock per policy object around every call.
 
 Here the belief heads run too (they change no other output) and every decision's extras carry, as plain JSON with
 CG string ids (the record contract's `notes.cg.net`):
-- turn and replace: tau, pi, score, p_opp, matrix [11][13], rows (our action names), cols (theirs), belief
+- turn and replace: tau, pi, score, p_opp, matrix [11][13], rows (our action names), cols (theirs), belief;
+  closed (our actions the rule masks closed); with a belief_slots checkpoint also opp_seen [4]: which of their
+  move columns were shown (the others are named by the belief head)
 - preview: belief (with `lead`) and picks_top, the five likeliest (lead, second, third) picks
+
+The rule masks of training (rules.py) are applied to the mask the network reads: the same move at most
+`max_same_move` turns in a row, at most `max_switches` switches by choice in a row. What was played is recorded
+once per decision: the network's own choice when it answers, corrected by `played` (called by pcsa.cg.serve with
+the action that went out, so a fallback's answer or the second answer after a refusal replaces the first).
 """
 
 from __future__ import annotations
@@ -20,12 +27,13 @@ import hashlib
 import os
 import threading
 from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
 import torch
 
-from . import cg_adapter, model, vocab
+from . import cg_adapter, model, rules, vocab
 from . import checkpoint as ckpt
 from . import layout as L
 
@@ -62,13 +70,34 @@ def _top(p: torch.Tensor, kind: str, k: int) -> list[list]:
     return [[vocab.name(kind, int(i)), float(v)] for v, i in zip(values, ids, strict=True) if v > 0]
 
 
+@dataclass
+class _Seat:
+    """One slot's rule state: what it has just done, and the last turn request (to record or record again)."""
+
+    rules: rules.Rules
+    decision: int | None = None
+    obs: dict | None = None
+    before: tuple | None = None  # the counters before `decision` was recorded
+
+    def keep(self) -> None:
+        r = self.rules
+        self.before = (r.key.copy(), r.same.copy(), r.switches.copy())
+
+    def restore(self) -> None:
+        if self.before is not None:
+            r = self.rules
+            r.key, r.same, r.switches = (x.copy() for x in self.before)
+
+
 class Policy:
     """`checkpoint`: a .pt saved by checkpoint.save. `device`: "cpu" for live play. `threads`: torch CPU threads.
     `requery_refused`: ask the network again after a refused choice instead of the shell reusing the first answer.
-    `allow_contract`: load a checkpoint made under another contract version; CG's own check still reports it."""
+    `allow_contract`: load a checkpoint made under another contract version; CG's own check still reports it.
+    `rule_masks`: training's rule masks, with the limits `max_same_move` and `max_switches` (0: no such rule)."""
 
-    def __init__(self, checkpoint: str, device: str = "cpu", threads: int = 4, requery_refused: bool = False,
-                 allow_contract: bool = False):  # fmt: skip
+    def __init__(self, checkpoint: str, device: str = "cpu", threads: int = 4, requery_refused: bool = False,  # noqa: PLR0913
+                 allow_contract: bool = False, rule_masks: bool = True, max_same_move: int = 4,
+                 max_switches: int = 3):  # fmt: skip
         torch.set_num_threads(int(threads))
         self.device = device
         lay = cg_adapter.layout()  # the layout from champions_gym.FEATURES, checked against CG
@@ -77,6 +106,9 @@ class Policy:
         self.net.eval()
         self.memory: model.Memory | None = None
         self.lock = threading.Lock()
+        self.layout = lay
+        self.rule_cfg = rules.RuleConfig(int(max_same_move), int(max_switches)) if rule_masks else None
+        self.seats: dict[int, _Seat] = {}
         self.cols = {"species": lay.col(L.F_SPECIES), "moves": lay[L.F_MOVE_ID].columns(),
                      "active": lay.col(L.F_IS_ACTIVE)}  # fmt: skip
         lt = ck["layout"]
@@ -101,6 +133,9 @@ class Policy:
             "run": ck.get("extra", {}).get("run"),
             "iteration": ck.get("extra", {}).get("iteration"),
             "memory": self.net.cfg.memory,
+            "belief_slots": bool(self.net.cfg.belief_slots),
+            "rule_masks": None if self.rule_cfg is None else
+            {"max_same_move": self.rule_cfg.max_same_move, "max_switches": self.rule_cfg.max_switches},
         }
 
     def _grow(self, need: int) -> model.Memory:
@@ -115,6 +150,8 @@ class Policy:
 
     def reset(self, slots: Sequence[int]) -> None:
         with self.lock:
+            for s in slots:
+                self.seats.pop(s, None)
             if self.memory is not None:
                 ok = [s for s in slots if s < self.memory.hist.shape[0]]
                 if ok:
@@ -132,21 +169,92 @@ class Policy:
         s = torch.as_tensor(list(slots), dtype=torch.long, device=self.device)
         return self.net.forward(b, memory=mem, slots=s, beliefs=True)
 
+    def _turn_obs(self, arrays: Any, r: int) -> dict | None:
+        """Row r as rules.Rules reads it (one game), or None when it is not a turn request."""
+        if int(np.asarray(arrays.kind).reshape(-1)[r]) != L.KIND_TURN:
+            return None
+        one = lambda x: np.asarray(x)[r : r + 1]  # noqa: E731
+        return {"mask": one(arrays.mask), "seat": np.zeros(1, np.int64), "kind": np.full(1, L.KIND_TURN),
+                "rows": one(arrays.rows), "row_ids": one(arrays.row_ids)}  # fmt: skip
+
+    def _seat(self, slot: int, decision: int, obs: dict) -> _Seat:
+        """The slot's rule state at this turn request: as it was before the request when it is asked again."""
+        assert self.rule_cfg is not None
+        seat = self.seats.get(slot)
+        if seat is None:
+            seat = self.seats[slot] = _Seat(rules.Rules(self.rule_cfg, self.layout, 1))
+        if seat.decision == decision:
+            seat.restore()
+        else:
+            seat.keep()
+        seat.decision, seat.obs = decision, obs
+        return seat
+
+    def _close(self, arrays: Any, b: dict, slots: Sequence[int]) -> list[list[int]]:
+        """The rule masks applied to b["mask"] (a copy); per row the actions they closed."""
+        closed: list[list[int]] = [[] for _ in slots]
+        if self.rule_cfg is None:
+            return closed
+        decisions = np.asarray(arrays.decision).reshape(-1)
+        mask = b["mask"].clone()
+        for r, slot in enumerate(slots):
+            obs = self._turn_obs(arrays, r)
+            if obs is None:
+                continue
+            new = self._seat(slot, int(decisions[r]), obs).rules.mask(obs)[0]
+            closed[r] = [int(a) for a in np.flatnonzero((obs["mask"][0] > 0) & (new == 0))]
+            mask[r] = torch.from_numpy(new).to(mask)
+        b["mask"] = mask
+        return closed
+
+    def _record(self, seat: _Seat, action: int) -> None:
+        seat.restore()
+        if seat.obs is not None:
+            seat.rules.record(seat.obs, np.array([int(action)]))
+
+    def played(self, decision: int, action: Any) -> None:
+        """The action that went out for `decision` (the shell's choice, a fallback's, or the second answer after a
+        refusal): it replaces what was recorded for that decision."""
+        if isinstance(action, bool) or not isinstance(action, int):
+            return
+        with self.lock:
+            for seat in self.seats.values():
+                if seat.decision == int(decision):
+                    self._record(seat, action)
+
     @torch.no_grad()
     def observe(self, arrays: Any, slots: Sequence[int], actions: Sequence[int | None] = ()) -> None:
-        """Requests answered without asking: the memory step only (the action does not enter the memory)."""
+        """Requests answered without asking: the memory step (the action does not enter the memory), and the
+        action, when known, into the rule state."""
         with self.lock:
-            self._forward(self.batch(arrays), slots)
+            b = self.batch(arrays)
+            self._close(arrays, b, slots)
+            self._forward(b, slots)
+            kinds = np.asarray(arrays.kind).reshape(-1)
+            for r, (slot, action) in enumerate(zip(slots, actions, strict=False)):
+                seat = self.seats.get(slot)
+                if seat is not None and action is not None and int(kinds[r]) == L.KIND_TURN:
+                    self._record(seat, int(action))
 
     @torch.no_grad()
     def decide(self, arrays: Any, slots: Sequence[int], battles: Any = None) -> dict[str, Any]:
         b = self.batch(arrays)
         with self.lock:
+            closed = self._close(arrays, b, slots)
             out = self._forward(b, slots)
-        scores = torch.cat([decide_log(out["pi"]), decide_log(out["preview_pi"])], dim=1).cpu()  # [B, 71]
+            scores = torch.cat([decide_log(out["pi"]), decide_log(out["preview_pi"])], dim=1).cpu()  # [B, 71]
+            kinds = np.asarray(arrays.kind).reshape(-1)
+            for r, slot in enumerate(slots):  # the shell's argmax, until `played` says what went out
+                seat = self.seats.get(slot)
+                if seat is not None and int(kinds[r]) == L.KIND_TURN:
+                    self._record(seat, int(scores[r, : L.OWN_ACTIONS].argmax()))
         value = out["value"].cpu()
         try:
             extras = self.all_extras(arrays, b, out, len(slots))
+            if self.rule_cfg is not None:
+                for e, c in zip(extras, closed, strict=True):
+                    if "pi" in e:
+                        e["closed"] = c
         except Exception as error:  # display only: the decision stands without them
             extras = [{"error": f"extras: {type(error).__name__}: {error}"} for _ in slots]
         return {"scores": scores, "value": value, "extras": extras}
@@ -174,9 +282,11 @@ class Policy:
                 "p_opp": lambda: out["p_opp"][r].tolist(),
                 "matrix": lambda: out["matrix"][r].tolist(),
                 "rows": lambda: self.own_names(ids, rows),
-                "cols": lambda: self.opp_names(ids),
+                "cols": lambda: self.opp_names(ids, out["opp_named"][r] if "opp_named" in out else None),
                 "belief": lambda: self.belief(out, r, ids, preview=False),
             }
+            if "opp_seen" in out:
+                parts["opp_seen"] = lambda: [bool(x) for x in out["opp_seen"][r]]
         made, errors = {}, []
         for key, make in parts.items():
             try:
@@ -202,13 +312,14 @@ class Policy:
         moves = [vocab.name("moves", int(m)) for m in ids[active, self.cols["moves"]]]
         return moves + moves + [self._species(ids, p) for p in range(L.OWN_PICKS)]
 
-    def opp_names(self, ids: torch.Tensor) -> list[str | None]:
+    def opp_names(self, ids: torch.Tensor, named: torch.Tensor | None = None) -> list[str | None]:
         """Their 13 actions: row 6's moves by slot ("" for the first empty slot: a move not yet seen, None after),
-        the same with Mega, the species of rows 7-11."""
+        the same with Mega, the species of rows 7-11. `named` (a belief_slots checkpoint's opp_named): the slots'
+        move ids with the empty ones named by the belief head; a slot it left at 0 is read as before."""
         moves: list[str | None] = [None] * L.MOVE_SLOTS
         if self._species(ids, L.OPP_ACTIVE) is not None:
             unseen = False
-            for s, m in enumerate(ids[L.OPP_ACTIVE, self.cols["moves"]]):
+            for s, m in enumerate(ids[L.OPP_ACTIVE, self.cols["moves"]] if named is None else named):
                 moves[s] = vocab.name("moves", int(m))
                 if moves[s] is None and not unseen:
                     moves[s], unseen = "", True

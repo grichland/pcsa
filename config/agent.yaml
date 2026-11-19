@@ -11,6 +11,8 @@ cg:                       # used when decide.player is cg (LIVE 0.7-0.9 messages
   # The neural player (CG's champions_gym.neural shell, pcsa.network.policy) in pcsa.cg.serve, which adds the
   # Battle and the network's outputs to each reply. {python} is this venv's interpreter; the checkpoint is taken
   # from the repo root. A built-in player instead: [{python}, -m, pcsa.cg.serve, --player, tower].
+  # policy_args also takes the rule masks of training, on by default: "rule_masks": true, "max_same_move": 4
+  # (the same move at most 4 turns in a row), "max_switches": 3 (at most 3 switches by choice in a row).
   command:
   - '{python}'
   - -m

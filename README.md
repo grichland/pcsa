@@ -114,7 +114,8 @@ uv run pcsa watch --run output\runs\<stamp>-run --port 8770   # a given run, ano
 
 It has four panels. On the left, the newest saved phone frame, and under it the neural player's decision
 matrix: the opponent's actions across the top (their revealed moves, one column for a move not yet seen, and
-their switches, each with the probability the network gives it), our actions down the side, every cell shaded
+their switches, each with the probability the network gives it; with a checkpoint trained with belief slots the
+moves not yet seen are named columns instead, underlined with dashes), our actions down the side, every cell shaded
 by how good our action is against theirs (the score is printed in each cell), and our resulting policy as a bar
 per row. A score per row is the row's cells weighted by their probabilities, which is what the network ranks
 our actions by; a "for them" total per column says how each of their actions turns out for them. The network
@@ -171,7 +172,11 @@ predict the opponent, then choose.
   A battle picked up again after a restart gets its memory rebuilt by replaying the earlier requests.
 - **Their action.** One head gives a probability to each of their 13 actions: the four move slots of their
   active Pokémon (revealed moves, and one slot standing for a move not yet seen), the same four with Mega
-  Evolution, and their five possible switches.
+  Evolution, and their five possible switches. A checkpoint trained with `belief_slots` names each empty slot
+  with the most likely move it has not shown, from the belief head and the species' learnset.
+- **Rule masks.** As in training, a move used 4 turns in a row is closed while another move is open, and after
+  3 switches by choice in a row switching is closed while a move is open. `policy_args` in `config/agent.yaml`
+  takes `rule_masks` (false: off), `max_same_move` and `max_switches`.
 - **The matrix.** Our 11 actions (4 moves, the same 4 with Mega Evolution, 3 switches) are the rows and their
   13 actions the columns; a cell scores our action against theirs. Each row is averaged over the columns,
   weighted by how likely each column is, and a softmax over those scores gives the policy. No action gets more

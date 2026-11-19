@@ -14,7 +14,7 @@ pytest.importorskip("champions_gym")
 from pcsa.cg.serve import NEURAL, Server, make_player  # noqa: E402
 from tests.cg import neural, recorded  # noqa: E402
 
-NET_KEYS = {"decision", "kind", "legal", "value", "tau", "pi", "score", "p_opp", "matrix", "rows", "cols", "belief"}
+NET_KEYS = {"decision", "kind", "legal", "value", "tau", "pi", "score", "p_opp", "matrix", "rows", "cols", "belief", "closed"}
 
 
 @pytest.fixture(scope="module")
