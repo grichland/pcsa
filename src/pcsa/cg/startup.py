@@ -111,7 +111,8 @@ def with_log_dir(cfg: CGConfig, folder: Path) -> CGConfig:
 def _same_file(a: Any, b: str) -> bool:
     if not isinstance(a, str):
         return False
-    return os.path.normcase(os.path.abspath(a)) == os.path.normcase(os.path.abspath(b))
+    a, b = (os.path.normcase(os.path.abspath(p.replace("\\", "/"))) for p in (a, b))  # either separator, any OS
+    return a == b
 
 
 def status_problems(reply: Any, cfg: CGConfig) -> list[str]:

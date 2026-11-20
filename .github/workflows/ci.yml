@@ -7,6 +7,7 @@ on:
 jobs:
   check:
     strategy:
+      fail-fast: false   # one system failing does not cancel the other
       matrix:
         # Champions Gym ships a Windows wheel only: on Linux it is not installed and its tests skip.
         os: [windows-latest, ubuntu-latest]
@@ -21,4 +22,11 @@ jobs:
       - run: uv run pyright
         if: runner.os == 'Windows'   # the Champions Gym imports do not resolve where it is not installed
       - run: uv run lint-imports
-      - run: uv run pytest
+      - name: pytest
+        shell: bash
+        run: uv run pytest -rfE 2>&1 | tee pytest.log
+      - name: failed tests as annotations
+        if: failure()
+        shell: bash
+        run: |
+          grep -E "^(FAILED|ERROR) " pytest.log | head -10 | while IFS= read -r line; do echo "::error::${line}"; done || true
