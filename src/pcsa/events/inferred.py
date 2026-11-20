@@ -48,7 +48,7 @@ class OppActive:
     def _possible(self, mon: str) -> bool:
         if mon in self.fainted:
             return False
-        return not self.preview or None in self.preview or base_id(mon) in self.preview
+        return not self.preview or None in self.preview or base_id(mon) in {base_id(p) for p in self.preview if p}
 
 
 def _candidates(slot) -> list:
@@ -60,7 +60,7 @@ def _candidates(slot) -> list:
 def misread_slot(preview, ids: list, entered: set[str], mon: str) -> int | None:
     """The preview slot an entering Pokémon outside the six names was misread in: among the slots not seen yet,
     one whose other sprite matches name it, else the weakest match. None when every slot has been seen."""
-    open_slots = [i for i, ident in enumerate(ids) if ident not in entered]
+    open_slots = [i for i, ident in enumerate(ids) if ident is None or base_id(ident) not in entered]
     if not open_slots:
         return None
     slots = list(preview or ())

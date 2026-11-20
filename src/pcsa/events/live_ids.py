@@ -92,16 +92,42 @@ def base_id(name: str) -> str:
     return to_id(entry.get("baseSpecies") or ident) if entry else ident
 
 
+def preview_id(name: str) -> str:
+    """Species id as brought of a preview name: the form the sprite shows (Rotom Wash, Alolan Ninetales), which
+    the log's rows leave out. A Mega or another form taken only in battle is its base species."""
+    ident = species_id(name)
+    entry = game.species_entry(ident) if ident in game.dex() else {}
+    in_battle = str(entry.get("forme") or "").startswith("Mega") or entry.get("battleOnly")
+    return ident if entry and not in_battle else base_id(name)
+
+
+@lru_cache(maxsize=None)
+def form_by_move(mon: str, move: str) -> str | None:
+    """The one form of the species that learns a move `mon` does not (Hydro Pump: Rotom Wash); else None."""
+    sets = game.learnsets()
+    if mon not in sets or move in sets[mon]:
+        return None
+    base = base_id(mon)
+    forms = [s for s in sets if s != mon and move in sets[s] and base_id(s) == base and preview_id(s) == s]
+    return forms[0] if len(forms) == 1 else None
+
+
 def mon_id(name: str, side: str | None, teams: Teams) -> str:
-    """Species id as brought: an own row's name is matched to our brought species by base species.
-    An OCR-damaged name is mapped to a uniquely close species of the battle's teams, then of the dex."""
+    """Species id as brought: an own row's name is matched to our brought species by base species, another
+    row's to the form their preview showed. An OCR-damaged name is mapped to a uniquely close species of the
+    battle's teams, then of the dex."""
     ident = species_id(name)
     if ident not in game.dex():
         ident = repair_species(ident, teams) or ident
+    base = base_id(ident)
     if side == "own":
         for brought in teams.own:
-            if base_id(brought) == base_id(ident):
+            if base_id(brought) == base:
                 return to_id(brought)
+    elif side == "opp" or base not in teams.own_ids():
+        shown = [preview_id(p) for p in teams.opp_preview if p and base_id(p) == base]
+        if len(shown) == 1 and ident == base:
+            return shown[0]
     return ident
 
 

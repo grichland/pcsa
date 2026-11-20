@@ -8,7 +8,7 @@ inferred from the 66-point total (not read) drops `points` for that member (rule
 from __future__ import annotations
 
 from pcsa.battle.ids import to_id
-from pcsa.events.live_ids import VERSION, Teams, ability_id, base_id, item_id, move_id, species_id
+from pcsa.events.live_ids import VERSION, Teams, ability_id, item_id, move_id, preview_id, species_id
 
 STATS = ("hp", "atk", "def", "spa", "spd", "spe")
 INFERRED = "inferred from"  # the wording for a stat point that was computed, not read
@@ -74,7 +74,7 @@ def roster_of(meta: dict, own_team: dict | None) -> list[str]:
 
 def opp_preview(meta: dict, run_events: list[dict]) -> list[str | None]:
     """Six species ids as shown at preview (the top sprite match), None where unread."""
-    return [base_id(n) if n else None for n in preview_names(meta, run_events)]
+    return [preview_id(n) if n else None for n in preview_names(meta, run_events)]
 
 
 def picks_of(meta: dict, run_events: list[dict]) -> list[int] | None:
@@ -101,12 +101,12 @@ def teams_for_rows(meta: dict, brought: list[str], preview_names: list[str | Non
 
 
 def preview_names(meta: dict, run_events: list[dict]) -> list[str | None]:
-    """Display names at preview, for the row converter's side rules."""
+    """Display names at preview, form included (`top`; `species` is the same match without its form)."""
     slots = meta.get("opponent_preview") or []
     if slots:
         out = []
         for slot in slots:
-            top = (slot.get("species") or slot.get("top") or [[None]])[0]
+            top = (slot.get("top") or slot.get("species") or [[None]])[0]
             out.append(top[0] if top else None)
         return out
     return list(next((e.get("opponent") for e in run_events if e.get("event") == "team_preview"), None) or [])

@@ -165,6 +165,35 @@ def test_our_active_and_mega_come_from_the_screen_when_the_read_lost_them() -> N
     assert not [p for e in events.events for p in problems(e)]
 
 
+def test_their_pokemon_keep_the_form_the_preview_showed() -> None:
+    preview = tuple({"top": [[n, 0.9]]} for n in ("Rotom Wash", "Alolan Ninetales", "Garchomp", "Charizard"))
+    b = replace(battle(), opponent_preview=preview)
+    events = BattleEvents("b-1", TEAM, preview)
+    assert events.all()[0]["opp_preview"] == ["rotomwash", "ninetalesalola", "garchomp", "charizard"]
+    read(b, 1, ["Go! Mamoswine!", "U- sent out Rotom!", "Move: The opposing Rotom used Hydro Pump!"])
+    read(b, 2, ["HP Lost: Ninetales’s HP: 100% → 82%"], warnings=["start of log is not captured"])
+    new = [e for e in events.update(b) if e.get("side") == "opp"]
+    assert [(e["k"], e["mon"]) for e in new] == [
+        ("enter", "rotomwash"), ("move", "rotomwash"), ("enter", "ninetalesalola"), ("hp", "ninetalesalola"),
+    ]  # fmt: skip
+    assert events.preview_fixes == [] and not [p for e in events.events for p in problems(e)]
+
+
+def test_a_move_only_one_form_learns_names_the_form() -> None:
+    preview = tuple({"top": [[n, 0.9]]} for n in ("Rotom", "Lucario", "Garchomp"))
+    b, events = replace(battle(), opponent_preview=preview), BattleEvents("b-1", TEAM, preview)
+    read(b, 1, ["Go! Mamoswine!", "U- sent out Rotom!", "Move: The opposing Rotom used Thunderbolt!"])
+    events.update(b)
+    assert events.all()[0]["opp_preview"] == ["rotom", "lucario", "garchomp"] and events.opp.active == "rotom"
+    read(b, 2, ["Move: The opposing Rotom used Hydro Pump!", "HP Lost: Rotom’s HP: 100% → 90%"])
+    events.update(b)
+    assert events.all()[0]["opp_preview"] == ["rotomwash", "lucario", "garchomp"] and events.opp.active == "rotomwash"
+    theirs = [e["mon"] for e in events.events if e.get("side") == "opp"]
+    assert theirs == ["rotomwash"] * 4  # the earlier rows too, and the row after the move
+    assert events.preview_fixes == [{"slot": 0, "was": "rotom", "now": "rotomwash", "by": "hydropump"}]
+    assert not [p for e in events.events for p in problems(e)]
+
+
 def test_no_enter_for_a_fainted_or_unlisted_opposing_pokemon() -> None:
     from pcsa.events.inferred import OppActive
 

@@ -13,10 +13,21 @@ from pcsa.battle.ids import to_id
 from pcsa.battle.log_rows import RawRow, parse_row, split_category
 from pcsa.battle.teams import OwnMember, Team
 from pcsa.decide.api import LogRow
+from pcsa.events.forms import rename
 from pcsa.events.gaps import gap, visit_gaps
 from pcsa.events.inferred import OppActive, misread_slot
 from pcsa.events.live import Converter
-from pcsa.events.live_ids import Teams, ability_id, base_id, item_id, mon_id, move_id, species_id
+from pcsa.events.live_ids import (
+    Teams,
+    ability_id,
+    base_id,
+    form_by_move,
+    item_id,
+    mon_id,
+    move_id,
+    preview_id,
+    species_id,
+)
 from pcsa.events.start import STATS, battle_start
 from pcsa.phone.log_record import row_record
 from pcsa.run.battle_state import BattleRecord
@@ -50,7 +61,7 @@ def preview_names(preview) -> list[str | None]:
 
 
 def preview_ids(preview) -> tuple[str | None, ...]:
-    return tuple(base_id(n) if n else None for n in preview_names(preview))
+    return tuple(preview_id(n) if n else None for n in preview_names(preview))
 
 
 def sprite_name(sprite: dict | None) -> tuple[str | None, float | None]:
@@ -136,6 +147,7 @@ class BattleEvents:
                 if turn < self.turn and _own(event, "enter") and event.get("mon") == self.own_active():
                     continue  # an old row of an entry the screen already gave
                 self._fix_preview(event)
+                self._fix_form(event)
                 self.events += self.opp.step(event, late=turn < self.turn)
             self.sent[turn] = max(start, len(rows))
         return self.events[before:]
@@ -172,7 +184,7 @@ class BattleEvents:
         if event.get("k") != "enter" or event.get("side") != "opp" or not ids or None in ids:
             return
         mon = base_id(event["mon"])
-        if mon in ids:
+        if mon in {base_id(i) for i in ids if i}:
             return
         slot = misread_slot(self.preview, ids, self.opp.entered, mon)
         if slot is None:
@@ -181,6 +193,32 @@ class BattleEvents:
         ids[slot] = mon
         self.start = {**self.start, "opp_preview": ids}
         self.opp.preview = tuple(ids)
+
+    def _fix_form(self, event: dict) -> None:
+        """Their Pokémon uses a move only another form of it learns: the preview left the form out or misread it.
+        The slot, the rows' names and the events so far take the form; CG then gets the battle again."""
+        if event.get("k") != "move" or event.get("side") != "opp" or not event.get("mon"):
+            return
+        was = event["mon"]
+        now = form_by_move(was, str(event.get("move") or ""))
+        if now is None:
+            return
+        for e in (*self.events, event):
+            rename(e, was, now)
+        ids: list = list(self.start.get("opp_preview") or ())
+        at = [i for i, ident in enumerate(ids) if ident and base_id(ident) == base_id(was)] or [
+            i for i, ident in enumerate(ids) if ident is None
+        ]
+        if at:
+            ids[at[0]] = now
+            names = list(self.converter.teams.opp_preview)
+            names[at[0] : at[0] + 1] = [now]
+            self.converter.teams = Teams(self.converter.teams.own, tuple(names))
+            self.start = {**self.start, "opp_preview": ids}
+            self.opp.preview = tuple(ids)
+        self.opp.active = now if self.opp.active == was else self.opp.active
+        self.opp.fainted = {now if m == was else m for m in self.opp.fainted}
+        self.preview_fixes.append({"slot": at[0] if at else None, "was": was, "now": now, "by": event.get("move")})
 
     def refused(self, order: dict) -> None:
         """Only for a choice the game refused; a repeated tap is `retry` on the request (LIVE 0.5, CF-8)."""
