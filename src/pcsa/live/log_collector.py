@@ -1,12 +1,14 @@
 """Open the battle log, capture the bottom view once settled, climb toward older entries, stop at a budget.
 
-Only pixel checks run between captures; OCR runs afterwards on the batch. Running out of budget leaves the start
+Only pixel checks run between captures; the caller reads the text (`on_settled` hands it each view as soon as a
+second capture confirms it, so the reading can run while the climb goes on). Running out of budget leaves the start
 uncaptured, which the merge reports. A page reached with the heading arrows is collected the same way; one that
 shows its top first is descended instead.
 """
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -53,6 +55,7 @@ class LogCollector:
         self.timing = timing
         self.config = config
         self.size = viewport_size
+        self._on_settled: Callable[[int, Frame], None] | None = None
 
     def _drag_pixels(self, drag: DragConfig) -> tuple[int, int, int]:
         rng = self.executor.rng
@@ -79,12 +82,19 @@ class LogCollector:
             self.clock.sleep(self.timing.back_settle_s)
 
     def collect(
-        self, deadline: Deadline, *, close: bool = True, opened: bool = False, seconds_max: float | None = None
+        self,
+        deadline: Deadline,
+        *,
+        close: bool = True,
+        opened: bool = False,
+        seconds_max: float | None = None,
+        on_settled: Callable[[int, Frame], None] | None = None,
     ) -> Collected:
         """Capture the bottom view until settled, climb while the budget allows, confirm the top. `opened`: the
         panel already shows the page to collect (a page reached with the arrows); it may show its top first."""
         started = self.clock.now()
         out = Collected(panel_open=opened)
+        self._on_settled = on_settled
         budget = Deadline.after(self.clock, seconds_max or self.config.seconds_max).earliest(deadline)
         if budget.expired():
             out.stop_reason = "deadline"
@@ -169,6 +179,8 @@ class LogCollector:
                 state.previous, state.previous_index = normalized, index
                 return False
             out.rejected.append(index)  # a duplicate of a settled frame
+            if self._on_settled is not None and state.previous_index is not None:
+                self._on_settled(state.previous_index, out.frames[state.previous_index])
             if state.name == "top" or not present or edge:
                 end = "bottom_confirmed" if state.down else "top_confirmed"
                 out.stop_reason = end if present else "settled_no_scrollbar"

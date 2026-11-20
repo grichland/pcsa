@@ -51,6 +51,7 @@ class TimingConfig(Strict):
     inter_tap_s: float = 0.5
     post_action_wait_s: float = 10.0
     poll_interval_s: float = 1.0
+    poll_cycle_s: float = 2.0  # from one screen check's start to the next; the pause is what is left of it
     fight_settle_s: float = 0.9
     back_settle_s: float = 0.7
     party_settle_s: float = 0.9  # live/party_switch.py: after Pokémon and after Switch In, before reading the screen
@@ -118,7 +119,8 @@ class OcrConfig(Strict):
     det_model: str = "ch_PP-OCRv5_det_mobile.onnx"
     rec_model: str = "en_PP-OCRv5_rec_mobile.onnx"
     det_limit_side_len: int = 736
-    threads: int = 4
+    det_limit_type: Literal["min", "max"] = "min"  # max: the long side is shrunk to the limit
+    threads: int = 8
     min_confidence: float = 0.80
 
 

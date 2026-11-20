@@ -199,7 +199,7 @@ def repair_team_selection(s, obs: Observation, b: BattleRecord) -> None:
     b.team_repairs += 1
     if b.team_repairs > MAX_TEAM_REPAIRS:
         log.warning("team_repair_exhausted", battle=b.index)
-        s.clock.sleep(s.agent.timing.poll_interval_s)
+        s.pause()
         return
     markers = obs.fields.get("markers", {})
     current = [row for row, _ in sorted(markers.items(), key=lambda kv: kv[1])]
@@ -302,13 +302,13 @@ def awaiting_rating(s) -> bool:
 
 def on_result(s, obs: Observation) -> None:
     finalize(s, obs.fields.get("outcome"))
-    s.clock.sleep(s.agent.timing.poll_interval_s)
+    s.pause()
 
 
 def on_forfeit(s, obs: Observation) -> None:
     if s.battle and not s.battle.finished and s.battle.outcome is None:
         s.battle.outcome = "opponent_forfeit"
-    s.clock.sleep(s.agent.timing.poll_interval_s)
+    s.pause()
 
 
 def on_options(s, obs: Observation) -> None:
@@ -331,7 +331,7 @@ def on_waiting(s, obs: Observation) -> None:
     if hint and s.battle and not s.battle.finished and s.battle.outcome_hint != hint:
         s.battle.outcome_hint = hint
         log.event("outcome_hint", battle=s.battle.index, hint=hint)
-    s.clock.sleep(s.agent.timing.poll_interval_s)
+    s.pause()
 
 
 def on_not_adopted(s, obs: Observation) -> None:
@@ -340,7 +340,7 @@ def on_not_adopted(s, obs: Observation) -> None:
         s.skipped_screen = obs.screen
         log.warning("battle_not_adopted", screen=str(obs.screen), frame=obs.frame_id)
         s.progress()  # a new screen of the battle being waited out is progress
-    s.clock.sleep(s.agent.timing.poll_interval_s)
+    s.pause()
 
 
 def on_rank_change(s, obs: Observation) -> None:
@@ -348,11 +348,11 @@ def on_rank_change(s, obs: Observation) -> None:
     if obs.screen == Screen.REWARDS:
         if not awaiting_rating(s):
             finalize(s, None)
-        s.clock.sleep(s.agent.timing.poll_interval_s)
+        s.pause()
         return
     finalize(s, None)
     if obs.screen == Screen.RANK_UP and obs.fields.get("stage") != "reward_popup":
-        s.clock.sleep(s.agent.timing.poll_interval_s)  # cutscene or moving popup: wait
+        s.pause()  # cutscene or moving popup: wait
         return
     s.phone.navigator.reach(
         Screen.LOBBY, Deadline.after(s.clock, s.agent.timing.screen_timeouts.get(str(obs.screen), 60))
@@ -370,7 +370,7 @@ def on_stray(s, obs: Observation) -> None:
     if obs.screen == Screen.PARTY and obs.fields.get("no_back"):
         # No Back to tap: a pivot (U-turn) or a replacement nothing marked fainted; polled again.
         log.event("party_without_back", focused_row=obs.fields.get("focused_row"))
-        s.clock.sleep(s.agent.timing.poll_interval_s)
+        s.pause()
         return
     log.warning("stray_surface", screen=str(obs.screen))
     s.phone.navigator.back_out(obs)

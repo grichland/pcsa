@@ -67,6 +67,7 @@ class Session:
 
     # I/O --------------------------------------------------------------------------------------------
     def observe(self, tag: str = "poll") -> tuple[Observation, Any]:
+        self.checked_at = self.clock.now()
         obs, frame = self.phone.observe(tag)
         rank = obs.fields.get("own_rank")
         if rank and obs.screen in (Screen.LOBBY, Screen.REWARDS, Screen.OPTIONS):
@@ -85,6 +86,12 @@ class Session:
                 f"unknown/{obs.frame_id}.json", {"reason": obs.reason, "boxes": [b.record() for b in obs.texts]}
             )
         return obs, frame
+
+    def pause(self) -> None:
+        """Wait for the next screen check: what is left of the cycle since the last one began."""
+        timing = self.agent.timing
+        left = getattr(self, "checked_at", self.clock.now()) + timing.poll_cycle_s - self.clock.now()
+        self.clock.sleep(max(0.0, min(timing.poll_interval_s, left)))
 
     def tap(self, name: str, obs: Observation) -> None:
         tap = self.phone.executor.point(name)

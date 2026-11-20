@@ -156,7 +156,9 @@ absolute). Checkpoints live in `assets/models/` and are committed with git:
 
 | model | what it is | used by |
 |---|---|---|
-| `league-20261119-v-iter-00162.pt` | league run v, iteration 162 | the live model (`config/agent.yaml`) |
+| `league-20261119-v-iter-00180-gold100.pt` | league run v, iteration 180, opponent head fitted to 100 live games | the live model (`config/agent.yaml`) |
+| `league-20261119-v-iter-00180-gold100-labels.pt` | the same, then fitted to the reviewed ladder labels (report: the `.report.json` beside it) | not in use |
+| `league-20261119-v-iter-00162.pt` | league run v, iteration 162 | the previous live model |
 | `league-20261118-g-iter-00148.pt` | league run g, iteration 148 | the recorded session the tests replay (`tests/cg/`) |
 
 A checkpoint stores the layout of its inputs; CG refuses one made for another layout or contract version

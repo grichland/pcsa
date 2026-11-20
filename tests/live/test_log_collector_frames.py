@@ -51,3 +51,14 @@ def test_the_last_capture_is_kept_unsettled_and_a_timer_warning_does_not_discard
     assert phone.drags == 3  # the warning frame is read through, so it confirms the middle view
     assert [i for i, _ in out.kept()] == [0, 2, 5]
     assert out.unsettled == [5]
+
+
+def test_a_view_is_handed_over_as_soon_as_a_second_capture_confirms_it(config) -> None:
+    clock = FakeClock()
+    names = ["mega-bottom.jpg", "mega-bottom.jpg", "mega-middle.jpg", "mega-middle-timer.jpg"]
+    phone = Phone([*names, "mega-middle.jpg", "mega-top.jpg"], clock)
+    collector = LogCollector(phone, phone, clock, config.agent.timing, config.agent.log, (2340, 1080))  # type: ignore[arg-type]
+    handed: list[tuple[int, int]] = []
+    out = collector.collect(Deadline.after(clock, BUDGET_S), on_settled=lambda i, f: handed.append((i, phone.captures)))
+    assert handed == [(0, 2), (2, 4)]  # each during the climb, at the capture that confirmed it
+    assert {i for i, _ in handed} <= {i for i, _ in out.kept()} and out.unsettled == [5]

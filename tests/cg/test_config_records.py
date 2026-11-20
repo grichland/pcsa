@@ -19,7 +19,7 @@ def test_the_shipped_command_resolves_to_this_python_and_an_absolute_checkpoint(
     done = startup.resolved(cfg)
     assert done.command is not None and done.command[0] == sys.executable and done.command[1:3] == ["-m", "pcsa.cg.serve"]
     args = json.loads(done.command[done.command.index("--player-args") + 1])
-    want = repo_root() / "assets" / "models" / "league-20261119-v-iter-00162.pt"
+    want = repo_root() / "assets" / "models" / "league-20261119-v-iter-00180-gold100.pt"
     assert Path(args["checkpoint"]) == want and want.is_file()
     assert args["policy"] == "pcsa.network.policy:Policy" and args["fallback"] == "tower"
     assert startup.checkpoint(done) == str(want) and startup.expects_model(done)

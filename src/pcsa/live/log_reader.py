@@ -1,10 +1,11 @@
-"""Reading the in-game battle log for one action screen: collect, OCR, recover missed overlaps, page back to turns
-the heading skipped, merge."""
+"""Reading the in-game battle log for one action screen: collect (each settled view is read on a worker thread
+while the climb goes on), recover missed overlaps, page back to turns the heading skipped, merge."""
 
 from __future__ import annotations
 
 import copy
 from collections import Counter
+from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass, field, replace
 
 from pcsa.common import log
@@ -54,15 +55,21 @@ class LogReader:
         self.collector = LogCollector(
             phone.executor, phone.device, clock, config.timing, config.log, phone.profile.frame_size
         )
+        self._worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix="pcsa-log-read")
         self.pager = Pager(self.collector, phone.reader, phone.profile.viewport, recorder, clock, config.log.paging)
 
     def collect_log(self, b: BattleRecord, visit: int, deadline: Deadline) -> LogVisit:
         started = self.clock.now()
         prefix = f"{b.dir}/log-frames/visit{visit:02d}"
-        collected = self.collector.collect(deadline, close=False)
+        early: dict[int, Future] = {}
+
+        def settled(index: int, frame) -> None:
+            early[index] = self._worker.submit(self._read, frame, f"{prefix}-{index}.png")
+
+        collected = self.collector.collect(deadline, close=False, on_settled=settled)
         paging = None
         try:
-            views, errors, frames = self._read_views(prefix, collected)
+            views, errors, frames = self._read_views(prefix, collected, early)
             self._recover_gaps(b, visit, prefix, collected, views, errors, frames, deadline)
             paging = self._page_back(b, prefix, collected, views, errors, deadline)
         finally:
@@ -98,12 +105,23 @@ class LogReader:
         )
         return info
 
-    def _read_views(self, prefix: str, collected: Collected) -> tuple[list, list[str], list[str]]:
+    def _read(self, frame, source: str):
+        return read_view(to_reference(frame.image, self.phone.profile.viewport), self.phone.reader, source)
+
+    def _read_views(
+        self, prefix: str, collected: Collected, early: dict[int, Future] | None = None
+    ) -> tuple[list, list[str], list[str]]:
+        """The kept frames as views; `early` holds the readings started during the collection."""
         frames = [self.rec.save_frame(f"{prefix}-{i}.png", f.image, png=True) for i, f in enumerate(collected.frames)]
+        early = early or {}
+        kept = collected.kept()
+        for i in set(early) - {i for i, _ in kept}:
+            early[i].cancel()
         views, errors = [], []
-        for i, frame in collected.kept():
+        for i, frame in kept:
             try:
-                view = read_view(to_reference(frame.image, self.phone.profile.viewport), self.phone.reader, frames[i])
+                reading = early[i] if i in early else self._worker.submit(self._read, frame, frames[i])
+                view = reading.result()  # every reading on the one worker: the reader is not shared
                 views.append(replace(view, settled=i not in collected.unsettled))
             except ValueError as error:
                 errors.append(f"{frames[i]}: {error}")

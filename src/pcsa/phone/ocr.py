@@ -79,6 +79,7 @@ class RapidOcrReader:
                 "Det.ocr_version": OCRVersion.PPOCRV5,
                 "Det.model_type": ModelType.MOBILE,
                 "Det.limit_side_len": config.det_limit_side_len,
+                "Det.limit_type": config.det_limit_type,
             }
         )
         self.rec = RapidOCR(params={**common, "Global.use_det": False, "Det.model_path": str(det)})

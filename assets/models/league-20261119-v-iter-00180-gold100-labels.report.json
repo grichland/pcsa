@@ -1,0 +1,292 @@
+{
+ "rows": "runs\\label-rows-20261120-graded\\rows.npz",
+ "games": 505,
+ "held_out_games": 1,
+ "fit": {
+  "from": "..\\pcsa\\assets\\models\\league-20261119-v-iter-00180-gold100.pt",
+  "epochs": 8,
+  "lr": 0.0001,
+  "before": {
+   "fitted_games": {
+    "mistakes": 470,
+    "now_best": 0.417,
+    "now_acceptable": 0.4851,
+    "repeated": 0.3468,
+    "good": 3685,
+    "kept": 0.7294,
+    "good_with_avoid": 386,
+    "plays_an_avoid": 0.0466
+   },
+   "held_out_games": {
+    "all": {
+     "mistakes": 0,
+     "now_best": null,
+     "now_acceptable": null,
+     "repeated": null,
+     "good": 6,
+     "kept": 0.6667,
+     "good_with_avoid": 0,
+     "plays_an_avoid": null
+    },
+    "turns 1-5": {
+     "mistakes": 0,
+     "now_best": null,
+     "now_acceptable": null,
+     "repeated": null,
+     "good": 2,
+     "kept": 1.0,
+     "good_with_avoid": 0,
+     "plays_an_avoid": null
+    },
+    "turns 6-9": {
+     "mistakes": 0,
+     "now_best": null,
+     "now_acceptable": null,
+     "repeated": null,
+     "good": 4,
+     "kept": 0.5,
+     "good_with_avoid": 0,
+     "plays_an_avoid": null
+    },
+    "turns 10+": {
+     "mistakes": 0,
+     "now_best": null,
+     "now_acceptable": null,
+     "repeated": null,
+     "good": 0,
+     "kept": null,
+     "good_with_avoid": 0,
+     "plays_an_avoid": null
+    }
+   }
+  },
+  "epoch 1": {
+   "loss": 1.0415,
+   "fitted_games": {
+    "mistakes": 470,
+    "now_best": 0.4596,
+    "now_acceptable": 0.5298,
+    "repeated": 0.3277,
+    "good": 3685,
+    "kept": 0.7503,
+    "good_with_avoid": 386,
+    "plays_an_avoid": 0.0311
+   },
+   "held_out_games": {
+    "mistakes": 0,
+    "now_best": null,
+    "now_acceptable": null,
+    "repeated": null,
+    "good": 6,
+    "kept": 0.6667,
+    "good_with_avoid": 0,
+    "plays_an_avoid": null
+   }
+  },
+  "epoch 2": {
+   "loss": 0.914,
+   "fitted_games": {
+    "mistakes": 470,
+    "now_best": 0.5043,
+    "now_acceptable": 0.5702,
+    "repeated": 0.2957,
+    "good": 3685,
+    "kept": 0.7604,
+    "good_with_avoid": 386,
+    "plays_an_avoid": 0.0285
+   },
+   "held_out_games": {
+    "mistakes": 0,
+    "now_best": null,
+    "now_acceptable": null,
+    "repeated": null,
+    "good": 6,
+    "kept": 0.6667,
+    "good_with_avoid": 0,
+    "plays_an_avoid": null
+   }
+  },
+  "epoch 3": {
+   "loss": 0.8338,
+   "fitted_games": {
+    "mistakes": 470,
+    "now_best": 0.5511,
+    "now_acceptable": 0.6149,
+    "repeated": 0.2723,
+    "good": 3685,
+    "kept": 0.7701,
+    "good_with_avoid": 386,
+    "plays_an_avoid": 0.0181
+   },
+   "held_out_games": {
+    "mistakes": 0,
+    "now_best": null,
+    "now_acceptable": null,
+    "repeated": null,
+    "good": 6,
+    "kept": 0.8333,
+    "good_with_avoid": 0,
+    "plays_an_avoid": null
+   }
+  },
+  "epoch 4": {
+   "loss": 0.7769,
+   "fitted_games": {
+    "mistakes": 470,
+    "now_best": 0.5787,
+    "now_acceptable": 0.6404,
+    "repeated": 0.2468,
+    "good": 3685,
+    "kept": 0.778,
+    "good_with_avoid": 386,
+    "plays_an_avoid": 0.013
+   },
+   "held_out_games": {
+    "mistakes": 0,
+    "now_best": null,
+    "now_acceptable": null,
+    "repeated": null,
+    "good": 6,
+    "kept": 0.8333,
+    "good_with_avoid": 0,
+    "plays_an_avoid": null
+   }
+  },
+  "epoch 5": {
+   "loss": 0.7343,
+   "fitted_games": {
+    "mistakes": 470,
+    "now_best": 0.6021,
+    "now_acceptable": 0.6617,
+    "repeated": 0.2383,
+    "good": 3685,
+    "kept": 0.7875,
+    "good_with_avoid": 386,
+    "plays_an_avoid": 0.0026
+   },
+   "held_out_games": {
+    "mistakes": 0,
+    "now_best": null,
+    "now_acceptable": null,
+    "repeated": null,
+    "good": 6,
+    "kept": 0.8333,
+    "good_with_avoid": 0,
+    "plays_an_avoid": null
+   }
+  },
+  "epoch 6": {
+   "loss": 0.7014,
+   "fitted_games": {
+    "mistakes": 470,
+    "now_best": 0.6298,
+    "now_acceptable": 0.6872,
+    "repeated": 0.2255,
+    "good": 3685,
+    "kept": 0.7965,
+    "good_with_avoid": 386,
+    "plays_an_avoid": 0.0026
+   },
+   "held_out_games": {
+    "mistakes": 0,
+    "now_best": null,
+    "now_acceptable": null,
+    "repeated": null,
+    "good": 6,
+    "kept": 1.0,
+    "good_with_avoid": 0,
+    "plays_an_avoid": null
+   }
+  },
+  "epoch 7": {
+   "loss": 0.6731,
+   "fitted_games": {
+    "mistakes": 470,
+    "now_best": 0.6447,
+    "now_acceptable": 0.6979,
+    "repeated": 0.217,
+    "good": 3685,
+    "kept": 0.8068,
+    "good_with_avoid": 386,
+    "plays_an_avoid": 0.0052
+   },
+   "held_out_games": {
+    "mistakes": 0,
+    "now_best": null,
+    "now_acceptable": null,
+    "repeated": null,
+    "good": 6,
+    "kept": 1.0,
+    "good_with_avoid": 0,
+    "plays_an_avoid": null
+   }
+  },
+  "epoch 8": {
+   "loss": 0.6474,
+   "fitted_games": {
+    "mistakes": 470,
+    "now_best": 0.6553,
+    "now_acceptable": 0.7128,
+    "repeated": 0.2128,
+    "good": 3685,
+    "kept": 0.8163,
+    "good_with_avoid": 386,
+    "plays_an_avoid": 0.0052
+   },
+   "held_out_games": {
+    "mistakes": 0,
+    "now_best": null,
+    "now_acceptable": null,
+    "repeated": null,
+    "good": 6,
+    "kept": 1.0,
+    "good_with_avoid": 0,
+    "plays_an_avoid": null
+   }
+  },
+  "after": {
+   "held_out_games": {
+    "all": {
+     "mistakes": 0,
+     "now_best": null,
+     "now_acceptable": null,
+     "repeated": null,
+     "good": 6,
+     "kept": 1.0,
+     "good_with_avoid": 0,
+     "plays_an_avoid": null
+    },
+    "turns 1-5": {
+     "mistakes": 0,
+     "now_best": null,
+     "now_acceptable": null,
+     "repeated": null,
+     "good": 2,
+     "kept": 1.0,
+     "good_with_avoid": 0,
+     "plays_an_avoid": null
+    },
+    "turns 6-9": {
+     "mistakes": 0,
+     "now_best": null,
+     "now_acceptable": null,
+     "repeated": null,
+     "good": 4,
+     "kept": 1.0,
+     "good_with_avoid": 0,
+     "plays_an_avoid": null
+    },
+    "turns 10+": {
+     "mistakes": 0,
+     "now_best": null,
+     "now_acceptable": null,
+     "repeated": null,
+     "good": 0,
+     "kept": null,
+     "good_with_avoid": 0,
+     "plays_an_avoid": null
+    }
+   }
+  }
+ }
+}
