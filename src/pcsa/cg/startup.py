@@ -83,7 +83,7 @@ def search_args(cfg: CGConfig) -> dict:
     s = cfg.search
     return {"search": True, "search_ms": s.ms, "worlds": s.worlds, "depth": s.depth, "outcomes": s.outcomes,
             "c": s.c, "n0": s.n0, "batch": s.batch, "min_sims": s.min_sims, "top_ours": s.top_ours,
-            "top_theirs": s.top_theirs}  # fmt: skip
+            "top_theirs": s.top_theirs, "settle": [s.settle_sims, s.settle_share, s.settle_gap]}  # fmt: skip
 
 
 def with_log_dir(cfg: CGConfig, folder: Path) -> CGConfig:

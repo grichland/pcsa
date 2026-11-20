@@ -153,6 +153,7 @@ net     the network's outputs (absent on a fallback or a replayed request):
                 worlds, dropped, dropped_why, depth, nodes, batches, ms, budget_ms, model_pick, pick, changed,
                 strategy[11], visits[11], q[11][13] (the root's payoff table by network column, null where
                 no guess had that pair), p_them[13], p_other (their play outside the columns),
+                stopped (time, sims, clear: one action well ahead, even: the best two level),
         belief[6]: species, brought, lead (preview only), item [[id, p] x3], ability [[id, p] x3],
                    moves [[id, p] up to 8]
 ```

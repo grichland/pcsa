@@ -56,6 +56,9 @@ class SearchConfig:
     seed: int = 0
     top_ours: int = 0  # at each node only our N likeliest actions by the network's policy (0: all)
     top_theirs: int = 0  # at each node only their N likeliest actions by the network's prediction (0: all)
+    settle_sims: int = 0  # stop early once the pick has held this long (0: never stop early)
+    settle_share: float = 0.9  # ... with at least this share of our strategy
+    settle_gap: float = 0.01  # or once the best two actions' values are this close, after twice settle_sims
 
 
 class Node:
@@ -198,6 +201,7 @@ class Result:
     p_other: float  # their strategy on actions no column stands for
     visits: list[float]  # [11]
     ms: float = 0.0
+    stopped: str = "time"  # time, sims, clear (one action well ahead) or even (nothing to choose between)
 
 
 class Search:
@@ -207,6 +211,7 @@ class Search:
     def __init__(self, cfg: SearchConfig, tables: Tables, forward: Callable, rng: np.random.Generator) -> None:
         self.cfg, self.tables, self.forward, self.rng = cfg, tables, forward, rng
         self.depth = self.nodes = self.batches = 0
+        self.stopped, self.lead, self.lead_since = "time", -1, 0
 
     def descend(self, world: World) -> tuple[list, Node]:
         """One simulation down to a node to evaluate: (the path of (node, a, j), that node)."""
@@ -259,10 +264,41 @@ class Search:
             node.mem = None if deep else (mem if asked else parent.mem)
         self.batches += 1
 
+    def settled(self, worlds: list[World], sims: int) -> str | None:
+        """Why more simulations would not change the answer, or None: "clear" when one action has led for
+        settle_sims with settle_share of our strategy, "even" when the best two values are within settle_gap."""
+        cfg = self.cfg
+        avg, value, weight = np.zeros(L.OWN_ACTIONS), np.zeros(L.OWN_ACTIONS), np.zeros(L.OWN_ACTIONS)
+        for w in worlds:
+            root = w.root
+            ours = _normal(root.S_u) if root.S_u.sum() > 0 else root.P_u
+            theirs = _normal(root.S_t) if root.S_t.sum() > 0 else root.P_t
+            for x, a in enumerate(root.us):
+                if a is not None:
+                    avg[a] += w.sims * ours[x]
+                    value[a] += w.sims * float(root.Q[x] @ theirs)
+                    weight[a] += w.sims
+        lead = int(avg.argmax())
+        if lead != self.lead:
+            self.lead, self.lead_since = lead, sims
+        if sims - self.lead_since >= cfg.settle_sims and avg[lead] >= cfg.settle_share * max(sims, 1):
+            return "clear"
+        values = sorted((value[a] / weight[a] for a in range(L.OWN_ACTIONS) if weight[a] > 0), reverse=True)
+        if sims >= 2 * cfg.settle_sims and len(values) > 1 and values[0] - values[1] < cfg.settle_gap:
+            return "even"
+        return None
+
     def run(self, worlds: list[World], end: float) -> None:
-        """Simulations round-robin over the worlds until `end` (precise_now) or cfg.sims."""
+        """Simulations round-robin over the worlds until `end` (precise_now), cfg.sims or a settled answer."""
         cfg, sims, took = self.cfg, 0, 0.0
-        while (cfg.sims <= 0 or sims < cfg.sims) and precise_now() + 2.0 * took < end - END_MARGIN_S:
+        while precise_now() + 2.0 * took < end - END_MARGIN_S:
+            if cfg.sims > 0 and sims >= cfg.sims:
+                self.stopped = "sims"
+                break
+            check = cfg.settle_sims > 0 and sims >= max(cfg.settle_sims, cfg.min_sims)
+            if check and (why := self.settled(worlds, sims)):
+                self.stopped = why
+                break
             start, waiting, done = precise_now(), {}, []
             size = cfg.batch if cfg.sims <= 0 else min(cfg.batch, cfg.sims - sims)
             for k in range(size):
@@ -305,7 +341,8 @@ class Search:
         q = [[float(q_sum[a, c] / q_w[a, c]) if q_w[a, c] > 0 else None for c in range(L.OPP_ACTIONS)]
              for a in range(L.OWN_ACTIONS)]  # fmt: skip
         return Result(avg, total, len(worlds), dropped, self.depth, self.nodes, self.batches, q,
-                      [float(x) for x in p_them], float(other), [float(x) for x in visits])  # fmt: skip
+                      [float(x) for x in p_them], float(other), [float(x) for x in visits],
+                      stopped=self.stopped)  # fmt: skip
 
 
 def settings(cfg: SearchConfig) -> dict:

@@ -120,7 +120,7 @@ class Searcher:
         pick = int(found.strategy.argmax())
         note.update(sims=found.sims, depth=found.depth, nodes=found.nodes, batches=found.batches,
                     strategy=[float(x) for x in found.strategy], q=found.q, p_them=found.p_them,
-                    p_other=found.p_other, visits=found.visits)  # fmt: skip
+                    p_other=found.p_other, visits=found.visits, stopped=found.stopped)  # fmt: skip
         if found.sims < self.cfg.min_sims:
             raise worlds.NoSearch(f"{found.sims} simulations, fewer than min_sims {self.cfg.min_sims}")
         if not found.strategy[pick] > 0 or not allowed[pick]:
@@ -143,6 +143,8 @@ class Searcher:
         try:
             if battle is None:
                 raise worlds.NoSearch("no Battle came with the request")
+            if int((b["mask"][r] > 0).sum()) <= 1:
+                raise worlds.NoSearch("one action is open")
             budget = self.budget()
             note["budget_ms"] = round(budget, 1)
             rng = np.random.default_rng([self.cfg.seed & SEED_BITS, decision & SEED_BITS, slot])

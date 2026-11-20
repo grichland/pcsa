@@ -142,6 +142,9 @@ class CGSearch(Strict):
     min_sims: int = Field(default=64, ge=0)
     top_ours: int = Field(default=0, ge=0)  # only our likeliest N actions at each node (0: all)
     top_theirs: int = Field(default=0, ge=0)  # only their likeliest N actions at each node (0: all)
+    settle_sims: int = Field(default=0, ge=0)  # stop early once the pick has held this long (0: never)
+    settle_share: float = Field(default=0.9, gt=0, le=1)
+    settle_gap: float = Field(default=0.01, ge=0)
 
 
 class CGConfig(Strict):

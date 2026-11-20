@@ -1,6 +1,8 @@
 """The battle's LIVE event list, grown as the log is read: battle_start, a `turn` event per turn, one event per new
-row (through events/live.Converter, the pill side from the reader's rows), `gap` events from each visit, and
-`refused`/`end`. The list only grows; a rebuild from the same BattleLog (after a restart) gives the same rows again.
+row (through events/live.Converter, the pill side from the reader's rows), `gap` events from each visit, an
+`enter` for an opposing switch the read lost (events/inferred), and `refused`/`end`. The list only grows; a
+rebuild from the same BattleLog (after a restart) gives the same rows again. battle_start's `opp_preview` is
+corrected when an opposing Pokémon outside its six names enters (the player's side then resends the battle).
 """
 
 from __future__ import annotations
@@ -12,6 +14,7 @@ from pcsa.battle.log_rows import RawRow, parse_row, split_category
 from pcsa.battle.teams import OwnMember, Team
 from pcsa.decide.api import LogRow
 from pcsa.events.gaps import gap, visit_gaps
+from pcsa.events.inferred import OppActive, misread_slot
 from pcsa.events.live import Converter
 from pcsa.events.live_ids import Teams, ability_id, base_id, item_id, mon_id, move_id, species_id
 from pcsa.events.start import STATS, battle_start
@@ -64,16 +67,19 @@ class BattleEvents:
     start: dict = field(init=False)
     events: list[dict] = field(default_factory=list)
     converter: Converter = field(init=False)
+    opp: OppActive = field(init=False)
     turn: int = 0  # the last `turn` event sent
     sent: dict[int, int] = field(default_factory=dict)  # turn -> rows sent
     visits: int = 0  # b.log.visits already scanned for gaps
     late_rows: int = 0  # rows of a turn older than the last `turn` event
+    preview_fixes: list[dict] = field(default_factory=list)  # preview slots renamed by an entering Pokémon
     _kinds: dict[tuple[int, int, str], str | None] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         sets = [set_of(m) for m in self.team.members] if self.team else []
         self.start = battle_start(self.tag, sets, list(preview_ids(self.preview)))
         self.converter = Converter(Teams((), tuple(preview_names(self.preview))))
+        self.opp = OppActive(preview_ids(self.preview))
 
     # what a Request carries ---------------------------------------------------------------------
     def all(self) -> tuple[dict, ...]:
@@ -125,7 +131,9 @@ class BattleEvents:
                 self.late_rows += len(rows) - start
             self.events += gaps_by_turn.pop(turn, [])
             for index in range(start, len(rows)):
-                self.events.append(self._event(b, turn, index))
+                event = self._event(b, turn, index)
+                self._fix_preview(event)
+                self.events += self.opp.step(event, late=turn < self.turn)
             self.sent[turn] = max(start, len(rows))
         return self.events[before:]
 
@@ -136,6 +144,22 @@ class BattleEvents:
                 self.events.append(gap(self.turn, "turn"))
             self.turn += 1
             self.events.append({"k": "turn", "n": self.turn})
+
+    def _fix_preview(self, event: dict) -> None:
+        """An opposing Pokémon enters that is none of the six preview names: the misread slot takes its name."""
+        ids: list = list(self.start.get("opp_preview") or ())
+        if event.get("k") != "enter" or event.get("side") != "opp" or not ids or None in ids:
+            return
+        mon = base_id(event["mon"])
+        if mon in ids:
+            return
+        slot = misread_slot(self.preview, ids, self.opp.entered, mon)
+        if slot is None:
+            return
+        self.preview_fixes.append({"slot": slot, "was": ids[slot], "now": mon})
+        ids[slot] = mon
+        self.start = {**self.start, "opp_preview": ids}
+        self.opp.preview = tuple(ids)
 
     def refused(self, order: dict) -> None:
         """Only for a choice the game refused; a repeated tap is `retry` on the request (LIVE 0.5, CF-8)."""

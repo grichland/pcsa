@@ -43,6 +43,7 @@ class Stream:
     brought: tuple[int, ...] | None = None  # the three brought, as last known (kept across a restart)
     answers: dict[int, dict] = field(default_factory=dict)  # seq -> CG's reply
     anomalies: int = 0  # CG's running count in its last reply
+    sent_preview: tuple = ()  # opp_preview of the battle_start sent
 
     # building messages ------------------------------------------------------------------------------
     def preview(self, start: dict | None, deadline_ms: int | None) -> list[dict]:
@@ -70,6 +71,10 @@ class Stream:
         with any fallback not yet reported (the `end` event last), then battle_end."""
         out, pending = self._catch_up(tuple(events), tuple(history), self.brought, None)
         return [*out, *self._events(tuple(events), pending), message(self.tag, "battle_end", result=result)]
+
+    def stale(self, start: dict | None) -> bool:
+        """The battle_start sent named another opposing preview than the one held now (a misread, corrected)."""
+        return self.started and bool(start) and tuple((start or {}).get("opp_preview") or ()) != self.sent_preview
 
     def changed(self, request: Request) -> bool:
         """The list no longer holds the last event sent where it was (rebuilt differently): CG may be out of step."""
@@ -105,6 +110,7 @@ class Stream:
         if not start or start.get("type") != "battle_start":
             raise CGError("no battle_start for this battle (team sheet not read)")
         self.started, self.events = True, 1
+        self.sent_preview = tuple(start.get("opp_preview") or ())
         if self.brought is None:
             return [start]
         self.given = self.brought

@@ -237,3 +237,23 @@ def test_real_cg_overruled_picks(transport, tmp_path: Path, monkeypatch) -> None
     assert played.records()[0]["notes"]["picks_overruled"] == {"cg": list(tower_picks()), "brought": list(brought)}
     replacement = played.records()[2]["order"]
     assert replacement in {f"/choose switch {m.name}" for m in (rig.script.second, rig.script.third)}
+
+
+@pytest.mark.parametrize("transport", TRANSPORTS)
+def test_real_cg_a_pokemon_outside_the_preview_enters(transport, tmp_path: Path, monkeypatch) -> None:
+    """The preview misread one of their six: when it enters, battle_start is corrected and CG gets the battle
+    again from the start in the same Session, so it holds the Pokémon on the field."""
+    rig = Rig(transport, tmp_path)
+    start, turn1, turn2 = rig.script.visits[2][1][:2], rig.script.visits[2][1][2:], rig.script.visits[2][2]
+    switch = ["Kai withdrew Glimmora!", "Kai sent out Skeledirge!"]
+    turn2 = [switch[0], switch[1], *(row.replace("Glimmora", "Skeledirge") for row in turn2)]
+    played = rig.play(monkeypatch, visits=[{1: start}, {1: start + turn1}, {1: start + turn1, 2: turn2}])
+    assert played.ending == "completed" and rig.player.restarts == 0
+    starts = [m for m in lines(played, "sent") if m["type"] == "battle_start"]
+    assert len(starts) == 2 and "skeledirge" not in starts[0]["opp_preview"]
+    assert starts[1]["opp_preview"].count("skeledirge") == 1 and "glimmora" in starts[1]["opp_preview"]
+    assert [r for r in lines(played, "received") if "error" in r] == []
+    corrected = [r for r in played.records() if r["notes"].get("preview_corrected")]
+    assert len(corrected) == 1 and corrected[0]["degrade"] == "player"
+    for session in rig.sessions():
+        assert not [a for a in session["anomalies"] if "skeledirge" in str(a)]

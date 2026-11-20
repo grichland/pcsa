@@ -224,3 +224,17 @@ def test_without_a_team_the_move_list_is_read(config: Config, tmp_path: Path, ri
     rec = rig.records()[0]
     assert rec["peek"] == "untracked" and rec["offer"]["moves"] == [] and rec["own_export"] == ""
     assert rec["order"] == "move0" and rec["degrade"] == "player"
+
+
+def test_the_log_read_leaves_the_search_its_time() -> None:
+    from types import SimpleNamespace
+
+    from pcsa.live.turn import SEARCH_OVERHEAD_S, TurnPipeline
+
+    def reserve(enabled: bool, ms: float) -> float:
+        search = SimpleNamespace(enabled=enabled, ms=ms)
+        cfg = SimpleNamespace(cg=SimpleNamespace(search=search), degrade=SimpleNamespace(decide_reserve_s=3.0))
+        return TurnPipeline._decide_reserve(SimpleNamespace(cfg=cfg))  # type: ignore[arg-type]
+
+    assert reserve(False, 5000.0) == 3.0 and reserve(True, 1500.0) == 3.0
+    assert reserve(True, 5000.0) == 5.0 + SEARCH_OVERHEAD_S

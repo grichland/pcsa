@@ -20,7 +20,7 @@ cg:                       # used when decide.player is cg (LIVE 0.7-0.9 messages
   - --player
   - champions_gym.neural:load
   - --player-args
-  - '{"policy": "pcsa.network.policy:Policy", "checkpoint": "assets/models/league-20261118-h-iter-00140.pt",
+  - '{"policy": "pcsa.network.policy:Policy", "checkpoint": "assets/models/league-20261119-v-iter-00162.pt",
     "device": "cpu", "policy_args": {"threads": 4}, "fallback": "tower", "timeout_s": 2.0, "hard_timeout_s": 6.0}'
   python_path: []         # directories first on sys.path (inprocess) or in the child's PYTHONPATH; relative: repo root
   args: {}                # inprocess: keyword arguments when the entry is a class
@@ -42,6 +42,9 @@ cg:                       # used when decide.player is cg (LIVE 0.7-0.9 messages
     min_sims: 64          # fewer simulations than this in total: the model's own answer is played
     top_ours: 0           # at every position only our N likeliest actions by the network's policy (0: all)
     top_theirs: 3         # at every position only their N likeliest actions by the network's prediction (0: all)
+    settle_sims: 300      # stop before `ms` once the pick has led this many simulations (0: always use `ms`)
+    settle_share: 0.9     # ... and holds this share of the search's strategy
+    settle_gap: 0.01      # or once the best two actions are this close in win chance, after twice settle_sims
 
 device:
   serial: null            # null: the single authorized device

@@ -27,6 +27,8 @@ from pcsa.run.battle_state import BattleRecord, action_detail, same_name
 from pcsa.run.recorder import Recorder
 
 MIN_NEW_TURN_MOVE_TIME = 15  # a lower reading on a fresh action screen is an OCR drop of the first digit
+SEARCH_OVERHEAD_S = 1.0  # the search's request beyond its own time
+AFTER_LOG_PEEK_S = 6.0  # a look at the move screen that the log read may ask for
 FORCED_RETRY_DEADLINE_S = 40.0
 
 
@@ -142,11 +144,17 @@ class TurnPipeline:
             mega_spent=b.mega_spent or b.mega_used,
         )
 
+    def _decide_reserve(self) -> float:
+        """Seconds the log read leaves for the decision: the setting, or the search's time when that is longer."""
+        search = self.cfg.cg.search
+        need = search.ms / 1000.0 + SEARCH_OVERHEAD_S if search.enabled else 0.0
+        return max(self.cfg.degrade.decide_reserve_s, need)
+
     def action(self, b: BattleRecord, obs: Observation, t0: float, repeated: bool = False) -> None:
         """`repeated`: the poll before this one also showed the action screen (the taps may not have gone through)."""
         visit, end, active_name = self._begin_action(b, obs, t0)
-        reserve = self.cfg.degrade.tap_reserve_s + self.cfg.degrade.decide_reserve_s
         why = move_peek.why_before_log(self.cfg.timing.move_peek, b, self.team, repeated)
+        reserve = self.cfg.degrade.tap_reserve_s + self._decide_reserve() + (0.0 if why else AFTER_LOG_PEEK_S)
         peek = self.peek(b) if why else None
         turn_before = b.last_turn
         log_info = self.logs.collect_log(b, visit, end.minus(reserve))

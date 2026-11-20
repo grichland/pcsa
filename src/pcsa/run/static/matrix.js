@@ -27,6 +27,7 @@ function mxSource(m) {
 }
 
 const mxMs = (ms) => (ms >= 1000 ? `${(ms / 1000).toFixed(1)} s` : `${ms.toFixed(0)} ms`);
+const mxStopped = (why) => ({ clear: " It stopped early: one action was clearly ahead.", even: " It stopped early: the best actions were level." })[why] || "";
 
 /** How the search ran: simulations, guesses of their team, time; or why the network's answer stood. */
 function mxSearchStat(s) {
@@ -34,7 +35,7 @@ function mxSearchStat(s) {
   if (!s.used) return mxStat("Search", "not used", `The search did not decide this turn: ${s.why || "no reason recorded"}. The network's own answer was played.`, null, "down");
   const dropped = s.dropped ? `, ${s.dropped} more dropped because the engine refused part of the guess` : "";
   const time = isNum(s.ms) ? ` in ${mxMs(s.ms)}${isNum(s.budget_ms) ? ` of a ${mxMs(s.budget_ms)} budget` : ""}` : "";
-  return mxStat("Search", `${s.sims} sims · ${s.worlds} worlds`, `${s.sims} simulated lines${time}, over ${s.worlds} guesses of their hidden team${dropped}, up to ${s.depth} steps deep. ${s.changed ? "It changed the pick." : "It kept the network's pick."}`, null, s.changed ? "up" : undefined);
+  return mxStat("Search", `${s.sims} sims · ${s.worlds} worlds`, `${s.sims} simulated lines${time}, over ${s.worlds} guesses of their hidden team${dropped}, up to ${s.depth} steps deep.${mxStopped(s.stopped)} ${s.changed ? "It changed the pick." : "It kept the network's pick."}`, null, s.changed ? "up" : undefined);
 }
 
 /** The row's SEARCH value: how often the search plays it at the root, over all its guesses of their team. */

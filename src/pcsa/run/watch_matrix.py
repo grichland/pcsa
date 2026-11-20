@@ -180,6 +180,7 @@ def search_view(net: dict, matrix: list[list[float]]) -> dict | None:
     }
     for key in ("sims", "worlds", "dropped", "depth", "nodes", "ms", "budget_ms", "p_other"):
         out[key] = _number(found.get(key))
+    out["stopped"] = found.get("stopped") if found.get("stopped") in ("time", "sims", "clear", "even") else None
     probs, p_them = _numbers(found.get("strategy"), ROWS), _numbers(found.get("p_them"), NET_COLS)
     q = _table(found.get("q"))
     if probs is None or p_them is None or q is None:

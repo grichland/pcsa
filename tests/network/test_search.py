@@ -229,3 +229,37 @@ def test_top_ours_and_top_theirs_bound_what_the_search_looks_at(position) -> Non
     assert sum(x > 0 for x in note["p_them"]) <= 2 * 6  # two of their actions per guess of their team
     assert sum(x > 0 for x in wide["search"]["p_them"]) >= sum(x > 0 for x in note["p_them"])
     assert make(search=True, top_theirs=3).info["search"]["top_theirs"] == 3
+
+
+class _Root:
+    def __init__(self, strategy: list, q: list) -> None:
+        self.us, self.S_u, self.P_u = list(range(len(strategy))), np.array(strategy, float), np.array(strategy, float)
+        self.S_t, self.P_t, self.Q = np.array([1.0]), np.array([1.0]), np.array(q, float).reshape(-1, 1)
+
+
+class _World:
+    def __init__(self, strategy: list, q: list, sims: int) -> None:
+        self.root, self.sims = _Root(strategy, q), sims
+
+
+def test_the_search_is_settled_when_one_action_leads_or_the_best_two_are_level() -> None:
+    cfg = search.SearchConfig(settle_sims=100, settle_share=0.9, settle_gap=0.01)
+    tree = search.Search(cfg, None, None, np.random.default_rng(0))  # type: ignore[arg-type]
+    ahead = [_World([0.95, 0.05], [0.7, 0.4], 100), _World([0.93, 0.07], [0.6, 0.5], 100)]
+    assert tree.settled(ahead, 100) is None  # it has led since simulation 100 only
+    assert tree.settled(ahead, 200) == "clear"
+    open_ = [_World([0.6, 0.4], [0.7, 0.4], 200)]
+    assert search.Search(cfg, None, None, np.random.default_rng(0)).settled(open_, 200) is None  # type: ignore[arg-type]
+    level = [_World([0.6, 0.4], [0.500, 0.495], 200)]
+    assert search.Search(cfg, None, None, np.random.default_rng(0)).settled(level, 200) == "even"  # type: ignore[arg-type]
+
+
+@needs_games
+def test_a_settled_search_stops_before_its_simulations_run_out(position) -> None:
+    arrays, battle, _ = position
+    policy = make(search=True, search_sims=2000, settle=(64, 0.0, 0.0))
+    note = policy.decide(arrays, [0], [battle])["extras"][0]["search"]
+    assert note["used"] and note["stopped"] == "clear" and note["sims"] < 2000
+    assert policy.info["search"]["settle_sims"] == 64
+    full = make(search=True, search_sims=128).decide(arrays, [0], [battle])["extras"][0]["search"]
+    assert full["stopped"] == "sims" and full["sims"] == 128

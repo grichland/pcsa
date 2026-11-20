@@ -1,4 +1,4 @@
-"""The shipped cg config resolved at start-up ({python}, a repo-relative checkpoint), the manifest's flat neural
+﻿"""The shipped cg config resolved at start-up ({python}, a repo-relative checkpoint), the manifest's flat neural
 player, and the preview's CG notes split for team_preview.json and the `decision` event."""
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ def test_the_shipped_command_resolves_to_this_python_and_an_absolute_checkpoint(
     done = startup.resolved(cfg)
     assert done.command is not None and done.command[0] == sys.executable and done.command[1:3] == ["-m", "pcsa.cg.serve"]
     args = json.loads(done.command[done.command.index("--player-args") + 1])
-    want = repo_root() / "assets" / "models" / "league-20261118-h-iter-00140.pt"
+    want = repo_root() / "assets" / "models" / "league-20261119-v-iter-00162.pt"
     assert Path(args["checkpoint"]) == want and want.is_file()
     assert args["policy"] == "pcsa.network.policy:Policy" and args["fallback"] == "tower"
     assert startup.checkpoint(done) == str(want) and startup.expects_model(done)
@@ -64,7 +64,7 @@ def test_the_search_section_turns_search_on_in_the_players_arguments() -> None:
     args = json.loads((on.command or [])[(on.command or []).index("--player-args") + 1])
     assert args["policy_args"] == {"threads": 4, "search": True, "search_ms": 2500.0, "worlds": 4, "depth": 3,
                                    "outcomes": 3, "c": 1.5, "n0": 1.0, "batch": 16, "min_sims": 64, "top_ours": 0,
-                                   "top_theirs": 3}  # fmt: skip
+                                   "top_theirs": 3, "settle": [300, 0.9, 0.01]}  # fmt: skip
     assert args["timeout_s"] == 3.5 and args["hard_timeout_s"] == 6.5  # the shell's limits clear the search time
     tower = CGConfig(command=["{python}", "-m", "pcsa.cg.serve", "--player", "tower"], search={"enabled": True})
     assert startup.resolved(tower).command == [sys.executable, "-m", "pcsa.cg.serve", "--player", "tower"]

@@ -156,7 +156,7 @@ absolute). Checkpoints live in `assets/models/` and are committed with git:
 
 | model | what it is | used by |
 |---|---|---|
-| `league-20261118-h-iter-00140.pt` | league run h, iteration 140 | the live model (`config/agent.yaml`) |
+| `league-20261119-v-iter-00162.pt` | league run v, iteration 162 | the live model (`config/agent.yaml`) |
 | `league-20261118-g-iter-00148.pt` | league run g, iteration 148 | the recorded session the tests replay (`tests/cg/`) |
 
 A checkpoint stores the layout of its inputs; CG refuses one made for another layout or contract version
@@ -184,7 +184,10 @@ predict the opponent, then choose.
   regret matching started from the network's policy, its prediction of their action and its matrix; new positions
   are valued by the network. The action played is the one the search's strategy at the root favours most, inside
   the legal and rule masks. It stops at `cg.search.ms` (1500) or the request's deadline, whichever is sooner, and
-  when it cannot run or runs too little the network's own answer is played and the record says why. Team preview
+  earlier when `cg.search.settle_sims` is set and the answer has settled: one action has led for that many
+  simulations with `settle_share` of the strategy, or the best two are within `settle_gap` in value. A request
+  with one open action is not searched. The log read before the decision ends early enough to leave the search
+  its time. When it cannot run or runs too little the network's own answer is played and the record says why. Team preview
   and replacements are never searched. It needs Champions Gym 0.5.0, which builds the engine game; with the pinned
   0.4.0 the setting only records that it could not run. On the dashboard a searched decision shows a Search figure
   (simulations, guesses, time), a SEARCH column with the search's share for each of our actions, a banner when

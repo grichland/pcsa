@@ -124,6 +124,11 @@ class CGPlayer:
         notes: dict = {}
         if stream.picks is not None and request.team.picks is not None and stream.picks != request.team.picks:
             notes["picks_overruled"] = {"cg": list(stream.picks), "brought": list(request.team.picks)}
+        if stream.stale(request.events[0] if request.events else None):  # CG gets the battle again from the start
+            notes["preview_corrected"] = list(request.events[0].get("opp_preview") or ())
+            self._note(request.battle_tag, {"preview_corrected": notes["preview_corrected"]})
+            log.warning("cg_preview_corrected", battle=request.battle_tag, preview=notes["preview_corrected"])
+            stream = self.streams[request.battle_tag] = Stream(request.battle_tag, brought=stream.brought)
         if stream.changed(request):
             notes["stream_changed"] = True
             self._note(request.battle_tag, {"stream_changed": seq})

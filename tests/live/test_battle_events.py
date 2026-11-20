@@ -130,3 +130,51 @@ def test_live_request_refused_retry_and_fallback() -> None:
     fifth = live_messages("action", unnamed, blind, events.converter)
     assert fifth["fallback"] == {"seq": 5, "reason": "screen: late"}  # no order: the row had no id (LIVE 0.6)
     assert message_problems({**fallback, "fallback": fifth["fallback"]}) == []
+
+
+def test_an_opposing_switch_the_read_lost_is_sent_as_an_enter() -> None:
+    b, events = battle(), BattleEvents("b-1", TEAM, PREVIEW)
+    read(b, 1, ["Go! Mamoswine!", "U- sent out Glimmora!"])
+    events.update(b)
+    read(b, 2, ["HP Lost: Garchomp’s HP: 100% → 82%"], warnings=["start of log is not captured"])
+    new = events.update(b)
+    assert [e["k"] for e in new] == ["turn", "gap", "enter", "hp"]
+    assert new[2] == {"k": "enter", "side": "opp", "mon": "garchomp"} and events.opp.inferred == 1
+    read(b, 2, ["HP Lost: Garchomp’s HP: 82% → 72%"])
+    assert [e["k"] for e in events.update(b)] == ["hp"]  # already on the field
+    read(b, 1, ["HP Lost: Glimmora’s HP: 100% → 95%"])
+    assert [e["k"] for e in events.update(b)] == ["hp"] and events.opp.active == "garchomp"  # an older turn's row
+    assert not [p for e in events.events for p in problems(e)]
+
+
+def test_no_enter_for_a_fainted_or_unlisted_opposing_pokemon() -> None:
+    from pcsa.events.inferred import OppActive
+
+    opp = OppActive(("glimmora", "lucario", "garchomp"), active="glimmora")
+    hit = {"k": "hp", "side": "opp", "mon": "pikachu", "before_pct": 100, "after_pct": 50}
+    assert opp.step(hit) == [hit] and opp.active == "glimmora"  # not in their preview: a misread name
+    opp.step({"k": "faint", "side": "opp", "mon": "glimmora"})
+    late = {"k": "status", "side": "opp", "mon": "glimmora", "status": "psn"}
+    assert opp.active is None and opp.step(late) == [late]
+    move = {"k": "move", "side": "opp", "mon": "lucario", "move": "closecombat"}
+    assert [e["k"] for e in opp.step(move)] == ["enter", "move"] and opp.active == "lucario"
+    assert opp.step({"k": "hp", "side": "own", "mon": "garchomp", "before": 9, "after": 1})[0]["k"] == "hp"
+
+
+def test_a_pokemon_outside_the_preview_takes_the_weakest_unseen_slot() -> None:
+    from pcsa.events.inferred import misread_slot
+
+    preview = tuple({"top": [[n, s], *more]} for n, s, more in (
+        ("Glimmora", 0.9, []), ("Lucario", 0.4, []), ("Garchomp", 0.7, [["Skeledirge", 0.2]])))
+    ids = ["glimmora", "lucario", "garchomp"]
+    assert misread_slot(preview, ids, set(), "skeledirge") == 2  # the slot whose other matches name it
+    assert misread_slot(preview, ids, set(), "pikachu") == 1  # else the weakest match
+    assert misread_slot(preview, ids, {"lucario"}, "pikachu") == 2 and misread_slot(preview, ids, set(ids), "x") is None
+    b, events = battle(), BattleEvents("b-1", TEAM, PREVIEW)
+    read(b, 1, ["Go! Mamoswine!", "U- sent out Glimmora!"])
+    events.update(b)
+    read(b, 2, ["U- withdrew Glimmora!", "U- sent out Skeledirge!"])
+    events.update(b)
+    assert events.all()[0]["opp_preview"] == ["glimmora", "skeledirge", "garchomp"]
+    assert events.preview_fixes == [{"slot": 1, "was": "lucario", "now": "skeledirge"}]
+    assert events.opp.active == "skeledirge"
