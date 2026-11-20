@@ -2,7 +2,8 @@
 
 Move rows: read from the move list when it was opened; otherwise the team sheet's moves by row, with PP,
 disabled and the Mega button unread (None). Row k is set position k (plan 2b); a row whose name was read and
-differs from the sheet keeps the screen's id and is noted. Switches are tapped by name.
+differs from the sheet keeps the screen's id when that is a move, else the sheet's; both are noted. Switches are
+tapped by name.
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ from pcsa.battle.ids import to_id
 from pcsa.battle.teams import OwnMember, Team
 from pcsa.common.types import MOVE_SLOTS, Observation
 from pcsa.decide.api import Hints, MoveOffer, Offer, Request, SwitchOffer
+from pcsa.events.live_ids import legal
 from pcsa.live.battle_events import BattleEvents, preview_ids
 from pcsa.live.team_read import own_team
 from pcsa.run.battle_state import BattleRecord, same_name
@@ -29,7 +31,7 @@ def sheet_rows(member: OwnMember | None) -> tuple[MoveOffer, ...]:
 
 
 def screen_rows(member: OwnMember | None, peek: Observation, notes: list[str]) -> tuple[MoveOffer, ...]:
-    """The move list as the screen showed it; a name the screen did not read takes the sheet's id for the row."""
+    """The move list as the screen showed it; a name not read, or read as no move, takes the sheet's id."""
     sheet = {m.row: m.id for m in sheet_rows(member)}
     unknown = set(peek.fields.get("disabled_unknown_slots") or ())
     out = []
@@ -37,6 +39,8 @@ def screen_rows(member: OwnMember | None, peek: Observation, notes: list[str]) -
         shown = to_id(m.name) if m.name else None
         if shown and sheet.get(m.slot) and shown != sheet[m.slot]:
             notes.append(f"row {m.slot}: screen {shown}, sheet {sheet[m.slot]}")
+            if shown not in legal("moves"):
+                shown = None  # a partly read name: the sheet's move stays
         disabled = None if m.slot in unknown else bool(m.disabled)
         out.append(MoveOffer(m.slot, shown or sheet.get(m.slot), tuple(m.pp) if m.pp else None, disabled))
     return tuple(out)

@@ -109,7 +109,9 @@ def test_a_refused_part_is_taken_out_of_the_guess() -> None:
                                                ("goodra", "brought", "it led: put first")])  # fmt: skip
     assert guess[0] == {"slot": 0, "moves": ["surf", "toxic"]} and guess[1]["moves"] == ["tackle"]
     shown = [{"slot": 3, "moves": ["thunderbolt", "hydropump", "voltswitch"]}]
-    worlds.repair(shown, ["rotom"], [("rotom", "moves", "rotom cannot learn hydropump voltswitch")], {3: {"hydropump"}})
+    worlds.repair(
+        shown, ["rotom"], [("rotom", "moves", "rotom cannot learn hydropump voltswitch")], {3: {"hydropump"}}
+    )
     assert shown[0]["moves"] == ["thunderbolt", "hydropump"]  # a move the Battle showed stays: that guess is dropped
 
 
@@ -135,6 +137,16 @@ def test_without_a_budget_the_models_answer_stands(position) -> None:
         assert own(out) == want and note["used"] is False and note["why"] and note["changed"] is False
         assert note["pick"] == note["model_pick"] == int(np.argmax(want))
         json.dumps(note, allow_nan=False)
+
+
+def test_turns_before_from_turn_are_left_to_the_model(position) -> None:
+    arrays, battle, _ = position
+    want = own(make().decide(arrays, [0], [battle]))
+    out = make(search=True, search_sims=64, from_turn=int(battle.turn) + 1).decide(arrays, [0], [battle])
+    note = out["extras"][0]["search"]
+    assert own(out) == want and note["used"] is False and "the search starts at turn" in note["why"]
+    late = make(search=True, search_sims=64, from_turn=int(battle.turn)).decide(arrays, [0], [battle])
+    assert "the search starts at turn" not in (late["extras"][0]["search"]["why"] or "")
 
 
 def test_before_champions_gym_05_the_note_says_so(position, monkeypatch) -> None:
@@ -185,7 +197,9 @@ def test_the_search_is_the_same_for_a_seed_and_respects_the_rule_masks(position)
     arrays, battle, _ = position
     notes = []
     for seed in (7, 7, 8):
-        note = make(search=True, search_sims=96, search_seed=seed).decide(arrays, [0], [battle])["extras"][0]["search"]
+        note = make(search=True, search_sims=96, search_seed=seed).decide(arrays, [0], [battle])["extras"][0][
+            "search"
+        ]
         notes.append({k: note[k] for k in ("strategy", "q", "p_them", "visits", "sims", "nodes", "depth", "pick")})
     assert notes[0] == notes[1] and notes[0]["strategy"] != notes[2]["strategy"]
     policy = make(search=True, search_sims=96, max_same_move=1)

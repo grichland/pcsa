@@ -64,7 +64,7 @@ def test_the_search_section_turns_search_on_in_the_players_arguments() -> None:
     args = json.loads((on.command or [])[(on.command or []).index("--player-args") + 1])
     assert args["policy_args"] == {"threads": 4, "search": True, "search_ms": 2500.0, "worlds": 4, "depth": 3,
                                    "outcomes": 3, "c": 1.5, "n0": 1.0, "batch": 16, "min_sims": 64, "top_ours": 0,
-                                   "top_theirs": 3, "settle": [300, 0.9, 0.01]}  # fmt: skip
+                                   "top_theirs": 3, "settle": [300, 0.9, 0.01], "from_turn": 1}  # fmt: skip
     assert args["timeout_s"] == 3.5 and args["hard_timeout_s"] == 6.5  # the shell's limits clear the search time
     tower = CGConfig(command=["{python}", "-m", "pcsa.cg.serve", "--player", "tower"], search={"enabled": True})
     assert startup.resolved(tower).command == [sys.executable, "-m", "pcsa.cg.serve", "--player", "tower"]

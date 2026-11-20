@@ -107,11 +107,11 @@ def yellow_fraction(image: np.ndarray, rect: Rect) -> float:
 
 
 def red_fraction(image: np.ndarray, rect: Rect) -> float:
-    """Fainted badge on a party row: strong red, little green."""
+    """Fainted badge on a party row: strong red, little green and blue (a poison badge is purple)."""
     patch = crop(image, rect)
     if patch.size == 0:
         return 0.0
-    return float(np.mean((patch[..., 2] > 170) & (patch[..., 1] < 90)))
+    return float(np.mean((patch[..., 2] > 170) & (patch[..., 1] < 90) & (patch[..., 0] < 110)))
 
 
 def split_screen(image: np.ndarray) -> bool:

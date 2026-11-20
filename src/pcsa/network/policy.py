@@ -101,15 +101,15 @@ class Policy:
     `allow_contract`: load a checkpoint made under another contract version; CG's own check still reports it.
     `rule_masks`: training's rule masks, with the limits `max_same_move` and `max_switches` (0: no such rule).
     `search`: search every turn request (searching.py); `search_ms`, `worlds`, `depth`, `outcomes`, `c`, `n0`,
-    `batch`, `min_sims`, `top_ours`, `top_theirs`, `settle`, `search_sims` and `search_seed` are its settings
-    (search.SearchConfig)."""
+    `batch`, `min_sims`, `top_ours`, `top_theirs`, `settle`, `from_turn`, `search_sims` and `search_seed` are its
+    settings (search.SearchConfig)."""
 
     def __init__(self, checkpoint: str, device: str = "cpu", threads: int = 4, requery_refused: bool = False,  # noqa: PLR0913
                  allow_contract: bool = False, rule_masks: bool = True, max_same_move: int = 4,
                  max_switches: int = 3, search: bool = False, search_ms: float = 1500.0, worlds: int = 6,
                  depth: int = 3, outcomes: int = 3, c: float = 1.5, n0: float = 1.0, batch: int = 16,
                  min_sims: int = 64, search_sims: int = 0, search_seed: int = 0, top_ours: int = 0,
-                 top_theirs: int = 0, settle: Sequence[float] = (0, 0.9, 0.01)):  # fmt: skip
+                 top_theirs: int = 0, settle: Sequence[float] = (0, 0.9, 0.01), from_turn: int = 1):  # fmt: skip
         torch.set_num_threads(int(threads))
         self.device = device
         lay = cg_adapter.layout()  # the layout from champions_gym.FEATURES, checked against CG
@@ -123,7 +123,8 @@ class Policy:
         self.seats: dict[int, _Seat] = {}
         cfg = mcts.SearchConfig(float(search_ms), int(worlds), int(depth), int(outcomes), float(c), float(n0),
                                 int(batch), int(min_sims), int(search_sims), int(search_seed), int(top_ours),
-                                int(top_theirs), int(settle[0]), float(settle[1]), float(settle[2]))  # fmt: skip
+                                int(top_theirs), int(settle[0]), float(settle[1]), float(settle[2]),
+                                int(from_turn))  # fmt: skip
         self.searcher = searching.Searcher(self, cfg) if search else None
         self.game_of: Any = None  # (battle, guess, seed) -> (Game, rejected); pcsa.cg.serve sets the Session's
         self.deadline: float | None = None  # precise_now() by which the open request must be answered

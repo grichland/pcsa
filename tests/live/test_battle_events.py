@@ -147,6 +147,24 @@ def test_an_opposing_switch_the_read_lost_is_sent_as_an_enter() -> None:
     assert not [p for e in events.events for p in problems(e)]
 
 
+def test_our_active_and_mega_come_from_the_screen_when_the_read_lost_them() -> None:
+    b, events = battle(), BattleEvents("b-1", TEAM, PREVIEW)
+    read(b, 1, ["Go! Mamoswine!", "U- sent out Glimmora!"])
+    events.update(b)
+    assert events.own_active() == "mamoswine" and events.screen_shows("mamoswine") == []
+    read(b, 2, ["Mamoswine, come back!"])  # the row of Garchomp coming in is lost
+    events.update(b)
+    assert events.screen_shows("garchomp", mega=True) == [
+        {"k": "enter", "side": "own", "mon": "garchomp"},
+        {"k": "mega", "side": "own", "mon": "garchomp"},
+    ]
+    assert events.screen_shows("garchomp", mega=True) == [] and events.from_screen == 2
+    events.to_turn(3, b)
+    read(b, 2, ["Go! Garchomp!"])  # the lost row turns up later: not sent a second time
+    assert events.update(b) == []
+    assert not [p for e in events.events for p in problems(e)]
+
+
 def test_no_enter_for_a_fainted_or_unlisted_opposing_pokemon() -> None:
     from pcsa.events.inferred import OppActive
 

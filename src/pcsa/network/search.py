@@ -59,6 +59,7 @@ class SearchConfig:
     settle_sims: int = 0  # stop early once the pick has held this long (0: never stop early)
     settle_share: float = 0.9  # ... with at least this share of our strategy
     settle_gap: float = 0.01  # or once the best two actions' values are this close, after twice settle_sims
+    from_turn: int = 1  # battle turns before this one are not searched
 
 
 class Node:

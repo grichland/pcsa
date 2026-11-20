@@ -56,6 +56,10 @@ def test_an_unread_row_takes_the_set_position():
     assert slots.order_of(move("iciclespear"), request(blank)) == Order.move(2)
 
 
+def test_struggle_has_no_row_and_is_played_from_the_first():
+    assert slots.order_of(move("struggle"), request(unread_offer())) == Order.move(0)
+
+
 @pytest.mark.parametrize(
     "reply",
     [

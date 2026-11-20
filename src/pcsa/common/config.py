@@ -147,6 +147,7 @@ class CGSearch(Strict):
     settle_sims: int = Field(default=0, ge=0)  # stop early once the pick has held this long (0: never)
     settle_share: float = Field(default=0.9, gt=0, le=1)
     settle_gap: float = Field(default=0.01, ge=0)
+    from_turn: int = Field(default=1, ge=1)  # battle turns before this one: the model's answer is played
 
 
 class CGConfig(Strict):

@@ -185,7 +185,11 @@ class TurnPipeline:
         )  # fmt: skip
         if why is None and (why := move_peek.why_after_log(b, t)) is not None:
             peek = self.peek(b)
+        was_pending = b.mega_pending
         move_peek.settle_mega(b, t, peek, why)
+        same_mon = bool(b.names) and last.get("active_name") == b.names[active]
+        megaed = was_pending and b.mega_used and same_mon
+        new = [*new, *self._from_screen(b, events, t, active_name, megaed)]
         refused_order = None
         if refused and last.get("move_id"):
             refused_order = {"kind": "move", "move": last["move_id"], "mega": bool(last.get("mega"))}
@@ -204,6 +208,16 @@ class TurnPipeline:
         elapsed = (result.last_tap_at or self.clock.now()) - t0
         self._after_action(b, req, decision, turn, log_info, path, elapsed, t0, taken)
         self.clock.sleep(self.cfg.timing.post_action_wait_s)
+
+    def _from_screen(self, b: BattleRecord, events: BattleEvents, t, shown: str | None, megaed: bool) -> list[dict]:
+        """Events for what the screen shows and the log read lost, when the screen names our active."""
+        name = b.names[t.active] if b.names else None
+        if shown is None or name is None or not same_name(shown, name):
+            return []
+        added = events.screen_shows(t.mon, megaed)
+        if added:
+            log.event("events_from_screen", battle=b.index, turn=b.current_turn(), events=added)
+        return added
 
     def _tap_action(self, b: BattleRecord, order: Order, peek: Observation | None) -> tuple[ExecResult, bool]:
         if order.kind == "switch":

@@ -55,6 +55,12 @@ def test_valid_answer_is_used(clock):
     assert decision.player_ms is not None
 
 
+def test_a_mega_the_screen_does_not_offer_is_dropped_and_the_move_kept(clock):
+    decision = runner_for(Scripted(lambda r: Answer(Order.move(1, mega=True), {"why": "x"})), clock).decide(request())
+    assert (decision.source, decision.text) == ("player", "/choose move earthquake")
+    assert decision.notes == {"why": "x", "repaired": "mega dropped: not offered on screen"}
+
+
 def _boom(request):
     raise RuntimeError("bad state")
 
@@ -64,12 +70,6 @@ def _boom(request):
     [
         (_boom, None, "Player raised RuntimeError: bad state", "/choose move iceshard"),
         (lambda r: Order.move(1), None, "wrong answer type Order", "/choose move iceshard"),
-        (
-            lambda r: Answer(Order.move(0, mega=True)),
-            None,
-            "Mega Evolution not offered on screen",
-            "/choose move iceshard",
-        ),
         (
             lambda r: Answer(Order.move(1)),
             forced_offer(),

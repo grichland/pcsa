@@ -68,7 +68,7 @@ def party(t: Texts, image: np.ndarray) -> dict | None:
         name = name_in(t, (290, center - 50, 560, center + 2))
         if hp or name:
             red = red_fraction(image, (275, center + 5, 320, center + 40))
-            fainted = (hp is not None and hp[0] == 0) or red > RED_BADGE_FRACTION
+            fainted = hp[0] == 0 if hp is not None else red > RED_BADGE_FRACTION  # HP read decides
             rows.append(PartyMember(row, name, hp, fainted))
             if lime_fraction(image, (275, center - 45, 770, center + 45)) > PARTY_FOCUS_FRACTION:
                 focused_row = row

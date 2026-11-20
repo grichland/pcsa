@@ -1,6 +1,7 @@
 """Ask the Player, check its answer against the Offer, and fall back so that there is always an Order.
 
-Ladder (plan, Diagram C): automatic turn -> nothing asked; the Player's answer if valid and in time; else the
+Ladder (plan, Diagram C): automatic turn -> nothing asked; the Player's answer if valid and in time (a Mega
+Evolution the screen does not offer is dropped, the move kept); else the
 built-in "first"; else the first of `screen_actions`; else the first of `blind_actions`. The Player is called on
 one worker thread until the request's deadline minus the tap reserve.
 """
@@ -84,9 +85,9 @@ class Runner:
         until = Deadline(self.clock, request.deadline).minus(self.config.tap_reserve_s)
         result, reason = self._ask("choose_move", lambda: self.player.choose_move(request), until, request.request_id)
         if reason is None and result is not None:
-            reason = self._answer_problem(result.value, offer, rejected)
+            answer: Answer = _without_mega(result.value, offer, request.request_id)
+            reason = self._answer_problem(answer, offer, rejected)
             if reason is None:
-                answer: Answer = result.value
                 return Decision(
                     request.request_id,
                     answer.order,
@@ -194,6 +195,18 @@ class Runner:
             log.event("player_late", **entry)
             late.append(entry)
         return tuple(late)
+
+
+def _without_mega(answer, offer: Offer, request_id: int):
+    """A move asked with Mega Evolution the screen does not offer is played without it: the move is the choice."""
+    order = getattr(answer, "order", None)
+    if not (isinstance(answer, Answer) and isinstance(order, Order) and order.kind == "move" and order.mega):
+        return answer
+    if offer.can_mega_evolve is True or not isinstance(answer.notes, dict):
+        return answer
+    log.event("player_repaired", request=request_id, repaired="mega dropped: not offered on screen")
+    notes = {**answer.notes, "repaired": "mega dropped: not offered on screen"}
+    return Answer(Order.move(order.row, mega=False), notes)  # type: ignore[arg-type]
 
 
 def _answer_text(result: Result | None, offer: Offer) -> str | None:

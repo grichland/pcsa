@@ -73,6 +73,7 @@ class BattleEvents:
     visits: int = 0  # b.log.visits already scanned for gaps
     late_rows: int = 0  # rows of a turn older than the last `turn` event
     preview_fixes: list[dict] = field(default_factory=list)  # preview slots renamed by an entering Pokémon
+    from_screen: int = 0  # events added from the screen for rows the log read lost
     _kinds: dict[tuple[int, int, str], str | None] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
@@ -132,10 +133,30 @@ class BattleEvents:
             self.events += gaps_by_turn.pop(turn, [])
             for index in range(start, len(rows)):
                 event = self._event(b, turn, index)
+                if turn < self.turn and _own(event, "enter") and event.get("mon") == self.own_active():
+                    continue  # an old row of an entry the screen already gave
                 self._fix_preview(event)
                 self.events += self.opp.step(event, late=turn < self.turn)
             self.sent[turn] = max(start, len(rows))
         return self.events[before:]
+
+    def own_active(self) -> str | None:
+        """Our Pokémon on the field as the events so far have it."""
+        for e in reversed(self.events):
+            if e.get("side") == "own" and e.get("k") in ("enter", "withdraw"):
+                return e.get("mon") if e["k"] == "enter" else None
+        return None
+
+    def screen_shows(self, mon: str | None, mega: bool = False) -> list[dict]:
+        """What the action screen shows and the log read lost: our active's `enter`, our Mega Evolution."""
+        added: list[dict] = []
+        if mon and self.own_active() != mon:
+            added.append({"k": "enter", "side": "own", "mon": mon})
+        if mon and mega and not any(_own(e, "mega") for e in self.events):
+            added.append({"k": "mega", "side": "own", "mon": mon})
+        self.events += added
+        self.from_screen += len(added)
+        return added
 
     def to_turn(self, n: int, b: BattleRecord) -> None:
         """`turn` events up to n; a turn that closes with no row read gets a `gap` first."""
@@ -185,6 +206,10 @@ class BattleEvents:
         if member is None:
             return None
         return mon_id(member.species, "own", self.converter.teams)
+
+
+def _own(event: dict, kind: str) -> bool:
+    return event.get("k") == kind and event.get("side") == "own"
 
 
 def _raw(turn: int, index: int, text: str, sprite: dict | None) -> RawRow:

@@ -42,6 +42,7 @@ cg:                       # used when decide.player is cg (LIVE 0.7-0.9 messages
     min_sims: 64          # fewer simulations than this in total: the model's own answer is played
     top_ours: 0           # at every position only our N likeliest actions by the network's policy (0: all)
     top_theirs: 3         # at every position only their N likeliest actions by the network's prediction (0: all)
+    from_turn: 1          # the search starts at this turn of the battle; before it the model's own answer is played
     settle_sims: 300      # stop before `ms` once the pick has led this many simulations (0: always use `ms`)
     settle_share: 0.9     # ... and holds this share of the search's strategy
     settle_gap: 0.01      # or once the best two actions are this close in win chance, after twice settle_sims

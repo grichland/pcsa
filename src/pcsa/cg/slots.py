@@ -18,6 +18,8 @@ from pcsa.cg.transport import CGError
 from pcsa.decide.api import Offer, Order, OwnTeam, Request, valid_picks
 from pcsa.events.live_ids import base_id, species_id
 
+AUTOMATIC = frozenset({"struggle", "recharge"})
+
 
 def set_moves(export: str) -> tuple[tuple[str, ...], ...]:
     """Move ids per member, in export (= names) order and set order."""
@@ -95,11 +97,13 @@ def picks_of(reply: dict) -> tuple[int, int, int]:
     return a, b, c
 
 
-def move_row(team: OwnTeam, offer: Offer, move: str) -> int:
+def move_row(team: OwnTeam, offer: Offer, move: str, automatic: bool = True) -> int:
     """The screen row of a move id: the row showing it, else its set position when that row's id is unread."""
     for m in offer.moves:
         if m.id == move:
             return m.row
+    if automatic and move in AUTOMATIC and offer.moves:
+        return offer.moves[0].row  # no row of its own: the game plays it whichever row is tapped
     member = active_member(team, offer)
     sets = set_moves(team.export)
     if member is not None and member < len(sets) and move in sets[member]:
@@ -120,7 +124,7 @@ def switch_name(team: OwnTeam, own_team: list[dict], mon: str) -> str:
     raise CGError(f"{mon!r} is not one of the brought {list(team.brought())}")
 
 
-def order_of(reply: dict, request: Request) -> Order:
+def order_of(reply: dict, request: Request, automatic: bool = True) -> Order:
     """{"seq": N, "order": {kind move|switch, move id | mon species id, mega}} as a screen Order."""
     order = reply.get("order")
     if not isinstance(order, dict):
@@ -129,7 +133,7 @@ def order_of(reply: dict, request: Request) -> Order:
         mega = order.get("mega", False)
         if not isinstance(mega, bool):
             raise CGError(f"mega is not true or false: {mega!r}")
-        return Order.move(move_row(request.team, request.offer, order["move"]), mega=mega)
+        return Order.move(move_row(request.team, request.offer, order["move"], automatic), mega=mega)
     if order.get("kind") == "switch" and isinstance(order.get("mon"), str):
         start = request.events[0] if request.events else {}
         return Order.switch(switch_name(request.team, list(start.get("own_team") or []), order["mon"]))

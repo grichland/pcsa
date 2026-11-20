@@ -259,7 +259,7 @@ class CGPlayer:
         if error is not None and not isinstance(reply.get("order"), dict):
             raise CGError(f"CG error: {error}")
         try:
-            order = slots.order_of(reply, request)
+            order = slots.order_of(reply, request, automatic=not cg.get("last_resort"))
         except CGError as problem:
             if cg.get("last_resort"):
                 raise CGError(f"CG's last resort ({cg.get('why')}) cannot be placed: {problem}") from problem

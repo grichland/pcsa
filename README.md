@@ -188,7 +188,7 @@ predict the opponent, then choose.
   the legal and rule masks. It stops at `cg.search.ms` (1500) or the request's deadline, whichever is sooner, and
   earlier when `cg.search.settle_sims` is set and the answer has settled: one action has led for that many
   simulations with `settle_share` of the strategy, or the best two are within `settle_gap` in value. A request
-  with one open action is not searched. The log read before the decision ends early enough to leave the search
+  with one open action is not searched, nor is a turn of the battle before `cg.search.from_turn`. The log read before the decision ends early enough to leave the search
   its time. When it cannot run or runs too little the network's own answer is played and the record says why. Team preview
   and replacements are never searched. It needs Champions Gym 0.5.0, which builds the engine game; with the pinned
   0.4.0 the setting only records that it could not run. On the dashboard a searched decision shows a Search figure

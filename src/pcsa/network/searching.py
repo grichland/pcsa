@@ -143,6 +143,8 @@ class Searcher:
         try:
             if battle is None:
                 raise worlds.NoSearch("no Battle came with the request")
+            if int(battle.turn) < self.cfg.from_turn:
+                raise worlds.NoSearch(f"turn {int(battle.turn)}: the search starts at turn {self.cfg.from_turn}")
             if int((b["mask"][r] > 0).sum()) <= 1:
                 raise worlds.NoSearch("one action is open")
             budget = self.budget()
