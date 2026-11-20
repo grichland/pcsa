@@ -10,7 +10,7 @@ from __future__ import annotations
 import os
 import re
 from collections.abc import Iterable, Mapping
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any, Literal
 
 import yaml
@@ -202,7 +202,9 @@ class CGConfig(Strict):
     @field_validator("run_log_dir")
     @classmethod
     def _relative(cls, value: str | None) -> str | None:
-        if value is not None and (not value.strip() or Path(value).is_absolute() or ".." in Path(value).parts):
+        win = PureWindowsPath(value or "")  # either separator and a drive letter, on any system
+        outside = Path(value or "").is_absolute() or win.is_absolute() or ".." in win.parts
+        if value is not None and (not value.strip() or outside):
             raise ValueError("must be a folder name inside the run folder")
         return value
 
