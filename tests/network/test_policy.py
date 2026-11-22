@@ -115,3 +115,20 @@ def test_extras_failing_entirely_still_return_the_decision(policy: Policy, monke
     got = policy.decide(arrays, [7])
     assert torch.equal(got["scores"], want["scores"]) and torch.equal(got["value"], want["value"])
     assert got["extras"] == [{"error": "extras: RuntimeError: all broke"}]
+
+
+def test_a_choice_rule_makes_the_pick_and_says_so() -> None:
+    """The regret rule's pick is the shell's argmax, the extras carry it beside the network's own, and with no rule
+    the scores are the network's."""
+    if not CHECKPOINT.is_file():
+        pytest.skip(f"no test checkpoint at {CHECKPOINT}")
+    plain = Policy(str(CHECKPOINT), threads=2)
+    ruled = Policy(str(CHECKPOINT), threads=2, choice={"rule": "regret", "top_theirs": 3})
+    assert plain.info["choice"] is None and ruled.info["choice"]["rule"] == "regret"
+    arrays = observation(cg.KIND_TURN, turns=2)
+    own, out = plain.decide(arrays, [0]), ruled.decide(arrays, [0])
+    note = out["extras"][0]["choice"]
+    assert "choice" not in own["extras"][0]
+    assert note["model_pick"] == int(own["scores"][0, :11].argmax())
+    assert note["pick"] == int(out["scores"][0, :11].argmax()) and note["changed"] == (note["pick"] != note["model_pick"])
+    assert torch.equal(own["value"], out["value"])

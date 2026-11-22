@@ -57,10 +57,13 @@ SEARCH_SLOW_S, SEARCH_HARD_S = 1.0, 4.0  # over cg.search.ms: the shell's slow a
 def resolved(cfg: CGConfig) -> CGConfig:
     """The config as CG is made from it: `{python}` in cg.command is this interpreter, a relative checkpoint in
     the player_args is taken from the repo root, and with cg.search.enabled the neural player's policy_args carry
-    the search settings."""
+    the search settings (and cg.choice its `choice`, unless that is the network's own pick)."""
     player, args = _player(cfg)
     if isinstance(args.get("checkpoint"), str):
         args = {**args, "checkpoint": _from_repo(args["checkpoint"])}
+    choice = cfg.choice.args() if player == NEURAL else {}
+    if choice:
+        args = {**args, "policy_args": {**(args.get("policy_args") or {}), "choice": choice}}
     if cfg.search.enabled and player == NEURAL:
         args = {**args, "policy_args": {**(args.get("policy_args") or {}), **search_args(cfg)}}
         # the shell hands the battle to its fallback after slow answers: its limits must clear the search time
@@ -73,7 +76,7 @@ def resolved(cfg: CGConfig) -> CGConfig:
         return cfg.model_copy(update={"args": {**cfg.args, "player_args": args}})
     command = [sys.executable if part == PYTHON else part for part in cfg.command or []]
     args_at = _flag(command, "--player-args")
-    if args_at is not None and ("checkpoint" in args or cfg.search.enabled):
+    if args_at is not None and ("checkpoint" in args or cfg.search.enabled or choice):
         command[args_at + 1] = json.dumps(args)
     return cfg.model_copy(update={"command": command})
 

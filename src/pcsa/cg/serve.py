@@ -94,8 +94,9 @@ class Proxy:
         if isinstance(out, dict) and isinstance(info, dict):
             try:
                 out = {**out, "run": _plain(info.get("run")), "iteration": _plain(info.get("iteration"))}
-                if "search" in info:
-                    out["search"] = _plain(info["search"])
+                for key in ("search", "choice"):
+                    if key in info:
+                        out[key] = _plain(info[key])
             except (TypeError, ValueError) as error:
                 _say(f"status: run/iteration left out ({error})")
         return out

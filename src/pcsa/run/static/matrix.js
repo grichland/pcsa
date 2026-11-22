@@ -29,6 +29,14 @@ function mxSource(m) {
 const mxMs = (ms) => (ms >= 1000 ? `${(ms / 1000).toFixed(1)} s` : `${ms.toFixed(0)} ms`);
 const mxStopped = (why) => ({ clear: " It stopped early: one action was clearly ahead.", even: " It stopped early: the best actions were level." })[why] || "";
 
+/** The rule that made the pick from the matrix (cg.choice), and whether it changed the network's own pick. */
+function mxChoiceStat(c) {
+  if (!c) return null;
+  const k = (n, what) => (n ? `their ${n} likeliest ${what}` : `all their ${what}`);
+  const ours = c.top_ours ? `, among our ${c.top_ours} likeliest actions` : "";
+  return mxStat("Rule", c.rule, `Our pick is made by the ${c.rule} rule over ${k(c.top_theirs, "replies")}${ours}. ${c.changed ? "It changed the network's pick." : "It kept the network's pick."}`, null, c.changed ? "up" : undefined);
+}
+
 /** How the search ran: simulations, guesses of their team, time; or why the network's answer stood. */
 function mxSearchStat(s) {
   if (!s) return null;
@@ -164,6 +172,8 @@ function mxStats(decision) {
   if (look) stats.push(look);
   const searched = mxSearchStat(m?.search);
   if (searched) stats.push(searched);
+  const rule = mxChoiceStat(m?.choice);
+  if (rule) stats.push(rule);
   const masked = (m?.masked || []).map((x, i) => (x ? `${m.row_labels[i]}: ${x[0]} (${x[1]})` : null)).filter(Boolean);
   if (masked.length) stats.push(mxStat("Rule masks", `${masked.length} row${masked.length > 1 ? "s" : ""}`, `The guard rules took these actions out before the network chose: ${masked.join(" · ")}`));
   if (isNum(n.ms)) stats.push(mxStat("Decided in", n.ms >= 1000 ? `${(n.ms / 1000).toFixed(1)} s` : `${n.ms.toFixed(0)} ms`, "Time the player took to decide"));
@@ -209,13 +219,21 @@ function mxBanner(decision) {
   const banner = el("mx-banner");
   const maskedPick = !n.override && !n.fallback && m && isNum(m.chosen) ? mxMasked(m, m.chosen) : null;
   const searched = !n.override && !n.fallback && !maskedPick && m?.search?.used && m.search.changed ? m.search : null;
-  banner.hidden = !(n.override || n.fallback || maskedPick || searched);
+  const ruled = !n.override && !n.fallback && !maskedPick && !searched && m?.choice?.changed ? m.choice : null;
+  banner.hidden = !(n.override || n.fallback || maskedPick || searched || ruled);
   banner.className = `mx-banner${n.fallback ? " is-fallback" : " is-override"}`;
   if (searched) {
     const wanted = isNum(searched.model_pick) ? rowName(m, searched.model_pick) : "another action";
     const share = isNum(searched.pick) && searched.probs ? `${pct(searched.probs[searched.pick])} of its play, against ${pct(searched.probs[searched.model_pick] ?? 0)} for the network's` : "";
     banner.replaceChildren(node("b", "", "SEARCH"), node("strong", "", "changed the pick"), node("span", "", share), node("em", "", `network wanted ${wanted}`));
     tip(banner, `The search (${searched.sims} simulated lines over ${searched.worlds} guesses of their team) preferred the action played to the network's own first choice (${wanted})`);
+    return;
+  }
+  if (ruled) {
+    const wanted = isNum(ruled.model_pick) ? rowName(m, ruled.model_pick) : "another action";
+    const over = ruled.top_theirs ? `their ${ruled.top_theirs} likeliest replies` : "all their replies";
+    banner.replaceChildren(node("b", "", ruled.rule.toUpperCase()), node("strong", "", "changed the pick"), node("span", "", `over ${over}`), node("em", "", `network wanted ${wanted}`));
+    tip(banner, `The ${ruled.rule} rule over ${over} preferred the action played to the network's own first choice (${wanted}), which has the best expected score`);
     return;
   }
   if (n.fallback) {

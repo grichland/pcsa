@@ -13,6 +13,7 @@ CG string ids (the record contract's `notes.cg.net`):
 - turn and replace: tau, pi, score, p_opp, matrix [11][13], rows (our action names), cols (theirs), belief;
   closed (our actions the rule masks closed); with a belief_slots checkpoint also opp_seen [4]: which of their
   move columns were shown (the others are named by the belief head)
+- turn, with a `choice` rule set (choosing.py): choice, the rule's pick and scores beside the network's pick
 - preview: belief (with `lead`) and picks_top, the five likeliest (lead, second, third) picks
 
 The rule masks of training (rules.py) are applied to the mask the network reads: the same move at most
@@ -38,7 +39,7 @@ from typing import Any
 import numpy as np
 import torch
 
-from . import cg_adapter, model, rules, searching, vocab
+from . import cg_adapter, choosing, model, rules, searching, vocab
 from . import checkpoint as ckpt
 from . import layout as L
 from . import search as mcts
@@ -102,14 +103,16 @@ class Policy:
     `rule_masks`: training's rule masks, with the limits `max_same_move` and `max_switches` (0: no such rule).
     `search`: search every turn request (searching.py); `search_ms`, `worlds`, `depth`, `outcomes`, `c`, `n0`,
     `batch`, `min_sims`, `top_ours`, `top_theirs`, `settle`, `from_turn`, `search_sims` and `search_seed` are its
-    settings (search.SearchConfig)."""
+    settings (search.SearchConfig). `choice`: the rule that makes our pick from the matrix at turn requests
+    (choosing.py: rule, top_ours, top_theirs, blend); the search's pick, when it runs, still wins."""
 
     def __init__(self, checkpoint: str, device: str = "cpu", threads: int = 4, requery_refused: bool = False,  # noqa: PLR0913
                  allow_contract: bool = False, rule_masks: bool = True, max_same_move: int = 4,
                  max_switches: int = 3, search: bool = False, search_ms: float = 1500.0, worlds: int = 6,
                  depth: int = 3, outcomes: int = 3, c: float = 1.5, n0: float = 1.0, batch: int = 16,
                  min_sims: int = 64, search_sims: int = 0, search_seed: int = 0, top_ours: int = 0,
-                 top_theirs: int = 0, settle: Sequence[float] = (0, 0.9, 0.01), from_turn: int = 1):  # fmt: skip
+                 top_theirs: int = 0, settle: Sequence[float] = (0, 0.9, 0.01), from_turn: int = 1,
+                 choice: dict | None = None):  # fmt: skip
         torch.set_num_threads(int(threads))
         self.device = device
         lay = cg_adapter.layout()  # the layout from champions_gym.FEATURES, checked against CG
@@ -126,6 +129,7 @@ class Policy:
                                 int(top_theirs), int(settle[0]), float(settle[1]), float(settle[2]),
                                 int(from_turn))  # fmt: skip
         self.searcher = searching.Searcher(self, cfg) if search else None
+        self.choice = choosing.ChoiceConfig.of(choice)
         self.game_of: Any = None  # (battle, guess, seed) -> (Game, rejected); pcsa.cg.serve sets the Session's
         self.deadline: float | None = None  # precise_now() by which the open request must be answered
         self.cols = {"species": lay.col(L.F_SPECIES), "moves": lay[L.F_MOVE_ID].columns(),
@@ -156,6 +160,7 @@ class Policy:
             "rule_masks": None if self.rule_cfg is None else
             {"max_same_move": self.rule_cfg.max_same_move, "max_switches": self.rule_cfg.max_switches},
             "search": mcts.settings(cfg) if search else None,
+            "choice": None if self.choice is None else self.choice.settings(),
         }
 
     def _grow(self, need: int) -> model.Memory:
@@ -286,6 +291,7 @@ class Policy:
             out = self._forward(b, slots)
             scores = torch.cat([decide_log(out["pi"]), decide_log(out["preview_pi"])], dim=1).cpu()  # [B, 71]
             kinds = np.asarray(arrays.kind).reshape(-1)
+            chosen = choosing.apply(self.choice, kinds, out, scores, float(self.net.temperature()))
             searched = self._searched(arrays, slots, kinds, b, out, battles, scores)
             for r, slot in enumerate(slots):  # the shell's argmax, until `played` says what went out
                 seat = self.seats.get(slot)
@@ -298,9 +304,11 @@ class Policy:
                 for e, c in zip(extras, closed, strict=True):
                     if "pi" in e:
                         e["closed"] = c
-            for e, note in zip(extras, searched, strict=True):
+            for e, note, rule in zip(extras, searched, chosen, strict=True):
                 if note is not None:
                     e["search"] = note
+                if rule is not None:
+                    e["choice"] = rule
         except Exception as error:  # display only: the decision stands without them
             extras = [{"error": f"extras: {type(error).__name__}: {error}"} for _ in slots]
         return {"scores": scores, "value": value, "extras": extras}

@@ -16,6 +16,7 @@ from typing import Any, Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
+from pcsa.common.config_cg import CGChoice, CGSearch
 from pcsa.common.errors import ConfigError
 
 ENV_PREFIX = "PCSA__"
@@ -128,28 +129,6 @@ class DecideConfig(Strict):
     player: Literal["first", "cg"] = "first"  # decide/load.py PLAYERS
 
 
-class CGSearch(Strict):
-    """Decision-time search of the neural player (pcsa.network.search; Champions Gym 0.5.0). `enabled` puts these
-    into the player's policy_args: `ms` per turn request, `worlds` guesses of their team, `depth` turns, `outcomes`
-    per action pair, `c` and `n0` weigh the network's priors and matrix, `min_sims` is the least that counts."""
-
-    enabled: bool = False
-    ms: float = Field(default=1500.0, gt=0)
-    worlds: int = Field(default=6, gt=0)
-    depth: int = Field(default=3, gt=0)
-    outcomes: int = Field(default=3, gt=0)
-    c: float = Field(default=1.5, ge=0)
-    n0: float = Field(default=1.0, ge=0)
-    batch: int = Field(default=16, gt=0)
-    min_sims: int = Field(default=64, ge=0)
-    top_ours: int = Field(default=0, ge=0)  # only our likeliest N actions at each node (0: all)
-    top_theirs: int = Field(default=0, ge=0)  # only their likeliest N actions at each node (0: all)
-    settle_sims: int = Field(default=0, ge=0)  # stop early once the pick has held this long (0: never)
-    settle_share: float = Field(default=0.9, gt=0, le=1)
-    settle_gap: float = Field(default=0.01, ge=0)
-    from_turn: int = Field(default=1, ge=1)  # battle turns before this one: the model's answer is played
-
-
 class CGConfig(Strict):
     """pcsa/cg: how CG is reached. `entry` "module:attr" (a handle(message) callable, or a class or object with
     .handle) for `inprocess`; `command` (argv, JSON lines on stdin/stdout) for `subprocess`, where `{python}` is the
@@ -158,7 +137,7 @@ class CGConfig(Strict):
     repo root. `args`: keyword arguments for an entry that is a class, e.g. {player: tower, seed: 0}. `env`: extra
     environment variables for the subprocess. `run_log_dir`: a folder in the run folder given to CG as its log_dir
     (and to a model player's player_args.log_dir) when CG is made. `start_timeout_s`: the start-up status check.
-    `search`: the neural player's decision-time search (CGSearch)."""
+    `search`: the neural player's decision-time search (CGSearch); `choice`: its pick from the matrix (CGChoice)."""
 
     transport: Literal["inprocess", "subprocess"] = "subprocess"
     entry: str | None = None
@@ -170,6 +149,7 @@ class CGConfig(Strict):
     timeout_s: float = 8.0  # per call; also capped by the decision's deadline
     start_timeout_s: float = 60.0
     search: CGSearch = CGSearch()
+    choice: CGChoice = CGChoice()
 
     @field_validator("timeout_s", "start_timeout_s")
     @classmethod

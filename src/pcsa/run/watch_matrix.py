@@ -10,7 +10,8 @@ move"); with belief_slots (`opp_seen` in the net) each column is a move, shown o
 
 With decision-time search (`search` in the net) the view also carries what the search found, folded the same way:
 its root strategy for our rows, its Q table and their strategy by column, and how it ran. `chosen` is then the
-network's own pick and `played` the search's.
+network's own pick and `played` the search's. With a choice rule (`choice` in the net) that changed the pick,
+`chosen` is the network's own pick too and `choice` says which rule played instead.
 """
 
 from __future__ import annotations
@@ -207,9 +208,12 @@ def matrix_view(net, names: dict[str, str] | None = None, order=None, action=Non
     chosen = action if type(action) is int and 0 <= action < ROWS else None
     played = row_of_order(order, rows)
     search = search_view(net, matrix)
-    if search is not None and search["used"] and search["model_pick"] is not None:
+    rule = choice_view(net)
+    own = search["model_pick"] if search is not None and search["used"] else None
+    own = rule["model_pick"] if rule is not None and rule["changed"] else own
+    if own is not None:
         played = played if played is not None else chosen
-        chosen = search["model_pick"]  # the network's own row; the row played is the search's
+        chosen = own  # the network's own row; the row played is the search's or the rule's
     kinds = ["move"] * MOVES + ["switch"] * (COLS - MOVES)
     return {
         "rows": rows,
@@ -239,4 +243,15 @@ def matrix_view(net, names: dict[str, str] | None = None, order=None, action=Non
         "blend": None,
         "masked": None,
         "search": search,
+        "choice": rule,
     }
+
+
+def choice_view(net: dict) -> dict | None:
+    """The choice rule's note: the rule, its k, and the network's pick against the rule's."""
+    found = net.get("choice")
+    if not isinstance(found, dict):
+        return None
+    k = {key: found.get(key) if type(found.get(key)) is int else None for key in ("top_ours", "top_theirs")}
+    return {"rule": str(found.get("rule") or "")[:20], **k, "changed": bool(found.get("changed")),
+            "model_pick": _row_index(found.get("model_pick")), "pick": _row_index(found.get("pick"))}  # fmt: skip

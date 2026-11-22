@@ -108,6 +108,7 @@ def neural_player(player_name: str, player_params: dict) -> tuple[str, dict]:
         "sampling": found.get("mode"),
         "fallback": found.get("fallback_player"),
         "search": found.get("search"),
+        "choice": found.get("choice"),
         "cg": player_params,
     }
 

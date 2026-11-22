@@ -279,3 +279,17 @@ def test_the_page_reads_the_belief_and_the_new_badge() -> None:
     assert "predates the Champions Gym port" in matrix and "state.legacy" in matrix
     for label in ('"SCORE"', '"FOR THEM"', "WOULD PICK", "pcsa-mx-top", "pcsa-mx-opp", "m.tau", "col_legal"):
         assert label in matrix
+
+
+def test_a_choice_rule_that_changed_the_pick_shows_the_networks_own_row() -> None:
+    net = small_net()
+    net["choice"] = {"rule": "regret", "top_ours": 0, "top_theirs": 3, "blend": 0.5, "model_pick": 0, "pick": 1,
+                     "changed": True, "scores": [-0.2, -0.1] + [None] * 9}  # fmt: skip
+    view = matrix_view(net, order="/choose move swordsdance", action=1)
+    assert view is not None and view["chosen"] == 0 and view["played"] == 1
+    assert view["choice"] == {"rule": "regret", "top_ours": 0, "top_theirs": 3, "changed": True, "model_pick": 0,
+                              "pick": 1}  # fmt: skip
+    net["choice"] = {**net["choice"], "pick": 0, "changed": False}
+    kept = matrix_view(net, order="/choose move earthquake", action=0)
+    assert kept is not None and kept["chosen"] == 0 == kept["played"] and kept["choice"]["changed"] is False
+    assert matrix_view(small_net())["choice"] is None  # type: ignore[index]

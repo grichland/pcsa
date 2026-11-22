@@ -46,6 +46,11 @@ cg:                       # used when decide.player is cg (LIVE 0.7-0.9 messages
     settle_sims: 300      # stop before `ms` once the pick has led this many simulations (0: always use `ms`)
     settle_share: 0.9     # ... and holds this share of the search's strategy
     settle_gap: 0.01      # or once the best two actions are this close in win chance, after twice settle_sims
+  choice:                 # how the neural player picks from its matrix at turn requests (pcsa.network.choosing)
+    rule: mean            # mean: expected score (top_theirs 0: the network's own); min; mix; regret
+    top_theirs: 3         # over their N likeliest replies by the network's prediction (0: all)
+    top_ours: 0           # among our N likeliest actions by the network's policy (0: all legal)
+    blend: 0.5            # mix only: the weight of the mean against the worst case
 
 device:
   serial: null            # null: the single authorized device
