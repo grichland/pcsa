@@ -55,6 +55,7 @@ Champions Gym and the player it runs (pcsa.cg)
 | `cg.rules.no_redundant_field` | `true` | close hazards at their maximum and weather or terrain already up |
 | `cg.rules.no_double_protect` | `true` | close the Protect family two turns in a row |
 | `cg.rules.no_wasted_self` | `true` | close recovery at full HP, setup at +6, Substitute when it would fail |
+| `cg.rules.status_free_mirrors` | `[primarina]` | not training's: close status moves when both actives are one of these |
 | `cg.search` |  | decision-time search at turn requests (pcsa.network.search) |
 | `cg.search.enabled` | `false` | needs Champions Gym 0.5.0 or later (0.7.1 is pinned) |
 | `cg.search.ms` | `1500` | time per turn request; never past the request's deadline less the tap reserve |

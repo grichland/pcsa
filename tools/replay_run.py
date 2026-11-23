@@ -36,7 +36,7 @@ LEGACY_RULES = {"max_same_move": 4, "max_switches": 3}  # flat-form defaults of 
 # the rule masks added after the first two: off in a run that recorded none of them
 LATER_RULES = {"max_boosts": 0, "max_heals": 0, "no_null_moves": False, "no_boost_when_ko": False,
                "no_failing_status": False, "no_redundant_field": False, "no_double_protect": False,
-               "no_wasted_self": False}  # fmt: skip
+               "no_wasted_self": False, "status_free_mirrors": []}  # fmt: skip
 LIVE_TYPES = {"battle_start", "preview_request", "events", "decision_request", "battle_end"}
 
 

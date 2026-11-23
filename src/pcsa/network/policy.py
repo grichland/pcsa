@@ -17,7 +17,8 @@ CG string ids (the record contract's `notes.cg.net`):
 - preview: belief (with `lead`) and picks_top, the five likeliest (lead, second, third) picks
 
 The rule masks of training (rules.py) are applied to the mask the network reads, with the settings the checkpoint
-was trained with (runs of one move, of switches, of setup or recovery; moves that cannot work). What was played
+was trained with (runs of one move, of switches, of setup or recovery; moves that cannot work), then pcsa's
+mirror rule (live_rules.py: no status moves in a mirror of a listed species). What was played
 is recorded once per decision: the network's own choice when it answers, corrected by `played` (called by
 pcsa.cg.serve with the action that went out, so a fallback's answer or the second answer after a refusal replaces
 the first).
@@ -30,7 +31,6 @@ the search cannot run or does too little, the model's answer stands and `search.
 
 from __future__ import annotations
 
-import dataclasses
 import hashlib
 import os
 import threading
@@ -41,9 +41,9 @@ from typing import Any
 import numpy as np
 import torch
 
-from pcsa.common.config_cg import RuleSettings, SearchSettings, ValueCalibration
+from pcsa.common.config_cg import SearchSettings, ValueCalibration
 
-from . import cg_adapter, choosing, decide, model, searching, vocab
+from . import cg_adapter, choosing, decide, live_rules, model, searching, vocab
 from . import checkpoint as ckpt
 from . import layout as L
 from . import rules as masks
@@ -99,7 +99,7 @@ class Policy:
     """`checkpoint`: a .pt saved by checkpoint.save. `device`: "cpu" for live play. `threads`: torch CPU threads.
     `requery_refused`: ask the network again after a refused choice instead of the shell reusing the first answer.
     `allow_contract`: load a checkpoint made under another contract version; CG's own check still reports it.
-    `rules`: training's rule masks, RuleSettings' fields without `enabled` (None: no masks).
+    `rules`: RuleSettings' fields without `enabled`: training's masks and the mirror rule (live_rules.py); None: off.
     `search`: search every turn request (searching.py) with these SearchSettings; None: no search.
     `value_calibration`: {a, b}: the value returned is 2 * sigmoid(a * v + b) - 1 (extras keep `value_raw`).
     `choice`: the rule that makes our pick from the matrix at turn requests (choosing.py, ChoiceSettings); the
@@ -118,8 +118,7 @@ class Policy:
         self.memory: model.Memory | None = None
         self.lock = threading.Lock()
         self.layout = lay
-        limits = None if rules is None else RuleSettings.model_validate({"enabled": True, **rules})
-        self.rule_cfg = None if limits is None else masks.RuleConfig(**limits.model_dump(exclude={"enabled"}))
+        self.rule_cfg, self.mirror = live_rules.build(rules, lay)  # training's masks, then pcsa's mirror rule
         self.seats: dict[int, _Seat] = {}
         cfg = None if search is None else SearchSettings.model_validate(search)
         self.searcher = None if cfg is None else searching.Searcher(self, cfg)
@@ -153,7 +152,7 @@ class Policy:
             "iteration": ck.get("extra", {}).get("iteration"),
             "memory": self.net.cfg.memory,
             "belief_slots": bool(self.net.cfg.belief_slots),
-            "rule_masks": None if self.rule_cfg is None else dataclasses.asdict(self.rule_cfg),
+            "rule_masks": live_rules.info(self.rule_cfg, self.mirror),
             "search": None if cfg is None else cfg.model_dump(),
             "choice": None if self.choice is None else self.choice.model_dump(),
             "value_calibration": None if self.calibration is None else self.calibration.args(),
@@ -224,7 +223,7 @@ class Policy:
             obs = self._turn_obs(arrays, r)
             if obs is None:
                 continue
-            new = self._seat(slot, int(decisions[r]), obs).rules.mask(obs)[0]
+            new = live_rules.apply(self.mirror, obs, self._seat(slot, int(decisions[r]), obs).rules.mask(obs))[0]
             closed[r] = [int(a) for a in np.flatnonzero((obs["mask"][0] > 0) & (new == 0))]
             mask[r] = torch.from_numpy(new).to(mask)
         b["mask"] = mask

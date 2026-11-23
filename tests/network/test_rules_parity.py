@@ -19,7 +19,7 @@ pytest.importorskip("torch")
 os.environ.setdefault("CUDA_VISIBLE_DEVICES", "-1")
 
 from pcsa.common.paths import repo_root  # noqa: E402
-from pcsa.network import cg_adapter, rules  # noqa: E402
+from pcsa.network import cg_adapter, live_rules, rules  # noqa: E402
 from pcsa.network import layout as L  # noqa: E402
 from tests import configs  # noqa: E402
 
@@ -29,6 +29,7 @@ OURS = repo_root() / "src" / "pcsa" / "network" / "rules.py"
 NEWER = {"max_same_move": 3, "max_switches": 2, "max_boosts": 3, "max_heals": 3, "no_null_moves": True,
          "no_boost_when_ko": True, "no_failing_status": True, "no_redundant_field": True, "no_double_protect": True,
          "no_wasted_self": True}  # fmt: skip
+TRAINED = {k: v for k, v in configs.rules().items() if k not in live_rules.LIVE_ONLY}  # the shipped, training's part
 OBS = ("rows", "row_ids", "field", "mask", "kind", "seat")
 
 
@@ -60,10 +61,10 @@ def test_the_settings_are_the_same(former) -> None:
     ours = [(f.name, f.default) for f in dataclasses.fields(rules.RuleConfig)]
     theirs = [(f.name, f.default) for f in dataclasses.fields(former[0].RuleConfig)]
     assert ours == theirs
-    assert set(configs.rules()) == {name for name, _ in ours}
+    assert set(TRAINED) == {name for name, _ in ours}
 
 
-@pytest.mark.parametrize("settings", [configs.rules(), NEWER], ids=["shipped", "newer"])
+@pytest.mark.parametrize("settings", [TRAINED, NEWER], ids=["shipped", "newer"])
 def test_the_same_masks_on_simulator_games(former, settings) -> None:
     their_rules, their_cg = former
     games, rng = 32, np.random.default_rng(5)

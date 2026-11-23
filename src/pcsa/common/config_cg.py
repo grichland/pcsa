@@ -31,6 +31,7 @@ class RuleSettings(_Strict):
     no_redundant_field: bool  # hazards at their maximum, weather or terrain already up
     no_double_protect: bool  # the Protect family by the same Pokémon two turns in a row
     no_wasted_self: bool  # recovery at full HP, setup at +6, Substitute when it would fail
+    status_free_mirrors: list[str]  # pcsa's own: no status moves when both actives are one of these species
 
     def args(self) -> dict | None:
         """The policy's `rules` argument; None when the masks are off."""
