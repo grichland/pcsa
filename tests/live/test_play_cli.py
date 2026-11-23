@@ -17,11 +17,11 @@ from tests.live.session_harness import TEAM
 
 
 def test_play_and_check_parse() -> None:
-    args = parser().parse_args(["run", "--player", "cg", "--battles", "2", "--set", "run.battles=3"])
-    assert (args.command, args.player, args.battles, args.set) == ("run", "cg", 2, ["run.battles=3"])
+    args = parser().parse_args(["run", "--set", "run.battles=3", "--set", "decide.player=first"])
+    assert (args.command, args.set, args.resume) == ("run", ["run.battles=3", "decide.player=first"], None)
     assert parser().parse_args(["check"]).command == "check"
     with pytest.raises(SystemExit):
-        parser().parse_args(["run", "--player", "random"])
+        parser().parse_args(["run", "--battles", "2"])  # every setting comes from agent.yaml
 
 
 def test_decide_player_is_cg_in_the_shipped_config_and_rejects_others(config: Config) -> None:
@@ -37,8 +37,9 @@ def test_decide_player_is_cg_in_the_shipped_config_and_rejects_others(config: Co
 
 def test_the_shipped_cg_command_has_no_machine_paths(config: Config) -> None:
     command = config.agent.cg.command or []
-    assert command[0] == "{python}" and command[1:3] == ["-m", "pcsa.cg.serve"]
-    assert not any(":/" in part or ":\\" in part for part in command) and config.agent.cg.python_path == []
+    assert command == ["{python}", "-m", "pcsa.cg.serve"] and config.agent.cg.python_path == []
+    checkpoint = (config.agent.cg.player_args or {})["checkpoint"]
+    assert not any(":/" in part or ":\\" in part for part in [*command, checkpoint])
 
 
 def test_own_team_lists_the_unread_fields() -> None:

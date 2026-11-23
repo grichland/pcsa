@@ -1,4 +1,5 @@
-"""game, moves and stats give the recorded reference answers wherever the data is legal; the known differences are listed."""
+"""game, moves and stats give the recorded reference answers wherever the data is legal; known differences are
+listed."""
 
 from __future__ import annotations
 

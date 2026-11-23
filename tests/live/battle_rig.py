@@ -1,4 +1,4 @@
-"""T7 rig: whole battles on the scripted phone with the real Session (through play.session_builder and the
+"""Whole battles on the scripted phone with the real Session (through play.session_builder and the
 supervisor), the real TurnPipeline, the real Runner and the built-in Player.
 
 The log is scripted per action visit (turn_rig.FakeLogs) unless a test gives the pipeline the real LogReader.

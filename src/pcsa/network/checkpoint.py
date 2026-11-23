@@ -1,7 +1,10 @@
 """Checkpoints carry the contract version, the feature-list hash, the widths and the vocabulary sizes they were trained
-with (and CG's own contract record when the layout came from CG), and refuse to load against a different one.
+with (and CG's own contract record when the layout came from CG), and refuse to load against a different one. They
+also carry the model settings they were trained with (model.Config, including max_prob and belief_slots), which
+`load` restores in place of the defaults.
 
-Source: pcsa-former/pcsa_former/checkpoint.py, copied verbatim; only the imports are package-relative.
+Copied from pcsa-former (pcsa_former/checkpoint.py); behaviour is kept identical to it, only the imports are
+package-relative.
 """
 
 from __future__ import annotations
@@ -35,8 +38,8 @@ def save(path: Path | str, net: Net, optimizer: torch.optim.Optimizer | None = N
 def load(path: Path | str, layout: L.Layout, learnset: torch.Tensor | None = None, device="cpu",
          allow_contract: bool = False) -> tuple[Net, dict]:  # fmt: skip
     """(net, the checkpoint dict). Raises LayoutMismatch when the feature list, widths, vocabularies or the contract
-    version differ. `allow_contract` lets another contract version through when the rest matches (to go on training
-    a net made under an earlier version)."""
+    version differ. `allow_contract` lets another contract version through when the rest matches (to load a net made
+    under an earlier version)."""
     ck = torch.load(path, map_location=device, weights_only=True)
     want, have = ck["layout"], layout.describe()
     for key in ("hash", "widths", "vocab"):

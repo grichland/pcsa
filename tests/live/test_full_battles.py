@@ -1,5 +1,5 @@
-"""T7: full battles end to end on the fake device (real Session, TurnPipeline, Runner, built-in Player): one battle
-(T7-1), restarts (T7-2), forfeit and unread results (T7-3), a battle already on at start (T7-4)."""
+"""Full battles end to end on the fake device (real Session, TurnPipeline, Runner, built-in Player): one battle,
+restarts, forfeit and unread results, a battle already on at start."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from pcsa.common.config import Config
 from pcsa.common.types import MoveInfo, Screen
 from pcsa.decide.api import Order
 from pcsa.live.fake import Step
-from tests.live.t7_rig import (
+from tests.live.battle_rig import (
     Script,
     action,
     end_of_battle,
@@ -69,8 +69,8 @@ def assert_whole(request, rows: list[str]) -> None:
     assert live_problems(request.events) == []
 
 
-# T7-1 -------------------------------------------------------------------------------------------------
-def test_t7_1_a_full_battle(config: Config, tmp_path: Path, monkeypatch) -> None:
+# One battle -------------------------------------------------------------------------------------------
+def test_a_full_battle(config: Config, tmp_path: Path, monkeypatch) -> None:
     steps = one_battle()[:-1] + lobby_to_team_select() + action("Gholdengo") + end_of_battle("loss")
     played = run_battles(config, steps, tmp_path, monkeypatch, target=2, visits=[*VISITS, {1: START}])
     assert played.ending == "completed" and played.state.outcomes == ["win", "loss"] and played.state.restarts == 0
@@ -135,8 +135,8 @@ def test_t7_1_a_full_battle(config: Config, tmp_path: Path, monkeypatch) -> None
     assert (played.recorder.dir / "battle-1" / "battle_log.txt").is_file()
 
 
-# T7-2 -------------------------------------------------------------------------------------------------
-def test_t7_2_restart_at_team_preview(config: Config, tmp_path: Path, monkeypatch) -> None:
+# Restarts ---------------------------------------------------------------------------------------------
+def test_restart_at_team_preview(config: Config, tmp_path: Path, monkeypatch) -> None:
     played = run_battles(config, one_battle(), tmp_path, monkeypatch, visits=VISITS, faults={("teampreview", 1)})
     assert played.ending == "completed" and played.state.restarts == 1 and played.state.outcomes == ["win"]
     tag = played.battle(1)["battle_id"]
@@ -149,7 +149,7 @@ def test_t7_2_restart_at_team_preview(config: Config, tmp_path: Path, monkeypatc
     assert_whole(played.requests()[0], START)
 
 
-def test_t7_2_restart_mid_battle_on_an_action_turn(config: Config, tmp_path: Path, monkeypatch) -> None:
+def test_restart_mid_battle_on_an_action_turn(config: Config, tmp_path: Path, monkeypatch) -> None:
     visits = [VISITS[0], VISITS[1], VISITS[1], VISITS[2]]  # the visit after the restart reads the same log
     played = run_battles(config, one_battle(), tmp_path, monkeypatch, visits=visits, faults={("decide", 2)})
     assert played.ending == "completed" and played.state.restarts == 1 and played.state.outcomes == ["win"]
@@ -165,7 +165,7 @@ def test_t7_2_restart_mid_battle_on_an_action_turn(config: Config, tmp_path: Pat
     assert records[1]["refused"] == [] and records[1]["same_turn"] is False
 
 
-def test_t7_2_restart_at_a_forced_switch(config: Config, tmp_path: Path, monkeypatch) -> None:
+def test_restart_at_a_forced_switch(config: Config, tmp_path: Path, monkeypatch) -> None:
     played = run_battles(config, one_battle(), tmp_path, monkeypatch, visits=VISITS, faults={("decide", 3)})
     assert played.ending == "completed" and played.state.restarts == 1 and played.state.outcomes == ["win"]
     lost, again = played.requests()[2:4]
@@ -191,7 +191,7 @@ PIVOT_TURN = [
 ]
 
 
-def test_t7_2_restart_after_a_pivot(config: Config, tmp_path: Path, monkeypatch) -> None:
+def test_restart_after_a_pivot(config: Config, tmp_path: Path, monkeypatch) -> None:
     steps = (
         lobby_to_team_select()
         + action("Cinderace")
@@ -221,8 +221,8 @@ def test_t7_2_restart_after_a_pivot(config: Config, tmp_path: Path, monkeypatch)
     assert records[1]["pivot"] is True
 
 
-# T7-3 -------------------------------------------------------------------------------------------------
-def test_t7_3_opponent_forfeit_and_an_unread_result(config: Config, tmp_path: Path, monkeypatch) -> None:
+# Forfeit and unread results ---------------------------------------------------------------------------
+def test_opponent_forfeit_and_an_unread_result(config: Config, tmp_path: Path, monkeypatch) -> None:
     steps = (
         lobby_to_team_select()
         + action("Gholdengo")
@@ -250,8 +250,8 @@ def test_t7_3_opponent_forfeit_and_an_unread_result(config: Config, tmp_path: Pa
     assert all(live_problems(events) == [] for _, _, events in played.ends)
 
 
-# T7-4 -------------------------------------------------------------------------------------------------
-def test_t7_4_a_battle_on_at_start_is_not_adopted(config: Config, tmp_path: Path, monkeypatch) -> None:
+# A battle already on at start -------------------------------------------------------------------------
+def test_a_battle_on_at_start_is_not_adopted(config: Config, tmp_path: Path, monkeypatch) -> None:
     steps = (
         [
             Step(Screen.ACTION, {"active_name": "Garchomp", "move_time": 40}, after_s=30),

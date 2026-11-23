@@ -1,7 +1,7 @@
 """Their Pokémon named by the form they were brought in (Rotom Wash, Alolan Ninetales). The log's rows leave the
 form out; the team preview shows it, and a move only one form learns names it where the preview did not.
 
-`with_forms` gives recorded controller messages the form ids, for battles recorded before the live side sent them.
+`with_forms` gives recorded controller messages the form ids, for recordings whose messages carry base species ids.
 """
 
 from __future__ import annotations

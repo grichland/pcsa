@@ -2,7 +2,7 @@
 
     .venv/Scripts/python.exe tools/data/check_stopgap.py [--source CG_CHECKOUT]
 
-The Champions Gym checkout is --source, else CG_SOURCE, else ../cg-publish (cg_tables.generated_rs).
+The Champions Gym checkout is --source, else CG_SOURCE, else the default of cg_tables.generated_rs.
 """
 
 from __future__ import annotations

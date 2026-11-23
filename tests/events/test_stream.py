@@ -1,4 +1,4 @@
-"""The full LIVE 0.6 message stream: sets, orders, refusals, fallbacks, gaps, and the order messages go out in."""
+"""The full LIVE message stream: sets, orders, refusals, fallbacks, gaps, and the order messages go out in."""
 
 from __future__ import annotations
 
@@ -121,16 +121,16 @@ def test_fallbacks() -> None:
     events = {"v": "0.7", "battle": "b", "type": "events", "events": []}
     assert message_problems({**events, "fallback": deadline}) == []
     assert message_problems({**events, "fallback": {**deadline, "by": "game"}}) == ["fallback:extra:by"]
-    assert message_problems({**events, "fallback": {"seq": 3, "reason": "x"}}) == []  # no order: LIVE 0.6
+    assert message_problems({**events, "fallback": {"seq": 3, "reason": "x"}}) == []  # a fallback with no order
     picks = {"picks": [4, 1, 2], "reason": "overruled"}
-    assert message_problems({**events, "fallback": [picks, deadline, {"seq": 4, "reason": "x"}]}) == []  # 0.7
+    assert message_problems({**events, "fallback": [picks, deadline, {"seq": 4, "reason": "x"}]}) == []  # a list
     assert message_problems({**events, "fallback": {**picks, "picks": [4, 4, 2]}}) == ["fallback:picks"]
     assert message_problems({**events, "fallback": []}) == ["fallback:empty"]
 
 
 def test_replay_and_picks_shapes() -> None:
     request = dec.decision_request("b", {"sequence": 4, "kind": "action"}, None)
-    move = {"kind": "move", "move": "surf"}  # mega may be left out (0.7)
+    move = {"kind": "move", "move": "surf"}  # mega may be left out
     assert message_problems({**request, "replay": True, "played": move}) == []
     assert message_problems({**request, "replay": False}) == ["decision_request:replay"]
     assert message_problems({**request, "played": {"kind": "fly"}}) == ["played:order:kind"]
@@ -260,7 +260,7 @@ def test_real_battle() -> None:
     start = stream.messages[0]["msg"]
     assert all(set_problems(s) == [] for s in start["own_team"]) and len(start["own_team"]) == 6
     problems = {p for m in stream.messages if m["from"] == "controller" for p in message_problems(m["msg"])}
-    assert problems <= {"ability:missing:side", "item:missing:side"}  # CT-1: a pill not read
+    assert problems <= {"ability:missing:side", "item:missing:side"}  # a pill not read
 
 
 def test_back_paged_turn_has_no_gap() -> None:

@@ -1,8 +1,8 @@
-"""A fake CG for tests. It checks every message it gets against LIVE 0.7 (events/live_check, the message shapes of
-sections 2-3) and the stream order rules (battle_start first, a battle_start only once per battle and CG start,
+"""A fake CG for tests. It checks every message it gets against the LIVE protocol (events/live_check, the message
+shapes) and the stream order rules (battle_start first, a battle_start only once per battle and CG start,
 `turn` events counting up by one so no stretch of rows comes twice, seq rising, a `turn` request after its `turn`
 event and only once per turn unless retry or refused, a fallback only for a seq it was asked, a preview fallback of
-three different indices (at any time, LIVE 0.8), replayed requests only before the first live one, battle_end after an
+three different indices (at any time), replayed requests only before the first live one, battle_end after an
 `end` event with the same result), and answers with a simple legal choice from what it has seen: picks 0, 1, 2
 (or battle_start's picks); the active member's first move not refused (the screen_offer's when given); on a
 replacement the first brought member neither active nor fainted. A replayed request is answered with its

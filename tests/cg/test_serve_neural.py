@@ -1,6 +1,6 @@
-"""pcsa.cg.serve with the neural player in this process (torch, CPU): the recorded battle 1 of neural-148 replayed
-with its checkpoint gives the recorded picks and orders, `net` on every decided reply (and on the preview, with
-the lead belief and picks_top), and no `net` on a repeated request."""
+"""pcsa.cg.serve with the neural player in this process (torch, CPU): the recorded battle (tests/cg/recorded.py)
+replayed with its checkpoint gives the recorded picks and orders, `net` on every decided reply (and on the preview,
+with the lead belief and picks_top), and no `net` on a repeated request."""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ pytest.importorskip("torch")
 pytest.importorskip("champions_gym")
 
 from pcsa.cg.serve import NEURAL, Server, make_player  # noqa: E402
+from tests import configs  # noqa: E402
 from tests.cg import neural, recorded  # noqa: E402
 
 NET_KEYS = {"decision", "kind", "legal", "value", "tau", "pi", "score", "p_opp", "matrix", "rows", "cols", "belief", "closed"}
@@ -21,7 +22,7 @@ NET_KEYS = {"decision", "kind", "legal", "value", "tau", "pi", "score", "p_opp",
 def player():
     if neural.missing() or neural.CHECKPOINT.name != recorded.CHECKPOINT_NAME:
         pytest.skip(str(neural.missing() or f"the recording was made with {recorded.CHECKPOINT_NAME}"))
-    return make_player(NEURAL, {**neural.player_args(), "policy_args": {"threads": 2}})
+    return make_player(NEURAL, {**neural.player_args(), "policy_args": {"threads": 2, "rules": configs.rules()}})
 
 
 def test_recorded_battle_replays_the_same_with_net(player) -> None:

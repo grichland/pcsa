@@ -1,4 +1,4 @@
-"""The STOPGAP CG tables: headers, legal counts, and the pure form helpers built on them."""
+"""CG's legal tables (the STOPGAP dump): headers, legal counts, and the pure form helpers built on them."""
 
 from __future__ import annotations
 

@@ -13,7 +13,7 @@ from pcsa.cg.adapter import CGPlayer
 from pcsa.cg.fake_cg import FakeCG
 from pcsa.cg.transport import CGError, CGTimeout, Subprocess, resolve
 from pcsa.common.clock import FakeClock
-from pcsa.common.config import CGConfig, load_config
+from pcsa.common.config import load_config
 from pcsa.common.errors import ConfigError
 from pcsa.common.paths import repo_root
 from pcsa.decide.api import MoveOffer, Offer, Order, SwitchOffer
@@ -32,6 +32,7 @@ from tests.cg.helpers import (
     request,
     team,
 )  # fmt: skip
+from tests.configs import cg_config
 
 TIMEOUT_S = 2.0
 
@@ -44,12 +45,12 @@ def _fake():
 
 
 def inprocess(**kw) -> CGPlayer:
-    return CGPlayer(CGConfig(transport="inprocess", entry=ENTRY, timeout_s=TIMEOUT_S), **kw)
+    return CGPlayer(cg_config(transport="inprocess", entry=ENTRY, timeout_s=TIMEOUT_S), **kw)
 
 
 def subprocess_player(tmp_path: Path, *args: str) -> CGPlayer:
     command = [*FAKE_CG, "--log", str(tmp_path / "fake.jsonl"), *args]
-    return CGPlayer(CGConfig(command=command, timeout_s=TIMEOUT_S), run_dir=tmp_path / "run")
+    return CGPlayer(cg_config(command=command, timeout_s=TIMEOUT_S), run_dir=tmp_path / "run")
 
 
 def sent(player: CGPlayer) -> list[str]:
@@ -68,7 +69,7 @@ def test_a_battle_in_process() -> None:
     r0 = request(0, TURN1)
     r1 = request(1, TURN1 + TURN2, history=(entry(r0),))
     assert player.choose_move(r1).order == Order.move(0)
-    fallback = {"seq": 1, "reason": "builtin: late"}  # no order: the row had no id (LIVE 0.6)
+    fallback = {"seq": 1, "reason": "builtin: late"}  # no order: the row had no id
     final = (START, *TURN1, *TURN2, {"k": "end", "result": "forfeit"})
     player.battle_end(TAG, "opponent_forfeit", final, (entry(r0), entry(r1, fallback)))
     assert sent(player) == ["battle_start", "preview_request", "events", "decision_request", "events",
@@ -231,7 +232,7 @@ def test_config_section_is_checked(tmp_path: Path) -> None:
     player = load_player("cg", config, clock=FakeClock(0.0), run_dir=tmp_path)
     assert isinstance(player, CGPlayer) and player.params()["entry"] == ENTRY
     with pytest.raises(ConfigError, match="cg.args is for the inprocess"):
-        load_config(agent, ["decide.player=cg", "cg.command=[x]", "cg.args={player: tower}"], environ={})
+        load_config(agent, ["decide.player=cg", "cg.command=[x]", "cg.args={x: 1}"], environ={})
     with pytest.raises(ConfigError, match="python_path"):
         load_config(agent, ["cg.python_path=['']"], environ={})
 
@@ -239,8 +240,8 @@ def test_config_section_is_checked(tmp_path: Path) -> None:
 def test_args_and_python_path_reach_cg(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(sys, "path", list(sys.path))
     log = tmp_path / "fake.jsonl"
-    cfg = CGConfig(transport="inprocess", entry=ENTRY, args={"log_path": str(log)}, python_path=["tools"],
-                   timeout_s=TIMEOUT_S)  # fmt: skip
+    cfg = cg_config(transport="inprocess", entry=ENTRY, args={"log_path": str(log)}, python_path=["tools"],
+                    timeout_s=TIMEOUT_S)  # fmt: skip
     player = CGPlayer(cfg)
     assert player.teampreview(preview())[0] == (0, 1, 2) and log.is_file()
     assert str(repo_root() / "tools") in sys.path

@@ -1,4 +1,4 @@
-"""T7 with the CG Player: whole battles on the fake device (tests/live/t7_rig.py) answered by the fake CG, in process
+"""The CG Player in whole battles on the fake device (tests/live/battle_rig.py) answered by the fake CG, in process
 and as a subprocess. A full battle; restarts mid-battle with CG kept and with CG restarted; a CG timeout whose
 fallback is reported on the next events message; a refused move."""
 
@@ -13,14 +13,15 @@ import pytest
 from pcsa.cg.adapter import CGPlayer
 from pcsa.cg.fake_cg import FakeCG
 from pcsa.common.clock import FakeClock
-from pcsa.common.config import CGConfig, Config, load_config
+from pcsa.common.config import Config, load_config
 from pcsa.common.errors import Recoverable
 from pcsa.common.paths import repo_root
 from pcsa.common.types import MoveInfo
 from pcsa.live.turn import TurnPipeline
 from tests.cg.helpers import ENTRY, FAKE_CG, fresh_fake
-from tests.live.t7_rig import action, end_of_battle, lobby_to_team_select, peeked_action, run_battles
-from tests.live.test_t7_battles import START, VISITS, one_battle
+from tests.configs import cg_config
+from tests.live.battle_rig import action, end_of_battle, lobby_to_team_select, peeked_action, run_battles
+from tests.live.test_full_battles import START, VISITS, one_battle
 
 TRANSPORTS = ["inprocess", "subprocess"]
 TIMEOUT_S = 2.0
@@ -50,7 +51,7 @@ class Rig:
         command += ["--exit-at", str(exit_at), "--once", str(self.marker)] if exit_at is not None else []
         if transport == "inprocess":
             FakeCG.slow, FakeCG.exit_at, FakeCG.exits = dict(slow or {}), exit_at, 1
-        cg = CGConfig(transport=transport, entry=ENTRY, command=command, timeout_s=TIMEOUT_S)  # type: ignore[arg-type]
+        cg = cg_config(transport=transport, entry=ENTRY, command=command, timeout_s=TIMEOUT_S)
         self.config = config.model_copy(update={"agent": config.agent.model_copy(update={"cg": cg})})
         self.player = CGPlayer(self.config, clock=self.clock, run_dir=tmp_path / "run")
 
@@ -117,7 +118,7 @@ def assert_each_start_whole(rig: Rig, final_events: tuple, brought=(0, 1, 2)) ->
 
 
 @pytest.mark.parametrize("transport", TRANSPORTS)
-def test_t7_cg_a_full_battle(transport, config: Config, tmp_path: Path, monkeypatch) -> None:
+def test_cg_a_full_battle(transport, config: Config, tmp_path: Path, monkeypatch) -> None:
     rig = Rig(transport, config, tmp_path)
     played = rig.play(one_battle(), monkeypatch, visits=VISITS)
     assert played.ending == "completed" and played.state.outcomes == ["win"]
@@ -144,7 +145,7 @@ def test_t7_cg_a_full_battle(transport, config: Config, tmp_path: Path, monkeypa
 
 
 @pytest.mark.parametrize("transport", TRANSPORTS)
-def test_t7_cg_restart_mid_battle_with_cg_kept(transport, config: Config, tmp_path: Path, monkeypatch) -> None:
+def test_cg_restart_mid_battle_with_cg_kept(transport, config: Config, tmp_path: Path, monkeypatch) -> None:
     """The session restarts after CG answered turn 2 (before the record) and before the forced switch is asked;
     each time it asks again with the whole history: the same answer, nothing sent twice."""
     real_save, saves = TurnPipeline._save, []
@@ -175,7 +176,7 @@ def test_t7_cg_restart_mid_battle_with_cg_kept(transport, config: Config, tmp_pa
 
 
 @pytest.mark.parametrize("transport", TRANSPORTS)
-def test_t7_cg_restart_mid_battle_with_cg_restarted(transport, config: Config, tmp_path: Path, monkeypatch) -> None:
+def test_cg_restart_mid_battle_with_cg_restarted(transport, config: Config, tmp_path: Path, monkeypatch) -> None:
     """CG stops at the forced switch without answering: it is started again and gets the whole stream."""
     rig = Rig(transport, config, tmp_path, exit_at=2)
     played = rig.play(one_battle(), monkeypatch, visits=VISITS)
@@ -205,7 +206,7 @@ def test_t7_cg_restart_mid_battle_with_cg_restarted(transport, config: Config, t
 
 
 @pytest.mark.parametrize("transport", TRANSPORTS)
-def test_t7_cg_timeout_then_fallback_reported(transport, config: Config, tmp_path: Path, monkeypatch) -> None:
+def test_cg_timeout_then_fallback_reported(transport, config: Config, tmp_path: Path, monkeypatch) -> None:
     """CG is too slow on turn 2: the runner falls back and the next events message tells CG what was tapped."""
     rig = Rig(transport, config, tmp_path, slow={1: TIMEOUT_S + 1.0})
     played = rig.play(one_battle(), monkeypatch, visits=VISITS)
@@ -227,7 +228,7 @@ def test_t7_cg_timeout_then_fallback_reported(transport, config: Config, tmp_pat
 
 
 @pytest.mark.parametrize("transport", TRANSPORTS)
-def test_t7_cg_a_refused_move(transport, config: Config, tmp_path: Path, monkeypatch) -> None:
+def test_cg_a_refused_move(transport, config: Config, tmp_path: Path, monkeypatch) -> None:
     """The action screen comes back in the same turn: the request says refused and CG picks another move."""
     steps = (lobby_to_team_select() + action("Gholdengo") + peeked_action("Gholdengo", GHOLD_MOVES, mega=False)
              + end_of_battle("loss"))  # fmt: skip
@@ -248,9 +249,9 @@ def test_t7_cg_a_refused_move(transport, config: Config, tmp_path: Path, monkeyp
 
 
 @pytest.mark.parametrize("transport", TRANSPORTS)
-def test_t7_cg_a_tap_not_confirmed(transport, config: Config, tmp_path: Path, monkeypatch) -> None:
+def test_cg_a_tap_not_confirmed(transport, config: Config, tmp_path: Path, monkeypatch) -> None:
     """The move tap fails to send: CG is told the tap is not confirmed (no order) before the next request, and a
-    replay would carry no `played` for it (LIVE rule 31, S10-4)."""
+    replay would carry no `played` for it."""
     first = action("Gholdengo")
     first[0] = replace(first[0], inject="tap_fail")
     steps = lobby_to_team_select() + first + end_of_battle("loss")

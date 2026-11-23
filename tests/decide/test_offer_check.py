@@ -1,4 +1,4 @@
-"""offer_check and the ported live/orders rungs."""
+"""offer_check and the live/orders fallback rungs."""
 
 from __future__ import annotations
 

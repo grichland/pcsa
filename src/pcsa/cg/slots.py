@@ -1,11 +1,11 @@
-"""The mapping between the controller's identifiers and CG's (plan 2b), from Request fields only.
+"""The mapping between the controller's identifiers and CG's, from Request fields only.
 
 move:    screen row k = set position k (team.export move order)
 switch:  name <-> slot in brought order, 0 = lead (brought = names[i] for i in picks)
 preview: indices into team.names = indices into CG's six (the export's order)
 mega:    the same flag
 
-CG names moves and switch targets by id (LIVE section 3); `order_of` maps them to a row or a name and raises
+CG names moves and switch targets by id; `order_of` maps them to a row or a name and raises
 CGError for anything it cannot place, so the runner falls back.
 """
 

@@ -1,6 +1,6 @@
-"""Measuring the sprite network against the retired matcher, in numpy (no torch needed).
+"""Measuring the sprite network against the baseline thumbnail matcher, in numpy (no torch needed).
 Both run through the same matching flow on held-out runs; the log's acceptance thresholds are calibrated on a
-validation slice (most matches whose wrong-species count does not exceed the retired matcher's). A recolour stress
+validation slice (most matches whose wrong-species count does not exceed the baseline's). A recolour stress
 test stands in for shinies.
 """
 

@@ -1,9 +1,9 @@
 """Ask the Player, check its answer against the Offer, and fall back so that there is always an Order.
 
-Ladder (plan, Diagram C): automatic turn -> nothing asked; the Player's answer if valid and in time (a Mega
-Evolution the screen does not offer is dropped, the move kept); else the
-built-in "first"; else the first of `screen_actions`; else the first of `blind_actions`. The Player is called on
-one worker thread until the request's deadline minus the tap reserve.
+Fallback ladder: automatic turn -> nothing asked; the Player's answer if valid and in time (a Mega Evolution the
+screen does not offer is dropped, the move kept); else the built-in "first"; else the first of `screen_actions`;
+else the first of `blind_actions`. The Player is called on one worker thread until the request's deadline minus
+the tap reserve.
 """
 
 from __future__ import annotations

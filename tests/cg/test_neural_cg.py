@@ -23,7 +23,7 @@ from pcsa.live.turn import TurnPipeline
 from tests.cg import neural
 from tests.cg.helpers import preview
 from tests.cg.test_real_cg import Script, lines
-from tests.live.t7_rig import action, end_of_battle, lobby_to_team_select, run_battles
+from tests.live.battle_rig import action, end_of_battle, lobby_to_team_select, run_battles
 
 pytestmark = pytest.mark.skipif(neural.missing() is not None, reason=str(neural.missing()))
 

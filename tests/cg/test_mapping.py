@@ -1,4 +1,5 @@
-"""T9: the 2b mapping both ways, on the worked example and every reference decision; CG's answers to Orders."""
+"""The controller-to-CG identifier mapping (pcsa.cg.slots) both ways, on the worked example and every reference
+decision; CG's answers to Orders."""
 
 from __future__ import annotations
 

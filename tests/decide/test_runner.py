@@ -1,4 +1,4 @@
-"""T6: the runner's contract (fallbacks, late and stale answers, automatic turns, replay)."""
+"""The runner's contract (fallbacks, late and stale answers, automatic turns, replay)."""
 
 from __future__ import annotations
 
@@ -9,11 +9,11 @@ import pytest
 
 from pcsa.common import log
 from pcsa.common.clock import FakeClock
-from pcsa.common.config import DegradeConfig
 from pcsa.decide.api import Answer, MoveOffer, Offer, Order, TeamPreviewRequest
 from pcsa.decide.builtin import FirstPlayer
 from pcsa.decide.load import load_player
 from pcsa.decide.runner import Runner
+from tests import configs
 from tests.decide.examples import forced_offer, gold_team, read_offer, request
 
 WAIT_S = 5.0
@@ -41,7 +41,7 @@ def clock():
 
 
 def runner_for(player, clock):
-    return Runner(player, clock, DegradeConfig(tap_reserve_s=2.5))
+    return Runner(player, clock, configs.section("degrade", tap_reserve_s=2.5))
 
 
 def test_valid_answer_is_used(clock):
@@ -159,7 +159,7 @@ def test_automatic_turn_asks_nothing(clock):
     assert player.seen == []
 
 
-@pytest.mark.parametrize("name", ["first"])  # cg: tests/cg
+@pytest.mark.parametrize("name", ["first"])  # the cg player is tested in tests/cg
 def test_same_offer_whichever_player(clock, name):
     inner = load_player(name)
     spy = Scripted(lambda r: inner.choose_move(r))

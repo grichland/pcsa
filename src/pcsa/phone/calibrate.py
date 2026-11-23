@@ -1,9 +1,8 @@
 """`pcsa calibrate`: find where the game draws in this phone's frame and write its profile.
 
-From a lobby frame: with the reference aspect and the Begin Matchmaking label at its reference position the viewport
-is
-the whole frame; otherwise the game is assumed letterboxed at the reference aspect, centred, and the label confirms
-it.
+From a lobby frame: with the reference aspect and the Begin Matchmaking label at its reference position the
+viewport is the whole frame; otherwise the game is assumed letterboxed at the reference aspect, centred, and the
+label confirms it.
 """
 
 from __future__ import annotations

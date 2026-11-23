@@ -1,7 +1,7 @@
-"""One recorded battle -> the full ordered LIVE.md message stream, in the order things happened live.
+"""One recorded battle -> the full ordered LIVE protocol message stream, in the order things happened live.
 
 Each log visit's rows go out as one `events` message just before the decision that visit led to. A `replace`
-decision is placed after the faint or pivot row it answers (LIVE.md 0.4, CF-9/CF-10), though live it came before
+decision is placed after the faint or pivot row it answers, as the LIVE protocol orders it, though live it came before
 those rows were read; with no such row it goes at the end of its turn. Each row is sent exactly once. Messages
 from CG (picks, orders) are in the stream too, marked {"from": "cg"}; the controller's are {"from": "controller"}.
 """
@@ -150,7 +150,7 @@ class _Builder:
         category, message = split_category(r["text"])
         rid = f"T{r['turn']}#{r['index']}"
         raw = RawRow(rid, r["turn"], r["index"], r["text"], category, message, r.get("sprite"))
-        if r.get("read") == "unread":  # the reader flagged it: sent as unread with its reason (LIVE.md rule 4)
+        if r.get("read") == "unread":  # the reader flagged it: sent as unread with its reason
             self.event({"k": "unread", "text": r["text"], **({"category": r["reason"]} if r.get("reason") else {})})
         else:
             self.event(self.conv.row(raw, r.get("side")))  # the pill side, when the row carries one
@@ -199,7 +199,7 @@ class _Builder:
             if fallback:
                 items.append(("fallback", fallback))
             else:
-                self.out.counts["fallback_not_sent:no_order"] += 1  # section 3 needs the order
+                self.out.counts["fallback_not_sent:no_order"] += 1  # a fallback is sent only with its order
         elif order:
             items.append(("cg", dec.answer(record, order)))
         if record.get("kind") == "forced":
@@ -218,7 +218,7 @@ class _Builder:
         for record in rec.decisions:
             self.decision(record, previous)
             previous = record
-        # The game chose for us after a late answer: section 3's fallback needs an order, which was not read.
+        # The game chose for us after a late answer: a fallback needs the order, which was not read.
         timeouts = sum(e.get("event") == "turn_timed_out" for e in rec.run_events)
         self.out.counts["fallback_not_sent:game_timeout"] += timeouts
         self.finish()

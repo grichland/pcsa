@@ -39,7 +39,7 @@ def game_from_battle(battle: Any, guess: list, seed: int) -> tuple:
 class Searcher:
     """`policy`: the pcsa.network.policy.Policy it searches for (its net, memory, device, `game_of`, `deadline`)."""
 
-    def __init__(self, policy: Any, cfg: search.SearchConfig) -> None:
+    def __init__(self, policy: Any, cfg: search.SearchSettings) -> None:
         self.policy, self.cfg = policy, cfg
         self.leads: dict[int, str] = {}  # per slot: the species they led with
         self._tables: worlds.Tables | None = None

@@ -96,7 +96,7 @@ class Rig:
 
 
 def plain(text: str) -> str:
-    """The recorded run wrote "It doesn't affect X.." where the strict wording check now writes "..."."""
+    """The recorded pages read "It doesn't affect X.." where the strict wording check writes "..."."""
     return re.sub(r"\.{2,}$", "...", anonymous(text))
 
 

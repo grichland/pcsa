@@ -1,4 +1,4 @@
-"""Rows -> LIVE.md 0.5 events: one event per row, nameless rows stay nameless, every event validates."""
+"""Rows -> LIVE protocol events: one event per row, nameless rows stay nameless, every event validates."""
 
 from __future__ import annotations
 
@@ -134,7 +134,7 @@ def test_row_the_reader_flagged_is_unread() -> None:
                                                    "effect": "saltcure"}),
         ("Garchomp is hurt by Salt Cure!", {"k": "cause", "effect": "saltcure", "side": "own", "mon": "garchomp"}),
         ("Mamoswine must recharge!", {"k": "cant", "side": "own", "mon": "mamoswine", "reason": "recharge"}),
-        ("But there was no PP left for the move!", {"k": "cant", "reason": "nopp"}),  # 0.6, LV5Q-2
+        ("But there was no PP left for the move!", {"k": "cant", "reason": "nopp"}),  # names no Pokemon
         ("The opposing Lucario cannot use Explosion!", {"k": "cant", "side": "opp", "mon": "lucario",
                                                         "reason": "explosion"}),
     ],

@@ -1,5 +1,5 @@
 """An opposing switch whose rows the log read lost: when a row shows an opposing Pokémon acting or being hit while
-another one (or none) is recorded on the field, its `enter` is sent first. LIVE.md rule 16: an `enter` with no
+another one (or none) is recorded on the field, its `enter` is sent first. In the LIVE protocol an `enter` with no
 `withdraw` is the switch.
 """
 

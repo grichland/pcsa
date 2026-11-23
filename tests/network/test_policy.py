@@ -13,6 +13,7 @@ os.environ.setdefault("CUDA_VISIBLE_DEVICES", "-1")
 
 from pcsa.network import decide  # noqa: E402
 from pcsa.network.policy import Policy  # noqa: E402
+from tests.cg import neural  # noqa: E402
 from tests.cg.neural import CHECKPOINT  # noqa: E402
 
 
@@ -20,7 +21,7 @@ from tests.cg.neural import CHECKPOINT  # noqa: E402
 def policy() -> Policy:
     if not CHECKPOINT.is_file():
         pytest.skip(f"no test checkpoint at {CHECKPOINT}")
-    return Policy(str(CHECKPOINT), threads=2)
+    return neural.policy()
 
 
 def observation(kind: int, turns: int = 0):
@@ -122,8 +123,8 @@ def test_a_choice_rule_makes_the_pick_and_says_so() -> None:
     the scores are the network's."""
     if not CHECKPOINT.is_file():
         pytest.skip(f"no test checkpoint at {CHECKPOINT}")
-    plain = Policy(str(CHECKPOINT), threads=2)
-    ruled = Policy(str(CHECKPOINT), threads=2, choice={"rule": "regret", "top_theirs": 3})
+    plain = neural.policy()
+    ruled = neural.policy(choice={"rule": "regret", "top_ours": 0, "top_theirs": 3, "blend": 0.5})
     assert plain.info["choice"] is None and ruled.info["choice"]["rule"] == "regret"
     arrays = observation(cg.KIND_TURN, turns=2)
     own, out = plain.decide(arrays, [0]), ruled.decide(arrays, [0])

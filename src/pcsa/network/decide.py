@@ -1,9 +1,10 @@
 """The decision rule and its two masks: the legal mask on our actions and the opponent prior on theirs.
 
 score[a] = sum_b M[a, b] * p_opp[b];  policy = softmax(score / tau) over legal actions only.
-No action of either side gets more than `max_prob` (0.9) while another action is possible.
+No action of either side gets more than `max_prob` while another action is possible. MAX_PROB is only the
+default: the network passes its checkpoint's own max_prob (model.Config).
 
-Source: pcsa-former/pcsa_former/decide.py, copied verbatim; only the imports are package-relative.
+Copied from pcsa-former (pcsa_former/decide.py); behaviour is kept identical to it.
 """
 
 from __future__ import annotations

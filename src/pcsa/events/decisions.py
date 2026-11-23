@@ -1,4 +1,4 @@
-"""decision_request, the order answer, refusals and fallbacks from pcsa decision records (LIVE.md).
+"""decision_request, the order answer, refusals and fallbacks from pcsa decision records (LIVE protocol).
 
 A record's `order` is the '/choose' text ("/choose move earthquake", "/choose move X mega",
 "/choose switch Garchomp") or, in records made from the screen alone, a screen label ("move2", "mega+move0",
@@ -80,7 +80,7 @@ def refused_by(record: dict, previous: dict | None) -> bool:
 
 
 def repeat_of(record: dict, previous: dict | None, previous_order: dict | None) -> str | None:
-    """"refused", "retry" or None (CF-8). A refusal only where pcsa recorded the move row as refused; a repeated
+    """"refused", "retry" or None. A refusal only where pcsa recorded the move row as refused; a repeated
     switch or replacement, or a repeat pcsa did not mark, is a tap that did not register."""
     if not refused_by(record, previous):
         return None
@@ -104,7 +104,7 @@ def fallback_reason(record: dict) -> str | None:
 
 
 def fallback_of(record: dict, order: dict | None) -> dict | None:
-    """Section 3's {"seq", "order", "reason"}; None when the player answered or the order cannot be named."""
+    """The turn fallback {"seq", "order", "reason"}; None when the player answered or the order cannot be named."""
     reason = fallback_reason(record)
     if reason is None or order is None or not isinstance(record.get("sequence"), int):
         return None
@@ -112,8 +112,8 @@ def fallback_of(record: dict, order: dict | None) -> dict | None:
 
 
 def decision_request(tag: str, record: dict, refused: dict | None, retry: bool = False) -> dict:
-    """No deadline_ms: pcsa read the move timer but did not record it (rule 2). No screen_offer: the
-    screen's own rows were not recorded, only the tracked orders that passed the screen check."""
+    """No deadline_ms: pcsa read the move timer but did not record it (unknown fields are left out).
+    No screen_offer: the screen's own rows were not recorded, only the tracked orders that passed the screen check."""
     out = {"v": VERSION, "battle": tag, "type": "decision_request", "seq": record.get("sequence"),
            "kind": kind_of(record)}
     if refused:

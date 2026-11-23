@@ -31,7 +31,6 @@ player shell with the policy in `pcsa.network`; it is the only process that load
 
 Rules enforced by `import-linter` (`.importlinter`) in CI:
 
-- nothing imports poke-env;
 - torch is imported only by `network` and `sprite_training` (the CLI reaches the trainer lazily);
 - `champions_gym` is imported only by `cg/serve.py`, `cg/view.py` and `network`, the code that runs in the
   player process;
@@ -45,14 +44,17 @@ one place outside those rules.
 
 ## Rules enforced by tooling
 
-- Every timeout, retry count and screen region lives in `config/`. Unknown keys are rejected. Measured pixel
-  thresholds stay named constants next to the vision code that uses them (`phone/screens.py`, `fields.py`, ...).
+- Every setting's value is written once, in `config/agent.yaml` (screen regions in `config/screen.yaml`). The
+  settings classes (`common/config.py`, `common/config_cg.py`) carry types and checks but no defaults, so a
+  missing key is refused like an unknown one; `--set` and `PCSA__` environment variables override a value for one
+  run. Measured pixel thresholds stay named constants next to the vision code that uses them.
 - `time.*` only in `common/clock.py`; `Path(...).parents` only in `common/paths.py`; `print` only in `cli.py`
   and `common/setup.py`. Files stay under 400 lines and functions under 60 (`tests/unit/test_code_limits.py`;
-  the five network files copied from the training code are exempt, so they stay diffable with their source).
+  the five network files copied from pcsa-former other than `rules.py` are exempt, so they stay comparable with
+  their source).
 - No side channels: a caller reads returned values or declared protocol methods, never attributes set on the
   callee afterwards.
-- Live quirks are recorded in `docs/quirks.md`, not in comments scattered through handlers.
+- Live quirks are recorded in `docs/reference/quirks.md`, not in comments scattered through handlers.
 
 ## Resilience model (live play)
 
@@ -86,11 +88,16 @@ violation ends a run.
 
 ## Champions Gym
 
-The dependency is the release wheel pinned in `pyproject.toml` and `tools.lock.json` (0.4.0; LIVE contract
-0.9, model contract 0.6). `cg/adapter.py` speaks LIVE messages: `battle_start` with our six sets and their
+The dependency is the release wheel pinned in `pyproject.toml` and `tools.lock.json` (0.4.0; model
+contract 0.6). `cg/adapter.py` speaks LIVE messages: `battle_start` with our six sets and their
 preview, `preview_request`, `events`, `decision_request`, `battle_end`. Before the first battle it asks for
 CG's status and refuses to start if the model's input layout or contract does not match the installed CG, or
 if the checkpoint loaded is not the one configured (`cg/startup.py`).
+
+The `cg` section of `config/agent.yaml` names the transport (`command` for a subprocess, `entry` in process) and,
+separately, the Session's `player` and `player_args`. `startup.resolved` takes a relative checkpoint from the repo
+root and adds the `rules`, `search` and `choice` sections to the neural policy's arguments; the command line or
+the in-process Session's arguments are put together from these fields only when CG is started.
 
 `cg/serve.py` replaces `python -m champions_gym.live` as the player process, with the same flags and the same
 one-line-in, one-line-out protocol. It builds the player, wraps it so that it keeps the exact Battle each
@@ -103,11 +110,12 @@ when the pinned CG version changes.
 that battle's memory and returns the policy; the belief heads run in the same forward pass and change no
 other output.
 
+`network/choosing.py` applies the choice rule (`cg.choice`) to the matrix at turn requests.
 `network/search.py` (the tree), `network/worlds.py` (the guesses of their hidden team) and
-`network/searching.py` (the policy's side) are the optional decision-time search (`cg.search` in
-`config/agent.yaml`, off by default; Champions Gym 0.5.0). `startup.resolved` puts the section into the policy's arguments and lifts the shell's
-time limits above the search time; `cg/serve.py` hands the policy the request's `deadline_ms` and the
-Session's `game` (an engine Game at the open request from a guess at their three). At a turn request the
+`network/searching.py` (the policy's side) are the optional decision-time search (`cg.search`, off by default;
+Champions Gym 0.5.0). With search on, `startup.resolved` lifts the shell's time limits above the search time.
+`cg/serve.py` hands the policy the request's `deadline_ms` and the Session's `game`: a function that builds an
+engine game at the open request from one guess at the opponent's three Pokémon. At a turn request the
 policy, after its own forward pass and the rule masks, samples the guesses from its belief outputs, runs one
 tree per guess (simultaneous moves, regret matching from the network's priors, the network's value at new
 nodes, each with the memory of its path) and returns the log of the averaged root strategy as its scores, so
@@ -149,6 +157,8 @@ net     the network's outputs (absent on a fallback or a replayed request):
         value, tau, pi[11], score[11], rows[11], cols[13], p_opp[13], matrix[11][13],
         closed (our actions a rule mask closed), opp_seen[4] (belief_slots checkpoints only: which of
         their move columns were shown; the others are named by the belief head),
+        choice (turn requests with an active cg.choice): rule, top_ours, top_theirs, blend, model_pick,
+                pick, changed, scores[11],
         search (turn requests with cg.search.enabled): used, why (when the model's answer stood), sims,
                 worlds, dropped, dropped_why, depth, nodes, batches, ms, budget_ms, model_pick, pick, changed,
                 strategy[11], visits[11], q[11][13] (the root's payoff table by network column, null where
@@ -186,8 +196,8 @@ panel empty until it lands.
 | `watch_battle.py` | puts the battle's panels together |
 
 The page polls `/api/state` (`?battle=N` pins a battle) once a second and `/api/frame` when the frame changes.
-A run recorded before this format (no `view` in its records) shows its record, rating, log and decision list;
-the teams, field and matrix panels say so in one line.
+A run whose records carry no `view` shows its record, rating, log and decision list; the teams, field and matrix
+panels say so in one line. What the page shows is described in `docs/dashboard.md`.
 
 ## Device independence
 

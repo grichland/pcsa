@@ -1,5 +1,5 @@
 """The teams and field panels from CG's Battle view, the network's belief about their builds, display names, and
-runs recorded before the Champions Gym port."""
+records of decision schemas before pcsa-decision/4."""
 
 from __future__ import annotations
 
@@ -190,7 +190,7 @@ def test_display_names_come_from_cg_tables_and_the_team_sheet() -> None:
     assert max_pp("earthquake") and max_pp("notamove") is None
 
 
-# Runs recorded before the Champions Gym port --------------------------------------------------------
+# Records of decision schemas before pcsa-decision/4 -------------------------------------------------
 
 
 def _old_run(tmp_path: Path, schema: str, notes: dict, extra: dict) -> Path:
@@ -230,7 +230,7 @@ def test_an_old_run_opens_with_what_it_has(tmp_path: Path, schema: str, notes: d
     assert state["decision"]["notes"]["v"] in (0.2, 0.4) and len(state["decisions"]) == 1
     assert state["your_team"] == [] and state["foes"] == [] and state["unseen_belief"] == []
     assert state["field"]["weather"] is None and [t["turn"] for t in state["log"]["turns"]] == [1]
-    assert "predates the Champions Gym port" in state["battle_state"]["battle_object"]
+    assert "records carry no battle view" in state["battle_state"]["battle_object"]
     json.dumps(state)
 
 

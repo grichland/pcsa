@@ -221,7 +221,7 @@ class BattleEvents:
         self.preview_fixes.append({"slot": at[0] if at else None, "was": was, "now": now, "by": event.get("move")})
 
     def refused(self, order: dict) -> None:
-        """Only for a choice the game refused; a repeated tap is `retry` on the request (LIVE 0.5, CF-8)."""
+        """Only for a choice the game refused; a repeated tap is `retry` on the request."""
         self.events.append({"k": "refused", "order": order})
 
     def end(self, result: str) -> None:

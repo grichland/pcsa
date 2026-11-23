@@ -128,7 +128,7 @@ def test_live_request_refused_retry_and_fallback() -> None:
     unnamed = replace(request(events, 5), offer=Offer((MoveOffer(0, None),), False, (), None))
     blind = Decision(5, Order.move(0), "/choose move 1", "screen", "late")
     fifth = live_messages("action", unnamed, blind, events.converter)
-    assert fifth["fallback"] == {"seq": 5, "reason": "screen: late"}  # no order: the row had no id (LIVE 0.6)
+    assert fifth["fallback"] == {"seq": 5, "reason": "screen: late"}  # no order: the row had no id
     assert message_problems({**fallback, "fallback": fifth["fallback"]}) == []
 
 

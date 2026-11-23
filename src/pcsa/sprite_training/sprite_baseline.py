@@ -1,4 +1,4 @@
-"""The retired thumbnail matcher, kept for training the sprite network and measuring it."""
+"""The baseline thumbnail matcher (reported as `retired`), kept for training the sprite network and measuring it."""
 
 from __future__ import annotations
 
@@ -77,7 +77,7 @@ def compare(query: Feature, masks, labs, aspects, shifts=SHIFTS, shape_floor: fl
 
 
 class BaselineScorer:
-    """The old matcher behind the `sprites.Scorer` interface: a coarse pass, then shifts on a shortlist."""
+    """The baseline matcher behind the `sprites.Scorer` interface: a coarse pass, then shifts on a shortlist."""
 
     def __init__(self, source: SourceIndex, domain: str, shortlist: int = 40) -> None:
         self.source = source

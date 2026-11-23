@@ -1,7 +1,7 @@
 """The search's guesses of the opponent's hidden team ("worlds"): what the Battle showed is kept, the rest is drawn
 from the belief head's outputs inside the species' learnset, with the commonest known set of the species for
-nature and stat points. Each guess becomes an engine Game (Champions Gym 0.5.0); a guess the Game changed is
-dropped.
+nature and stat points. Each guess becomes an engine Game (Champions Gym 0.5.0 or later); a guess the Game still
+changes after one repair is dropped.
 """
 
 from __future__ import annotations
@@ -200,7 +200,8 @@ class World:
 
 def build_worlds(battle: Any, belief: Belief, tables: Tables, make: Callable, count: int,
                  rng: np.random.Generator, lead: str | None) -> tuple[list[World], list[str]]:  # fmt: skip
-    """Up to `count` different guesses as Games; a guess the Game changed (a set part refused) is dropped."""
+    """Up to `count` different guesses as Games. A guess the Game changes (a set part refused) is repaired and
+    tried once more, and dropped if the Game still changes it."""
     worlds, dropped, seen = [], [], set()
     for _ in range(count):
         guess, species = guess_team(battle, belief, tables, rng, lead)

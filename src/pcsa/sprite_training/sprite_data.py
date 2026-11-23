@@ -2,7 +2,7 @@
 
 Log rows are labelled by the species their own text names (form kept when the recorded matcher agreed, else every
 form; no-sprite rows stay unlabelled); preview cards by the species the opponent sent out, read from the battle's
-`events.json` or, in runs recorded before it existed, its `showdown.log`. Labels are form ids (`battle/ids.py`).
+`events.json` or, in runs that have none, its `showdown.log`. Labels are form ids (`battle/ids.py`).
 """
 
 from __future__ import annotations
@@ -129,7 +129,7 @@ def opponent_sent(folder: Path, classes: Classes) -> tuple[dict[str, set[str]], 
 
 
 def sent_from_events(path: Path, classes: Classes) -> dict[str, set[str]]:
-    """`enter` events on the opponent's side (contracts/LIVE.md). They name a Pokémon by its species id as the log
+    """`enter` events on the opponent's side (LIVE protocol). They name a Pokémon by its species id as the log
     text gives it, which leaves out the form where forms share a name (Rotom, Tauros): a base id whose species has
     other forms allows each of them except the Megas, which a sent-out Pokémon never is."""
     out: dict[str, set[str]] = {}

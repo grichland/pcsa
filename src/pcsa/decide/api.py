@@ -65,7 +65,7 @@ class Hints:
     choice_locked: str | None = None  # Choice Scarf and the last move since entry
     encore: str | None = None
     taunted: bool = False
-    first_turn_over: bool = False  # Fake Out, First Impression, Mat Block no longer work
+    first_turn_over: bool = False  # past the first turn: Fake Out, First Impression and Mat Block fail
     trapped: bool = False
     refused: tuple[int, ...] = ()  # move rows the game refused this turn
 

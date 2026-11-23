@@ -1,8 +1,8 @@
 """The four ways things go wrong, and what each means for the loop.
 
 Transient: retry in place. Recoverable: restart the session. SafetyStop: end the run (the next action could leave
-Ranked
-Singles or cost the account something; never caught by handlers). ConfigError: refused before the phone is touched.
+Ranked Singles or cost the account something; never caught by handlers). ConfigError: refused before the phone is
+touched.
 """
 
 

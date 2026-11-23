@@ -1,4 +1,4 @@
-"""The plan's worked example (run 20261116-133224, battle-10, decision 0002, turn 3) and small Offer builders."""
+"""A worked example from a recorded run (battle-10, decision 0002, turn 3) and small Offer builders."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""`gap` events (LIVE.md): where the log read lost rows. Silence means the log was read completely.
+"""`gap` events (LIVE protocol): where the log read lost rows. Silence means the log was read completely.
 
 {"k":"gap","what":"turn","n":N}: no row of turn N was read (a failed or skipped visit, a turn with no
 action screen of ours, or the final turn, which is never collectable).

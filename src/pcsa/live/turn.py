@@ -1,6 +1,6 @@
 """One battle turn: peek the moves when needed, read the log within its budget, grow the battle's events, build
 the Request, ask the runner, tap. With `timing.move_peek: when_needed` the peek is left out unless move_peek.py
-names a reason for it. No Showdown lines and no Tracker: the Request carries the rows and the LIVE events."""
+names a reason for it. The Request carries the log rows and the LIVE events."""
 
 from __future__ import annotations
 
@@ -82,7 +82,7 @@ class TurnPipeline:
     def _save_log(self, b: BattleRecord) -> None:
         if self.saver is None:
             try:
-                from pcsa.live.log_save import LogSaver  # Agent A's module
+                from pcsa.live.log_save import LogSaver  # imported on first use
 
                 self.saver = LogSaver(self.rec, self.seed)  # type: ignore[assignment]
             except (ImportError, TypeError) as error:
@@ -306,7 +306,7 @@ class TurnPipeline:
         assert b.forced_choice is not None
         events = self.events_for(b)
         new = events.update(b)
-        # A repeated replacement screen is a retry (LIVE 0.5): the game cannot refuse a healthy member.
+        # A repeated replacement screen is a retry: the game cannot refuse a healthy member.
         active = leaving if leaving is not None else b.visible_order[0]
         member = move_peek.member_of(b, self.team, active)
         offer = request.forced_offer(b, party, leaving)

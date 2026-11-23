@@ -5,15 +5,16 @@ CG_NEURAL_TRANSPORT=inprocess runs CG in this process instead."""
 from __future__ import annotations
 
 import importlib.util
-import json
 import os
 import sys
 from functools import cache
 from pathlib import Path
+from typing import Any
 
 from pcsa.cg.startup import NEURAL
 from pcsa.common.config import CGConfig
 from pcsa.common.paths import repo_root
+from tests import configs
 
 PYTHON = Path(os.environ.get("CG_NEURAL_PYTHON") or sys.executable)
 CHECKPOINT = Path(
@@ -31,22 +32,28 @@ def player_args(checkpoint: Path | str = CHECKPOINT) -> dict:
 
 
 def subprocess_config(checkpoint: Path | str = CHECKPOINT, timeout_s: float = 8.0) -> CGConfig:
-    command = [str(PYTHON), "-m", SERVE, "--player", NEURAL, "--player-args", json.dumps(player_args(checkpoint))]
-    return CGConfig(transport="subprocess", command=command, env=ENV, run_log_dir="cg", timeout_s=timeout_s)
+    return configs.cg_config(transport="subprocess", command=[str(PYTHON), "-m", SERVE], player=NEURAL,
+                             player_args=player_args(checkpoint), env=ENV, run_log_dir="cg", timeout_s=timeout_s)
 
 
 def inprocess_config(
     checkpoint: Path | str = CHECKPOINT, timeout_s: float = 8.0, entry: str | None = None
 ) -> CGConfig:
-    args = {"player": NEURAL, "player_args": player_args(checkpoint)}
-    return CGConfig(transport="inprocess", entry=entry or "champions_gym.live:Session", args=args,
-                    run_log_dir="cg", timeout_s=timeout_s)  # fmt: skip
+    return configs.cg_config(transport="inprocess", entry=entry or "champions_gym.live:Session", player=NEURAL,
+                             player_args=player_args(checkpoint), run_log_dir="cg", timeout_s=timeout_s)
 
 
 def config(checkpoint: Path | str = CHECKPOINT, timeout_s: float = 8.0) -> CGConfig:
     """The connection CG_NEURAL_TRANSPORT names."""
     make = inprocess_config if TRANSPORT == "inprocess" else subprocess_config
     return make(checkpoint, timeout_s)
+
+
+def policy(**settings: Any) -> Any:
+    """The test checkpoint as a Policy on CPU with the shipped rule masks; `settings` replace its arguments."""
+    from pcsa.network.policy import Policy
+
+    return Policy(str(CHECKPOINT), **{"device": "cpu", "threads": 2, "rules": configs.rules(), **settings})
 
 
 @cache

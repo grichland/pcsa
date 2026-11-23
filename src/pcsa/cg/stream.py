@@ -1,14 +1,13 @@
 """One battle's LIVE message stream as sent to one CG: what went out, so nothing is sent twice, and what a CG that
 has seen nothing (a new process, a new Player) needs to get the whole stream again from battle_start.
 
-Order (LIVE sections 1-3): battle_start (with `picks` when the three brought are known), preview_request, then per
+Order: battle_start (with `picks` when the three brought are known), preview_request, then per
 decision an `events` message with only the events new since the last one (carrying, before them, the fallbacks of
 earlier decisions, as one list when there are several), then the decision_request; at the end, an `events` message
 with what is left (the `end` event last), then battle_end. Decisions made before this CG saw the battle are sent
-again in place from Request.history, marked `replay` with the order the game took as `played` (LIVE 0.7, S8-2).
+again in place from Request.history, marked `replay` with the order the game took as `played`.
 When the team brought differs from what CG holds (its preview answer, or the last preview fallback), a preview
-fallback rides on the next `events` message: the first one, and again whenever the three brought are known better
-(LIVE 0.8, S10-3).
+fallback rides on the next `events` message: the first one, and again whenever the three brought are known better.
 """
 
 from __future__ import annotations
@@ -77,7 +76,7 @@ class Stream:
         return self.started and bool(start) and tuple((start or {}).get("opp_preview") or ()) != self.sent_preview
 
     def changed(self, request: Request) -> bool:
-        """The list no longer holds the last event sent where it was (rebuilt differently): CG may be out of step."""
+        """The rebuilt list does not hold the last event sent at the same place: CG may be out of step."""
         if self.last_event is None:
             return False
         return len(request.events) < self.events or request.events[self.events - 1] != self.last_event
@@ -122,7 +121,7 @@ class Stream:
         return message(self.tag, "preview_request", **extra, **({"replay": True} if replay else {}))
 
     def _picks_fallback(self) -> dict | None:
-        """A preview fallback (LIVE 0.7 S8-1, 0.8 S10-3) when the team brought is known and is not what CG holds."""
+        """A preview fallback when the team brought is known and is not what CG holds."""
         held = self.given or self.picks
         if self.brought is None or held == self.brought:
             return None

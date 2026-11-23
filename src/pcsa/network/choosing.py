@@ -13,48 +13,23 @@ The returned scores are log softmax(score / tau) over our kept actions, so the s
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import asdict, dataclass
 from typing import Any
 
 import numpy as np
 import torch
 from torch import Tensor
 
+from pcsa.common.config_cg import ChoiceSettings
+
 from . import layout as L
 
-RULES = ("mean", "min", "mix", "regret")
 NEG_INF = float("-inf")
 
 
-@dataclass(frozen=True)
-class ChoiceConfig:
-    rule: str = "mean"
-    top_ours: int = 0
-    top_theirs: int = 0
-    blend: float = 0.5  # mix: the weight of the mean
-
-    def __post_init__(self) -> None:
-        if self.rule not in RULES:
-            raise ValueError(f"choice rule {self.rule!r} is not one of {RULES}")
-        if self.top_ours < 0 or self.top_theirs < 0 or not 0.0 <= self.blend <= 1.0:
-            raise ValueError("choice: top_ours and top_theirs must be >= 0, blend in [0, 1]")
-
-    @property
-    def active(self) -> bool:
-        """False when the rule is the network's own pick."""
-        return self.rule != "mean" or self.top_ours > 0 or self.top_theirs > 0
-
-    @classmethod
-    def of(cls, args: Mapping[str, Any] | None) -> ChoiceConfig | None:
-        """The policy argument as a config; None when it changes nothing."""
-        if not args:
-            return None
-        cfg = cls(str(args.get("rule", "mean")), int(args.get("top_ours", 0)), int(args.get("top_theirs", 0)),
-                  float(args.get("blend", 0.5)))  # fmt: skip
-        return cfg if cfg.active else None
-
-    def settings(self) -> dict:
-        return asdict(self)
+def config(args: Mapping[str, Any] | None) -> ChoiceSettings | None:
+    """The policy's `choice` argument checked; None when it changes nothing."""
+    cfg = ChoiceSettings.model_validate(args) if args else None
+    return cfg if cfg is not None and cfg.active else None
 
 
 def likeliest(p: Tensor, allowed: Tensor, k: int) -> Tensor:
@@ -65,7 +40,7 @@ def likeliest(p: Tensor, allowed: Tensor, k: int) -> Tensor:
     return torch.zeros_like(allowed).scatter(-1, idx, True) & allowed
 
 
-def scores(matrix: Tensor, p_opp: Tensor, pi: Tensor, legal: Tensor, cfg: ChoiceConfig) -> Tensor:
+def scores(matrix: Tensor, p_opp: Tensor, pi: Tensor, legal: Tensor, cfg: ChoiceSettings) -> Tensor:
     """[N,11,13], [N,13], [N,11], [N,11] bool -> [N,11]: each of our actions' score under the rule, -inf on the
     actions not kept. A row with no prediction of theirs counts every reply equally."""
     m = matrix.float()
@@ -97,7 +72,7 @@ def _plain(row: Tensor) -> list:
 
 
 def apply(
-    cfg: ChoiceConfig | None, kinds: np.ndarray, out: dict, scores_out: Tensor, tau: float
+    cfg: ChoiceSettings | None, kinds: np.ndarray, out: dict, scores_out: Tensor, tau: float
 ) -> list[dict | None]:
     """With a rule set: each turn row's first 11 scores replaced by the rule's; the note per row (else None)."""
     notes: list[dict | None] = [None] * len(kinds)
@@ -111,6 +86,6 @@ def apply(
         model_pick = int(scores_out[r, : L.OWN_ACTIONS].argmax())
         pick = int(s[i].argmax())
         scores_out[r, : L.OWN_ACTIONS] = logp[i]
-        notes[r] = {**cfg.settings(), "model_pick": model_pick, "pick": pick, "changed": pick != model_pick,
+        notes[r] = {**cfg.model_dump(), "model_pick": model_pick, "pick": pick, "changed": pick != model_pick,
                     "scores": _plain(s[i])}  # fmt: skip
     return notes

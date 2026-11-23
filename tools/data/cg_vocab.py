@@ -2,10 +2,10 @@
 
     .venv/Scripts/python.exe tools/data/cg_vocab.py [--source CG_CHECKOUT]
 
-The Champions Gym checkout is --source, else the environment variable CG_SOURCE, else ../cg-publish (the public
-clone); its engine/src/sim/data/generated.rs is read (cg_tables.generated_rs).
+The Champions Gym checkout is --source, else the environment variable CG_SOURCE, else the default of
+cg_tables.generated_rs; its engine/src/sim/data/generated.rs is read.
 
-Numbering (CG obs/src/vocab.rs, contracts/MODEL.md section 2), every list indexed by the id:
+Numbering (Champions Gym's obs/src/vocab.rs and contracts/MODEL.md), every list indexed by the id:
 - species: id = table index + 1; id 0 is unknown (null)
 - moves: id = table index; index 0 is the empty entry (null)
 - items: id = table index + 1; id 0 is unknown (null), id 1 is the empty entry: "holds nothing" ("")

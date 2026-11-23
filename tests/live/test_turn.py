@@ -1,5 +1,5 @@
 """The turn pipeline on the scripted device: Request rows and events, the Offer, peeks, refusals, switches,
-forced replacements, the /3 record."""
+forced replacements, the decision record."""
 
 from __future__ import annotations
 

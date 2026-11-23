@@ -1,5 +1,5 @@
-"""A recorded battle for the tests: battle 1 of run 20261118-162900-neural-148 (league-20261118-g-iter-00148.pt),
-the messages the controller sent to CG and CG's answers (tests/cg/data/neural-148-battle-1.jsonl)."""
+"""A recorded battle for the tests: one battle played with the test checkpoint (`CHECKPOINT_NAME`), the messages
+the controller sent to CG and CG's answers (`DATA`)."""
 
 from __future__ import annotations
 

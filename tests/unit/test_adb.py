@@ -6,9 +6,11 @@ import numpy as np
 import pytest
 
 from pcsa.common.clock import FakeClock
-from pcsa.common.config import DeviceConfig, RetryConfig
 from pcsa.common.errors import Transient
 from pcsa.phone.adb import AdbDevice, decode_raw, parse_devices
+from tests import configs
+
+RETRY = {**configs.section("device").retry.model_dump(), "attempts": 3, "base_s": 0.5, "max_s": 2.0}
 
 
 def raw_frame(width: int = 4, height: int = 2) -> bytes:
@@ -61,7 +63,7 @@ def device(tmp_path: Path, fake_clock: FakeClock):
     adb = tmp_path / "adb.exe"
     adb.write_bytes(b"")
     runner = FakeRunner()
-    config = DeviceConfig(retry=RetryConfig(attempts=3, base_s=0.5, max_s=2.0))
+    config = configs.section("device", retry=RETRY)
     return AdbDevice(adb, config, fake_clock, runner=runner), runner, fake_clock
 
 
@@ -86,4 +88,4 @@ def test_missing_adb_is_a_config_error(tmp_path: Path, fake_clock: FakeClock) ->
     from pcsa.common.errors import ConfigError
 
     with pytest.raises(ConfigError):
-        AdbDevice(tmp_path / "nope.exe", DeviceConfig(), fake_clock, runner=FakeRunner())
+        AdbDevice(tmp_path / "nope.exe", configs.section("device"), fake_clock, runner=FakeRunner())

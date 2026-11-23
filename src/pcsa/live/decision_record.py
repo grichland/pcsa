@@ -37,7 +37,7 @@ def live_order(order: Order, request: Request, teams: Teams | None) -> dict | No
 
 
 def decision_request(request: Request, kind: str, *, refused: dict | None = None, retry: bool = False) -> dict:
-    """The section-2 decision_request: `refused` when the game refused our last order (its refused event is in
+    """The LIVE decision_request: `refused` when the game refused our last order (its refused event is in
     request.events), else `retry` when the screen came back without a refusal; `screen_offer` when all rows
     were read. Built before the Player is asked: it travels in Request.live."""
     out: dict = {"v": VERSION, "battle": request.battle_tag, "type": "decision_request", "seq": request.request_id,
@@ -53,7 +53,7 @@ def decision_request(request: Request, kind: str, *, refused: dict | None = None
 
 
 def fallback(request: Request, decision: Decision, converter) -> dict | None:
-    """The section-3 fallback when the controller chose, without `order` when the row has no id (LIVE 0.6);
+    """The LIVE fallback when the controller chose, without `order` when the row has no id;
     None when the Player's answer stood."""
     if decision.source in NOT_FALLBACK:
         return None
@@ -65,7 +65,7 @@ def fallback(request: Request, decision: Decision, converter) -> dict | None:
 
 def live_messages(kind: str, request: Request, decision: Decision, converter) -> dict:
     """The record's `live`: the decision_request the Player was sent, the fallback when the controller chose, and
-    `played`, the order tapped (a replay after a CG restart sends it, LIVE 0.7) when it has an id."""
+    `played`, the order tapped (a replay after a CG restart sends it) when it has an id."""
     live: dict = {"decision_request": request.live or decision_request(request, kind)}
     found = fallback(request, decision, converter)
     if found:
@@ -84,8 +84,7 @@ def history_entry(record: dict, request: Request, decision: Decision) -> dict | 
 
 
 def unconfirmed(b: BattleRecord, seq: int | None, why: str) -> None:
-    """The tap for `seq` may not have registered: CG gets no `played` for it, only a fallback without an order
-    (LIVE rule 31, S10-4)."""
+    """The tap for `seq` may not have registered: CG gets no `played` for it, only a fallback without an order."""
     entry = next((e for e in reversed(b.live_history) if e["decision_request"].get("seq") == seq), None)
     if entry is None or seq is None:
         return

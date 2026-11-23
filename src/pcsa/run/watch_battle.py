@@ -2,8 +2,8 @@
 
 The teams and field come from CG's Battle in the record (`notes.cg.view`), the belief about their builds from the
 network (`notes.cg.net.belief`); before the first decision both come from `team_preview.json` (key `cg`). A record
-without a view takes them from the newest one that has it. Runs recorded before the Champions Gym port have no view:
-their teams, field and matrix stay empty and `legacy` says why.
+without a view takes them from the newest one that has it. A record of a decision schema before pcsa-decision/4
+without a view is legacy: its teams, field and matrix stay empty and `legacy` says why.
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ from pcsa.run.watch_view import CARD_KEYS, battle_text, view_panels
 SCHEMA = "pcsa-decision/4"
 LOOK_BACK = 80  # records searched for the newest view or belief
 NO_VIEW = "(no Champions Gym battle view for this decision)"
-LEGACY = "(this run predates the Champions Gym port: no battle view)"
+LEGACY = "(this run's records carry no battle view)"
 
 
 @dataclass(frozen=True)

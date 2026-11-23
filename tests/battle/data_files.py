@@ -1,4 +1,4 @@
-"""Saved reference results (recorded before the Champions Gym port), loaded once."""
+"""Saved reference results (tests/data), loaded once."""
 
 from __future__ import annotations
 

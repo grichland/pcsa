@@ -244,7 +244,7 @@ function unseenChip(name, belief) {
   return tip(chip, `${name}: in their team preview, not seen in this battle.${said}`);
 }
 
-const LEGACY_NOTE = "This run predates the Champions Gym port: no teams, field or matrix";
+const LEGACY_NOTE = "This run's records carry no battle view: no teams, field or matrix";
 
 function renderTeams(state) {
   const team = state.your_team || [];

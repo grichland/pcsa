@@ -24,13 +24,14 @@ plays its largest entry among the actions allowed. Leaves are evaluated in batch
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
 import torch
 
 from pcsa.common.clock import precise_now
+from pcsa.common.config_cg import SearchSettings
 
 from . import layout as L
 from . import model, vocab
@@ -40,26 +41,6 @@ FLOOR = 0.02  # prior of a legal action of theirs that no network column stands 
 KIND_ASKED = (L.KIND_TURN, L.KIND_REPLACE)
 MIN_BUDGET_MS = 40.0
 END_MARGIN_S = 0.015  # of the budget, for putting the answer together
-
-
-@dataclass(frozen=True)
-class SearchConfig:
-    ms: float = 1500.0  # time for one decision's search
-    worlds: int = 6
-    depth: int = 3  # turns below the root
-    outcomes: int = 3
-    c: float = 1.5
-    n0: float = 1.0
-    batch: int = 16
-    min_sims: int = 64  # fewer in total: the model's answer stands
-    sims: int = 0  # stop after this many (0: by time only)
-    seed: int = 0
-    top_ours: int = 0  # at each node only our N likeliest actions by the network's policy (0: all)
-    top_theirs: int = 0  # at each node only their N likeliest actions by the network's prediction (0: all)
-    settle_sims: int = 0  # stop early once the pick has held this long (0: never stop early)
-    settle_share: float = 0.9  # ... with at least this share of our strategy
-    settle_gap: float = 0.01  # or once the best two actions' values are this close, after twice settle_sims
-    from_turn: int = 1  # battle turns before this one are not searched
 
 
 class Node:
@@ -138,7 +119,7 @@ def _likeliest(actions: list, weight: Sequence[float], top: int) -> list:
 
 
 def expand(
-    node: Node, leaf: Leaf, world: World, tables: Tables, cfg: SearchConfig, allowed: np.ndarray | None = None
+    node: Node, leaf: Leaf, world: World, tables: Tables, cfg: SearchSettings, allowed: np.ndarray | None = None
 ) -> None:
     """The node's actions, priors, value and Q's start from the network row. `allowed` (the root): our actions
     the request and the rule masks leave open. cfg.top_ours and cfg.top_theirs keep only each side's likeliest
@@ -209,7 +190,7 @@ class Search:
     """One decision's search. `forward(tensors, memories) -> (leaves, memories after)` runs the network on a batch
     of our views, each with the memory of its path."""
 
-    def __init__(self, cfg: SearchConfig, tables: Tables, forward: Callable, rng: np.random.Generator) -> None:
+    def __init__(self, cfg: SearchSettings, tables: Tables, forward: Callable, rng: np.random.Generator) -> None:
         self.cfg, self.tables, self.forward, self.rng = cfg, tables, forward, rng
         self.depth = self.nodes = self.batches = 0
         self.stopped, self.lead, self.lead_since = "time", -1, 0
@@ -344,10 +325,6 @@ class Search:
         return Result(avg, total, len(worlds), dropped, self.depth, self.nodes, self.batches, q,
                       [float(x) for x in p_them], float(other), [float(x) for x in visits],
                       stopped=self.stopped)  # fmt: skip
-
-
-def settings(cfg: SearchConfig) -> dict:
-    return asdict(cfg)
 
 
 def leaves_of(

@@ -1,7 +1,7 @@
 """Every filesystem location the package uses; the only module that may locate the repository.
 
-Everything written goes under `output/` (or `PCSA_OUTPUT`); tools (adb, the OCR models) live under `.tools/`. Both are
-git-ignored.
+Everything written goes under `output/` (or `PCSA_OUTPUT`); tools (adb, the OCR models) live under `.tools/`.
+Both are git-ignored.
 """
 
 from __future__ import annotations

@@ -1,4 +1,4 @@
-"""Every item, ability, move, species and nature named in a source constant is in CG's legal tables (F24, R10).
+"""Every item, ability, move, species and nature named in a source constant is in CG's legal tables.
 
 A new constant whose name ends in _ITEMS, _ABILITIES, _MOVES or _SPECIES must be added to CONSTANTS below.
 """
@@ -20,9 +20,8 @@ GAME_ID_SUFFIX = re.compile(r"_(ITEMS|ABILITIES|MOVES|SPECIES)$")
 NOT_MOVES = {"recharge"}  # Showdown's pseudo-choice, never a move
 NOT_GAME_IDS = {"VOCAB_ITEMS"}  # scout.py: names of screens to scout, not items
 TEXT_SECTIONS = {"default", "par", "slp", "frz", "heal", "unboost", "trapped"}  # battle_text keys, not game ids
-# Illegal names in files this step does not own (step 3 copies), listed exactly so a new one fails. The display
-# tables in names.py also cover species outside Champions; the game never shows them. The other three are
-# candidates for removal when their files are next touched.
+# Illegal names that are known and allowed, listed exactly so a new one fails. The display tables in names.py also
+# cover species outside Champions; the game never shows them. The other three are candidates for removal.
 KNOWN_ILLEGAL = {
     "run.battle_state.PIVOT_MOVES": ["Teleport"],
     "log_patterns effects": ["Heal Block", "Magma Storm"],

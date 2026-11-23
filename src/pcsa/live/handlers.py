@@ -52,7 +52,7 @@ def on_lobby(s, obs: Observation) -> None:
 
 
 def drop_pending(s) -> None:
-    """The run state names a battle in progress that this process does not hold (SV-7: not adopted).
+    """The run state names a battle in progress that this process does not hold (it is not adopted).
     It counts as played with an unknown outcome, so its folder is never reused."""
     index = s.state.pending_battle
     if index is None or (s.battle is not None and s.battle.index == index):
@@ -335,7 +335,7 @@ def on_waiting(s, obs: Observation) -> None:
 
 
 def on_not_adopted(s, obs: Observation) -> None:
-    """A battle screen of a battle this run did not start (SV-7): no taps; wait for it to end."""
+    """A battle screen of a battle this run did not start: no taps; wait for it to end."""
     if s.skipped_screen != obs.screen:
         s.skipped_screen = obs.screen
         log.warning("battle_not_adopted", screen=str(obs.screen), frame=obs.frame_id)

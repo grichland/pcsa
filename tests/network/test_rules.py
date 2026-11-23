@@ -16,6 +16,8 @@ os.environ.setdefault("CUDA_VISIBLE_DEVICES", "-1")
 from pcsa.network import cg_adapter, rules  # noqa: E402
 from pcsa.network import layout as L  # noqa: E402
 from pcsa.network.policy import Policy  # noqa: E402
+from tests import configs  # noqa: E402
+from tests.cg import neural  # noqa: E402
 from tests.cg.neural import CHECKPOINT  # noqa: E402
 
 MOVE_A, MOVE_B, SPECIES = 11, 22, 5
@@ -30,7 +32,7 @@ def layout() -> L.Layout:
 def policy() -> Policy:
     if not CHECKPOINT.is_file():
         pytest.skip(f"no test checkpoint at {CHECKPOINT}")
-    return Policy(str(CHECKPOINT), threads=2)
+    return neural.policy()
 
 
 def obs_of(layout: L.Layout, legal: list[int], kind: int = L.KIND_TURN, species: int = SPECIES) -> dict:
@@ -141,12 +143,12 @@ def test_a_replayed_request_counts_its_action_and_the_setting_turns_the_rules_of
     for n in range(4):
         policy.observe(at(100 + n), [8], [move])
     assert move in scores_of(policy, at(104), 8)[1]["closed"]
-    off = Policy(str(CHECKPOINT), threads=2, rule_masks=False)
+    off = neural.policy(rules=None)
     for n in range(6):
         scores, extras = scores_of(off, at(200 + n), 0)
         assert "closed" not in extras and scores[move] > float("-inf")
         off.played(200 + n, move)
-    two = Policy(str(CHECKPOINT), threads=2, max_same_move=2)
+    two = neural.policy(rules=configs.rules(max_same_move=2))
     for n in range(2):
         scores_of(two, at(300 + n), 0)
         two.played(300 + n, move)
@@ -158,7 +160,7 @@ def test_belief_slots_name_their_unseen_columns(policy: Policy) -> None:
     arrays = turn_request(env)
     plain = scores_of(policy, arrays, 20)[1]
     assert "opp_seen" not in plain and sum(c == "" for c in plain["cols"][:4]) == 1
-    named = Policy(str(CHECKPOINT), threads=2)
+    named = neural.policy()
     named.net.cfg = dataclasses.replace(named.net.cfg, belief_slots=True)  # the same weights: no new parameters
     e = scores_of(named, arrays, 0)[1]
     seen = e["opp_seen"]

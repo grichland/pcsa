@@ -1,4 +1,4 @@
-"""Real screenshots from past runs, classified from cached OCR boxes (no OCR engine needed)."""
+"""Real screenshots from recorded runs, classified from cached OCR boxes (no OCR engine needed)."""
 
 from __future__ import annotations
 

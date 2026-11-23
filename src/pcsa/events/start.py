@@ -1,8 +1,8 @@
-"""battle_start, preview_request and the picks answer from a recorded battle (LIVE.md section 2).
+"""battle_start, preview_request and the picks answer from a recorded battle (LIVE protocol).
 
 Sets come from the run's team sheet (own_team.json), which pcsa read from the game's Moves & More and Stats
 pages: item, ability, moves, the shown stats, the stat points and the nature arrows. A point figure pcsa
-inferred from the 66-point total (not read) drops `points` for that member (rule 2).
+inferred from the 66-point total (not read) drops `points` for that member: unknown fields are left out.
 """
 
 from __future__ import annotations
@@ -117,5 +117,5 @@ def battle_start(tag: str, sets: list[dict] | None, preview: list[str | None]) -
 
 
 def preview_request(tag: str) -> dict:
-    """The team-select timer was read live but not recorded, so no deadline_ms (rule 2)."""
+    """The team-select timer was read live but not recorded, so no deadline_ms (unknown fields are left out)."""
     return {"v": VERSION, "battle": tag, "type": "preview_request"}

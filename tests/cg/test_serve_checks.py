@@ -1,5 +1,5 @@
-"""The content of `view` and `net` on recorded battles (battle 1 of neural-148 from tests/cg/data; battles 2 and 3
-from output/runs/20261118-162900-neural-148 when it is here), replayed with their checkpoint:
+"""The content of `view` and `net` on recorded battles (battle 1 from tests/cg/data; battles 2 and 3 from
+the same run's folder, `RUN`, when it is present), replayed with their checkpoint:
 - `rows[action]` is the move or species played, and `action >= 4` exactly when the order Mega Evolves
 - `cols[0:4]` are the opposing active's revealed moves, then one "" while fewer than four are known, then None;
   `cols[8:13]` the other five opposing members
@@ -20,6 +20,7 @@ cg = pytest.importorskip("champions_gym")
 from pcsa.cg.serve import NEURAL, Server, make_player  # noqa: E402
 from pcsa.common.paths import repo_root  # noqa: E402
 from pcsa.network import vocab  # noqa: E402
+from tests import configs  # noqa: E402
 from tests.cg import neural, recorded  # noqa: E402
 
 RUN = repo_root() / "output" / "runs" / "20261118-162900-neural-148"
@@ -30,7 +31,7 @@ BATTLES = ["fixture", "battle-2", "battle-3"]
 def player():
     if neural.missing() or neural.CHECKPOINT.name != recorded.CHECKPOINT_NAME:
         pytest.skip(str(neural.missing() or f"the recording was made with {recorded.CHECKPOINT_NAME}"))
-    return make_player(NEURAL, {**neural.player_args(), "policy_args": {"threads": 2}})
+    return make_player(NEURAL, {**neural.player_args(), "policy_args": {"threads": 2, "rules": configs.rules()}})
 
 
 def messages(name: str) -> list[dict]:

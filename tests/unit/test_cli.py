@@ -18,7 +18,7 @@ COMMANDS = [
     ["setup"],
     ["setup", "--with", "torch", "--check"],
     ["doctor"],
-    ["run", "--battles", "2", "--max-total", "3", "--seed", "4", "--name", "x", "--resume", "r"],
+    ["run", "--resume", "r"],
     ["check"],
     ["nav", "--to", "lobby", "--seconds", "5"],
     ["observe", "--seconds", "5", "--interval", "0.5"],
@@ -130,13 +130,11 @@ def test_dispatch_live_commands(monkeypatch, tmp_path) -> None:
     monkeypatch.setattr(play, "play_command", _fake(calls, "play"))
     monkeypatch.setattr(play, "check_command", _fake(calls, "check"))
     monkeypatch.setattr(phone, "nav_command", _fake(calls, "nav"))
-    argv = ["run", "--config", "a.yaml", "--set", "run.battles=3", "--player", "first", "--battles", "2",
-            "--max-total", "3", "--seed", "4", "--name", "x", "--resume", str(tmp_path)]  # fmt: skip
+    argv = ["run", "--config", "a.yaml", "--set", "run.battles=3", "--resume", str(tmp_path)]
     assert cli.main(argv) == 0
     assert cli.main(["check"]) == 0
     assert cli.main(["nav", "--to", "lobby", "--seconds", "5"]) == 0
-    expected_run = ("play", CONFIG, ("battles", 2), ("max_total", 3), ("name", "x"), ("player_name", "first"),
-                    ("resume", tmp_path), ("seed", 4))  # fmt: skip
+    expected_run = ("play", CONFIG, tmp_path)
     assert calls == [
         ("load", "a.yaml", ("run.battles=3",)),
         expected_run,

@@ -3,10 +3,10 @@
     player: "champions_gym.neural:load"
     player_args: {policy: "pcsa.network.policy:Policy", checkpoint: ..., device: "cpu", policy_args: {threads: 4}}
 
-Recreated from cg-publish docs/examples/pcsa_former_policy.py: one step of the network per request with that game's
-memory, returning log(pi) and log(preview_pi), so the shell's argmax is the greedy action of decide.choose. A request
-answered without asking (a restart's replay) comes to `observe`: the same forward step, so the memory after a restart
-is the memory the model had. One lock per policy object around every call.
+One step of the network per request with that game's memory, returning log(pi) and log(preview_pi), so the shell's
+argmax is the greedy action of decide.choose. A request answered without asking (a restart's replay) comes to
+`observe`: the same forward step, so the memory after a restart is the memory the model had. One lock per policy
+object around every call.
 
 Here the belief heads run too (they change no other output) and every decision's extras carry, as plain JSON with
 CG string ids (the record contract's `notes.cg.net`):
@@ -21,10 +21,10 @@ The rule masks of training (rules.py) are applied to the mask the network reads:
 once per decision: the network's own choice when it answers, corrected by `played` (called by pcsa.cg.serve with
 the action that went out, so a fallback's answer or the second answer after a refusal replaces the first).
 
-With `search` on (searching.py, Champions Gym 0.5.0), a turn request is also searched: the scores returned are the
-log of the search's root strategy, so the shell's argmax is the search's pick, and the extras carry `search`
-(simulations, worlds, time, depth, the root strategy and Q table, the model's pick and the search's). When the
-search cannot run or does too little, the model's answer stands and `search.why` says so.
+With `search` on (searching.py; needs Champions Gym 0.5.0 or later), a turn request is also searched: the scores
+returned are the log of the search's root strategy, so the shell's argmax is the search's pick, and the extras carry
+`search` (simulations, worlds, time, depth, the root strategy and Q table, the model's pick and the search's). When
+the search cannot run or does too little, the model's answer stands and `search.why` says so.
 """
 
 from __future__ import annotations
@@ -32,17 +32,19 @@ from __future__ import annotations
 import hashlib
 import os
 import threading
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
 import torch
 
-from . import cg_adapter, choosing, model, rules, searching, vocab
+from pcsa.common.config_cg import RuleSettings, SearchSettings
+
+from . import cg_adapter, choosing, model, searching, vocab
 from . import checkpoint as ckpt
 from . import layout as L
-from . import search as mcts
+from . import rules as masks
 
 VOCAB_NAMES = {"species": "species", "item": "items", "ability": "abilities", "move": "moves"}  # ours -> CG's
 TOP_ITEMS, TOP_ABILITIES, TOP_MOVES, TOP_PICKS = 3, 3, 8, 5
@@ -81,7 +83,7 @@ def _top(p: torch.Tensor, kind: str, k: int) -> list[list]:
 class _Seat:
     """One slot's rule state: what it has just done, and the last turn request (to record or record again)."""
 
-    rules: rules.Rules
+    rules: masks.Rules
     decision: int | None = None
     obs: dict | None = None
     before: tuple | None = None  # the counters before `decision` was recorded
@@ -100,19 +102,14 @@ class Policy:
     """`checkpoint`: a .pt saved by checkpoint.save. `device`: "cpu" for live play. `threads`: torch CPU threads.
     `requery_refused`: ask the network again after a refused choice instead of the shell reusing the first answer.
     `allow_contract`: load a checkpoint made under another contract version; CG's own check still reports it.
-    `rule_masks`: training's rule masks, with the limits `max_same_move` and `max_switches` (0: no such rule).
-    `search`: search every turn request (searching.py); `search_ms`, `worlds`, `depth`, `outcomes`, `c`, `n0`,
-    `batch`, `min_sims`, `top_ours`, `top_theirs`, `settle`, `from_turn`, `search_sims` and `search_seed` are its
-    settings (search.SearchConfig). `choice`: the rule that makes our pick from the matrix at turn requests
-    (choosing.py: rule, top_ours, top_theirs, blend); the search's pick, when it runs, still wins."""
+    `rules`: training's rule masks {max_same_move, max_switches} (0: no such rule; None: no masks).
+    `search`: search every turn request (searching.py) with these SearchSettings; None: no search.
+    `choice`: the rule that makes our pick from the matrix at turn requests (choosing.py, ChoiceSettings); the
+    search's pick, when it runs, still wins. The values come from agent.yaml's cg section (pcsa.cg.startup)."""
 
-    def __init__(self, checkpoint: str, device: str = "cpu", threads: int = 4, requery_refused: bool = False,  # noqa: PLR0913
-                 allow_contract: bool = False, rule_masks: bool = True, max_same_move: int = 4,
-                 max_switches: int = 3, search: bool = False, search_ms: float = 1500.0, worlds: int = 6,
-                 depth: int = 3, outcomes: int = 3, c: float = 1.5, n0: float = 1.0, batch: int = 16,
-                 min_sims: int = 64, search_sims: int = 0, search_seed: int = 0, top_ours: int = 0,
-                 top_theirs: int = 0, settle: Sequence[float] = (0, 0.9, 0.01), from_turn: int = 1,
-                 choice: dict | None = None):  # fmt: skip
+    def __init__(self, checkpoint: str, *, device: str, threads: int, rules: Mapping[str, int] | None = None,  # noqa: PLR0913
+                 search: Mapping[str, Any] | None = None, choice: Mapping[str, Any] | None = None,
+                 requery_refused: bool = False, allow_contract: bool = False):  # fmt: skip
         torch.set_num_threads(int(threads))
         self.device = device
         lay = cg_adapter.layout()  # the layout from champions_gym.FEATURES, checked against CG
@@ -122,14 +119,12 @@ class Policy:
         self.memory: model.Memory | None = None
         self.lock = threading.Lock()
         self.layout = lay
-        self.rule_cfg = rules.RuleConfig(int(max_same_move), int(max_switches)) if rule_masks else None
+        limits = None if rules is None else RuleSettings.model_validate({"enabled": True, **rules})
+        self.rule_cfg = None if limits is None else masks.RuleConfig(limits.max_same_move, limits.max_switches)
         self.seats: dict[int, _Seat] = {}
-        cfg = mcts.SearchConfig(float(search_ms), int(worlds), int(depth), int(outcomes), float(c), float(n0),
-                                int(batch), int(min_sims), int(search_sims), int(search_seed), int(top_ours),
-                                int(top_theirs), int(settle[0]), float(settle[1]), float(settle[2]),
-                                int(from_turn))  # fmt: skip
-        self.searcher = searching.Searcher(self, cfg) if search else None
-        self.choice = choosing.ChoiceConfig.of(choice)
+        cfg = None if search is None else SearchSettings.model_validate(search)
+        self.searcher = None if cfg is None else searching.Searcher(self, cfg)
+        self.choice = choosing.config(choice)
         self.game_of: Any = None  # (battle, guess, seed) -> (Game, rejected); pcsa.cg.serve sets the Session's
         self.deadline: float | None = None  # precise_now() by which the open request must be answered
         self.cols = {"species": lay.col(L.F_SPECIES), "moves": lay[L.F_MOVE_ID].columns(),
@@ -159,8 +154,8 @@ class Policy:
             "belief_slots": bool(self.net.cfg.belief_slots),
             "rule_masks": None if self.rule_cfg is None else
             {"max_same_move": self.rule_cfg.max_same_move, "max_switches": self.rule_cfg.max_switches},
-            "search": mcts.settings(cfg) if search else None,
-            "choice": None if self.choice is None else self.choice.settings(),
+            "search": None if cfg is None else cfg.model_dump(),
+            "choice": None if self.choice is None else self.choice.model_dump(),
         }
 
     def _grow(self, need: int) -> model.Memory:
@@ -209,7 +204,7 @@ class Policy:
         assert self.rule_cfg is not None
         seat = self.seats.get(slot)
         if seat is None:
-            seat = self.seats[slot] = _Seat(rules.Rules(self.rule_cfg, self.layout, 1))
+            seat = self.seats[slot] = _Seat(masks.Rules(self.rule_cfg, self.layout, 1))
         if seat.decision == decision:
             seat.restore()
         else:
@@ -369,7 +364,7 @@ class Policy:
     def opp_names(self, ids: torch.Tensor, named: torch.Tensor | None = None) -> list[str | None]:
         """Their 13 actions: row 6's moves by slot ("" for the first empty slot: a move not yet seen, None after),
         the same with Mega, the species of rows 7-11. `named` (a belief_slots checkpoint's opp_named): the slots'
-        move ids with the empty ones named by the belief head; a slot it left at 0 is read as before."""
+        move ids with the empty ones named by the belief head; a slot it left at 0 is read as without `named`."""
         moves: list[str | None] = [None] * L.MOVE_SLOTS
         if self._species(ids, L.OPP_ACTIVE) is not None:
             unseen = False

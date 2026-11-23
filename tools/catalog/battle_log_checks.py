@@ -1,4 +1,5 @@
-"""D1 'What the game never shows': each item backed by regex searches over every recorded row text."""
+"""The "What the game never shows" section of docs/reference/battle-log.md: each item backed by regex searches over every
+recorded row text."""
 
 from __future__ import annotations
 

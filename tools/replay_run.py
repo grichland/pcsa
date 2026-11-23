@@ -1,6 +1,6 @@
 """Replay a run's saved CG messages through pcsa.cg.serve and write a copy of the run with `view` and `net`.
 
-    .venv/Scripts/python.exe tools/replay_run.py output/runs/<run> [--checkpoint assets/models/x.pt] [--out DIR]
+    .venv/Scripts/python.exe tools/replay_run.py output/runs/<run> [--checkpoint assets/models/<file>.pt] [--out DIR]
 
 Per battle the messages the controller sent (battle-N/cg-messages.jsonl, `dir: "sent"`; else cg/<tag>.jsonl) go,
 one CG generation at a time, to a fresh pcsa.cg.serve Server with the neural player and the checkpoint the run used
@@ -24,11 +24,15 @@ os.environ.setdefault("CUDA_VISIBLE_DEVICES", "-1")
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "src"))
 
+from pcsa.cg import startup  # noqa: E402
 from pcsa.cg.serve import NEURAL, Server, make_player  # noqa: E402
 from pcsa.cg.view import view as view_of  # noqa: E402
+from pcsa.common import paths  # noqa: E402
+from pcsa.common.config import load_config  # noqa: E402
 from pcsa.run.recorder import DECISION_SCHEMA, neural_player  # noqa: E402
 
-POLICY = "pcsa.network.policy:Policy"
+LEGACY_SEARCH = {"search_ms": "ms", "search_sims": "sims", "search_seed": "seed"}  # flat-form policy argument names
+LEGACY_RULES = {"max_same_move": 4, "max_switches": 3}  # flat-form defaults of the rule masks
 LIVE_TYPES = {"battle_start", "preview_request", "events", "decision_request", "battle_end"}
 
 
@@ -42,12 +46,10 @@ def write_json(path: Path, value) -> None:
 
 def run_checkpoint(run: Path) -> Path:
     """The checkpoint named in the run's CG command (or start-up status), found in assets/models."""
-    manifest = json.loads((run / "manifest.json").read_text(encoding="utf-8"))
-    params = manifest.get("player_params") or {}
-    params = params.get("cg", params)
+    params = _run_params(run)
     command = params.get("command") or []
-    name = None
-    if "--player-args" in command:
+    name = (params.get("player_args") or {}).get("checkpoint")
+    if not name and "--player-args" in command:
         name = json.loads(command[command.index("--player-args") + 1]).get("checkpoint")
     status = ((params.get("start_status") or {}).get("status") or {}).get("player_status") or {}
     name = name or status.get("checkpoint")
@@ -57,6 +59,35 @@ def run_checkpoint(run: Path) -> Path:
     if not path.is_file():
         raise SystemExit(f"{path} not found; give --checkpoint")
     return path
+
+
+def _run_params(run: Path) -> dict:
+    manifest = json.loads((run / "manifest.json").read_text(encoding="utf-8"))
+    params = manifest.get("player_params") or {}
+    return params.get("cg", params)
+
+
+def legacy_policy_args(old: dict) -> dict:
+    """Policy arguments in the flat form some runs recorded (rule_masks, max_same_move, ...) in the current form."""
+    rules = None if old.get("rule_masks") is False else {k: old.get(k, v) for k, v in LEGACY_RULES.items()}
+    out = {k: v for k, v in old.items() if k not in {"rule_masks", "search", *LEGACY_RULES, *LEGACY_SEARCH}}
+    return {**out, "rules": rules}
+
+
+def run_player_args(run: Path, checkpoint: Path) -> dict:
+    """The neural player's arguments as the run used them (from its manifest; the shipped config when it has none),
+    with `checkpoint`, no log folder and no search (the search is bound by time, so it does not replay)."""
+    params = _run_params(run)
+    command = params.get("command") or []
+    if params.get("player_args"):
+        args = dict(params["player_args"])
+    elif "--player-args" in command:
+        args = json.loads(command[command.index("--player-args") + 1])
+        args["policy_args"] = legacy_policy_args(args.get("policy_args") or {})
+    else:
+        args = dict(startup.resolved(load_config(paths.config_dir() / "agent.yaml").agent.cg).player_args or {})
+    args.pop("log_dir", None)
+    return {**args, "checkpoint": str(checkpoint), "policy_args": {**args.get("policy_args", {}), "search": None}}
 
 
 def battle_messages(battle: Path, run: Path) -> tuple[list[tuple[int, dict]], list[dict]]:
@@ -197,7 +228,8 @@ def manifest(out: Path, run: Path, args: dict, status: dict | None) -> None:
     params = {
         "transport": "inprocess",
         "entry": "pcsa.cg.serve:Server",
-        "command": [sys.executable, "-m", "pcsa.cg.serve", "--player", NEURAL, "--player-args", json.dumps(args)],
+        "player": NEURAL,
+        "player_args": args,
         "env": {"CUDA_VISIBLE_DEVICES": os.environ.get("CUDA_VISIBLE_DEVICES", "")},
         "start_status": {"status": status, "problems": []},
     }
@@ -221,8 +253,7 @@ def main(argv: list[str] | None = None) -> int:
     if out.exists():
         shutil.rmtree(out)
     shutil.copytree(run, out)
-    args = {"policy": POLICY, "checkpoint": str(checkpoint), "device": "cpu", "policy_args": {"threads": 4},
-            "fallback": "tower", "timeout_s": 2.0, "hard_timeout_s": 6.0}  # fmt: skip
+    args = run_player_args(run, checkpoint)
     report: dict = {"run": run.name, "checkpoint": checkpoint.name, "battles": {}}
     belief, models, status = Belief(), {}, None
     for battle in sorted(run.glob("battle-*"), key=lambda p: int(p.name.split("-")[1])):

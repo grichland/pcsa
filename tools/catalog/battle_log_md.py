@@ -1,4 +1,4 @@
-"""Markdown for D1 (docs/battle-log.md) from the measured counts."""
+"""Markdown for docs/reference/battle-log.md from the measured counts."""
 
 from __future__ import annotations
 
@@ -190,7 +190,7 @@ def recorded_section(data: dict) -> list[str]:
     out += ["Parser entries still unknown today: "
             + (", ".join(f"{k} {n}" for k, n in still.items()) or "none") + ".", ""]
     handled = r["parser_entries_handled_today"]
-    out += [f"### Rows today's parser now handles ({len(handled)})", ""]
+    out += [f"### Rows the parser handles ({len(handled)})", ""]
     return out + table(["battle", "row", "recorded reason", "today", "text"],
                        [[h["battle"], h["row"], cell(h["recorded"]), h["today"], cell(h["text"])] for h in handled])
 

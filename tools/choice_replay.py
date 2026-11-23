@@ -17,12 +17,19 @@ from pathlib import Path
 
 import torch
 
-from pcsa.network.choosing import ChoiceConfig, scores
+from pcsa.common.config_cg import ChoiceSettings
+from pcsa.network.choosing import scores
 
 WON = {"win", "opponent_forfeit", "unknown"}
-SETTINGS = [ChoiceConfig("mean", 0, k) for k in (2, 3, 4)] + [ChoiceConfig("min", 0, k) for k in (2, 3, 4, 6)] + [
-    ChoiceConfig("mix", 0, 3, 0.5), ChoiceConfig("mix", 0, 4, 0.5)] + [
-    ChoiceConfig("regret", 0, k) for k in (2, 3, 4, 6, 0)] + [ChoiceConfig("regret", 4, 3), ChoiceConfig("regret", 4, 4)]  # fmt: skip
+
+
+def rule(name: str, ours: int, theirs: int, blend: float = 0.5) -> ChoiceSettings:
+    return ChoiceSettings(rule=name, top_ours=ours, top_theirs=theirs, blend=blend)  # type: ignore[arg-type]
+
+
+SETTINGS = [rule("mean", 0, k) for k in (2, 3, 4)] + [rule("min", 0, k) for k in (2, 3, 4, 6)] + [
+    rule("mix", 0, 3), rule("mix", 0, 4)] + [rule("regret", 0, k) for k in (2, 3, 4, 6, 0)] + [
+    rule("regret", 4, 3), rule("regret", 4, 4)]  # fmt: skip
 
 
 @dataclass
@@ -96,7 +103,7 @@ def battle_turns(folder: Path) -> list[Turn]:
     return found
 
 
-def measure(turns: list[Turn], cfg: ChoiceConfig) -> dict:
+def measure(turns: list[Turn], cfg: ChoiceSettings) -> dict:
     m = torch.stack([t.matrix for t in turns])
     allowed = torch.stack([t.allowed for t in turns])
     s = scores(m, torch.stack([t.p_opp for t in turns]), torch.stack([t.pi for t in turns]), allowed, cfg)
@@ -126,7 +133,7 @@ def measure(turns: list[Turn], cfg: ChoiceConfig) -> dict:
             "battles_unchanged": len(without), "win_pct_unchanged": _pct(without)}  # fmt: skip
 
 
-def scores_kept(turns: list[Turn], cfg: ChoiceConfig, known: list[int]) -> float | None:
+def scores_kept(turns: list[Turn], cfg: ChoiceSettings, known: list[int]) -> float | None:
     """How often their actual reply was among the kept columns."""
     if not known:
         return None

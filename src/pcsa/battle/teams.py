@@ -99,7 +99,7 @@ def export_text(team: list[ExportMember]) -> str:
 
 
 def team_from_record(record: dict) -> Team:
-    """Inverse of Team.record(); keys OwnMember no longer has (older records) are ignored."""
+    """Inverse of Team.record(); keys OwnMember does not have are ignored."""
     known = {f.name for f in fields(OwnMember)}
     members = []
     for m in record["members"]:

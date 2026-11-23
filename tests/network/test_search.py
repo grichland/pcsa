@@ -1,6 +1,6 @@
-"""Decision-time search (pcsa.network.search, worlds and searching; the policy's `search` setting): the tree arithmetic on small nodes,
-the guess at a hidden set, and the policy with search on and off. The parts that build an engine Game need
-Champions Gym 0.5.0 and skip before it."""
+"""Decision-time search (pcsa.network.search, worlds and searching; the policy's `search` setting): the tree
+arithmetic on small nodes, the guess at a hidden set, and the policy with search on and off. The parts that build an
+engine Game need Champions Gym 0.5.0 or later and are skipped without it."""
 
 from __future__ import annotations
 
@@ -17,16 +17,19 @@ os.environ.setdefault("CUDA_VISIBLE_DEVICES", "-1")
 
 from pcsa.network import search, worlds  # noqa: E402
 from pcsa.network.policy import Policy  # noqa: E402
+from tests import configs  # noqa: E402
+from tests.cg import neural  # noqa: E402
 from tests.cg.neural import CHECKPOINT  # noqa: E402
 
 HAS_GAMES = hasattr(cg.env, "game_from_battle")
 needs_games = pytest.mark.skipif(not HAS_GAMES, reason="needs Champions Gym 0.5.0 (a Game from a Battle)")
 
 
-def make(**settings) -> Policy:
+def make(search: dict | None = None, **settings) -> Policy:
+    """The test policy; `search` replaces some of the shipped search settings and turns the search on."""
     if not CHECKPOINT.is_file():
         pytest.skip(f"no test checkpoint at {CHECKPOINT}")
-    return Policy(str(CHECKPOINT), threads=2, **settings)
+    return neural.policy(search=None if search is None else configs.search(**search), **settings)
 
 
 @pytest.fixture(scope="module")
@@ -129,10 +132,10 @@ def test_search_off_adds_nothing(position) -> None:
 def test_without_a_budget_the_models_answer_stands(position) -> None:
     arrays, battle, _ = position
     want = own(make().decide(arrays, [0], [battle]))
-    for settings in ({"search_ms": 1.0}, {"search_sims": 32, "min_sims": 64}):
-        if "search_sims" in settings and not HAS_GAMES:
+    for settings in ({"ms": 1.0}, {"sims": 32, "min_sims": 64}):
+        if "sims" in settings and not HAS_GAMES:
             continue
-        out = make(search=True, **settings).decide(arrays, [0], [battle])
+        out = make(settings).decide(arrays, [0], [battle])
         note = out["extras"][0]["search"]
         assert own(out) == want and note["used"] is False and note["why"] and note["changed"] is False
         assert note["pick"] == note["model_pick"] == int(np.argmax(want))
@@ -142,10 +145,10 @@ def test_without_a_budget_the_models_answer_stands(position) -> None:
 def test_turns_before_from_turn_are_left_to_the_model(position) -> None:
     arrays, battle, _ = position
     want = own(make().decide(arrays, [0], [battle]))
-    out = make(search=True, search_sims=64, from_turn=int(battle.turn) + 1).decide(arrays, [0], [battle])
+    out = make({"sims": 64, "from_turn": int(battle.turn) + 1}).decide(arrays, [0], [battle])
     note = out["extras"][0]["search"]
     assert own(out) == want and note["used"] is False and "the search starts at turn" in note["why"]
-    late = make(search=True, search_sims=64, from_turn=int(battle.turn)).decide(arrays, [0], [battle])
+    late = make({"sims": 64, "from_turn": int(battle.turn)}).decide(arrays, [0], [battle])
     assert "the search starts at turn" not in (late["extras"][0]["search"]["why"] or "")
 
 
@@ -153,7 +156,7 @@ def test_before_champions_gym_05_the_note_says_so(position, monkeypatch) -> None
     arrays, battle, _ = position
     monkeypatch.delattr(cg.env, "game_from_battle", raising=False)
     want = own(make().decide(arrays, [0], [battle]))
-    out = make(search=True, search_sims=64).decide(arrays, [0], [battle])
+    out = make({"sims": 64}).decide(arrays, [0], [battle])
     note = out["extras"][0]["search"]
     assert own(out) == want and note["used"] is False and "Champions Gym 0.5.0" in note["why"]
 
@@ -161,7 +164,7 @@ def test_before_champions_gym_05_the_note_says_so(position, monkeypatch) -> None
 def test_a_failing_search_never_changes_the_answer(position, monkeypatch) -> None:
     arrays, battle, _ = position
     want = own(make().decide(arrays, [0], [battle]))
-    policy = make(search=True, search_sims=64)
+    policy = make({"sims": 64})
 
     def boom(*a, **k):
         raise RuntimeError("boom")
@@ -169,13 +172,13 @@ def test_a_failing_search_never_changes_the_answer(position, monkeypatch) -> Non
     monkeypatch.setattr(worlds, "build_worlds", boom)
     out = policy.decide(arrays, [0], [battle])
     assert own(out) == want and out["extras"][0]["search"]["why"] == "RuntimeError: boom"
-    assert own(make(search=True).decide(arrays, [0], None)) == want  # no Battle: the model's answer
+    assert own(make({}).decide(arrays, [0], None)) == want  # no Battle: the model's answer
 
 
 @needs_games
 def test_the_search_answers_with_its_root_strategy(position) -> None:
     arrays, battle, _ = position
-    policy = make(search=True, search_sims=160, min_sims=64, worlds=4)
+    policy = make({"sims": 160, "min_sims": 64, "worlds": 4})
     out = policy.decide(arrays, [0], [battle])
     note = out["extras"][0]["search"]
     json.dumps(out["extras"][0], allow_nan=False)
@@ -197,12 +200,12 @@ def test_the_search_is_the_same_for_a_seed_and_respects_the_rule_masks(position)
     arrays, battle, _ = position
     notes = []
     for seed in (7, 7, 8):
-        note = make(search=True, search_sims=96, search_seed=seed).decide(arrays, [0], [battle])["extras"][0][
+        note = make({"sims": 96, "seed": seed}).decide(arrays, [0], [battle])["extras"][0][
             "search"
         ]
         notes.append({k: note[k] for k in ("strategy", "q", "p_them", "visits", "sims", "nodes", "depth", "pick")})
     assert notes[0] == notes[1] and notes[0]["strategy"] != notes[2]["strategy"]
-    policy = make(search=True, search_sims=96, max_same_move=1)
+    policy = make({"sims": 96}, rules=configs.rules(max_same_move=1))
     move = int(np.flatnonzero(np.asarray(arrays.mask)[0, :4])[0])
     policy.decide(arrays._replace(decision=np.array([900])), [0], [battle])
     policy.played(900, move)
@@ -214,13 +217,13 @@ def test_the_search_is_the_same_for_a_seed_and_respects_the_rule_masks(position)
 @needs_games
 def test_the_search_stops_inside_its_time(position) -> None:
     arrays, battle, _ = position
-    policy = make(search=True, search_ms=250.0, min_sims=1)
+    policy = make({"ms": 250.0, "min_sims": 1})
     policy.decide(arrays, [0], [battle])  # warm
     note = policy.decide(arrays._replace(decision=np.array([77])), [0], [battle])["extras"][0]["search"]
     assert note["used"] and note["ms"] <= 250.0 + 60.0 and note["budget_ms"] == 250.0
     from pcsa.common.clock import precise_now
 
-    policy.deadline = precise_now() + 0.45  # the request's own deadline is nearer than search_ms
+    policy.deadline = precise_now() + 0.45  # the request's own deadline is nearer than the `ms` setting
     note = policy.decide(arrays._replace(decision=np.array([78])), [0], [battle])["extras"][0]["search"]
     assert note["budget_ms"] < 250.0 and note["ms"] <= note["budget_ms"] + 60.0 and policy.deadline is None
 
@@ -234,15 +237,15 @@ def test_the_likeliest_actions_are_kept_in_their_own_order() -> None:
 @needs_games
 def test_top_ours_and_top_theirs_bound_what_the_search_looks_at(position) -> None:
     arrays, battle, _ = position
-    wide = make(search=True, search_sims=128).decide(arrays, [0], [battle])["extras"][0]
-    out = make(search=True, search_sims=128, top_ours=2, top_theirs=2).decide(arrays, [0], [battle])["extras"][0]
+    wide = make({"sims": 128}).decide(arrays, [0], [battle])["extras"][0]
+    out = make({"sims": 128, "top_ours": 2, "top_theirs": 2}).decide(arrays, [0], [battle])["extras"][0]
     note = out["search"]
     assert note["used"] and sum(x > 0 for x in note["strategy"]) <= 2 and sum(x > 0 for x in note["visits"]) <= 2
     top2 = sorted(range(11), key=lambda a: -out["pi"][a])[:2]
     assert all(note["strategy"][a] == 0 for a in range(11) if a not in top2)
     assert sum(x > 0 for x in note["p_them"]) <= 2 * 6  # two of their actions per guess of their team
     assert sum(x > 0 for x in wide["search"]["p_them"]) >= sum(x > 0 for x in note["p_them"])
-    assert make(search=True, top_theirs=3).info["search"]["top_theirs"] == 3
+    assert make({"top_theirs": 3}).info["search"]["top_theirs"] == 3
 
 
 class _Root:
@@ -257,7 +260,7 @@ class _World:
 
 
 def test_the_search_is_settled_when_one_action_leads_or_the_best_two_are_level() -> None:
-    cfg = search.SearchConfig(settle_sims=100, settle_share=0.9, settle_gap=0.01)
+    cfg = search.SearchSettings(**configs.search(settle_sims=100, settle_share=0.9, settle_gap=0.01))
     tree = search.Search(cfg, None, None, np.random.default_rng(0))  # type: ignore[arg-type]
     ahead = [_World([0.95, 0.05], [0.7, 0.4], 100), _World([0.93, 0.07], [0.6, 0.5], 100)]
     assert tree.settled(ahead, 100) is None  # it has led since simulation 100 only
@@ -271,9 +274,9 @@ def test_the_search_is_settled_when_one_action_leads_or_the_best_two_are_level()
 @needs_games
 def test_a_settled_search_stops_before_its_simulations_run_out(position) -> None:
     arrays, battle, _ = position
-    policy = make(search=True, search_sims=2000, settle=(64, 0.0, 0.0))
+    policy = make({"sims": 2000, "settle_sims": 64, "settle_share": 0.0, "settle_gap": 0.0})
     note = policy.decide(arrays, [0], [battle])["extras"][0]["search"]
     assert note["used"] and note["stopped"] == "clear" and note["sims"] < 2000
     assert policy.info["search"]["settle_sims"] == 64
-    full = make(search=True, search_sims=128).decide(arrays, [0], [battle])["extras"][0]["search"]
+    full = make({"sims": 128}).decide(arrays, [0], [battle])["extras"][0]["search"]
     assert full["stopped"] == "sims" and full["sims"] == 128

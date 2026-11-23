@@ -1,4 +1,4 @@
-"""`pcsa train sprites`: train the sprite network, measure it against the retired matcher, export it.
+"""`pcsa train sprites`: train the sprite network, measure it against the baseline matcher, export it.
 Batches mix augmented reference views (shifts, rotation, palette swaps and greying for shinies, cut-outs, blur) and
 real labelled crops; loss: additive-margin cosine classifier over form ids (species-only labels accept any form).
 Measured on held-out runs (`--test-runs`); the export is the numpy network plus per-view reference embeddings.

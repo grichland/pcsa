@@ -2,14 +2,6 @@
 root_package = pcsa
 include_external_packages = True
 
-[importlinter:contract:no-poke-env]
-name = Nothing imports poke-env
-type = forbidden
-source_modules =
-    pcsa
-forbidden_modules =
-    poke_env
-
 [importlinter:contract:no-torch-outside-the-networks]
 name = torch only in pcsa.network and pcsa.sprite_training
 type = forbidden

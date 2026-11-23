@@ -2,9 +2,9 @@
 results favour.
 
     uv run python tools/search_recorded.py --checkpoint assets/models/<file>.pt \
-        --battles ../pcsa-former/runs/live-battles.jsonl.gz --playon ../pcsa-former/runs/playon-20261119-c
+        --battles <pack>.jsonl.gz --playon <playon-folder>
 
-Each recorded battle (pcsa-former's packed file: the messages the controller sent) is replayed through
+Each recorded battle (a battle pack of pcsa-former, the training repository: the messages the controller sent) is replayed through
 pcsa.cg.serve with the neural player and search on. Per turn request: the search note (time, simulations, the
 model's pick, the search's pick). Where the play-on folder holds that turn (game id = battle index * 10^6 + turn *
 1000: every pair of our action and theirs played to the end), both picks are scored by the pair results, against
@@ -26,10 +26,13 @@ sys.path.insert(0, str(REPO / "src"))
 
 import numpy as np  # noqa: E402
 
+from pcsa.cg import startup  # noqa: E402
 from pcsa.cg.serve import NEURAL, Server, make_player  # noqa: E402
+from pcsa.common import paths  # noqa: E402
 from pcsa.common.clock import precise_now  # noqa: E402
+from pcsa.common.config import load_config  # noqa: E402
 
-POLICY = "pcsa.network.policy:Policy"
+OFFLINE_LIMITS = {"timeout_s": 30.0, "hard_timeout_s": 60.0}  # offline nothing is handed to the fallback
 TURN = "turn"
 
 
@@ -109,14 +112,14 @@ def main() -> int:
     ap.add_argument("--playon", default=None)
     ap.add_argument("--minutes", type=float, default=10.0)
     ap.add_argument("--latency-turns", type=int, default=200)
-    ap.add_argument("--policy-args", default="{}")
+    ap.add_argument("--set", action="append", default=[], metavar="SECTION.KEY=VALUE", help="config override")
     ap.add_argument("--out", default=None)
     a = ap.parse_args()
     found = labels(Path(a.playon)) if a.playon else {}
     wanted = sorted({g // 10**6 for g in found})
-    policy_args = {"threads": 4, "search": True, **json.loads(a.policy_args)}
-    args = {"policy": POLICY, "checkpoint": str(Path(a.checkpoint).resolve()), "device": "cpu", "policy_args": policy_args,
-            "fallback": "tower", "timeout_s": 30.0, "hard_timeout_s": 60.0}  # fmt: skip
+    cfg = load_config(paths.config_dir() / "agent.yaml", ["cg.search.enabled=true", *a.set]).agent.cg
+    args = {**(startup.resolved(cfg).player_args or {}), "checkpoint": str(Path(a.checkpoint).resolve()),
+            **OFFLINE_LIMITS}  # fmt: skip
     with gzip.open(a.battles, "rt", encoding="utf-8") as fh:
         recs = [json.loads(line) for line in fh]
     order = [i for i in wanted if i < len(recs)] + [i for i in range(len(recs)) if i not in set(wanted)]

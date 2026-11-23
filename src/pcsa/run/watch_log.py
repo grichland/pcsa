@@ -1,8 +1,8 @@
 """The battle log of `pcsa watch`, turn by turn, read from a battle folder.
 
 `battle_log.txt` (`standard_text()`: header, `=== Turn N ===` blocks of `[Category] message`, `# controller:` lines)
-or the
-collected `log.txt` rows; each line carries the side it is about when the text tells ("The opposing ..." is theirs).
+or the collected `log.txt` rows; each line carries the side it is about when the text tells ("The opposing ..." is
+theirs).
 """
 
 from __future__ import annotations

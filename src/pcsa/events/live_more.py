@@ -1,5 +1,5 @@
-"""Rows LIVE.md 0.5 and 0.6 added a place for (X2, X3, X5, X9, X10, X13, LV5Q-2). None of these wordings is in the
-recordings: they are Showdown's sentences, kept until a phone recording shows the game's own."""
+"""Rarer rows the LIVE protocol has events for. None of these wordings is in the recordings: they are Showdown's
+sentences, kept until a phone recording shows the game's own."""
 
 from __future__ import annotations
 

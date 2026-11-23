@@ -18,22 +18,17 @@ from pcsa.run.battle_state import RunState
 from pcsa.run.recorder import Recorder, manifest
 
 
-def open_run(
-    config: Config, resume: Path | None, name: str, battles: int | None, max_total: int | None, seed: int | None
-) -> tuple[Recorder, RunState]:
+def open_run(config: Config, resume: Path | None) -> tuple[Recorder, RunState]:
+    """A new run from the `run` settings, or the saved state of the run being resumed."""
     if resume is not None:
         state = RunState.load(resume)
         if state is None:
             raise ConfigError(f"{resume} has no state.json to resume")
         return Recorder(resume), state
-    recorder = Recorder.new(name)
-    state = RunState(
-        recorder.dir,
-        battles or config.agent.run.battles,
-        max_total or config.agent.run.max_battles_total,
-        config.agent.run.count_forfeits,
-        seed if seed is not None else int(datetime.now().timestamp() * 1000) % 2**31,
-    )
+    run = config.agent.run
+    recorder = Recorder.new(run.name)
+    seed = run.seed if run.seed is not None else int(datetime.now().timestamp() * 1000) % 2**31
+    state = RunState(recorder.dir, run.battles, run.max_battles_total, run.count_forfeits, seed)
     state.save()
     return recorder, state
 
@@ -76,22 +71,13 @@ def start_player(player) -> None:
     log.event("player_started", player=player.name, status=status)
 
 
-def play_command(
-    config: Config,
-    *,
-    player_name: str | None,
-    battles: int | None,
-    max_total: int | None,
-    seed: int | None,
-    name: str,
-    resume: Path | None,
-) -> int:
+def play_command(config: Config, resume: Path | None) -> int:
     from pcsa.live.phone import build_live_phone
 
     clock = SystemClock()
-    recorder, state = open_run(config, resume, name, battles, max_total, seed)
+    recorder, state = open_run(config, resume)
     log.configure(recorder.dir)
-    player = load_player(player_name or config.agent.decide.player, config, clock=clock, run_dir=recorder.dir)
+    player = load_player(config.agent.decide.player, config, clock=clock, run_dir=recorder.dir)
     start_player(player)
     runner = Runner(player, clock, config.agent.degrade)
     phone = build_live_phone(config, clock, seed=state.seed)

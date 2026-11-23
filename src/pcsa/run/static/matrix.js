@@ -66,7 +66,7 @@ const rowKind = (i) => (i >= MX.switchAt ? "switch" : i >= MX.megaAt ? "mega" : 
 const rowName = (m, i) => orderLabel(rowKind(i) === "switch" ? "switch" : "move", m.row_labels[i]);
 const topName = (top) => (top ? `Top ${top}` : "All");
 const mxT = (t) => String(Number(t.toFixed(2))); // a temperature: 0.75, 1.5, 2
-const mxTrec = (m) => (isNum(m.opp_temperature) && m.opp_temperature > 0 ? m.opp_temperature : 1); // old records: 1
+const mxTrec = (m) => (isNum(m.opp_temperature) && m.opp_temperature > 0 ? m.opp_temperature : 1); // not recorded: 1
 /** The name of the what-if in use: All, Top 3, Trust ×2, Top 3 at trust ×2. */
 const whatName = (what) => (what.reweighted ? `${what.top ? `${topName(what.top)} at trust` : "Trust"} ×${mxT(what.opp)}` : topName(what.top));
 const mxNum = (v, digits = 2) => signed(Number(v.toFixed(digits)), digits); // never "−0.00"
@@ -498,11 +498,11 @@ function mxGrid(m) {
   mxPickLine(m, g);
 }
 
-/** In place of the grid when the decision has no matrix (a fallback, or a record of an older player). */
+/** In place of the grid when the decision has no matrix (a fallback, or a player that records none). */
 function mxAlt(decision, legacy) {
   const n = decision.notes || {};
   const alt = el("mx-alt");
-  const lead = node("p", "mx-alt-lead", legacy ? "This run predates the Champions Gym port: its records have no matrix." : n.fallback
+  const lead = node("p", "mx-alt-lead", legacy ? "This run's records carry no matrix." : n.fallback
     ? "The fallback player decided this turn, so there is no matrix: the network gave no answer."
     : n.rule ? `No matrix was recorded for this decision (rule: ${n.rule}).` : "No matrix was recorded for this decision.");
   const legal = node("div", "legal");

@@ -1,4 +1,4 @@
-"""One log row -> one LIVE.md event. Rows are never merged and no field is filled from another row."""
+"""One log row -> one LIVE protocol event. Rows are never merged and no field is filled from another row."""
 
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ SIDES = {"p1": "own", "p2": "opp"}
 
 
 class Unreadable(Exception):
-    """A name with no single nearest legal id: the row is sent as `unread` (LIVE.md CT-15)."""
+    """A name with no single nearest legal id: the row is sent as `unread`."""
 
 
 class Converter:
@@ -79,7 +79,7 @@ class Converter:
             self.repairs.append({"text": text, "ability": ident})
         return ident
 
-    # rows the shared parser does not split the way LIVE.md needs ----------------------------------
+    # rows the shared parser does not split the way the LIVE protocol needs --------------------------
     def _special(self, msg: str, text: str) -> dict | None:  # noqa: C901, PLR0911, PLR0912
         if (out := special(self, msg, text)) is not None:
             return out
@@ -143,7 +143,7 @@ class Converter:
         except Unreadable as name:
             self.unreadable.append({"text": row.text, "name": str(name)})
             out = None
-        except (KeyError, TypeError, ValueError) as error:  # counted, never silent (rule 4)
+        except (KeyError, TypeError, ValueError) as error:  # counted, never silent: sent as unread
             self.errors.append({"text": row.text, "error": repr(error)})
             out = None
         if out is None:
@@ -188,7 +188,7 @@ class Converter:
             return {"k": "miss", **mon}
         if kind == "fail":
             return {"k": "fail"}
-        if kind == "trailing" and d.get("what") in TRAILING_FAIL:  # the row names why (X1)
+        if kind == "trailing" and d.get("what") in TRAILING_FAIL:  # the row names why
             reason = TRAILING_FAIL[d["what"]] if d["what"] != "heal_failed" or "HP is full" in msg else None
             return {"k": "fail", **mon, **({"reason": reason} if reason else {})}
         if kind == "effectiveness":

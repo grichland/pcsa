@@ -45,7 +45,7 @@ def small_net() -> dict:
     }  # fmt: skip
 
 
-# The fold (D8) --------------------------------------------------------------------------------------
+# The fold -------------------------------------------------------------------------------------------
 
 
 @pytest.mark.parametrize("path", RECORDS, ids=lambda p: f"{p.parent.parent.name}/{p.name}")
@@ -92,7 +92,7 @@ def test_belief_named_columns_are_moves_marked_shown_or_believed() -> None:
     net["cols"][1] = net["cols"][5] = ""  # a slot the belief head could not name stays the unseen one
     mixed = matrix_view(net)
     assert mixed is not None and mixed["cols"][1] == "unseen" and mixed["believed"][:3] == [False, False, True]
-    net["opp_seen"] = "x"  # unreadable: every named column counts as shown, as before
+    net["opp_seen"] = "x"  # unreadable: every named column counts as shown
     assert matrix_view(net)["believed"] == [False] * 9  # type: ignore[index]
 
 
@@ -276,7 +276,7 @@ def test_the_page_reads_the_belief_and_the_new_badge() -> None:
     for marker in ("m.belief", "unseen_belief", "is-believed", "brought", "lead", "belief-key", "state.legacy"):
         assert marker in panels
     assert "player:" in app and '.badge[data-degrade="player"]' in style and ".chip.is-believed" in style
-    assert "predates the Champions Gym port" in matrix and "state.legacy" in matrix
+    assert "records carry no matrix" in matrix and "state.legacy" in matrix
     for label in ('"SCORE"', '"FOR THEM"', "WOULD PICK", "pcsa-mx-top", "pcsa-mx-opp", "m.tau", "col_legal"):
         assert label in matrix
 

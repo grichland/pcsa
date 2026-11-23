@@ -19,8 +19,9 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Protocol, cast
 
-from pcsa.cg.startup import with_log_dir
+from pcsa.cg.startup import command_line, session_args, with_log_dir
 from pcsa.common.clock import SystemClock
+from pcsa.common.config import CGConfig
 from pcsa.common.paths import repo_root
 
 REQUESTS = ("preview_request", "decision_request")
@@ -289,16 +290,16 @@ class Subprocess:
         self._stop()
 
 
-def make_transport(cfg: Any, run_dir: Path | None) -> Transport:
+def make_transport(cfg: CGConfig, run_dir: Path | None) -> Transport:
     """From the config's cg section (common.config.CGConfig); CG's log_dir goes in the run folder when
     cg.run_log_dir is set."""
-    if run_dir is not None and getattr(cfg, "run_log_dir", None):
+    if run_dir is not None and cfg.run_log_dir:
         cfg = with_log_dir(cfg, Path(run_dir) / cfg.run_log_dir)
     if cfg.transport == "inprocess":
         if not cfg.entry:
             raise CGError("cg.entry is needed for the inprocess transport")
-        return InProcess(cfg.entry, cfg.args, cfg.python_path)
+        return InProcess(cfg.entry, session_args(cfg), cfg.python_path)
     if not cfg.command:
         raise CGError("cg.command is needed for the subprocess transport")
     stderr = run_dir / "cg-stderr.log" if run_dir is not None else None
-    return Subprocess(cfg.command, stderr, cfg.python_path, getattr(cfg, "env", None))
+    return Subprocess(command_line(cfg), stderr, cfg.python_path, cfg.env)

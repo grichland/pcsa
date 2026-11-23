@@ -1,20 +1,13 @@
-param(
-    [int]$Battles = 100,
-    [int]$MaxBattlesTotal = 101
-)
-
-# Launch the Ranked Singles agent with the settings below.
-# Usage (from any folder):  powershell -ExecutionPolicy Bypass -File <repo>\scripts\run_agent.ps1 [-Battles 25 -MaxBattlesTotal 30]
+# Launches the Ranked Singles agent: checks the phone, opens a phone mirror and the dashboard, then runs `pcsa run`.
+# Usage (from any folder):  powershell -ExecutionPolicy Bypass -File <repo>\scripts\run_agent.ps1
 # Before starting: phone on USB with debugging on, the game open on the Ranked Singles lobby ("Begin Matchmaking").
-# The player is the neural network through Champions Gym, as config\agent.yaml sets it (decide.player and the cg
-# section); change one of those settings for a single launch with $Overrides below.
+# Every agent setting (battles, seed, run name, player) is in config\agent.yaml; $Overrides changes some of them
+# for this launch only.
 # ============================== SETTINGS (edit these) ==============================
-$Seed       = $null               # $null = new random seed; a number makes choices and taps reproducible
-$RunName    = "run"               # run folder prefix under output\runs\
-$Config     = "config/agent.yaml" # controller and player settings
-$Overrides  = @()                 # one-off settings, e.g. @("timing.max_turn_s=35", "run.count_forfeits=true")
+$Config     = "config/agent.yaml" # agent and player settings
+$Overrides  = @()                 # one-off settings, e.g. @("run.battles=25", "run.seed=7")
 $Watch      = $true               # $true opens the read-only dashboard (pcsa watch) on this run in a second window
-$Mirror     = $true               # open a phone mirror window (scrcpy) next to the run; skipped with a warning when scrcpy is missing
+$Mirror     = $true               # phone mirror window (scrcpy) beside the run; skipped with a warning without scrcpy
 $Resume     = ""                  # an existing run folder to continue, or "" for a new run
 # ===================================================================================
 
@@ -91,9 +84,8 @@ $ErrorActionPreference = "Stop"
 if ($checkCode -ne 0) { throw "pcsa check failed (exit $checkCode). Connect and authorize the phone, open the game, and retry." }
 
 # Arguments for `pcsa run`.
-$arguments = @("run", "--config", $Config, "--battles", $Battles, "--max-total", $MaxBattlesTotal, "--name", $RunName)
+$arguments = @("run", "--config", $Config)
 foreach ($setting in $Overrides) { $arguments += @("--set", $setting) }
-if ($null -ne $Seed) { $arguments += @("--seed", $Seed) }
 $resumeDir = if ($Resume) { (Resolve-Path $Resume).Path.TrimEnd('\') } else { $null }
 if ($resumeDir) { $arguments += @("--resume", $resumeDir) }
 

@@ -1,11 +1,12 @@
-"""The CG Player: speaks LIVE 0.7 to CG through a transport (pcsa/cg/transport.py) and maps CG's answers back.
+"""The CG Player: speaks the LIVE protocol to CG through a transport (pcsa/cg/transport.py) and maps CG's answers
+back.
 
 Nothing in src/ imports this module except decide/load.py, lazily. Per battle a Stream keeps what this CG has been
 sent; a CG that restarted (new process, new handle, new Player) gets the whole stream again from battle_start.
 Anything CG answers that cannot be placed raises CGError, the runner falls back, and the next `events` message
-carries that fallback (Request.history). CG's replies (LIVE section 3): picks and an order with `notes` (kept in
-the notes as "cg"); `{"error"}` for a message it cannot read (the call falls back); a stale seq's error with
-the order CG gave before (used, the error noted). Errors about other messages are noted as "cg_errors".
+carries that fallback (Request.history). CG's replies: picks and an order with `notes` (kept in the notes as
+"cg"); `{"error"}` for a message it cannot read (the call falls back); a stale seq's error with the order CG gave
+before (used, the error noted). Errors about other messages are noted as "cg_errors".
 `start` makes CG before any battle and checks its status answer (pcsa/cg/startup.py). Per battle the model's
 fallbacks (notes.model) are counted and written with CG's status to the battle's cg-summary.json.
 """
@@ -37,7 +38,7 @@ def cg_config(config: Any) -> CGConfig:
     if isinstance(config, CGConfig):
         return config
     agent = getattr(config, "agent", config)
-    return getattr(agent, "cg", None) or CGConfig()
+    return agent.cg
 
 
 class CGPlayer:
@@ -65,7 +66,7 @@ class CGPlayer:
         return {**out, "start_status": self.start_status} if self.start_status is not None else out
 
     def start(self) -> dict:
-        """Make CG now and check its status answer (LIVE 0.9); CGError, and no battle, when it cannot play."""
+        """Make CG now and check its status answer; CGError, and no battle, when it cannot play."""
         try:
             self._sync()
             reply, _ = self.transport.exchange(
@@ -196,7 +197,7 @@ class CGPlayer:
 
     # Watching the model -----------------------------------------------------------------------------
     def _watch(self, tag: str, reply: dict) -> None:
-        """notes.model into the battle's counts; a warning when CG's anomaly count rises (LIVE 0.8-0.9)."""
+        """notes.model into the battle's counts; a warning when CG's anomaly count rises."""
         notes = reply.get("notes")
         cg: dict = notes if isinstance(notes, dict) else {}
         stream, anomalies = self._stream(tag), cg.get("anomalies")

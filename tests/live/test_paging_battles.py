@@ -1,4 +1,4 @@
-"""T7-5: a battle on the fake device whose log heading jumps past turns with no action screen of ours. Back-paging
+"""A battle on the fake device whose log heading jumps past turns with no action screen of ours. Back-paging
 is on in config/agent.yaml; the real LogReader pages back through fake_log's book of recorded page frames (the
 ones test_log_pages uses), and the missed turns' rows reach the events in turn order."""
 
@@ -13,7 +13,7 @@ from pcsa.common.config import Config
 from pcsa.common.types import Screen
 from pcsa.live.fake import Step
 from pcsa.live.fake_log import FakeLogBook, LogPage
-from tests.live.t7_rig import MOVE_TAPS, Script, end_of_battle, live_problems, lobby_to_team_select, run_battles
+from tests.live.battle_rig import MOVE_TAPS, Script, end_of_battle, live_problems, lobby_to_team_select, run_battles
 from tests.live.test_log_pages import MANIFEST, plain
 from tests.live.turn_rig import FakeLogs
 from tests.perception.test_log_frames import image
@@ -59,7 +59,7 @@ def action(log_book: FakeLogBook | None = None) -> list[Step]:
     ]
 
 
-def test_t7_5_skipped_turns_are_paged_back_into_the_events(config: Config, tmp_path: Path, monkeypatch, ocr):
+def test_skipped_turns_are_paged_back_into_the_events(config: Config, tmp_path: Path, monkeypatch, ocr):
     assert config.agent.log.paging.enabled  # shipped on
     clock = FakeClock(1000.0)
     books = [book(clock, 2), book(clock, 4), book(clock, 6)]  # headings 2, then 4 (3 skipped), then 6 (5 skipped)
@@ -100,7 +100,7 @@ def test_t7_5_skipped_turns_are_paged_back_into_the_events(config: Config, tmp_p
     assert (frames / "visit03-page3-0.png").is_file() and (frames / "visit04-page5-0.png").is_file()
 
 
-def test_t7_5_with_paging_off_the_skipped_turns_are_gaps(tmp_path: Path, monkeypatch, ocr) -> None:
+def test_with_paging_off_the_skipped_turns_are_gaps(tmp_path: Path, monkeypatch, ocr) -> None:
     from pcsa.common.config import load_config
     from tests.conftest import REPO
 

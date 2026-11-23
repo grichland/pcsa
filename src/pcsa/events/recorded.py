@@ -1,4 +1,4 @@
-"""Read one recorded pcsa battle folder (read-only) into plain data for the 0.2 stream builder."""
+"""Read one recorded pcsa battle folder (read-only) into plain data for the stream builder."""
 
 from __future__ import annotations
 

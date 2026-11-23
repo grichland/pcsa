@@ -1,9 +1,9 @@
-"""Check messages and events against LIVE.md 0.7: required and allowed fields, listed values, section 6 never-sent."""
+"""Check messages and events against the LIVE protocol: required and allowed fields, listed values, never-sent."""
 
 from __future__ import annotations
 
 MON = ("side", "mon")
-# kind: (required, optional). Taken from LIVE.md section 4.
+# kind: (required, optional), as the LIVE protocol's event table lists them.
 SCHEMA: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     "turn": (("n",), ()),
     "refused": (("order",), ()),
@@ -12,7 +12,7 @@ SCHEMA: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     "withdraw": (MON, ("pivot",)),
     "move": ((*MON, "move"), ("priority", "called_by")),
     "prepare": (MON, ("move",)),
-    "cant": (("reason",), MON),  # no Pokemon named: "no PP left" (0.6)
+    "cant": (("reason",), MON),  # no Pokemon named: "no PP left"
     "protect": (MON, ()),
     "miss": (MON, ()),
     "fail": ((), (*MON, "reason")),
@@ -47,12 +47,13 @@ SCHEMA: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     "gap": (("what",), ("n",)),
     "unread": (("text",), ("category",)),
 }
-NEVER = ("crit", "pp", "maxhp", "max_hp", "turns", "turns_left", "setter", "from")  # section 6; "from" ok only in ability_change
+# fields never sent; "from" is allowed only in ability_change
+NEVER = ("crit", "pp", "maxhp", "max_hp", "turns", "turns_left", "setter", "from")
 
 
 STATUSES = ("brn", "par", "slp", "frz", "psn", "tox")
 RESULTS = ("win", "loss", "tie", "forfeit", "unknown")
-# (kind, field): the values section 4 lists
+# (kind, field): the values the event table lists
 VALUES: dict[tuple[str, str], tuple] = {
     ("result", "how"): ("super", "extreme", "resisted", "mostly_ineffective", "immune", "ohko"),
     ("hp", "dir"): ("lost", "restored"),
@@ -108,14 +109,14 @@ MESSAGES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
 
 
 def event_problems(event: dict) -> list[str]:
-    """Kept for callers of 0.3: gap is a section-4 kind now."""
+    """Problems of one event; an alias of `problems`."""
     return problems(event)
 
 
 def order_problems(order: dict | None) -> list[str]:
     if not isinstance(order, dict):
         return ["order:missing"]
-    if order.get("kind") == "move":  # `mega` may be left out (0.7)
+    if order.get("kind") == "move":  # `mega` may be left out
         ok = isinstance(order.get("move"), str) and isinstance(order.get("mega", False), bool)
         return [] if ok and set(order) <= {"kind", "move", "mega"} else ["order:move"]
     if order.get("kind") == "switch":
@@ -136,15 +137,15 @@ def set_problems(one: dict) -> list[str]:
 
 
 def picks_problems(picks, where: str) -> list[str]:
-    """Three different indices into own_team, lead first (0.7)."""
+    """Three different indices into own_team, lead first."""
     ok = isinstance(picks, list) and len(picks) == PICKS and len(set(picks)) == PICKS
     ok = ok and all(isinstance(i, int) and not isinstance(i, bool) and 0 <= i < TEAM_SIZE for i in picks)
     return [] if ok else [f"{where}:picks"]
 
 
 def fallback_problems(fallback) -> list[str]:
-    """Section 3: {"seq": N, "order": ORDER, "reason": "..."}; no `order` when it could not be read (0.6); a preview
-    fallback {"picks": [...], "reason": "..."} (0.7); one object or a list (0.7)."""
+    """A turn fallback {"seq": N, "order": ORDER, "reason": "..."} (no `order` when it could not be read), or a
+    preview fallback {"picks": [...], "reason": "..."}; one object or a list."""
     if isinstance(fallback, list):
         return [p for one in fallback for p in fallback_problems(one)] if fallback else ["fallback:empty"]
     if not isinstance(fallback, dict):
@@ -189,7 +190,7 @@ def message_problems(msg: dict) -> list[str]:
         if "refused" in msg:
             out += order_problems((msg["refused"] or {}).get("order"))
         if "retry" in msg and (msg["retry"] is not True or "refused" in msg):
-            out.append("decision_request:retry")  # true only, and never with refused (CF-8)
+            out.append("decision_request:retry")  # true only, and never with refused
         out += replay_problems(msg, order_problems)
     elif kind == "battle_end":
         out += [] if msg.get("result") in RESULTS else ["battle_end:result"]
@@ -197,6 +198,6 @@ def message_problems(msg: dict) -> list[str]:
 
 
 def replay_problems(msg: dict, check) -> list[str]:
-    """`replay` is true only; `played` (0.7) checked by `check`."""
+    """`replay` is true only; `played` is checked by `check`."""
     out = [] if msg.get("replay", True) is True else [f"{msg.get('type')}:replay"]
     return out + ([f"played:{p}" for p in check(msg["played"])] if "played" in msg else [])

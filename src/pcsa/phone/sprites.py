@@ -2,7 +2,7 @@
 
 A sprite is segmented, cropped to its silhouette, normalized (`feature`), embedded, and scored by cosine against one
 reference vector per known view. Used for the six team-selection cards ("preview") and the battle-log rows ("log").
-The matching flow takes any `Scorer`, so training can run the retired matcher through the same steps.
+The matching flow takes any `Scorer`, so the sprite trainer can run its baseline matcher through the same steps.
 """
 
 from __future__ import annotations

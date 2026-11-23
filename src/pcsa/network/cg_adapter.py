@@ -1,9 +1,7 @@
-"""The only module of the network that touches champions_gym (CG), contract 0.6.
+"""The only module of the network that touches champions_gym (CG), imported from the installed package.
 
-CG is imported from the installed wheel.
-
-Source: pcsa-former/pcsa_former/cg_adapter.py, copied verbatim without the training parts (the source-tree
-fallback import, write_teams and CGEnv).
+Copied from pcsa-former (pcsa_former/cg_adapter.py) without its training parts; the functions kept behave
+identically to it.
 """
 
 from __future__ import annotations

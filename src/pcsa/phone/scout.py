@@ -1,7 +1,7 @@
 """`pcsa scout`: watch while a person walks through the game; report what differs from what we know.
 
 Read-only (captures and OCR, no taps). The report lists unseen checklist items, unknown screens grouped by text, moved
-anchor labels, unknown roster names and items, and the game version.
+anchor labels, unknown roster names and items, and the rank text read.
 """
 
 from __future__ import annotations

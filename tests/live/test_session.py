@@ -1,4 +1,5 @@
-"""The session shell on the scripted phone: a battle, outcomes, restarts that carry the battle, SV-7."""
+"""The session shell on the scripted phone: a battle, outcomes, restarts that carry the battle, and a battle this
+run did not start."""
 
 from __future__ import annotations
 

@@ -1,7 +1,7 @@
 """Read CG's generated Rust tables (read-only): the legal id sets and the values used for cross-checks.
 
-The tables come from a Champions Gym checkout: the environment variable CG_SOURCE (or a tool's --source), else
-../cg-publish next to this repository (the public clone). The file is engine/src/sim/data/generated.rs in it.
+The tables come from a Champions Gym checkout: a tool's --source, else the environment variable CG_SOURCE, else
+DEFAULT_CHECKOUT (a checkout beside this repository). The file is engine/src/sim/data/generated.rs in it.
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ GENERATED = Path("engine") / "src" / "sim" / "data" / "generated.rs"
 
 
 def generated_rs(checkout: Path | str | None = None) -> Path:
-    """generated.rs of the checkout given, else of CG_SOURCE, else of ../cg-publish."""
+    """generated.rs of the checkout given, else of CG_SOURCE, else of DEFAULT_CHECKOUT."""
     return Path(checkout or os.environ.get("CG_SOURCE") or DEFAULT_CHECKOUT) / GENERATED
 
 

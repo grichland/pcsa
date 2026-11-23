@@ -1,4 +1,4 @@
-"""Ids and wording tables for LIVE.md events: species, moves, items, abilities, effects."""
+"""Ids and wording tables for LIVE protocol events: species, moves, items, abilities, effects."""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ WEATHER_ROWS = {
     "The snow stopped.": ("snowscape", "end"),
 }
 # Cause rows: the parser's cause name -> the effect id sent. Ids that name the wording are used where one
-# wording fits several mechanics (LIVE.md section 7 point 3).
+# wording fits several mechanics.
 CAUSES = {
     "Sandstorm": "sandstorm",
     "brn": "brn",
@@ -46,7 +46,7 @@ TRAILING_CAUSES = {
     "pain_split": "pain_split",
 }
 TRAILING_ONCE = {"struggle": "no_moves_left", "destiny_bond": "took_attacker_down", "weather_suppressed": "weather_effects_gone"}
-# fail rows that say why (X1): the reason sent; heal_failed only for "X's HP is full!"
+# fail rows that say why: the reason sent; heal_failed only for "X's HP is full!"
 TRAILING_FAIL = {"yawn_already": "yawn", "substitute_already": "substitute", "heal_failed": "hpfull"}
 ALREADY = {"poisoned": "psn", "badly poisoned": "tox", "burned": "brn", "paralyzed": "par", "asleep": "slp"}
 EFFECTIVENESS = {

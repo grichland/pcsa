@@ -1,11 +1,12 @@
-"""pcsa-former's battle pack with their Pokémon named by form (Rotom Wash, Alolan Ninetales).
+"""The battle pack of pcsa-former (the training repository) with their Pokémon named by form (Rotom Wash, Alolan
+Ninetales).
 
-    cd ../pcsa-former
-    ../pcsa/.venv/Scripts/python ../pcsa/tools/forms_pack.py runs/live-battles-<name>.jsonl.gz
+    cd <pcsa-former>
+    <pcsa>/.venv/Scripts/python <pcsa>/tools/forms_pack.py runs/<pack>.jsonl.gz
 
 Runs pcsa-former's own pack step (tools/live_playon.py --pack) from its folder, with every battle's recorded
-messages passed through pcsa.events.forms.with_forms first: battles recorded before 20 Nov 2026 name their Pokémon
-by base species. The preview names come from the battle's battle.json. Nothing in pcsa-former is changed.
+messages passed through pcsa.events.forms.with_forms first, so a recording that names a Pokémon by its base species
+gets its form. The preview names come from the battle's battle.json. Nothing in pcsa-former is changed.
 """
 
 import collections

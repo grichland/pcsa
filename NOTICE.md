@@ -13,7 +13,7 @@ It builds on the work below.
 | The wordings of the game's battle log | `assets/game/log_wordings.json` | Collected from this project's own recorded battles. |
 | Usage-ranked builds per species, and the opposing builds this project met on the ladder | `assets/sets/top_builds.json`, `assets/sets/seen_builds.json` | The first is built from the Pokémon Champions ranked-usage statistics published by [championsbattledata.com](https://championsbattledata.com); thanks to its maintainers for collecting and sharing the data. The second is from this project's own recorded battles. Data only: nothing here reads them at run time. |
 | Sprite network weights and reference vectors | `assets/sprites/` | Trained by this project (`pcsa train sprites`, `docs/sprites.md`). No sprite images are distributed. |
-| The neural player's checkpoints and network code | `assets/models/`, `src/pcsa/network/` | Trained and written by this project's author by self-play on Champions Gym. |
+| The neural player's checkpoints and network code | `assets/models/`, `src/pcsa/network/` | Trained and written by this project's author by self-play on Champions Gym. The network code is shared with pcsa-former, the training repository (`tests/network/test_parity.py` checks both give the same outputs). |
 | A screenshot of this project's live dashboard after a ranked battle (no trainer names on screen; it links to a demo video on YouTube), and one screenshot of its ranked result after a battle (no trainer name or ID on screen) | `docs/images/demo-poster.jpg`, `docs/images/master-ball-rank2.jpg` | A screen from Pokémon Champions, © Nintendo / Creatures Inc. / GAME FREAK inc. / The Pokémon Company, shown for illustration only. |
 
 ## Downloaded by `pcsa setup`, not redistributed

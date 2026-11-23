@@ -1,15 +1,18 @@
 # pyright: reportArgumentType=false, reportCallIssue=false, reportIndexIssue=false
-"""The decision-matrix network on the CG model contract (MODEL.md 0.6), on the poke-singles-former trunk.
+"""The decision-matrix network on Champions Gym's model contract (MODEL.md).
 
-Tokens: field, 12 Pokemon, last turn (14); optionally the 48 move slots as tokens too. Trunk, as in
-research/pcsa-rl/rl2/model.py: transformer blocks in which a decision's tokens attend to each other and to the field
-and last-turn tokens of up to `memory` earlier decisions of the game, so one pass over a game equals step-by-step play. Heads:
+Tokens: field, 12 Pokemon, last turn (14); optionally the 48 move slots as tokens too. Trunk: transformer blocks in
+which a decision's tokens attend to each other and to the field and last-turn tokens of up to `memory` earlier
+decisions of the game, so one pass over a game equals step-by-step play. Heads:
 opponent (13, pointing at their active's move slots and their bench rows), payoff matrix M [11, 13], value, team
 preview (60, computed only at preview requests), all reading the field token as the state summary, and the
 training-only belief heads (brought, lead, item, ability, moves of each opposing Pokemon).
 
-Source: pcsa-former/pcsa_former/model.py, copied verbatim; only the imports are package-relative (and the
-pyright line above: torch modules indexed and called the way the source does).
+Config holds defaults only: a checkpoint carries its own settings (max_prob, belief_slots, ...), which
+checkpoint.load passes in.
+
+Copied from pcsa-former (pcsa_former/model.py); behaviour is kept identical to it. The pyright line above silences
+checks on the way torch modules are indexed and called.
 """
 
 from __future__ import annotations
@@ -42,17 +45,17 @@ class Config:
     emb_ability: int = 16
     emb_move: int = 32
     detach_opp: bool = True  # the policy gradient does not flow into the opponent head
-    max_prob: float = 0.9  # no action of either side is given more than this while another is possible
+    max_prob: float = 0.9  # default cap: no action of either side gets more while another is possible
     tau: float = 0.05  # starting policy temperature: the matrix is in game-outcome units (-1..1), so small
     # differences in expected outcome must be able to make a sharp policy
     memory: int = 32  # earlier decisions of the game whose field and last-turn tokens a decision can see; 0 = none
-    # the empty move slots of their active are named by the belief head, most likely move first (user, 19 Nov);
+    # the empty move slots of their active are named by the belief head, most likely move first;
     # False: the first empty slot stands for every move not yet seen
     belief_slots: bool = False
 
 
 def _steps(n_in: int, n_out: int, act: bool) -> list[nn.Module]:
-    """Linear layers from n_in to n_out, none with more than twice as many inputs as outputs (user's rule): the
+    """Linear layers from n_in to n_out, none with more than twice as many inputs as outputs: the
     width is halved until the last step fits. `act`: GELU between them; without it the chain is one linear map,
     initialised to keep the signal's size through its depth."""
     layers: list[nn.Module] = []
@@ -92,7 +95,7 @@ def rotate(x: Tensor, pos: Tensor) -> Tensor:
 
 
 class Block(nn.Module):
-    """Pre-norm block of the poke-singles-former trunk: a decision's tokens attend to each other and to the field
+    """Pre-norm transformer block: a decision's tokens attend to each other and to the field
     and last-turn tokens of earlier decisions of the game; gated feed-forward. Position is rotary, by decision number:
     a decision's own tokens share one position, so only how many decisions back a remembered token is matters."""
 
@@ -200,7 +203,7 @@ class Net(nn.Module):
         self.opp_query = nn.Linear(d, d)
         self.a_proj, self.b_proj = taper(d, cfg.rank), taper(d, cfg.rank)
         self.a_bias, self.b_bias = taper(d, 1), taper(d, 1)
-        self.base = mlp(d, d, L.OWN_ACTIONS)  # one baseline per own action from the state summary, as in the original
+        self.base = mlp(d, d, L.OWN_ACTIONS)  # one baseline per own action from the state summary
         self.log_tau = nn.Parameter(torch.tensor(float(cfg.tau)).log())
         self.value = mlp(d, d, 1)
 

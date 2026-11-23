@@ -1,6 +1,6 @@
 """Measures every recorded battle-log row with the row parser.
 
-Writes docs/battle-log.md and output/catalog/battle_log.json. Only reads the runs.
+Writes docs/reference/battle-log.md and output/catalog/battle_log.json. Only reads the runs.
 """
 
 from __future__ import annotations
@@ -225,7 +225,7 @@ def unknown_rows(rows: list[dict]) -> list[dict]:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--runs", type=Path, default=ROOT / "output" / "runs")
-    ap.add_argument("--md", type=Path, default=ROOT / "docs" / "battle-log.md")
+    ap.add_argument("--md", type=Path, default=ROOT / "docs" / "reference" / "battle-log.md")
     ap.add_argument("--json", type=Path, default=ROOT / "output" / "catalog" / "battle_log.json")
     args = ap.parse_args()
     dirs = battle_dirs(args.runs)

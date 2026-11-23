@@ -1,9 +1,8 @@
 """The sprite embedding network, run in numpy: silhouette features -> unit vectors compared by cosine.
+
 Input: 40x40 mask + Lab colour + aspect ratio; six 3x3 convs (max-pool every second), global average pool, two dense
-layers.
-`assets/sprites/sprite_net.json` names the weights, reference vectors and the log's acceptance thresholds, all
-produced by
-`pcsa train sprites` (no sprite pixels are shipped).
+layers. `assets/sprites/sprite_net.json` names the weights, reference vectors and the log's acceptance thresholds,
+all produced by `pcsa train sprites` (no sprite pixels are shipped).
 """
 
 from __future__ import annotations

@@ -70,6 +70,6 @@ def test_missed_turns_include_a_lock_in_from_the_first_move() -> None:
     from pcsa.live.log_reader import missed_turns
 
     assert missed_turns(6, 9, {1: (), 6: ()}) == [7, 8]
-    assert missed_turns(None, 3, {}) == [1, 2]  # nothing read yet: turns 1-2 locked, heading now Turn 3
+    assert missed_turns(None, 3, {}) == [1, 2]  # nothing read yet: turns 1-2 locked, heading at Turn 3
     assert missed_turns(None, 1, {}) == []
     assert missed_turns(4, 5, {}) == []

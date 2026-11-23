@@ -2,7 +2,7 @@
 
 A screen that stays too long, an unknown screen or a silent device raises Recoverable (the supervisor restarts the
 session on the same run state, carrying the battle in progress). Only SafetyStop ends the run. A battle this run did
-not start is not adopted (SV-7): its screens are waited out without taps.
+not start is not adopted: its screens are waited out without taps.
 """
 
 from __future__ import annotations

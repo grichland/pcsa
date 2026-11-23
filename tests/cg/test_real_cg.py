@@ -1,8 +1,8 @@
-"""T7 battles against CG's own entry point (champions_gym.live, player tower), in process and as a subprocess: every
-request answered by CG, no error reply, the `end` event and battle_end in CG's own log; restarts of the controller
-and of CG (the new CG gets the requests replayed with what was played and answers the same); our runner bringing
-other picks than CG's (the preview fallback, and CG's switches are to what was brought). In process the Session is
-watched (real_session.Watched): no anomalies and no corrections of the picks.
+"""Whole battles against CG's own entry point (champions_gym.live, player tower), in process and as a subprocess:
+every request answered by CG, no error reply, the `end` event and battle_end in CG's own log; restarts of the
+controller and of CG (the new CG gets the requests replayed with what was played and answers the same); our runner
+bringing other picks than CG's (the preview fallback, and CG's switches are to what was brought). In process the
+Session is watched (real_session.Watched): no anomalies and no corrections of the picks.
 
 The phone is scripted from tower's own preview answer, so a change in tower's picks does not break the tests.
 Skipped when champions_gym (the installed wheel) is not importable."""
@@ -20,13 +20,14 @@ import pytest
 from pcsa.cg.adapter import CGPlayer
 from pcsa.cg.transport import TransportFailed
 from pcsa.common.clock import FakeClock
-from pcsa.common.config import CGConfig, Config, load_config
+from pcsa.common.config import Config, load_config
 from pcsa.common.errors import Recoverable
 from pcsa.common.paths import repo_root
 from pcsa.common.types import MoveInfo
 from pcsa.live.turn import TurnPipeline
 from tests.cg.helpers import START as BATTLE_START
-from tests.live.t7_rig import action, end_of_battle, forced, lobby_to_team_select, peeked_action, run_battles
+from tests.configs import cg_config
+from tests.live.battle_rig import action, end_of_battle, forced, lobby_to_team_select, peeked_action, run_battles
 from tests.live.turn_rig import TEAM
 
 
@@ -95,10 +96,10 @@ class Rig:
         config = load_config(repo_root() / "config" / "agent.yaml", environ={})
         self.tmp, self.cg_logs, self.clock = tmp_path, tmp_path / "cg-live", FakeClock(1000.0)
         self.transport, self.script = transport, Script(picks or tower_picks())
-        command = [sys.executable, "-m", "champions_gym.live", "--player", "tower", "--log-dir", str(self.cg_logs)]
-        cg = CGConfig(transport=transport, entry=WATCHED,  # type: ignore[arg-type]
-                      args={"player": "tower", "log_dir": str(self.cg_logs)} if transport == "inprocess" else {},
-                      command=command, timeout_s=TIMEOUT_S)  # fmt: skip
+        command = [sys.executable, "-m", "champions_gym.live", "--log-dir", str(self.cg_logs)]
+        cg = cg_config(transport=transport, entry=WATCHED, player="tower",
+                       args={"log_dir": str(self.cg_logs)} if transport == "inprocess" else {},
+                       command=command, timeout_s=TIMEOUT_S)  # fmt: skip
         self.config: Config = config.model_copy(update={"agent": config.agent.model_copy(update={"cg": cg})})
         self.player = CGPlayer(self.config, clock=self.clock, run_dir=tmp_path / "run")
 
@@ -144,7 +145,7 @@ def assert_answered_by_cg(rig: Rig, played, decisions: int) -> None:
     assert rig.sessions() or rig.transport != "inprocess"
     for session in rig.sessions():
         assert session["anomalies"] == [], f"CG anomalies: {session['anomalies']}"
-        picks = [c for c in session["corrections"] if "picks" in c["what"]]  # rule 31 may put our choice right
+        picks = [c for c in session["corrections"] if "picks" in c["what"]]  # CG corrects picks the log contradicts
         assert picks == [], f"CG corrections of the picks: {picks}"
         for seen in session["seen"]:  # every switch CG offered is to one brought
             assert {o["mon"] for _, o in seen["legal"] or [] if o["kind"] == "switch"} <= rig.script.brought()

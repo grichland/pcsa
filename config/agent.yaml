@@ -1,53 +1,54 @@
-# Agent settings. Every value here can be overridden per run with `--set section.key=value` or
-# the environment variable PCSA__section__key. Unknown keys are rejected at startup.
+# Agent settings: every value pcsa uses is set here, and nowhere else. Override one for a single run with
+# `--set section.key=value` or the environment variable PCSA__section__key. Unknown or missing keys are rejected.
 screen_config: screen.yaml
 
 decide:
-  player: cg              # cg: Champions Gym through pcsa/cg (the neural player below); first: the built-in Player
+  player: cg              # cg: Champions Gym (the section below); first: the first legal action (for tests)
 
-cg:                       # used when decide.player is cg (LIVE 0.7-0.9 messages, pcsa/cg)
-  transport: subprocess   # subprocess: JSON lines on stdin/stdout; inprocess: a Python entry point
-  entry: null             # inprocess: "package.module:name" (a handle(message) callable, or a class with .handle)
-  # The neural player (CG's champions_gym.neural shell, pcsa.network.policy) in pcsa.cg.serve, which adds the
-  # Battle and the network's outputs to each reply. {python} is this venv's interpreter; the checkpoint is taken
-  # from the repo root. A built-in player instead: [{python}, -m, pcsa.cg.serve, --player, tower].
-  # policy_args also takes the rule masks of training, on by default: "rule_masks": true, "max_same_move": 4
-  # (the same move at most 4 turns in a row), "max_switches": 3 (at most 3 switches by choice in a row).
-  command:
-  - '{python}'
-  - -m
-  - pcsa.cg.serve
-  - --player
-  - champions_gym.neural:load
-  - --player-args
-  - '{"policy": "pcsa.network.policy:Policy", "checkpoint": "assets/models/league-20261119-v-iter-00180-gold100.pt",
-    "device": "cpu", "policy_args": {"threads": 4}, "fallback": "tower", "timeout_s": 2.0, "hard_timeout_s": 6.0}'
+cg:                       # Champions Gym and the player it runs (pcsa.cg)
+  transport: subprocess   # subprocess: JSON lines on stdin and stdout; inprocess: a Python entry point
+  command: ['{python}', -m, pcsa.cg.serve]  # subprocess: {python} is this environment's interpreter
+  entry: null             # inprocess: "package.module:name", a handle(message) callable or a class with .handle
+  args: {}                # inprocess: keyword arguments for the entry class
+  player: champions_gym.neural:load  # the Session's player; a built-in such as tower needs no player_args
+  player_args:            # passed to the player as given; never set allow_mismatch or allow_contract
+    policy: pcsa.network.policy:Policy
+    checkpoint: assets/models/league-20261119-v-iter-00180-gold100.pt  # relative: the repo root
+    device: cpu
+    policy_args: {threads: 4}  # plus rules, search and choice below
+    fallback: tower       # the shell's player when the network fails or is too slow
+    timeout_s: 2.0        # a slower answer counts against the network
+    hard_timeout_s: 6.0   # an answer this late goes to the fallback
   python_path: []         # directories first on sys.path (inprocess) or in the child's PYTHONPATH; relative: repo root
-  args: {}                # inprocess: keyword arguments when the entry is a class
   env:                    # subprocess: extra environment variables
     CUDA_VISIBLE_DEVICES: '-1'  # CPU only
-  run_log_dir: cg         # CG's log_dir (and the model's) set to <run folder>/cg when CG is made; null: none
+  run_log_dir: cg         # CG's log folder inside the run folder; null: none
   timeout_s: 8.0          # per call, and never past the decision's deadline less the tap reserve
   start_timeout_s: 60.0   # CG is made and its status checked before the first battle
-  # Never set allow_mismatch or allow_contract in the player_args.
-  search:                 # decision-time search of the neural player at turn requests (pcsa.network.search)
-    enabled: false        # true: search; needs Champions Gym 0.5.0, else every turn records why and the model plays
-    ms: 1500              # time per turn request; never past the request's deadline (less the tap reserve)
-    worlds: 6             # guesses of their hidden team, one tree each
+  rules:                  # rule masks on the network's policy (pcsa.network.rules)
+    enabled: true
+    max_same_move: 4      # the same move at most this many turns in a row (0: no limit)
+    max_switches: 3       # at most this many voluntary switches in a row (0: no limit)
+  search:                 # decision-time search at turn requests (pcsa.network.search)
+    enabled: false        # needs Champions Gym 0.5.0; without it every turn records why and the network plays
+    ms: 1500              # time per turn request; never past the request's deadline less the tap reserve
+    worlds: 6             # sampled completions of the opponent's hidden team, one tree each
     depth: 3              # turns looked ahead
     outcomes: 3           # random outcomes drawn per pair of actions
     c: 1.5                # weight of the network's priors in the choice of what to try
     n0: 1                 # weight of the network's matrix cell in each pair's value
     batch: 16             # positions per network call
-    min_sims: 64          # fewer simulations than this in total: the model's own answer is played
+    min_sims: 64          # fewer simulations than this in total: the network's own answer is played
+    sims: 0               # stop after this many simulations (0: by time only)
+    seed: 0               # the search's random seed
     top_ours: 0           # at every position only our N likeliest actions by the network's policy (0: all)
     top_theirs: 3         # at every position only their N likeliest actions by the network's prediction (0: all)
-    from_turn: 1          # the search starts at this turn of the battle; before it the model's own answer is played
+    from_turn: 1          # earlier turns of the battle are not searched
     settle_sims: 300      # stop before `ms` once the pick has led this many simulations (0: always use `ms`)
     settle_share: 0.9     # ... and holds this share of the search's strategy
     settle_gap: 0.01      # or once the best two actions are this close in win chance, after twice settle_sims
-  choice:                 # how the neural player picks from its matrix at turn requests (pcsa.network.choosing)
-    rule: mean            # mean: expected score (top_theirs 0: the network's own); min; mix; regret
+  choice:                 # how the pick is made from the network's matrix at turn requests (pcsa.network.choosing)
+    rule: mean            # mean: expected score (with top_theirs 0: the network's own pick); min; mix; regret
     top_theirs: 3         # over their N likeliest replies by the network's prediction (0: all)
     top_ours: 0           # among our N likeliest actions by the network's policy (0: all legal)
     blend: 0.5            # mix only: the weight of the mean against the worst case
@@ -63,6 +64,8 @@ device:
     reconnect_wait_s: 20  # adb wait-for-device bound after a reconnect
 
 run:
+  name: run               # run folder prefix under output/runs
+  seed: null              # null: a new random seed; a number repeats choices and taps
   battles: 10             # battles with a decided outcome before the run finishes
   max_battles_total: 12   # bound on battles started, including opponent forfeits
   count_forfeits: false
@@ -126,7 +129,7 @@ log:                      # in-game battle log collection, per turn
     steps: 8
     hold_s: 0.35
   paging:                 # heading jumped past turns with no action screen of ours: page back with the arrows
-    enabled: true         # arrows, headings and greyed edges checked on 4,174 recorded frames
+    enabled: true
     settle_s: 0.8         # after an arrow tap, before the heading is read
     step_s: 1.6           # planning: one arrow tap and its heading check
     page_min_s: 4.0       # planning: one missed page (and the least time left to start one)
@@ -160,5 +163,6 @@ ocr:
   det_model: ch_PP-OCRv5_det_mobile.onnx
   rec_model: en_PP-OCRv5_rec_mobile.onnx
   det_limit_side_len: 736
-  threads: 8              # 4 -> 8 threads: a whole frame is read in 1.8 s instead of 2.9 s, same text
+  det_limit_type: min     # max: the long side is shrunk to the limit
+  threads: 8              # a whole frame is read in about 1.8 s
   min_confidence: 0.80

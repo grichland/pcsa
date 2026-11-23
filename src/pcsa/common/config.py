@@ -1,8 +1,9 @@
-"""Typed configuration: one schema, one loader, unknown keys rejected.
+"""Typed configuration: one schema, one loader, unknown and missing keys rejected.
 
     config = load_config(config_dir() / "agent.yaml", overrides=["timing.max_turn_s=30"])
 
-Environment overrides use double underscores: PCSA__timing__max_turn_s=30.
+Every value is set in config/agent.yaml; the classes here carry types and checks only. Environment overrides use
+double underscores: PCSA__timing__max_turn_s=30.
 """
 
 from __future__ import annotations
@@ -16,10 +17,11 @@ from typing import Any, Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
-from pcsa.common.config_cg import CGChoice, CGSearch
+from pcsa.common.config_cg import CGSearch, ChoiceSettings, RuleSettings
 from pcsa.common.errors import ConfigError
 
 ENV_PREFIX = "PCSA__"
+PLAYER_FLAGS = ("--player", "--player-args")
 
 
 class Strict(BaseModel):
@@ -28,128 +30,131 @@ class Strict(BaseModel):
 
 # Agent -----------------------------------------------------------------------------------------
 class RetryConfig(Strict):
-    attempts: int = 4
-    base_s: float = 0.5
-    max_s: float = 8.0
-    reconnect_wait_s: float = 20.0
+    attempts: int
+    base_s: float
+    max_s: float
+    reconnect_wait_s: float
 
 
 class DeviceConfig(Strict):
-    serial: str | None = None  # None: the single authorized device
-    timeout_s: float = 15.0
-    stay_awake: bool = True
-    retry: RetryConfig = RetryConfig()
+    serial: str | None  # None: the single authorized device
+    timeout_s: float
+    stay_awake: bool
+    retry: RetryConfig
 
 
 class RunConfig(Strict):
-    battles: int = 10
-    max_battles_total: int = 12
-    count_forfeits: bool = False
-    max_restarts_per_hour: int = 20
+    name: str = Field(pattern=r"^[\w.-]+$")  # run folder prefix
+    seed: int | None  # None: a new random seed
+    battles: int = Field(gt=0)
+    max_battles_total: int = Field(gt=0)
+    count_forfeits: bool
+    max_restarts_per_hour: int
 
 
 class TimingConfig(Strict):
-    inter_tap_s: float = 0.5
-    post_action_wait_s: float = 10.0
-    poll_interval_s: float = 1.0
-    poll_cycle_s: float = 2.0  # from one screen check's start to the next; the pause is what is left of it
-    fight_settle_s: float = 0.9
-    back_settle_s: float = 0.7
-    party_settle_s: float = 0.9  # live/party_switch.py: after Pokémon and after Switch In, before reading the screen
-    move_peek: Literal["always", "when_needed"] = "always"
-    team_menu_settle_s: float = 0.8
-    log_open_settle_s: float = 1.2
-    log_swipe_settle_s: float = 0.6
-    max_turn_s: float = 40.0
-    team_budget_s: float = 45.0
-    no_progress_s: float = 420.0
-    screen_timeouts: dict[str, float] = Field(default_factory=dict)  # screen name -> seconds before Recoverable
-    default_screen_timeout_s: float = 60.0
+    inter_tap_s: float
+    post_action_wait_s: float
+    poll_interval_s: float
+    poll_cycle_s: float
+    fight_settle_s: float
+    back_settle_s: float
+    party_settle_s: float
+    move_peek: Literal["always", "when_needed"]
+    team_menu_settle_s: float
+    log_open_settle_s: float
+    log_swipe_settle_s: float
+    max_turn_s: float
+    team_budget_s: float
+    no_progress_s: float
+    screen_timeouts: dict[str, float]  # screen name -> seconds before the session restarts
+    default_screen_timeout_s: float
 
 
 class DragConfig(Strict):
     x: tuple[float, float]
     y_start: tuple[float, float]
     y_end: tuple[float, float]
-    steps: int = 8
-    hold_s: float = 0.35
+    steps: int
+    hold_s: float
 
 
 class PagingConfig(Strict):
-    """Back-paging: reading turns whose page the log skipped past (no action screen of ours on them)."""
+    """Paging back to turns the log skipped past."""
 
-    enabled: bool = False
-    settle_s: float = 0.8  # after an arrow tap, before the heading is read
-    step_s: float = 1.6  # planning estimate for one arrow tap and its heading check
-    page_min_s: float = 4.0  # planning estimate (and minimum time left) for collecting one page
-    seconds_max: float = 10.0  # climb budget per missed page
+    enabled: bool
+    settle_s: float
+    step_s: float
+    page_min_s: float
+    seconds_max: float
 
 
 class LogCollectConfig(Strict):
-    captures_max: int = 10
-    seconds_max: float = 12.0
+    captures_max: int
+    seconds_max: float
     drag: DragConfig
-    paging: PagingConfig = PagingConfig()
+    paging: PagingConfig
 
 
 class TapCounts(Strict):
-    focused_move_taps: int = 1
-    unfocused_move_taps: int = 2
-    focused_party_taps: int = 1
-    unfocused_party_taps: int = 2
+    focused_move_taps: int
+    unfocused_move_taps: int
+    focused_party_taps: int
+    unfocused_party_taps: int
 
 
 class NavigatorConfig(Strict):
-    unknown_wait_s: float = 5.0
-    unknown_max_rounds: int = 6
-    edge_settle_s: float = 1.5
-    max_taps_per_edge: int = 3
-    disconnect_max_taps: int = 40
-    disconnect_max_s: float = 180.0
-    disconnect_settle_s: float = 3.0
-    disconnect_blank_s: float = 45.0
+    unknown_wait_s: float
+    unknown_max_rounds: int
+    edge_settle_s: float
+    max_taps_per_edge: int
+    disconnect_max_taps: int
+    disconnect_max_s: float
+    disconnect_settle_s: float
+    disconnect_blank_s: float
 
 
 class DegradeConfig(Strict):
-    tap_reserve_s: float = 2.5
-    decide_reserve_s: float = 3.0
-    peek_attempts: int = 2
+    tap_reserve_s: float
+    decide_reserve_s: float
+    peek_attempts: int
 
 
 class OcrConfig(Strict):
-    det_model: str = "ch_PP-OCRv5_det_mobile.onnx"
-    rec_model: str = "en_PP-OCRv5_rec_mobile.onnx"
-    det_limit_side_len: int = 736
-    det_limit_type: Literal["min", "max"] = "min"  # max: the long side is shrunk to the limit
-    threads: int = 8
-    min_confidence: float = 0.80
+    det_model: str
+    rec_model: str
+    det_limit_side_len: int
+    det_limit_type: Literal["min", "max"]
+    threads: int
+    min_confidence: float
 
 
 class DecideConfig(Strict):
-    player: Literal["first", "cg"] = "first"  # decide/load.py PLAYERS
+    player: Literal["first", "cg"]  # pcsa.decide.load.PLAYERS
 
 
 class CGConfig(Strict):
-    """pcsa/cg: how CG is reached. `entry` "module:attr" (a handle(message) callable, or a class or object with
-    .handle) for `inprocess`; `command` (argv, JSON lines on stdin/stdout) for `subprocess`, where `{python}` is the
-    interpreter running pcsa; a relative `checkpoint` in the player_args is taken from the repo root. `python_path`:
-    directories put first on sys.path (inprocess) or in the child's PYTHONPATH (subprocess); relative ones from the
-    repo root. `args`: keyword arguments for an entry that is a class, e.g. {player: tower, seed: 0}. `env`: extra
-    environment variables for the subprocess. `run_log_dir`: a folder in the run folder given to CG as its log_dir
-    (and to a model player's player_args.log_dir) when CG is made. `start_timeout_s`: the start-up status check.
-    `search`: the neural player's decision-time search (CGSearch); `choice`: its pick from the matrix (CGChoice)."""
+    """How Champions Gym is reached and which player it runs (pcsa.cg).
 
-    transport: Literal["inprocess", "subprocess"] = "subprocess"
-    entry: str | None = None
-    command: list[str] | None = None
-    python_path: list[str] = []
-    args: dict[str, Any] = {}
-    env: dict[str, str] = {}
-    run_log_dir: str | None = None
-    timeout_s: float = 8.0  # per call; also capped by the decision's deadline
-    start_timeout_s: float = 60.0
-    search: CGSearch = CGSearch()
-    choice: CGChoice = CGChoice()
+    `subprocess` runs `command` (JSON lines on stdin and stdout; `{python}` is the interpreter running pcsa);
+    `inprocess` loads `entry` ("module:name", a handle(message) callable or a class with .handle) with `args`.
+    `player` and `player_args` are the Session's player for both transports; a relative checkpoint in
+    `player_args` is taken from the repo root. `rules`, `search` and `choice` go to the neural player's policy."""
+
+    transport: Literal["inprocess", "subprocess"]
+    command: list[str] | None
+    entry: str | None
+    args: dict[str, Any]
+    player: str | None
+    player_args: dict[str, Any] | None
+    python_path: list[str]  # first on sys.path (inprocess) or in the child's PYTHONPATH; relative: the repo root
+    env: dict[str, str]
+    run_log_dir: str | None  # a folder inside the run folder for CG's logs
+    timeout_s: float  # per call; also capped by the decision's deadline
+    start_timeout_s: float
+    rules: RuleSettings
+    search: CGSearch
+    choice: ChoiceSettings
 
     @field_validator("timeout_s", "start_timeout_s")
     @classmethod
@@ -163,6 +168,20 @@ class CGConfig(Strict):
     def _entry(cls, value: str | None) -> str | None:
         if value is not None and not re.fullmatch(r"[\w.]+:[\w.]+", value):
             raise ValueError("must look like package.module:name")
+        return value
+
+    @field_validator("command")
+    @classmethod
+    def _command(cls, value: list[str] | None) -> list[str] | None:
+        if value is not None and any(flag in value for flag in PLAYER_FLAGS):
+            raise ValueError("the player is set in cg.player and cg.player_args, not in the command")
+        return value
+
+    @field_validator("args")
+    @classmethod
+    def _args(cls, value: dict[str, Any]) -> dict[str, Any]:
+        if "player" in value or "player_args" in value:
+            raise ValueError("the player is set in cg.player and cg.player_args, not in cg.args")
         return value
 
     @field_validator("python_path")
@@ -189,29 +208,33 @@ class CGConfig(Strict):
         return value
 
     @model_validator(mode="after")
-    def _args_inprocess(self) -> CGConfig:
+    def _transport(self) -> CGConfig:
         if self.args and self.transport != "inprocess":
-            raise ValueError("cg.args is for the inprocess transport; a subprocess takes them in cg.command")
+            raise ValueError("cg.args is for the inprocess transport")
         if self.env and self.transport != "subprocess":
             raise ValueError("cg.env is for the subprocess transport; in process CG shares the controller's")
+        if self.player_args and not self.player:
+            raise ValueError("cg.player_args needs cg.player")
         return self
 
 
 class AgentConfig(Strict):
-    screen_config: str = "screen.yaml"
-    decide: DecideConfig = DecideConfig()
-    device: DeviceConfig = DeviceConfig()
-    run: RunConfig = RunConfig()
-    timing: TimingConfig = TimingConfig()
+    screen_config: str
+    decide: DecideConfig
+    device: DeviceConfig
+    run: RunConfig
+    timing: TimingConfig
     log: LogCollectConfig
-    taps: TapCounts = TapCounts()
-    navigator: NavigatorConfig = NavigatorConfig()
-    degrade: DegradeConfig = DegradeConfig()
-    ocr: OcrConfig = OcrConfig()
-    cg: CGConfig = CGConfig()
+    taps: TapCounts
+    navigator: NavigatorConfig
+    degrade: DegradeConfig
+    ocr: OcrConfig
+    cg: CGConfig
 
     @model_validator(mode="after")
-    def _cg_reachable(self) -> AgentConfig:
+    def _consistent(self) -> AgentConfig:
+        if self.run.max_battles_total < self.run.battles:
+            raise ValueError("run.max_battles_total must be at least run.battles")
         if self.decide.player != "cg":
             return self
         cg = self.cg

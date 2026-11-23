@@ -1,7 +1,7 @@
 """The Offer (only what the screen shows) and the Request for one decision.
 
 Move rows: read from the move list when it was opened; otherwise the team sheet's moves by row, with PP,
-disabled and the Mega button unread (None). Row k is set position k (plan 2b); a row whose name was read and
+disabled and the Mega button unread (None). Row k is set position k; a row whose name was read and
 differs from the sheet keeps the screen's id when that is a move, else the sheet's; both are noted. Switches are
 tapped by name.
 """

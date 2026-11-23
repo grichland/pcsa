@@ -2,8 +2,9 @@
 
     uv run python tools/search_eval.py --checkpoint assets/models/<file>.pt --opponent tower --games 512
 
-Each game is played twice from the same seed (same teams): once by the model alone, once with search. Writes one
-JSON line per finished game to --out and prints the totals; --minutes stops it early and reports what finished.
+Each game is played twice from the same seed (same teams): once by the model alone, once with search. Both use the
+policy settings of config/agent.yaml (`--set cg.search.ms=2500` and the like change them). Writes one JSON line per
+finished game to --out and prints the totals; --minutes stops it early and reports what finished.
 """
 
 from __future__ import annotations
@@ -18,7 +19,10 @@ os.environ.setdefault("CUDA_VISIBLE_DEVICES", "-1")
 import champions_gym as cg  # noqa: E402
 import numpy as np  # noqa: E402
 
+from pcsa.cg import startup  # noqa: E402
+from pcsa.common import paths  # noqa: E402
 from pcsa.common.clock import precise_now  # noqa: E402
+from pcsa.common.config import load_config  # noqa: E402
 from pcsa.network.policy import Policy  # noqa: E402
 
 TURN_ACTIONS = 11
@@ -67,13 +71,13 @@ def main() -> int:
     ap.add_argument("--own-last", action="store_true", help="we play the last team of --teams, they any other")
     ap.add_argument("--minutes", type=float, default=10.0)
     ap.add_argument("--out", default=None)
-    ap.add_argument("--policy-args", default="{}", help="JSON: search settings for the searching player")
-    ap.add_argument("--threads", type=int, default=4)
+    ap.add_argument("--set", action="append", default=[], metavar="SECTION.KEY=VALUE", help="config override")
     a = ap.parse_args()
-    extra = json.loads(a.policy_args)
+    cfg = load_config(paths.config_dir() / "agent.yaml", ["cg.search.enabled=true", *a.set]).agent.cg
+    kwargs = startup.policy_kwargs(cfg)
     players = {
-        "model": Policy(a.checkpoint, threads=a.threads),
-        "search": Policy(a.checkpoint, threads=a.threads, search=True, **extra),
+        "model": Policy(a.checkpoint, **{**kwargs, "search": None}),
+        "search": Policy(a.checkpoint, **kwargs),
     }
     weights = None
     if a.own_last:

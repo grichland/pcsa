@@ -1,7 +1,7 @@
 """Static game knowledge: the legal Champions dex, Mega forms, abilities, items, learnsets and format rules.
 
-Species, items and abilities come from assets/game/cg/ (CG's legal tables; today a STOPGAP dump). Learnsets and
-rules are ours.
+Species, items and abilities come from assets/game/cg/ (CG's legal tables, a one-off dump whose header marks it
+STOPGAP until CG exports them). Learnsets and rules are ours.
 """
 
 from __future__ import annotations

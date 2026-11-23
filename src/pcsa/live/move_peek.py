@@ -118,7 +118,7 @@ def why_after_log(b: BattleRecord, t: Turn) -> str | None:
     if b.mega_pending and not hints.mega_evolved(t.events):
         return "mega_unconfirmed"  # Mega chosen last turn, no Mega Evolution of ours in the log
     if not t.hints.mega_used and holds_stone(t.member, t):
-        return "mega_button"  # only the button can offer Mega Evolution (SV-4)
+        return "mega_button"  # only the button can offer Mega Evolution
     return None
 
 
@@ -148,7 +148,7 @@ def remember(b: BattleRecord, t: Turn, peek: Observation, was_pending: bool) -> 
 
 
 def settle_mega(b: BattleRecord, t: Turn, peek: Observation | None, why: str | None) -> None:
-    """The Mega bookkeeping of a turn, with or without the look ."""
+    """The Mega bookkeeping of a turn, with or without the look."""
     was_pending = b.mega_pending
     b.log_doubts = max(b.log_doubts, unread(t.events))
     if why is not None:

@@ -3,7 +3,7 @@
 A record has the choice, order sent, legal orders, degrade rung and the player's notes. The neural player through
 CG keeps CG's reply notes under `notes.cg` (model value, time, fallback; `net` with the network's outputs); they are
 mapped to the names the page reads (rule, v, ms, p, h, fallback, why, matrix). Flat notes of other players are shown
-as written. Missing, half-written or older records are skipped. Read-only.
+as written. Missing or half-written records are skipped. Read-only.
 """
 
 from __future__ import annotations

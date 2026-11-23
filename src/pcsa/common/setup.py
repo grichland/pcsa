@@ -1,4 +1,5 @@
-"""`pcsa setup` and `pcsa doctor`: install and check the pinned tools, Champions Gym, the output folder and the phone.
+"""`pcsa setup` and `pcsa doctor`: install and check the pinned tools, Champions Gym, the output folder and the
+phone.
 
 Each step has `check()` (doctor) and `install()` (setup, when check fails); the exit code is non-zero only when a
 required step fails.

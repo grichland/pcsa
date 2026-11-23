@@ -10,7 +10,13 @@ readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE", "NOTICE.md"]
 authors = [{ name = "grichland" }]
-urls = { Repository = "https://github.com/grichland/pcsa" }
+urls = { Repository = "https://github.com/grichland/pcsa", Documentation = "https://github.com/grichland/pcsa#documentation" }
+keywords = ["pokemon", "pokemon-champions", "reinforcement-learning", "android", "ocr", "game-agent"]
+classifiers = [
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: Microsoft :: Windows",
+    "Private :: Do Not Upload",
+]
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "numpy>=2.5",

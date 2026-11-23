@@ -1,10 +1,10 @@
-"""The input layout: contract constants (MODEL.md 0.4) and the feature list, looked up by feature id.
+"""The input layout: constants of Champions Gym's model contract (MODEL.md) and the feature list, looked up by
+feature id.
 
 The model never uses a column number of its own: everything comes from a Layout, built from
 champions_gym.FEATURES through cg_adapter.
 
-Source: pcsa-former/pcsa_former/layout.py, copied verbatim without the CSV reader (from_csv and its helpers):
-here the layout always comes from champions_gym.FEATURES.
+Copied from pcsa-former (pcsa_former/layout.py) without its feature-CSV reader; the rest behaves identically to it.
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 
 CONTRACT = "0.6"
 
-# MODEL.md section 2 (ids and vocabularies); the CSV's own vocabulary sizes are pcsa's and are ignored
+# vocabulary sizes of the model contract; cg_adapter checks them against champions_gym.VOCAB
 VOCAB = {"species": 393, "item": 168, "ability": 319, "move": 516}
 OWN_ACTIONS = 11  # 0-3 move, 4-7 move + Mega, 8-10 switch to row 0-2
 OPP_ACTIONS = 13  # 0-3 move, 4-7 move + Mega, 8-12 switch to row 7-11
@@ -59,7 +59,7 @@ class Feature:
 @dataclass
 class Layout:
     features: dict[str, Feature]
-    hash: str = ""  # sha256 of where every feature sits: the same for the CSV and for champions_gym.FEATURES
+    hash: str = ""  # sha256 of where every feature sits: the same from a feature CSV or champions_gym.FEATURES
     source: str = ""  # sha256 of the feature-list file, when built from one
     widths: dict[str, int] = field(default_factory=dict)
     slot_base: int = 0  # move slots in `rows`: slot s occupies slot_base + slot_stride * s ...
@@ -107,7 +107,7 @@ class Layout:
 
 def preview_combos() -> list[tuple[int, int, int]]:
     """Preview action a (0-59) -> (lead, back 1, back 2) as team indices: a = lead * 10 + pair, pair numbering the two
-    back picks among the other five in team order, lexicographic. (Assumed from MODEL.md section 4; the adapter checks
+    back picks among the other five in team order, lexicographic. (The model contract's numbering; cg_adapter checks
     it against champions_gym.preview_picks.)"""
     out = []
     for lead in range(6):

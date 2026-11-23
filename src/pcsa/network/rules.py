@@ -1,4 +1,4 @@
-"""Rule masks used while training (user, 19 Nov): what a seat may not choose because of what it has just done.
+"""Rule masks used while training: what a seat may not choose because of what it has just done.
 
   - the same move of the same Pokémon at most `max_same_move` turns in a row: then that move is closed while another
     move is open (a Pokémon with one usable move, as when locked into it, is left alone)
@@ -8,7 +8,7 @@ A replacement after a faint is not a choice: it neither counts nor ends a run of
 the mask before a net chooses, and the closed mask is the one stored, so the update sees what the net saw. The live
 player needs the same rules to play as trained.
 
-Source: pcsa-former/pcsa_former/rules.py, copied verbatim; only the import is package-relative.
+Copied from pcsa-former (pcsa_former/rules.py); behaviour is kept identical to it.
 """
 
 from __future__ import annotations
