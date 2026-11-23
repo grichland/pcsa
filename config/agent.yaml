@@ -20,8 +20,7 @@ cg:                       # Champions Gym and the player it runs (pcsa.cg)
     timeout_s: 2.0        # a slower answer counts against the network
     hard_timeout_s: 6.0   # an answer this late goes to the fallback
   python_path: []         # directories first on sys.path (inprocess) or in the child's PYTHONPATH; relative: repo root
-  env:                    # subprocess: extra environment variables
-    CUDA_VISIBLE_DEVICES: '-1'  # CPU only
+  env: {}                 # subprocess: extra environment variables (the GPU stays visible for preview_search)
   run_log_dir: cg         # CG's log folder inside the run folder; null: none
   timeout_s: 8.0          # per call, and never past the decision's deadline less the tap reserve
   start_timeout_s: 60.0   # CG is made and its status checked before the first battle
@@ -65,6 +64,17 @@ cg:                       # Champions Gym and the player it runs (pcsa.cg)
     enabled: true         # by tools/value_calibration.py; off: the raw value
     a: 1.48301            # gold-20261123-c-iter-00025 on 195 recorded battles
     b: -0.69738
+  preview_search:         # replaces the preview head's pick (pcsa.network.preview_search)
+    enabled: true         # off: the head's pick, exactly
+    budget_s: 30          # search time; never past the preview deadline less the tap reserve
+    guesses: 3            # versions of their team, sets drawn from the belief
+    race: [20, 6, 2]      # rows kept at 1/4, 1/2, 3/4 of the budget; the head's pick always kept
+    prior_games: 2        # stage A counts as this many games in each cell
+    choose: mean          # mean (tested best) or maximin
+    keep_head_margin: 0.03   # leave the head's pick only when the best row's mean is this much higher
+    device: cuda          # the playouts run on the GPU; the live player stays on the CPU
+    threads: 8            # Champions Gym threads
+    seed: 0
 
 device:
   serial: null            # null: the single authorized device

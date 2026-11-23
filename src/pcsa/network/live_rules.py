@@ -38,21 +38,24 @@ class MirrorRule:
         self.closed = 0  # decisions the rule closed something for
 
     def mask(self, obs: dict, m: np.ndarray) -> np.ndarray:
-        """m [1, 11] (one game's mask after training's rules) with the mirror rule applied."""
-        rows, ids = np.asarray(obs["rows"])[0], np.asarray(obs["row_ids"])[0]
-        row = int(rows[: L.OWN_PICKS, self.active_col].argmax())
-        ours, theirs = int(ids[row, self.species_col]), int(ids[L.OPP_ACTIVE, self.species_col])
-        if ours != theirs or ours not in self.ids:
-            return m
-        status = rows[row, self.c_cat].reshape(4, 3)[:, 2] > 0
-        close = np.concatenate([status, status]) & (m[0, :8] > 0)
-        rest = m[0] > 0
-        rest[:8] &= ~close
-        if not close.any() or not rest.any():
+        """m [N, 11] (masks after training's rules) with the mirror rule applied to the turn rows."""
+        rows, ids, n = np.asarray(obs["rows"]), np.asarray(obs["row_ids"]), len(m)
+        e = np.arange(n)
+        row = rows[:, : L.OWN_PICKS, self.active_col].argmax(-1)
+        ours, theirs = ids[e, row, self.species_col], ids[:, L.OPP_ACTIVE, self.species_col]
+        hit = (ours == theirs) & np.isin(ours, self.ids)
+        if "kind" in obs:
+            hit &= np.asarray(obs["kind"]).reshape(-1) == L.KIND_TURN
+        status = rows[e, row][:, self.c_cat].reshape(n, 4, 3)[..., 2] > 0
+        close = np.concatenate([status, status], 1) & (m[:, :8] > 0) & hit[:, None]
+        rest = m > 0
+        rest[:, :8] &= ~close
+        close &= rest.any(1)[:, None]
+        if not close.any():
             return m
         out = m.copy()
-        out[0, :8][close] = 0
-        self.closed += 1
+        out[:, :8][close] = 0
+        self.closed += int(close.any(1).sum())
         return out
 
 

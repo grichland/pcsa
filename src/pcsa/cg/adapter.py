@@ -99,7 +99,7 @@ class CGPlayer:
         self.streams.setdefault(battle_tag, Stream(battle_tag))
 
     def teampreview(self, request: TeamPreviewRequest) -> tuple[tuple[int, int, int], dict]:
-        timeout = self._budget(request.deadline)
+        timeout = self._budget(request.deadline, self.cfg.preview_search.wait_s())
         start = request.events[0] if request.events else None
         stream = self._stream(request.battle_tag)
         if stream.previewed and stream.picks is not None:
@@ -277,8 +277,9 @@ class CGPlayer:
                 out["row_mismatch"] = mismatches
         return Answer(order, out)
 
-    def _budget(self, deadline: float) -> float:
-        timeout = self.cfg.timeout_s
+    def _budget(self, deadline: float, wait_s: float = 0.0) -> float:
+        """The call's timeout: cg.timeout_s or a longer `wait_s`, never past the deadline less the tap reserve."""
+        timeout = max(self.cfg.timeout_s, wait_s)
         if self.clock is not None:
             timeout = min(timeout, deadline - self.clock.now() - self.tap_reserve - MARGIN_S)
         if timeout <= 0:

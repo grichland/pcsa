@@ -95,6 +95,30 @@ on 195 battles, the raw value averaged a 64% win chance against a 45% win rate; 
 error is 0.03 (raw 0.21) and the Brier score 0.218 (raw 0.264). The search reads the network's raw values and
 has not been re-tuned for these checkpoints, so it stays off.
 
+## Team-preview search (`cg.preview_search`)
+
+At team preview the pick comes from playouts, not from the preview head
+(`src/pcsa/network/preview_search.py`, ported from pcsa-former's `tools/preview_search_test.py`):
+
+1. Three guesses of their team: all six species, each set drawn by `worlds.guess_set` from the belief heads of the
+   live preview, with nature and stat points from `top_builds.json`; Champions Gym checks each guess and a refused
+   one is drawn again.
+2. A BatchEnv of 3,600 games on the GPU, one per cell (our pick x their pick, numbered as
+   `layout.preview_combos`). Both preview picks are forced; after that the network plays both seats greedily, our
+   seat under the live rule masks. Our six sets come from `battle_start`.
+3. Each cell scores `(wins + 2 * A) / (games + 2)`, A being the network's own estimate at our first turn.
+4. A race over our picks: at 1/4, 1/2 and 3/4 of the budget the best 20, 6 and 2 rows by mean stay in (the head's
+   pick always stays); finished games move to the next cell of the rows still in.
+5. The best row is played when its mean beats the head's pick by `keep_head_margin` (0.03); otherwise, on any
+   error, or with no finished game, the head's pick is played and the record says why.
+
+The search stops at `budget_s` or at the preview deadline less 1.5 s, whichever comes first; with it on, the
+controller waits `budget_s` + 6 s for the preview answer, and CG's shell limits are raised to match. The GPU must be
+visible to the serve process (`cg.env` without `CUDA_VISIBLE_DEVICES: '-1'`); the live player itself stays on the
+CPU. On this machine (RTX 4060 Laptop) 30 s gives about 21,000-26,000 games. Each preview's record keeps the guesses,
+the per-cell sums, every cut, the head's pick and the chosen one (`cg.net.preview_search` in
+`battle-N/team_preview.json`).
+
 ## Decision-time search (`cg.search`, off by default)
 
 With `cg.search.enabled: true` every turn request is also searched before it is answered. The player samples

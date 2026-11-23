@@ -38,8 +38,7 @@ Champions Gym and the player it runs (pcsa.cg)
 | `cg.player_args.timeout_s` | `2.0` | a slower answer counts against the network |
 | `cg.player_args.hard_timeout_s` | `6.0` | an answer this late goes to the fallback |
 | `cg.python_path` | `[]` | directories first on sys.path (inprocess) or in the child's PYTHONPATH; relative: repo root |
-| `cg.env` |  | subprocess: extra environment variables |
-| `cg.env.CUDA_VISIBLE_DEVICES` | `'-1'` | CPU only |
+| `cg.env` | `{}` | subprocess: extra environment variables (the GPU stays visible for preview_search) |
 | `cg.run_log_dir` | `cg` | CG's log folder inside the run folder; null: none |
 | `cg.timeout_s` | `8.0` | per call, and never past the decision's deadline less the tap reserve |
 | `cg.start_timeout_s` | `60.0` | CG is made and its status checked before the first battle |
@@ -83,6 +82,17 @@ Champions Gym and the player it runs (pcsa.cg)
 | `cg.value_calibration.enabled` | `true` | by tools/value_calibration.py; off: the raw value |
 | `cg.value_calibration.a` | `1.48301` | gold-20261123-c-iter-00025 on 195 recorded battles |
 | `cg.value_calibration.b` | `-0.69738` |  |
+| `cg.preview_search` |  | replaces the preview head's pick (pcsa.network.preview_search) |
+| `cg.preview_search.enabled` | `true` | off: the head's pick, exactly |
+| `cg.preview_search.budget_s` | `30` | search time; never past the preview deadline less the tap reserve |
+| `cg.preview_search.guesses` | `3` | versions of their team, sets drawn from the belief |
+| `cg.preview_search.race` | `[20, 6, 2]` | rows kept at 1/4, 1/2, 3/4 of the budget; the head's pick always kept |
+| `cg.preview_search.prior_games` | `2` | stage A counts as this many games in each cell |
+| `cg.preview_search.choose` | `mean` | mean (tested best) or maximin |
+| `cg.preview_search.keep_head_margin` | `0.03` | leave the head's pick only when the best row's mean is this much higher |
+| `cg.preview_search.device` | `cuda` | the playouts run on the GPU; the live player stays on the CPU |
+| `cg.preview_search.threads` | `8` | Champions Gym threads |
+| `cg.preview_search.seed` | `0` |  |
 
 ## `device`
 

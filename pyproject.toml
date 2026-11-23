@@ -140,10 +140,11 @@ venv = ".venv"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 timeout = 120
-addopts = "-m 'not ocr and not torch'"
+addopts = "-m 'not ocr and not torch and not gpu'"
 markers = [
     "ocr: runs the real OCR engine instead of cached boxes",
     "torch: needs the torch extra",
+    "gpu: the full preview-search budget on this machine's GPU (run alone: pytest -m gpu)",
 ]
 
 [tool.poe.tasks]

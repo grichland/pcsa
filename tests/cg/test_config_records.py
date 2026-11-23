@@ -31,7 +31,7 @@ def test_the_shipped_command_resolves_to_this_python_and_an_absolute_checkpoint(
     assert Path(args["checkpoint"]) == want and want.is_file()
     assert args["policy"] == "pcsa.network.policy:Policy" and args["fallback"] == "tower"
     assert startup.checkpoint(done) == str(want) and startup.expects_model(done)
-    assert done.env == {"CUDA_VISIBLE_DEVICES": "-1"}
+    assert done.env == {}  # the GPU stays visible for the preview search
 
 
 def test_resolving_leaves_other_players_alone() -> None:
@@ -74,10 +74,11 @@ def test_the_preview_notes_split() -> None:
 
 
 def test_the_search_section_turns_search_on_in_the_players_arguments() -> None:
-    off = _player_args(startup.resolved(configs.shipped("cg.search.enabled=false").agent.cg))
+    no_preview = "cg.preview_search.enabled=false"  # its own wait would raise the limits too
+    off = _player_args(startup.resolved(configs.shipped("cg.search.enabled=false", no_preview).agent.cg))
     shipped = configs.shipped().agent.cg.player_args or {}
     assert off["policy_args"]["search"] is None and off["timeout_s"] == shipped["timeout_s"]
-    on_cfg = configs.shipped("cg.search.enabled=true", "cg.search.ms=2500", "cg.search.worlds=4").agent.cg
+    on_cfg = configs.shipped("cg.search.enabled=true", "cg.search.ms=2500", "cg.search.worlds=4", no_preview).agent.cg
     on = _player_args(startup.resolved(on_cfg))
     assert on["policy_args"]["search"] == configs.search(ms=2500.0, worlds=4)
     assert on["timeout_s"] == 3.5 and on["hard_timeout_s"] == 6.5  # the shell's limits clear the search time
@@ -100,3 +101,13 @@ def test_the_manifest_names_the_search_settings() -> None:
     status = {"status": {"player_status": {"checkpoint": "C:/m/x.pt", "search": {"ms": 1500.0, "worlds": 6}}}}
     name, params = neural_player("cg", {"start_status": status})
     assert name == "neural" and params["search"] == {"ms": 1500.0, "worlds": 6}
+
+
+def test_the_preview_search_section_reaches_the_player_and_raises_the_waits() -> None:
+    cg = configs.shipped("cg.search.enabled=false").agent.cg
+    args = _player_args(startup.resolved(cg))
+    want = cg.preview_search.model_dump(exclude={"enabled"})
+    assert args["policy_args"]["preview_search"] == want and cg.preview_search.wait_s() == want["budget_s"] + 6.0
+    assert args["timeout_s"] == cg.preview_search.wait_s() + 1.0 and args["hard_timeout_s"] == cg.preview_search.wait_s() + 4.0
+    off = configs.shipped("cg.search.enabled=false", "cg.preview_search.enabled=false").agent.cg
+    assert _player_args(startup.resolved(off))["policy_args"]["preview_search"] is None and off.preview_search.wait_s() == 0

@@ -17,7 +17,7 @@ from typing import Any, Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
-from pcsa.common.config_cg import CGSearch, ChoiceSettings, RuleSettings, ValueCalibration
+from pcsa.common.config_cg import CGSearch, ChoiceSettings, PreviewSearch, RuleSettings, ValueCalibration
 from pcsa.common.errors import ConfigError
 
 ENV_PREFIX = "PCSA__"
@@ -139,7 +139,7 @@ class CGConfig(Strict):
     `subprocess` runs `command` (JSON lines on stdin and stdout; `{python}` is the interpreter running pcsa);
     `inprocess` loads `entry` ("module:name", a handle(message) callable or a class with .handle) with `args`.
     `player` and `player_args` are the Session's player for both transports; a relative checkpoint in `player_args`
-    is taken from the repo root. `rules`, `search`, `choice` and `value_calibration` go to the neural policy."""
+    is taken from the repo root. `rules`, `search`, `choice`, `value_calibration`, `preview_search`: the policy's."""
 
     transport: Literal["inprocess", "subprocess"]
     command: list[str] | None
@@ -150,19 +150,13 @@ class CGConfig(Strict):
     python_path: list[str]  # first on sys.path (inprocess) or in the child's PYTHONPATH; relative: the repo root
     env: dict[str, str]
     run_log_dir: str | None  # a folder inside the run folder for CG's logs
-    timeout_s: float  # per call; also capped by the decision's deadline
-    start_timeout_s: float
+    timeout_s: float = Field(gt=0)  # per call; also capped by the decision's deadline
+    start_timeout_s: float = Field(gt=0)
     rules: RuleSettings
     search: CGSearch
     choice: ChoiceSettings
     value_calibration: ValueCalibration
-
-    @field_validator("timeout_s", "start_timeout_s")
-    @classmethod
-    def _positive(cls, value: float) -> float:
-        if value <= 0:
-            raise ValueError("must be positive")
-        return value
+    preview_search: PreviewSearch
 
     @field_validator("entry")
     @classmethod

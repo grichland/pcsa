@@ -46,6 +46,7 @@ from pcsa.common.config_cg import SearchSettings, ValueCalibration
 from . import cg_adapter, choosing, decide, live_rules, model, searching, vocab
 from . import checkpoint as ckpt
 from . import layout as L
+from . import preview_search as previewing
 from . import rules as masks
 
 VOCAB_NAMES = {"species": "species", "item": "items", "ability": "abilities", "move": "moves"}  # ours -> CG's
@@ -103,12 +104,13 @@ class Policy:
     `search`: search every turn request (searching.py) with these SearchSettings; None: no search.
     `value_calibration`: {a, b}: the value returned is 2 * sigmoid(a * v + b) - 1 (extras keep `value_raw`).
     `choice`: the rule that makes our pick from the matrix at turn requests (choosing.py, ChoiceSettings); the
-    search's pick, when it runs, still wins. The values come from agent.yaml's cg section (pcsa.cg.startup)."""
+    search's pick, when it runs, still wins. `preview_search`: PreviewSearch's fields without `enabled`: the preview
+    pick from playouts (preview_search.py); None: the head's. The values come from agent.yaml's cg section."""
 
     def __init__(self, checkpoint: str, *, device: str, threads: int, rules: Mapping[str, Any] | None = None,  # noqa: PLR0913
                  search: Mapping[str, Any] | None = None, choice: Mapping[str, Any] | None = None,
                  value_calibration: Mapping[str, float] | None = None, requery_refused: bool = False,
-                 allow_contract: bool = False):  # fmt: skip
+                 preview_search: Mapping[str, Any] | None = None, allow_contract: bool = False):  # fmt: skip
         torch.set_num_threads(int(threads))
         self.device = device
         lay = cg_adapter.layout()  # the layout from champions_gym.FEATURES, checked against CG
@@ -125,6 +127,7 @@ class Policy:
         self.choice = choosing.config(choice)
         cal = None if value_calibration is None else {"enabled": True, **value_calibration}
         self.calibration = None if cal is None else ValueCalibration.model_validate(cal)
+        self.previewer = previewing.make(self, preview_search, checkpoint, **extra)
         self.game_of: Any = None  # (battle, guess, seed) -> (Game, rejected); pcsa.cg.serve sets the Session's
         self.deadline: float | None = None  # precise_now() by which the open request must be answered
         self.cols = {"species": lay.col(L.F_SPECIES), "moves": lay[L.F_MOVE_ID].columns(),
@@ -137,11 +140,8 @@ class Policy:
             "shapes": {
                 "rows": [L.ROWS, w["rows"]],
                 "row_ids": [L.ROWS, w["row_ids"]],
-                "field": [w["field"]],
-                "last": [w["last"]],
-                "last_ids": [w["last_ids"]],
-                "mask": [L.OWN_ACTIONS],
-                "opp_prior": [L.OPP_ACTIONS],
+                "field": [w["field"]], "last": [w["last"]], "last_ids": [w["last_ids"]],
+                "mask": [L.OWN_ACTIONS], "opp_prior": [L.OPP_ACTIONS],
             },
             "vocab": {VOCAB_NAMES[k]: int(v) for k, v in lt["vocab"].items()},
             "model_id": os.path.abspath(checkpoint),
@@ -156,6 +156,7 @@ class Policy:
             "search": None if cfg is None else cfg.model_dump(),
             "choice": None if self.choice is None else self.choice.model_dump(),
             "value_calibration": None if self.calibration is None else self.calibration.args(),
+            "preview_search": previewing.info(self.previewer),
         }
 
     def _grow(self, need: int) -> model.Memory:
@@ -288,6 +289,7 @@ class Policy:
             kinds = np.asarray(arrays.kind).reshape(-1)
             chosen = choosing.apply(self.choice, kinds, out, scores, float(self.net.temperature()))
             searched = self._searched(arrays, slots, kinds, b, out, battles, scores)
+            previews = previewing.apply(self.previewer, kinds, b, out, scores, arrays)
             for r, slot in enumerate(slots):  # the shell's argmax, until `played` says what went out
                 seat = self.seats.get(slot)
                 if seat is not None and int(kinds[r]) == L.KIND_TURN:
@@ -299,11 +301,9 @@ class Policy:
                 for e, c in zip(extras, closed, strict=True):
                     if "pi" in e:
                         e["closed"] = c
-            for e, note, rule in zip(extras, searched, chosen, strict=True):
-                if note is not None:
-                    e["search"] = note
-                if rule is not None:
-                    e["choice"] = rule
+            for e, *parts in zip(extras, searched, chosen, previews, strict=True):
+                named = zip(("search", "choice", "preview_search"), parts, strict=True)
+                e.update({k: v for k, v in named if v is not None})
         except Exception as error:  # display only: the decision stands without them
             extras = [{"error": f"extras: {type(error).__name__}: {error}"} for _ in slots]
         return {"scores": scores, "value": value, "extras": extras}

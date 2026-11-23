@@ -36,15 +36,15 @@ def _from_repo(path: str) -> str:
 
 def resolved(cfg: CGConfig) -> CGConfig:
     """The config as CG is made from it: `{python}` in cg.command is this interpreter, a relative checkpoint is
-    taken from the repo root, and the neural player's policy_args carry cg.rules, cg.search, cg.choice and
-    cg.value_calibration."""
+    taken from the repo root, and the neural player's policy_args carry cg.rules, cg.search, cg.choice,
+    cg.value_calibration and cg.preview_search."""
     args = dict(cfg.player_args or {})
     if isinstance(args.get("checkpoint"), str):
         args["checkpoint"] = _from_repo(args["checkpoint"])
     if cfg.player == NEURAL:
         args["policy_args"] = {**(args.get("policy_args") or {}), **policy_settings(cfg)}
-        if cfg.search.enabled:  # the shell hands the battle to its fallback after slow answers
-            seconds = cfg.search.ms / 1000.0
+        seconds = max(cfg.search.ms / 1000.0 if cfg.search.enabled else 0.0, cfg.preview_search.wait_s())
+        if seconds:  # the shell hands the battle to its fallback after slow answers
             args["timeout_s"] = max(float(args.get("timeout_s") or 0.0), seconds + SEARCH_SLOW_S)
             args["hard_timeout_s"] = max(float(args.get("hard_timeout_s") or 0.0), seconds + SEARCH_HARD_S)
     command = [sys.executable if part == PYTHON else part for part in cfg.command] if cfg.command else None
@@ -52,9 +52,9 @@ def resolved(cfg: CGConfig) -> CGConfig:
 
 
 def policy_settings(cfg: CGConfig) -> dict:
-    """cg.rules, cg.search, cg.choice and cg.value_calibration as the policy's keyword arguments (None: off)."""
+    """cg.rules, cg.search, cg.choice, cg.value_calibration, cg.preview_search as the policy's keyword arguments."""
     return {"rules": cfg.rules.args(), "search": cfg.search.args(), "choice": cfg.choice.args(),
-            "value_calibration": cfg.value_calibration.args()}  # fmt: skip
+            "value_calibration": cfg.value_calibration.args(), "preview_search": cfg.preview_search.args()}
 
 
 def policy_kwargs(cfg: CGConfig) -> dict:

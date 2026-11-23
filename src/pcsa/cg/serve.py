@@ -165,6 +165,15 @@ class Server:
         if isinstance(ms, int | float) and not isinstance(ms, bool) and ms > 0:
             self.policy.deadline = precise_now() + ms / 1000.0
 
+    def _own_team(self, message: Any) -> None:
+        """Our six sets from each battle_start, for a policy whose preview search needs them."""
+        previewer = getattr(self.policy, "previewer", None)
+        if previewer is None or (isinstance(message, str) and '"battle_start"' not in message):
+            return
+        message = json.loads(message) if isinstance(message, str) else message
+        if isinstance(message, dict) and message.get("type") == "battle_start":
+            previewer.own_team = message.get("own_team")
+
     def _failed(self, what: str, error: BaseException) -> None:
         self.failures += 1
         self.last_failure = f"{what}: {type(error).__name__}: {error}"
@@ -180,6 +189,7 @@ class Server:
             if self.proxy is not None:
                 self.proxy.battle = None
             self._deadline(message)
+            self._own_team(message)
         except Exception as error:
             self._failed("before the request", error)
             before = None

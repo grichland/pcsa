@@ -11,6 +11,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+PREVIEW_SLACK_S = 6.0  # over preview_search.budget_s: guesses, environment, reply
+
 
 class _Strict(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
@@ -78,6 +80,30 @@ class ValueCalibration(_Strict):
     def args(self) -> dict | None:
         """The policy's `value_calibration` argument; None when off."""
         return self.model_dump(exclude={"enabled"}) if self.enabled else None
+
+
+class PreviewSearch(_Strict):
+    """Team-preview search (pcsa.network.preview_search): the net plays out every (our pick, their pick) cell
+    against guesses of their team and picks our best row; it replaces the preview head's pick."""
+
+    enabled: bool
+    budget_s: float = Field(gt=0)  # search time; never past the request's deadline
+    guesses: int = Field(ge=1)  # versions of their team, sets drawn from the belief
+    race: list[int]  # rows kept at the cuts (1/4, 1/2, 3/4 of the budget for three); the head's pick always kept
+    prior_games: float = Field(ge=0)  # stage A counts as this many games in each cell
+    choose: Literal["mean", "maximin"]
+    keep_head_margin: float = Field(ge=0)  # leave the head's pick only when the best row is this much higher
+    device: str  # the playouts' torch device
+    threads: int = Field(gt=0)  # Champions Gym threads
+    seed: int
+
+    def args(self) -> dict | None:
+        """The policy's `preview_search` argument; None when off."""
+        return self.model_dump(exclude={"enabled"}) if self.enabled else None
+
+    def wait_s(self) -> float:
+        """How long the controller waits for a preview answer while the search is on (0: off)."""
+        return self.budget_s + PREVIEW_SLACK_S if self.enabled else 0.0
 
 
 class ChoiceSettings(_Strict):
