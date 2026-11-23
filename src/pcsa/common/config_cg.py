@@ -1,4 +1,5 @@
-"""Settings of the neural player's policy: rule masks, decision-time search and the choice rule.
+"""Settings of the neural player's policy: rule masks, decision-time search, the choice rule and the value
+calibration.
 
 The values live in config/agent.yaml (section `cg`); these classes only type and check them. pcsa.network uses
 the same classes, so the live player and the tools read one definition.
@@ -16,12 +17,20 @@ class _Strict(BaseModel):
 
 
 class RuleSettings(_Strict):
-    """Rule masks applied to the network's policy: the same move at most `max_same_move` turns in a row, at most
-    `max_switches` voluntary switches in a row."""
+    """Training's rule masks on the network's policy (pcsa.network.rules); they must be the ones the checkpoint was
+    trained with."""
 
     enabled: bool
-    max_same_move: int = Field(ge=0)  # 0: no such rule
-    max_switches: int = Field(ge=0)
+    max_same_move: int = Field(ge=0)  # the same move by the same Pokémon in a row (0: no such rule)
+    max_switches: int = Field(ge=0)  # switches by choice in a row
+    max_boosts: int = Field(ge=0)  # setup moves by the same Pokémon in a row
+    max_heals: int = Field(ge=0)  # pure recovery by the same Pokémon in a row
+    no_null_moves: bool  # damaging moves that do nothing to their active
+    no_boost_when_ko: bool  # setup (other than defensive) while their best hit KOs us
+    no_failing_status: bool  # status moves that cannot land
+    no_redundant_field: bool  # hazards at their maximum, weather or terrain already up
+    no_double_protect: bool  # the Protect family by the same Pokémon two turns in a row
+    no_wasted_self: bool  # recovery at full HP, setup at +6, Substitute when it would fail
 
     def args(self) -> dict | None:
         """The policy's `rules` argument; None when the masks are off."""
@@ -54,6 +63,19 @@ class CGSearch(SearchSettings):
 
     def args(self) -> dict | None:
         """The policy's `search` argument; None when search is off."""
+        return self.model_dump(exclude={"enabled"}) if self.enabled else None
+
+
+class ValueCalibration(_Strict):
+    """The value reported as 2 * sigmoid(a * v + b) - 1, so (v + 1) / 2 reads as a win chance; fitted per checkpoint
+    on recorded battles (tools/value_calibration.py). The raw value is kept as `value_raw`."""
+
+    enabled: bool
+    a: float
+    b: float
+
+    def args(self) -> dict | None:
+        """The policy's `value_calibration` argument; None when off."""
         return self.model_dump(exclude={"enabled"}) if self.enabled else None
 
 

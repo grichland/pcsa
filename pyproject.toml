@@ -26,7 +26,7 @@ dependencies = [
     "rapidocr>=3.10,<4",
     "onnxruntime>=1.31",
     # Champions Gym: the Battle, the legal choices and the players. Released as a Windows x64 wheel only.
-    "champions-gym==0.4.0; sys_platform == 'win32'",
+    "champions-gym==0.7.1; sys_platform == 'win32'",
 ]
 
 [project.optional-dependencies]
@@ -59,7 +59,7 @@ url = "https://download.pytorch.org/whl/cpu"
 explicit = true
 
 [tool.uv.sources]
-champions-gym = { url = "https://github.com/grichland/poke-champions-gym/releases/download/v0.4.0/champions_gym-0.4.0-cp312-cp312-win_amd64.whl" }
+champions-gym = { url = "https://github.com/grichland/poke-champions-gym/releases/download/v0.7.1/champions_gym-0.7.1-cp312-cp312-win_amd64.whl" }
 torch = [
     { index = "pytorch-cu130", marker = "sys_platform == 'win32'" },
     { index = "pytorch-cpu", marker = "sys_platform == 'linux'" },

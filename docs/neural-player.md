@@ -56,12 +56,39 @@ At turn requests the pick can be made from the matrix by another rule than the n
 
 `top_theirs` keeps only their N likeliest replies, `top_ours` only our N likeliest actions (0: all). With
 `rule: mean` and both at 0 the rule is the network's own pick and nothing is passed to the policy. Each turn
-record notes the rule's pick next to the network's.
+record notes the rule's pick next to the network's. The shipped config hedges with `regret` over our 8 likeliest
+actions and their 8 likeliest replies.
 
 ## Rule masks (`cg.rules`)
 
-As in training, the same move used `max_same_move` turns in a row is closed while another move is open, and after
-`max_switches` voluntary switches in a row switching is closed while a move is open.
+The masks are training's (`src/pcsa/network/rules.py`, a copy of pcsa-former's checked by
+`tests/network/test_rules_parity.py`), and they must be set as the checkpoint was trained: a checkpoint does not
+store them. They close actions at turn requests only, and only while another action stays open:
+
+- `max_same_move`, `max_switches`: the same move used that many turns in a row, or that many voluntary switches in
+  a row (a replacement after a faint does not count);
+- `max_boosts`, `max_heals`: setup or pure recovery by the same Pokémon that many turns in a row;
+- `no_null_moves`, `no_failing_status`: damaging moves that do nothing to their active, status moves that cannot
+  land;
+- `no_boost_when_ko`: setup, other than Def, Sp. Def or evasion, while their best hit KOs us;
+- `no_redundant_field`, `no_double_protect`, `no_wasted_self`: hazards at their maximum or weather and terrain
+  already up, Protect twice in a row, recovery at full HP, setup at +6, a Substitute that would fail.
+
+The shipped checkpoint, like every from-scratch checkpoint (`scratch-20261122-*`, `gold-20261123-*`), was
+trained with every rule: `max_same_move` 3, `max_switches` 2, `max_boosts` 3, `max_heals` 3 and all six `no_*`
+rules on. The earlier league checkpoints (`league-*`) were trained with the first two only, at 4 and 3.
+
+## Value calibration (`cg.value_calibration`)
+
+The from-scratch checkpoints were trained on a shaped reward (faints and long games count as well as the result),
+so their raw value is not a win probability. With `cg.value_calibration` on, the value reported is
+`2 * sigmoid(a * v + b) - 1`, so `(v + 1) / 2` reads as a win chance; the records keep the raw value as
+`value_raw`. The map changes no decision. `a` and `b` belong to one checkpoint: `tools/value_calibration.py` fits
+them on recorded ladder battles, each decision's value against the battle's result (forfeits and unknown results
+count as wins), and writes its report and every sample to `output/value-calibration/`. For the shipped checkpoint,
+on 195 battles, the raw value averaged a 64% win chance against a 45% win rate; fitted, the held-out calibration
+error is 0.03 (raw 0.21) and the Brier score 0.218 (raw 0.264). The search reads the network's raw values and
+has not been re-tuned for these checkpoints, so it stays off.
 
 ## Decision-time search (`cg.search`, off by default)
 
@@ -74,5 +101,5 @@ The action played is the one the averaged root strategy favours most, inside the
 The search stops at `ms` or the request's deadline, whichever is sooner, and earlier once the answer has settled
 (`settle_sims`, `settle_share`, `settle_gap`). Turns before `from_turn`, requests with a single open action, team
 preview and replacements are not searched. When the search cannot run or runs fewer than `min_sims`
-simulations, the network's own answer is played and the record says why. The search needs Champions Gym 0.5.0,
+simulations, the network's own answer is played and the record says why. The search needs Champions Gym 0.5.0 or later,
 which builds engine games from a live battle; with an earlier version every turn records that it could not run.

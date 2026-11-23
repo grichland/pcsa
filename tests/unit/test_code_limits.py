@@ -17,7 +17,7 @@ MAX_FUNCTION_LINES = 60
 SRC = paths.repo_root() / "src" / "pcsa"
 PRINT_ALLOWED = {"cli.py", "setup.py"}
 # Copied verbatim from pcsa-former and kept diffable with it: no length limits.
-VERBATIM = {SRC / "network" / f"{name}.py" for name in ("model", "layout", "decide", "checkpoint", "cg_adapter")}
+VERBATIM = {SRC / "network" / f"{name}.py" for name in ("model", "layout", "decide", "checkpoint", "cg_adapter", "rules")}
 
 
 def source_files() -> list[Path]:

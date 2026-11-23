@@ -13,7 +13,7 @@ cg:                       # Champions Gym and the player it runs (pcsa.cg)
   player: champions_gym.neural:load  # the Session's player; a built-in such as tower needs no player_args
   player_args:            # passed to the player as given; never set allow_mismatch or allow_contract
     policy: pcsa.network.policy:Policy
-    checkpoint: assets/models/league-20261119-v-iter-00180-gold100.pt  # relative: the repo root
+    checkpoint: assets/models/gold-20261123-c-iter-00025.pt  # relative: the repo root
     device: cpu
     policy_args: {threads: 4}  # plus rules, search and choice below
     fallback: tower       # the shell's player when the network fails or is too slow
@@ -25,12 +25,20 @@ cg:                       # Champions Gym and the player it runs (pcsa.cg)
   run_log_dir: cg         # CG's log folder inside the run folder; null: none
   timeout_s: 8.0          # per call, and never past the decision's deadline less the tap reserve
   start_timeout_s: 60.0   # CG is made and its status checked before the first battle
-  rules:                  # rule masks on the network's policy (pcsa.network.rules)
+  rules:                  # training's rule masks (pcsa.network.rules); set them as the checkpoint was trained
     enabled: true
-    max_same_move: 4      # the same move at most this many turns in a row (0: no limit)
-    max_switches: 3       # at most this many voluntary switches in a row (0: no limit)
+    max_same_move: 3      # the same move at most this many turns in a row (0: no limit)
+    max_switches: 2       # at most this many voluntary switches in a row (0: no limit)
+    max_boosts: 3         # setup moves by the same Pokémon in a row (0: no limit)
+    max_heals: 3          # pure recovery moves by the same Pokémon in a row (0: no limit)
+    no_null_moves: true   # close damaging moves that do nothing to their active (immunity, Levitate, terrain)
+    no_boost_when_ko: true   # close setup, other than Def, Sp. Def or evasion, while their best hit KOs us
+    no_failing_status: true   # close status moves that cannot land (already statused, Safeguard, immunity)
+    no_redundant_field: true   # close hazards at their maximum and weather or terrain already up
+    no_double_protect: true   # close the Protect family two turns in a row
+    no_wasted_self: true   # close recovery at full HP, setup at +6, Substitute when it would fail
   search:                 # decision-time search at turn requests (pcsa.network.search)
-    enabled: false        # needs Champions Gym 0.5.0; without it every turn records why and the network plays
+    enabled: false        # needs Champions Gym 0.5.0 or later (0.7.1 is pinned)
     ms: 1500              # time per turn request; never past the request's deadline less the tap reserve
     worlds: 6             # sampled completions of the opponent's hidden team, one tree each
     depth: 3              # turns looked ahead
@@ -48,10 +56,14 @@ cg:                       # Champions Gym and the player it runs (pcsa.cg)
     settle_share: 0.9     # ... and holds this share of the search's strategy
     settle_gap: 0.01      # or once the best two actions are this close in win chance, after twice settle_sims
   choice:                 # how the pick is made from the network's matrix at turn requests (pcsa.network.choosing)
-    rule: mean            # mean: expected score (with top_theirs 0: the network's own pick); min; mix; regret
-    top_theirs: 3         # over their N likeliest replies by the network's prediction (0: all)
-    top_ours: 0           # among our N likeliest actions by the network's policy (0: all legal)
+    rule: regret          # mean: expected score (with top_theirs 0: the network's own pick); min; mix; regret
+    top_theirs: 8         # over their N likeliest replies by the network's prediction (0: all)
+    top_ours: 8           # among our N likeliest actions by the network's policy (0: all legal)
     blend: 0.5            # mix only: the weight of the mean against the worst case
+  value_calibration:      # the value reported as 2 * sigmoid(a * v + b) - 1, fitted per checkpoint
+    enabled: true         # by tools/value_calibration.py; off: the raw value
+    a: 1.48301            # gold-20261123-c-iter-00025 on 195 recorded battles
+    b: -0.69738
 
 device:
   serial: null            # null: the single authorized device

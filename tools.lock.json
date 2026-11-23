@@ -44,9 +44,9 @@
     ]
   },
   "champions_gym": {
-    "version": "0.4.0",
-    "url": "https://github.com/grichland/poke-champions-gym/releases/download/v0.4.0/champions_gym-0.4.0-cp312-cp312-win_amd64.whl",
-    "sha256": "3cee276f695b52bff7f62a4465fa4d26370ba196e4fe6061e8cdaa9b5a7b8ca9",
+    "version": "0.7.1",
+    "url": "https://github.com/grichland/poke-champions-gym/releases/download/v0.7.1/champions_gym-0.7.1-cp312-cp312-win_amd64.whl",
+    "sha256": "65f7beb2d09af244935fce4e3ffd3d211ab8e03d766ee746be3977dd74fa0783",
     "note": "installed by uv from pyproject.toml; setup checks the installed version against this pin"
   },
   "showdown": {

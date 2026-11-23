@@ -25,7 +25,8 @@ into one column and shows the Mega share as "They Mega". Two what-if controls re
 only: "All / Top 5 / 3 / 2 / 1" keeps only their likeliest actions, and "trust in the prediction" reweights their
 probabilities at another temperature.
 
-The action played is written large with the win chance (`(v + 1) / 2` from the value) and the decision time. A
+The action played is written large with the win chance (`(v + 1) / 2` from the value, calibrated when
+`cg.value_calibration` is on) and the decision time. A
 decision made by a fallback shows its reason instead of the matrix. When a choice rule changed the pick, a banner
 names the rule and the network's own pick; a searched decision adds the search's figures, a column with the
 search's share per action and a switch that redraws the cells with the search's values.

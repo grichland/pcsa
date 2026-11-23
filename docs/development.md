@@ -38,6 +38,7 @@ one).
 |---|---|
 | `tools/replay_run.py` | Replays a run's saved Champions Gym messages through the neural player, with no phone, and writes a copy of the run with fresh decision records; reports whether every answer matches the recorded one. |
 | `tools/choice_replay.py` | Scores the choice rules on recorded turn decisions, offline. |
+| `tools/value_calibration.py` | Fits `cg.value_calibration` for a checkpoint on recorded battles and reports its calibration before and after. |
 | `tools/search_eval.py` | Plays the network with and without search in the simulator from the same seeds. |
 | `tools/search_recorded.py` | Runs the search on recorded ladder turns and scores its picks against play-on results. |
 | `tools/config_reference.py` | Writes `docs/configuration.md` from `config/agent.yaml`. |

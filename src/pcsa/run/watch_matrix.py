@@ -240,7 +240,6 @@ def matrix_view(net, names: dict[str, str] | None = None, order=None, action=Non
         "tau": _positive(net.get("tau")),
         "opp_top": None,
         "opp_temperature": None,
-        "blend": None,
         "masked": None,
         "search": search,
         "choice": rule,

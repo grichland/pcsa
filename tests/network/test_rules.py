@@ -1,5 +1,5 @@
-"""The rule masks in pcsa.network.policy (the same move at most 4 turns in a row, at most 3 switches by choice in a
-row) and the belief-named opponent slots, on the shipped test checkpoint."""
+"""The rule masks in pcsa.network.policy (with the two run rules alone: the same move at most 4 turns in a row, at
+most 3 switches by choice in a row) and the belief-named opponent slots, on the shipped test checkpoint."""
 
 from __future__ import annotations
 
@@ -21,6 +21,10 @@ from tests.cg import neural  # noqa: E402
 from tests.cg.neural import CHECKPOINT  # noqa: E402
 
 MOVE_A, MOVE_B, SPECIES = 11, 22, 5
+# the two run rules alone, as these tests describe them (the shipped settings add more)
+TWO_RULES = configs.rules(max_same_move=4, max_switches=3, max_boosts=0, max_heals=0, no_null_moves=False,
+                          no_boost_when_ko=False, no_failing_status=False, no_redundant_field=False,
+                          no_double_protect=False, no_wasted_self=False)  # fmt: skip
 
 
 @pytest.fixture(scope="module")
@@ -32,7 +36,7 @@ def layout() -> L.Layout:
 def policy() -> Policy:
     if not CHECKPOINT.is_file():
         pytest.skip(f"no test checkpoint at {CHECKPOINT}")
-    return neural.policy()
+    return neural.policy(rules=TWO_RULES)
 
 
 def obs_of(layout: L.Layout, legal: list[int], kind: int = L.KIND_TURN, species: int = SPECIES) -> dict:
@@ -148,7 +152,7 @@ def test_a_replayed_request_counts_its_action_and_the_setting_turns_the_rules_of
         scores, extras = scores_of(off, at(200 + n), 0)
         assert "closed" not in extras and scores[move] > float("-inf")
         off.played(200 + n, move)
-    two = neural.policy(rules=configs.rules(max_same_move=2))
+    two = neural.policy(rules={**TWO_RULES, "max_same_move": 2})
     for n in range(2):
         scores_of(two, at(300 + n), 0)
         two.played(300 + n, move)

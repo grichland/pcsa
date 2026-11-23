@@ -133,3 +133,20 @@ def test_a_choice_rule_makes_the_pick_and_says_so() -> None:
     assert note["model_pick"] == int(own["scores"][0, :11].argmax())
     assert note["pick"] == int(out["scores"][0, :11].argmax()) and note["changed"] == (note["pick"] != note["model_pick"])
     assert torch.equal(own["value"], out["value"])
+
+
+def test_the_value_calibration_maps_the_value_and_keeps_the_raw_one() -> None:
+    """With {a, b} the value returned is 2 * sigmoid(a * v + b) - 1, the extras keep the raw value, and the scores
+    (so the decision) are the same."""
+    if not CHECKPOINT.is_file():
+        pytest.skip(f"no test checkpoint at {CHECKPOINT}")
+    plain, fitted = neural.policy(), neural.policy(value_calibration={"a": 1.5, "b": -0.7})
+    assert plain.info["value_calibration"] is None and fitted.info["value_calibration"] == {"a": 1.5, "b": -0.7}
+    for kind in (cg.KIND_PREVIEW, cg.KIND_TURN):
+        arrays = observation(kind, turns=1)
+        own, out = plain.decide(arrays, [0]), fitted.decide(arrays, [0])
+        raw = own["value"]
+        assert torch.allclose(out["value"], 2 * torch.sigmoid(1.5 * raw - 0.7) - 1)
+        assert out["extras"][0]["value_raw"] == pytest.approx(float(raw.reshape(-1)[0]))
+        assert "value_raw" not in own["extras"][0]
+        assert torch.equal(own["scores"], out["scores"])

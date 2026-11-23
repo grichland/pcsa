@@ -16,10 +16,11 @@ CG string ids (the record contract's `notes.cg.net`):
 - turn, with a `choice` rule set (choosing.py): choice, the rule's pick and scores beside the network's pick
 - preview: belief (with `lead`) and picks_top, the five likeliest (lead, second, third) picks
 
-The rule masks of training (rules.py) are applied to the mask the network reads: the same move at most
-`max_same_move` turns in a row, at most `max_switches` switches by choice in a row. What was played is recorded
-once per decision: the network's own choice when it answers, corrected by `played` (called by pcsa.cg.serve with
-the action that went out, so a fallback's answer or the second answer after a refusal replaces the first).
+The rule masks of training (rules.py) are applied to the mask the network reads, with the settings the checkpoint
+was trained with (runs of one move, of switches, of setup or recovery; moves that cannot work). What was played
+is recorded once per decision: the network's own choice when it answers, corrected by `played` (called by
+pcsa.cg.serve with the action that went out, so a fallback's answer or the second answer after a refusal replaces
+the first).
 
 With `search` on (searching.py; needs Champions Gym 0.5.0 or later), a turn request is also searched: the scores
 returned are the log of the search's root strategy, so the shell's argmax is the search's pick, and the extras carry
@@ -29,6 +30,7 @@ the search cannot run or does too little, the model's answer stands and `search.
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import os
 import threading
@@ -39,9 +41,9 @@ from typing import Any
 import numpy as np
 import torch
 
-from pcsa.common.config_cg import RuleSettings, SearchSettings
+from pcsa.common.config_cg import RuleSettings, SearchSettings, ValueCalibration
 
-from . import cg_adapter, choosing, model, searching, vocab
+from . import cg_adapter, choosing, decide, model, searching, vocab
 from . import checkpoint as ckpt
 from . import layout as L
 from . import rules as masks
@@ -59,16 +61,13 @@ def _tensor(x: Any, device: str) -> torch.Tensor:
 
 
 def _file_hash(path: str) -> str:
-    h = hashlib.sha256()
     with open(path, "rb") as f:
-        for chunk in iter(lambda: f.read(1 << 20), b""):
-            h.update(chunk)
-    return h.hexdigest()[:16]
+        return hashlib.file_digest(f, "sha256").hexdigest()[:16]
 
 
-def decide_log(p: torch.Tensor) -> torch.Tensor:
-    """log p with -inf where p is 0 (decide.safe_log)."""
-    return torch.where(p > 0, p.clamp_min(1e-38).log(), torch.full_like(p, float("-inf")))
+def calibrated(v: torch.Tensor, cal: ValueCalibration | None) -> torch.Tensor:
+    """The value mapped so that (v + 1) / 2 is a win chance: 2 * sigmoid(a * v + b) - 1; v itself without `cal`."""
+    return v if cal is None else 2.0 * torch.sigmoid(cal.a * v + cal.b) - 1.0
 
 
 def _top(p: torch.Tensor, kind: str, k: int) -> list[list]:
@@ -89,27 +88,27 @@ class _Seat:
     before: tuple | None = None  # the counters before `decision` was recorded
 
     def keep(self) -> None:
-        r = self.rules
-        self.before = (r.key.copy(), r.same.copy(), r.switches.copy())
+        self.before = self.rules.save(0)
 
     def restore(self) -> None:
         if self.before is not None:
-            r = self.rules
-            r.key, r.same, r.switches = (x.copy() for x in self.before)
+            self.rules.load(0, tuple(x.copy() for x in self.before))
 
 
 class Policy:
     """`checkpoint`: a .pt saved by checkpoint.save. `device`: "cpu" for live play. `threads`: torch CPU threads.
     `requery_refused`: ask the network again after a refused choice instead of the shell reusing the first answer.
     `allow_contract`: load a checkpoint made under another contract version; CG's own check still reports it.
-    `rules`: training's rule masks {max_same_move, max_switches} (0: no such rule; None: no masks).
+    `rules`: training's rule masks, RuleSettings' fields without `enabled` (None: no masks).
     `search`: search every turn request (searching.py) with these SearchSettings; None: no search.
+    `value_calibration`: {a, b}: the value returned is 2 * sigmoid(a * v + b) - 1 (extras keep `value_raw`).
     `choice`: the rule that makes our pick from the matrix at turn requests (choosing.py, ChoiceSettings); the
     search's pick, when it runs, still wins. The values come from agent.yaml's cg section (pcsa.cg.startup)."""
 
-    def __init__(self, checkpoint: str, *, device: str, threads: int, rules: Mapping[str, int] | None = None,  # noqa: PLR0913
+    def __init__(self, checkpoint: str, *, device: str, threads: int, rules: Mapping[str, Any] | None = None,  # noqa: PLR0913
                  search: Mapping[str, Any] | None = None, choice: Mapping[str, Any] | None = None,
-                 requery_refused: bool = False, allow_contract: bool = False):  # fmt: skip
+                 value_calibration: Mapping[str, float] | None = None, requery_refused: bool = False,
+                 allow_contract: bool = False):  # fmt: skip
         torch.set_num_threads(int(threads))
         self.device = device
         lay = cg_adapter.layout()  # the layout from champions_gym.FEATURES, checked against CG
@@ -120,11 +119,13 @@ class Policy:
         self.lock = threading.Lock()
         self.layout = lay
         limits = None if rules is None else RuleSettings.model_validate({"enabled": True, **rules})
-        self.rule_cfg = None if limits is None else masks.RuleConfig(limits.max_same_move, limits.max_switches)
+        self.rule_cfg = None if limits is None else masks.RuleConfig(**limits.model_dump(exclude={"enabled"}))
         self.seats: dict[int, _Seat] = {}
         cfg = None if search is None else SearchSettings.model_validate(search)
         self.searcher = None if cfg is None else searching.Searcher(self, cfg)
         self.choice = choosing.config(choice)
+        cal = None if value_calibration is None else {"enabled": True, **value_calibration}
+        self.calibration = None if cal is None else ValueCalibration.model_validate(cal)
         self.game_of: Any = None  # (battle, guess, seed) -> (Game, rejected); pcsa.cg.serve sets the Session's
         self.deadline: float | None = None  # precise_now() by which the open request must be answered
         self.cols = {"species": lay.col(L.F_SPECIES), "moves": lay[L.F_MOVE_ID].columns(),
@@ -152,10 +153,10 @@ class Policy:
             "iteration": ck.get("extra", {}).get("iteration"),
             "memory": self.net.cfg.memory,
             "belief_slots": bool(self.net.cfg.belief_slots),
-            "rule_masks": None if self.rule_cfg is None else
-            {"max_same_move": self.rule_cfg.max_same_move, "max_switches": self.rule_cfg.max_switches},
+            "rule_masks": None if self.rule_cfg is None else dataclasses.asdict(self.rule_cfg),
             "search": None if cfg is None else cfg.model_dump(),
             "choice": None if self.choice is None else self.choice.model_dump(),
+            "value_calibration": None if self.calibration is None else self.calibration.args(),
         }
 
     def _grow(self, need: int) -> model.Memory:
@@ -197,7 +198,7 @@ class Policy:
             return None
         one = lambda x: np.asarray(x)[r : r + 1]  # noqa: E731
         return {"mask": one(arrays.mask), "seat": np.zeros(1, np.int64), "kind": np.full(1, L.KIND_TURN),
-                "rows": one(arrays.rows), "row_ids": one(arrays.row_ids)}  # fmt: skip
+                "rows": one(arrays.rows), "row_ids": one(arrays.row_ids), "field": one(arrays.field)}  # fmt: skip
 
     def _seat(self, slot: int, decision: int, obs: dict) -> _Seat:
         """The slot's rule state at this turn request: as it was before the request when it is asked again."""
@@ -284,7 +285,7 @@ class Policy:
         with self.lock:
             closed = self._close(arrays, b, slots)
             out = self._forward(b, slots)
-            scores = torch.cat([decide_log(out["pi"]), decide_log(out["preview_pi"])], dim=1).cpu()  # [B, 71]
+            scores = torch.cat([decide.safe_log(out[k]) for k in ("pi", "preview_pi")], dim=1).cpu()  # [B, 71]
             kinds = np.asarray(arrays.kind).reshape(-1)
             chosen = choosing.apply(self.choice, kinds, out, scores, float(self.net.temperature()))
             searched = self._searched(arrays, slots, kinds, b, out, battles, scores)
@@ -292,7 +293,7 @@ class Policy:
                 seat = self.seats.get(slot)
                 if seat is not None and int(kinds[r]) == L.KIND_TURN:
                     self._record(seat, int(scores[r, : L.OWN_ACTIONS].argmax()))
-        value = out["value"].cpu()
+        value = calibrated(out["value"].cpu(), self.calibration)
         try:
             extras = self.all_extras(arrays, b, out, len(slots))
             if self.rule_cfg is not None:
@@ -318,13 +319,14 @@ class Policy:
     def extras(self, out: dict, r: int, kind: int, ids: torch.Tensor, rows: torch.Tensor, tau: float) -> dict:
         """Row r's outputs as plain JSON (module docstring). Never raises: a part that cannot be made is left out
         and named in `error`."""
+        parts: dict = {"value_raw": lambda: float(out["value"].reshape(-1)[r])} if self.calibration else {}
         if kind == L.KIND_PREVIEW:
-            parts = {
+            parts |= {
                 "belief": lambda: self.belief(out, r, ids, preview=True),
                 "picks_top": lambda: self.picks_top(out, r),
             }
         else:
-            parts = {
+            parts |= {
                 "tau": lambda: tau,
                 "pi": lambda: out["pi"][r].tolist(),
                 "score": lambda: out["score"][r].tolist(),

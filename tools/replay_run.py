@@ -33,6 +33,10 @@ from pcsa.run.recorder import DECISION_SCHEMA, neural_player  # noqa: E402
 
 LEGACY_SEARCH = {"search_ms": "ms", "search_sims": "sims", "search_seed": "seed"}  # flat-form policy argument names
 LEGACY_RULES = {"max_same_move": 4, "max_switches": 3}  # flat-form defaults of the rule masks
+# the rule masks added after the first two: off in a run that recorded none of them
+LATER_RULES = {"max_boosts": 0, "max_heals": 0, "no_null_moves": False, "no_boost_when_ko": False,
+               "no_failing_status": False, "no_redundant_field": False, "no_double_protect": False,
+               "no_wasted_self": False}  # fmt: skip
 LIVE_TYPES = {"battle_start", "preview_request", "events", "decision_request", "battle_end"}
 
 
@@ -87,7 +91,10 @@ def run_player_args(run: Path, checkpoint: Path) -> dict:
     else:
         args = dict(startup.resolved(load_config(paths.config_dir() / "agent.yaml").agent.cg).player_args or {})
     args.pop("log_dir", None)
-    return {**args, "checkpoint": str(checkpoint), "policy_args": {**args.get("policy_args", {}), "search": None}}
+    policy = {**args.get("policy_args", {}), "search": None}
+    if policy.get("rules") is not None:
+        policy["rules"] = {**LATER_RULES, **policy["rules"]}
+    return {**args, "checkpoint": str(checkpoint), "policy_args": policy}
 
 
 def battle_messages(battle: Path, run: Path) -> tuple[list[tuple[int, dict]], list[dict]]:

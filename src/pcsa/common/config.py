@@ -17,7 +17,7 @@ from typing import Any, Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
-from pcsa.common.config_cg import CGSearch, ChoiceSettings, RuleSettings
+from pcsa.common.config_cg import CGSearch, ChoiceSettings, RuleSettings, ValueCalibration
 from pcsa.common.errors import ConfigError
 
 ENV_PREFIX = "PCSA__"
@@ -138,8 +138,8 @@ class CGConfig(Strict):
 
     `subprocess` runs `command` (JSON lines on stdin and stdout; `{python}` is the interpreter running pcsa);
     `inprocess` loads `entry` ("module:name", a handle(message) callable or a class with .handle) with `args`.
-    `player` and `player_args` are the Session's player for both transports; a relative checkpoint in
-    `player_args` is taken from the repo root. `rules`, `search` and `choice` go to the neural player's policy."""
+    `player` and `player_args` are the Session's player for both transports; a relative checkpoint in `player_args`
+    is taken from the repo root. `rules`, `search`, `choice` and `value_calibration` go to the neural policy."""
 
     transport: Literal["inprocess", "subprocess"]
     command: list[str] | None
@@ -155,6 +155,7 @@ class CGConfig(Strict):
     rules: RuleSettings
     search: CGSearch
     choice: ChoiceSettings
+    value_calibration: ValueCalibration
 
     @field_validator("timeout_s", "start_timeout_s")
     @classmethod

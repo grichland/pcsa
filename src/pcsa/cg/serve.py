@@ -104,7 +104,7 @@ class Proxy:
 
 def builtin_battle(session: Any) -> Any:
     """The Battle a built-in player is about to be asked about; None when CG's internals are not as expected.
-    Relies on two CG 0.4.0 Session internals: `_builtin` (the built-in player's name) and `_core.battle()` (the
+    Relies on two CG Session internals: `_builtin` (the built-in player's name) and `_core.battle()` (the
     LiveCore's Battle at the open request)."""
     try:
         return session._core.battle() if session._builtin is not None else None

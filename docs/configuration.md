@@ -31,7 +31,7 @@ Champions Gym and the player it runs (pcsa.cg)
 | `cg.player` | `champions_gym.neural:load` | the Session's player; a built-in such as tower needs no player_args |
 | `cg.player_args` |  | passed to the player as given; never set allow_mismatch or allow_contract |
 | `cg.player_args.policy` | `pcsa.network.policy:Policy` |  |
-| `cg.player_args.checkpoint` | `assets/models/league-20261119-v-iter-00180-gold100.pt` | relative: the repo root |
+| `cg.player_args.checkpoint` | `assets/models/gold-20261123-c-iter-00025.pt` | relative: the repo root |
 | `cg.player_args.device` | `cpu` |  |
 | `cg.player_args.policy_args` | `{threads: 4}` | plus rules, search and choice below |
 | `cg.player_args.fallback` | `tower` | the shell's player when the network fails or is too slow |
@@ -43,12 +43,20 @@ Champions Gym and the player it runs (pcsa.cg)
 | `cg.run_log_dir` | `cg` | CG's log folder inside the run folder; null: none |
 | `cg.timeout_s` | `8.0` | per call, and never past the decision's deadline less the tap reserve |
 | `cg.start_timeout_s` | `60.0` | CG is made and its status checked before the first battle |
-| `cg.rules` |  | rule masks on the network's policy (pcsa.network.rules) |
+| `cg.rules` |  | training's rule masks (pcsa.network.rules); set them as the checkpoint was trained |
 | `cg.rules.enabled` | `true` |  |
-| `cg.rules.max_same_move` | `4` | the same move at most this many turns in a row (0: no limit) |
-| `cg.rules.max_switches` | `3` | at most this many voluntary switches in a row (0: no limit) |
+| `cg.rules.max_same_move` | `3` | the same move at most this many turns in a row (0: no limit) |
+| `cg.rules.max_switches` | `2` | at most this many voluntary switches in a row (0: no limit) |
+| `cg.rules.max_boosts` | `3` | setup moves by the same Pokémon in a row (0: no limit) |
+| `cg.rules.max_heals` | `3` | pure recovery moves by the same Pokémon in a row (0: no limit) |
+| `cg.rules.no_null_moves` | `true` | close damaging moves that do nothing to their active (immunity, Levitate, terrain) |
+| `cg.rules.no_boost_when_ko` | `true` | close setup, other than Def, Sp. Def or evasion, while their best hit KOs us |
+| `cg.rules.no_failing_status` | `true` | close status moves that cannot land (already statused, Safeguard, immunity) |
+| `cg.rules.no_redundant_field` | `true` | close hazards at their maximum and weather or terrain already up |
+| `cg.rules.no_double_protect` | `true` | close the Protect family two turns in a row |
+| `cg.rules.no_wasted_self` | `true` | close recovery at full HP, setup at +6, Substitute when it would fail |
 | `cg.search` |  | decision-time search at turn requests (pcsa.network.search) |
-| `cg.search.enabled` | `false` | needs Champions Gym 0.5.0; without it every turn records why and the network plays |
+| `cg.search.enabled` | `false` | needs Champions Gym 0.5.0 or later (0.7.1 is pinned) |
 | `cg.search.ms` | `1500` | time per turn request; never past the request's deadline less the tap reserve |
 | `cg.search.worlds` | `6` | sampled completions of the opponent's hidden team, one tree each |
 | `cg.search.depth` | `3` | turns looked ahead |
@@ -66,10 +74,14 @@ Champions Gym and the player it runs (pcsa.cg)
 | `cg.search.settle_share` | `0.9` | ... and holds this share of the search's strategy |
 | `cg.search.settle_gap` | `0.01` | or once the best two actions are this close in win chance, after twice settle_sims |
 | `cg.choice` |  | how the pick is made from the network's matrix at turn requests (pcsa.network.choosing) |
-| `cg.choice.rule` | `mean` | mean: expected score (with top_theirs 0: the network's own pick); min; mix; regret |
-| `cg.choice.top_theirs` | `3` | over their N likeliest replies by the network's prediction (0: all) |
-| `cg.choice.top_ours` | `0` | among our N likeliest actions by the network's policy (0: all legal) |
+| `cg.choice.rule` | `regret` | mean: expected score (with top_theirs 0: the network's own pick); min; mix; regret |
+| `cg.choice.top_theirs` | `8` | over their N likeliest replies by the network's prediction (0: all) |
+| `cg.choice.top_ours` | `8` | among our N likeliest actions by the network's policy (0: all legal) |
 | `cg.choice.blend` | `0.5` | mix only: the weight of the mean against the worst case |
+| `cg.value_calibration` |  | the value reported as 2 * sigmoid(a * v + b) - 1, fitted per checkpoint |
+| `cg.value_calibration.enabled` | `true` | by tools/value_calibration.py; off: the raw value |
+| `cg.value_calibration.a` | `1.48301` | gold-20261123-c-iter-00025 on 195 recorded battles |
+| `cg.value_calibration.b` | `-0.69738` |  |
 
 ## `device`
 

@@ -36,7 +36,8 @@ def _from_repo(path: str) -> str:
 
 def resolved(cfg: CGConfig) -> CGConfig:
     """The config as CG is made from it: `{python}` in cg.command is this interpreter, a relative checkpoint is
-    taken from the repo root, and the neural player's policy_args carry cg.rules, cg.search and cg.choice."""
+    taken from the repo root, and the neural player's policy_args carry cg.rules, cg.search, cg.choice and
+    cg.value_calibration."""
     args = dict(cfg.player_args or {})
     if isinstance(args.get("checkpoint"), str):
         args["checkpoint"] = _from_repo(args["checkpoint"])
@@ -51,8 +52,9 @@ def resolved(cfg: CGConfig) -> CGConfig:
 
 
 def policy_settings(cfg: CGConfig) -> dict:
-    """cg.rules, cg.search and cg.choice as the policy's keyword arguments (None: off)."""
-    return {"rules": cfg.rules.args(), "search": cfg.search.args(), "choice": cfg.choice.args()}
+    """cg.rules, cg.search, cg.choice and cg.value_calibration as the policy's keyword arguments (None: off)."""
+    return {"rules": cfg.rules.args(), "search": cfg.search.args(), "choice": cfg.choice.args(),
+            "value_calibration": cfg.value_calibration.args()}  # fmt: skip
 
 
 def policy_kwargs(cfg: CGConfig) -> dict:

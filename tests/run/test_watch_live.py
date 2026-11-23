@@ -93,7 +93,7 @@ STATE_KEYS = (
     "legacy",
 )
 MATRIX_KEYS = ("rows", "row_labels", "legal", "cols", "col_labels", "col_kind", "shown", "col_legal", "p_cols")
-MATRIX_KEYS += ("cells", "probs", "chosen", "played", "mega_p", "tau", "opp_temperature", "blend", "masked")
+MATRIX_KEYS += ("cells", "probs", "chosen", "played", "mega_p", "tau", "opp_temperature", "masked")
 
 
 def line(**event) -> str:

@@ -27,10 +27,10 @@ wheels = [
 
 [[package]]
 name = "champions-gym"
-version = "0.4.0"
-source = { url = "https://github.com/grichland/poke-champions-gym/releases/download/v0.4.0/champions_gym-0.4.0-cp312-cp312-win_amd64.whl" }
+version = "0.7.1"
+source = { url = "https://github.com/grichland/poke-champions-gym/releases/download/v0.7.1/champions_gym-0.7.1-cp312-cp312-win_amd64.whl" }
 wheels = [
-    { url = "https://github.com/grichland/poke-champions-gym/releases/download/v0.4.0/champions_gym-0.4.0-cp312-cp312-win_amd64.whl", hash = "sha256:3cee276f695b52bff7f62a4465fa4d26370ba196e4fe6061e8cdaa9b5a7b8ca9" },
+    { url = "https://github.com/grichland/poke-champions-gym/releases/download/v0.7.1/champions_gym-0.7.1-cp312-cp312-win_amd64.whl", hash = "sha256:65f7beb2d09af244935fce4e3ffd3d211ab8e03d766ee746be3977dd74fa0783" },
 ]
 
 [package.metadata]
@@ -383,7 +383,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "champions-gym", marker = "sys_platform == 'win32'", url = "https://github.com/grichland/poke-champions-gym/releases/download/v0.4.0/champions_gym-0.4.0-cp312-cp312-win_amd64.whl" },
+    { name = "champions-gym", marker = "sys_platform == 'win32'", url = "https://github.com/grichland/poke-champions-gym/releases/download/v0.7.1/champions_gym-0.7.1-cp312-cp312-win_amd64.whl" },
     { name = "numpy", specifier = ">=2.5" },
     { name = "onnxruntime", specifier = ">=1.31" },
     { name = "opencv-python-headless", specifier = ">=5.0" },
