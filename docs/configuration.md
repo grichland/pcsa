@@ -31,7 +31,7 @@ Champions Gym and the player it runs (pcsa.cg)
 | `cg.player` | `champions_gym.neural:load` | the Session's player; a built-in such as tower needs no player_args |
 | `cg.player_args` |  | passed to the player as given; never set allow_mismatch or allow_contract |
 | `cg.player_args.policy` | `pcsa.network.policy:Policy` |  |
-| `cg.player_args.checkpoint` | `assets/models/gold-20261123-c-iter-00025.pt` | relative: the repo root |
+| `cg.player_args.checkpoint` | `assets/models/finetune-20261124-g75-iter-00010.pt` | relative: the repo root |
 | `cg.player_args.device` | `cpu` |  |
 | `cg.player_args.policy_args` | `{threads: 4}` | plus rules, search and choice below |
 | `cg.player_args.fallback` | `tower` | the shell's player when the network fails or is too slow |
@@ -55,6 +55,7 @@ Champions Gym and the player it runs (pcsa.cg)
 | `cg.rules.no_double_protect` | `true` | close the Protect family two turns in a row |
 | `cg.rules.no_wasted_self` | `true` | close recovery at full HP, setup at +6, Substitute when it would fail |
 | `cg.rules.status_free_mirrors` | `[primarina]` | not training's: close status moves when both actives are one of these |
+| `cg.rules.one_mega_lineup` | `true` | not training's: close team-preview picks that bring two or more Mega stone holders |
 | `cg.search` |  | decision-time search at turn requests (pcsa.network.search) |
 | `cg.search.enabled` | `false` | needs Champions Gym 0.5.0 or later (0.7.1 is pinned) |
 | `cg.search.ms` | `1500` | time per turn request; never past the request's deadline less the tap reserve |
@@ -80,8 +81,8 @@ Champions Gym and the player it runs (pcsa.cg)
 | `cg.choice.blend` | `0.5` | mix only: the weight of the mean against the worst case |
 | `cg.value_calibration` |  | the value reported as 2 * sigmoid(a * v + b) - 1, fitted per checkpoint |
 | `cg.value_calibration.enabled` | `true` | by tools/value_calibration.py; off: the raw value |
-| `cg.value_calibration.a` | `1.48301` | gold-20261123-c-iter-00025 on 195 recorded battles |
-| `cg.value_calibration.b` | `-0.69738` |  |
+| `cg.value_calibration.a` | `1.43017` | finetune-20261124-g75-iter-00010 on 251 recorded battles |
+| `cg.value_calibration.b` | `-0.48124` |  |
 | `cg.preview_search` |  | replaces the preview head's pick (pcsa.network.preview_search) |
 | `cg.preview_search.enabled` | `true` | off: the head's pick, exactly |
 | `cg.preview_search.budget_s` | `30` | search time; never past the preview deadline less the tap reserve |

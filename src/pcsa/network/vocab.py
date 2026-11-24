@@ -15,9 +15,18 @@ KINDS = ("species", "moves", "items", "abilities")
 
 
 @cache
+def _data() -> dict:
+    return json.loads((assets_dir() / "game" / "cg" / "vocab.json").read_text(encoding="utf-8"))
+
+
+@cache
 def tables() -> dict[str, list[str | None]]:
-    data = json.loads((assets_dir() / "game" / "cg" / "vocab.json").read_text(encoding="utf-8"))
-    return {k: data[k] for k in KINDS}
+    return {k: _data()[k] for k in KINDS}
+
+
+def mega_stones() -> list[str]:
+    """The items (CG ids) a species' Mega form needs."""
+    return list(_data()["mega_stones"])
 
 
 def name(kind: str, number: int) -> str | None:

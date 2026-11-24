@@ -44,6 +44,13 @@ def test_ended_slots_cycle_over_the_rows_in_the_race() -> None:
     assert r.cell[4 + 2 * P - 5] == HEAD * P + P - 1
 
 
+def test_a_race_from_open_picks_plays_only_those_and_the_head() -> None:
+    r = race.Race(2 * P + 3, HEAD, [2], rows=[3, 9])
+    assert list(r.rows) == [3, HEAD, 9] and set(r.cell // P) == {3, HEAD, 9}
+    assert list(r.cell[:2]) == [3 * P, 3 * P + 1] and r.cell[P] == HEAD * P and r.cell[2 * P] == 9 * P and r.ptr == 0
+    assert (race.Race(N, HEAD, [2]).cell == np.arange(N)).all()
+
+
 def test_the_head_is_kept_unless_beaten_by_the_margin() -> None:
     T = np.full((P, P), 0.5)
     T[GOOD], T[HEAD] = 0.6, 0.58

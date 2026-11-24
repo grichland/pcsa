@@ -11,6 +11,7 @@ Numbering (Champions Gym's obs/src/vocab.rs and contracts/MODEL.md), every list 
 - items: id = table index + 1; id 0 is unknown (null), id 1 is the empty entry: "holds nothing" ("")
 - abilities: id = table index; index 0 is the empty entry (null)
 The table's empty placeholder is kept here, unlike cg_tables.rows(), so the indices stay CG's.
+`mega_stones` lists the items (CG ids) some species' Mega form needs, from that table's `mega_stone`.
 """
 
 from __future__ import annotations
@@ -43,11 +44,15 @@ def vocab(src: str) -> dict[str, list[str | None]]:
     species, moves, items, abilities = (table(src, TABLES[k]) for k in ("species", "moves", "items", "abilities"))
     if moves[0] or items[0] or abilities[0] or "" in species:
         raise SystemExit("the empty placeholders are not where vocab.rs expects them")
+    stones = sorted({items[int(i)] for i in re.findall(r"mega_stone: Some\(ItemId\((\d+)\)\)", src)})
+    if not stones or "" in stones:
+        raise SystemExit("no Mega stones read from the species table")
     return {
         "species": [None, *species],
         "moves": [None, *moves[1:]],
         "items": [None, "", *items[1:]],
         "abilities": [None, *abilities[1:]],
+        "mega_stones": list(stones),
     }
 
 
@@ -77,7 +82,7 @@ def main(argv: list[str] | None = None) -> int:
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(out, indent=0, ensure_ascii=False) + "\n", encoding="utf-8")
-    sizes = {k: len(out[k]) for k in TABLES}
+    sizes = {k: len(out[k]) for k in (*TABLES, "mega_stones")}
     sys.stdout.write(f"wrote {args.out}: {sizes}, CG {out['cg_version']}, Showdown {out['showdown_commit']}\n")
     return 0
 

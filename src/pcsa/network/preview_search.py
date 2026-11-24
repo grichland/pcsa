@@ -115,7 +115,7 @@ class Previewer:
             note |= {"seed": seed, "guesses": teams, "refused": refused}
             if not teams:
                 raise RuntimeError("no guess of their team passed CG's check")
-            found = self.play([own, *teams], head, stop, seed)
+            found = self.play([own, *teams], head, stop, seed, np.flatnonzero(b["preview_mask"][r].cpu().numpy()))
             note |= found
             if found["games"] == 0:
                 raise RuntimeError("no game finished before the deadline")
@@ -151,11 +151,12 @@ class Previewer:
                 refused.append(problems)
         return teams, refused
 
-    def play(self, teams: list[list[dict]], head: int, stop: float, seed: int) -> dict:
-        """The playouts until `stop`: per-cell sums, the race's cuts and final rows, games and steps."""
+    def play(self, teams: list[list[dict]], head: int, stop: float, seed: int, rows: Any = None) -> dict:
+        """The playouts of our open picks `rows` (default all) until `stop`: per-cell sums, the race's cuts and final
+        rows, games and steps."""
         n, dev = SLOTS, self.cfg.device
         env = open_env(teams, n, seed, self.cfg.threads)
-        mem, state = model.Memory(self.net, 2 * n, dev), self.start(n, head)
+        mem, state = model.Memory(self.net, 2 * n, dev), self.start(n, head, rows)
         t_start, steps = precise_now(), 0
         while precise_now() < stop:
             self._step(env, mem, state)
@@ -166,12 +167,12 @@ class Previewer:
         return {"cells": cells, "cuts": race.cuts, "rows": [int(x) for x in race.rows],
                 "games": int(state["games"].sum()), "steps": steps, "play_seconds": round(precise_now() - t_start, 2)}
 
-    def start(self, n: int, head: int) -> dict:
+    def start(self, n: int, head: int, rows: Any = None) -> dict:
         """The playouts' state: our seat's rule masks, the race, per-cell sums, whether a slot's turn 1 was scored."""
         cfg = self.policy.rule_cfg
         rules = None if cfg is None else masks.Rules(cfg, self.policy.layout, n)
         sums = {k: np.zeros(P * P) for k in ("a_sum", "a_cnt", "wins", "games")}  # per cell
-        return {"rules": rules, "race": Race(n, head, self.cfg.race), "scored": np.zeros(n, bool), **sums}
+        return {"rules": rules, "race": Race(n, head, self.cfg.race, rows), "scored": np.zeros(n, bool), **sums}
 
     @torch.no_grad()
     def _step(self, env: Any, mem: model.Memory, state: dict) -> None:

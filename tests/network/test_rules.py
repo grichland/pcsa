@@ -24,7 +24,8 @@ MOVE_A, MOVE_B, SPECIES = 11, 22, 5
 # the two run rules alone, as these tests describe them (the shipped settings add more)
 TWO_RULES = configs.rules(max_same_move=4, max_switches=3, max_boosts=0, max_heals=0, no_null_moves=False,
                           no_boost_when_ko=False, no_failing_status=False, no_redundant_field=False,
-                          no_double_protect=False, no_wasted_self=False, status_free_mirrors=[])  # fmt: skip
+                          no_double_protect=False, no_wasted_self=False, status_free_mirrors=[],
+                          one_mega_lineup=False)  # fmt: skip
 
 
 @pytest.fixture(scope="module")

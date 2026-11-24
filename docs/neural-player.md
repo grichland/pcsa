@@ -74,10 +74,14 @@ store them. They close actions at turn requests only, and only while another act
 - `no_redundant_field`, `no_double_protect`, `no_wasted_self`: hazards at their maximum or weather and terrain
   already up, Protect twice in a row, recovery at full HP, setup at +6, a Substitute that would fail.
 
-One rule is pcsa's own, not training's (`src/pcsa/network/live_rules.py`, applied after the others):
-`status_free_mirrors` lists species (CG ids, shipped `[primarina]`); when our active and theirs are the same
-listed species, our status moves and their Mega copies are closed, while another action stays open. An empty list
-turns it off.
+Two rules are pcsa's own, not training's (`src/pcsa/network/live_rules.py`, applied after the others):
+- `status_free_mirrors` lists species (CG ids, shipped `[primarina]`); when our active and theirs are the same
+  listed species, our status moves and their Mega copies are closed, while another action stays open. An empty
+  list turns it off.
+- `one_mega_lineup` (shipped `true`): at team preview, every pick of three that brings two or more Mega stone
+  holders is closed, since only one can Mega Evolve, while another pick stays open. The stones are the items a
+  species' Mega form needs in CG's species table (`mega_stones` in `assets/game/cg/vocab.json`). Preview search
+  races only the picks left open; the decision's extras list the closed picks under `closed` (11 + pick).
 
 The shipped checkpoint, like every from-scratch checkpoint (`scratch-20261122-*`, `gold-20261123-*`), was
 trained with every rule: `max_same_move` 3, `max_switches` 2, `max_boosts` 3, `max_heals` 3 and all six `no_*`

@@ -105,6 +105,9 @@ def test_the_search_answers_within_its_budget_and_its_pick_is_played(searched, m
     assert pick == note["chosen"] and note["games"] > 0 and note["head"] in note["rows"]
     assert len(note["guesses"]) == SETTINGS["guesses"] and len(note["cells"]["wins"]) == L.PREVIEW_ACTIONS**2
     assert len(note["cuts"]) <= len(SETTINGS["race"])
+    closed = [a - L.PREVIEW_OFFSET for a in extras["closed"]]  # the lineup rule's picks: never raced or played
+    games = np.asarray(note["cells"]["games"]).reshape(L.PREVIEW_ACTIONS, -1)
+    assert closed and not set(closed) & set(note["rows"]) and games[closed].sum() == 0
 
 
 def test_a_deadline_or_an_error_plays_the_heads_pick_and_says_why(searched, monkeypatch) -> None:

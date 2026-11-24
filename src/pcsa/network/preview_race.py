@@ -30,13 +30,16 @@ def score(T: np.ndarray, rows: np.ndarray, rule: str) -> np.ndarray:
 
 class Race:
     """Our picks still in the race and the cell each game slot plays. `head`: the preview head's pick, always kept.
-    `sizes`: the rows kept at the cuts, made at 1/4, 1/2, 3/4 ... of the budget (len(sizes) + 1 parts)."""
+    `sizes`: the rows kept at the cuts, made at 1/4, 1/2, 3/4 ... of the budget (len(sizes) + 1 parts).
+    `rows`: our picks open at the start (default all P)."""
 
-    def __init__(self, n_slots: int, head: int, sizes: Sequence[int]) -> None:
+    def __init__(self, n_slots: int, head: int, sizes: Sequence[int], rows: Sequence[int] | None = None) -> None:
         self.head, self.sizes = int(head), [int(s) for s in sizes]
-        self.rows = np.arange(P)
-        self.cell = np.arange(n_slots) % (P * P)  # slot i starts on cell i
+        self.rows = np.arange(P) if rows is None else np.array(sorted({*map(int, rows), self.head}))
         self.cuts: list[dict] = []
+        self.ptr = 0
+        self.cell = np.zeros(n_slots, np.int64)
+        self.reassign(np.arange(n_slots))  # slot i starts on the i-th cell of the cycle
         self.ptr = 0
 
     def cut_due(self, elapsed: float, budget: float) -> bool:

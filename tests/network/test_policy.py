@@ -68,7 +68,7 @@ def test_turn_extras(policy: Policy) -> None:
 def test_preview_extras(policy: Policy) -> None:
     out = policy.decide(observation(cg.KIND_PREVIEW), [1])
     e = out["extras"][0]
-    assert set(e) == {"belief", "picks_top"}
+    assert set(e) - {"closed"} == {"belief", "picks_top"}  # closed: picks the lineup rule closed, when any
     picks = e["picks_top"]
     assert 1 <= len(picks) <= 5 and all(len(set(t)) == 3 and all(0 <= i < 6 for i in t) for t, _ in picks)
     assert [p for _, p in picks] == sorted((p for _, p in picks), reverse=True)
