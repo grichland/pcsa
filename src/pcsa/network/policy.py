@@ -175,7 +175,7 @@ class Policy:
             for s in slots:
                 self.seats.pop(s, None)
                 if self.searcher is not None:
-                    self.searcher.leads.pop(s, None)
+                    self.searcher.forget(s)
             if self.memory is not None:
                 ok = [s for s in slots if s < self.memory.hist.shape[0]]
                 if ok:
@@ -264,6 +264,8 @@ class Policy:
             for seat in self.seats.values():
                 if seat.decision == int(decision):
                     self._record(seat, action)
+            if self.searcher is not None:
+                self.searcher.played(int(decision), action)
 
     @torch.no_grad()
     def observe(self, arrays: Any, slots: Sequence[int], actions: Sequence[int | None] = ()) -> None:
@@ -291,6 +293,7 @@ class Policy:
             kinds = np.asarray(arrays.kind).reshape(-1)
             chosen = choosing.apply(self.choice, kinds, out, scores, float(self.net.temperature()))
             searched = self._searched(arrays, slots, kinds, b, out, battles, scores)
+            followed = searching.follow(self.searcher, slots, kinds, b, battles, scores)
             previews = previewing.apply(self.previewer, kinds, b, out, scores, arrays)
             for r, slot in enumerate(slots):  # the shell's argmax, until `played` says what went out
                 seat = self.seats.get(slot)
@@ -303,8 +306,8 @@ class Policy:
                 for e, c in zip(extras, closed, strict=True):
                     if "pi" in e or c:
                         e["closed"] = c
-            for e, *parts in zip(extras, searched, chosen, previews, strict=True):
-                named = zip(("search", "choice", "preview_search"), parts, strict=True)
+            for e, *parts in zip(extras, searched, chosen, previews, followed, strict=True):
+                named = zip(("search", "choice", "preview_search", "follow"), parts, strict=True)
                 e.update({k: v for k, v in named if v is not None})
         except Exception as error:  # display only: the decision stands without them
             extras = [{"error": f"extras: {type(error).__name__}: {error}"} for _ in slots]

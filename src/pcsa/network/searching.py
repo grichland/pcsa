@@ -3,12 +3,18 @@ belief outputs (search.py is the tree, worlds.py the guesses of their team).
 
 `Searcher.run` never raises: when the search cannot run, runs out of time before one pass or does fewer than
 `min_sims` simulations, the model's own scores stand and the note's `why` says so.
+
+With `follow_pivot`, a searched pick that the trees saw switch us out in the same turn with our active standing (a
+pivot move) keeps the switch-in they chose there (search.pivot_follow); the replace request of that turn plays it
+when it is open, with the `follow` note. A live replace request cannot tell a pivot from a faint, so it answers
+either. The kept switch-in is dropped when another action went out (`played`) or at the slot's next request.
 """
 
 from __future__ import annotations
 
 import json
 from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
@@ -36,14 +42,65 @@ def game_from_battle(battle: Any, guess: list, seed: int) -> tuple:
     return make(battle, guess, seed=seed)
 
 
+def follow(searcher: Searcher | None, slots: Sequence[int], kinds: np.ndarray, b: dict, battles: Any,
+           scores: torch.Tensor) -> list[dict | None]:  # fmt: skip
+    """Searcher.follow, or no notes without a searcher."""
+    return [None] * len(slots) if searcher is None else searcher.follow(slots, kinds, b, battles, scores)
+
+
+@dataclass
+class Follow:
+    """A searched turn's pivot move and the switch-in the search chose for after it."""
+
+    decision: int
+    turn: int
+    pick: int
+    target: int
+
+
 class Searcher:
     """`policy`: the pcsa.network.policy.Policy it searches for (its net, memory, device, `game_of`, `deadline`)."""
 
     def __init__(self, policy: Any, cfg: search.SearchSettings) -> None:
         self.policy, self.cfg = policy, cfg
         self.leads: dict[int, str] = {}  # per slot: the species they led with
+        self.follows: dict[int, Follow] = {}  # per slot: the switch-in after a searched pivot move
         self._tables: worlds.Tables | None = None
         self._scratch: model.Memory | None = None
+
+    def forget(self, slot: int) -> None:
+        self.leads.pop(slot, None)
+        self.follows.pop(slot, None)
+
+    def played(self, decision: int, action: Any) -> None:
+        """What went out for `decision`: a pivot move's switch-in is kept only if the pivot move itself went out."""
+        for slot, f in list(self.follows.items()):
+            if f.decision == decision and f.pick != action:
+                del self.follows[slot]
+
+    def follow(self, slots: Sequence[int], kinds: np.ndarray, b: dict, battles: Any,
+               scores: torch.Tensor) -> list[dict | None]:  # fmt: skip
+        """Each replace row after a searched pivot move of the same turn: scores for only the kept switch-in when it
+        is open; the `follow` notes per row."""
+        notes: list[dict | None] = [None] * len(slots)
+        for r, slot in enumerate(slots):
+            if int(kinds[r]) != L.KIND_REPLACE or (f := self.follows.pop(slot, None)) is None:
+                continue
+            model_pick = int(scores[r, : L.OWN_ACTIONS].argmax())
+            note: dict[str, Any] = {"used": False, "why": None, "target": f.target, "model_pick": model_pick}
+            battle = battles[r] if battles is not None else None
+            turn = None if battle is None else int(battle.turn)
+            if turn != f.turn:
+                note["why"] = f"turn {turn}, the pivot move was on turn {f.turn}"
+            elif not bool(b["mask"][r, f.target] > 0):
+                note["why"] = "the search's switch-in is not open"
+            else:
+                row = torch.full((L.OWN_ACTIONS,), float("-inf"))
+                row[f.target] = 0.0
+                scores[r, : L.OWN_ACTIONS] = row
+                note.update(used=True, changed=f.target != model_pick)
+            notes[r] = note
+        return notes
 
     def note_leads(self, b: dict, kinds: np.ndarray, slots: Sequence[int]) -> None:
         """Their active at a slot's first turn request is the one they led with."""
@@ -137,6 +194,7 @@ class Searcher:
         """Row r's turn request searched: (the scores to return for our 11 actions, or None when the model's
         answer stands; the `search` note)."""
         start = precise_now()
+        self.follows.pop(slot, None)
         model_pick = int(scores[: L.OWN_ACTIONS].argmax())
         note: dict[str, Any] = {"used": False, "why": None, "model_pick": model_pick, "pick": model_pick,
                                 "changed": False, "sims": 0}  # fmt: skip
@@ -154,7 +212,11 @@ class Searcher:
             tree = search.Search(self.cfg, self.tables(), self.forward, rng)
             tree.run(built, start + budget / 1000.0)
             allowed = (b["mask"][r] > 0).cpu().numpy()
-            return self.answer(tree.result(built, note["dropped_why"]), allowed, note), note
+            row = self.answer(tree.result(built, note["dropped_why"]), allowed, note)
+            if self.cfg.follow_pivot and (follow := search.pivot_follow(built, note["pick"])):
+                note["follow"] = follow
+                self.follows[slot] = Follow(decision, int(battle.turn), int(note["pick"]), int(follow["target"]))
+            return row, note
         except Exception as error:
             known = isinstance(error, worlds.NoSearch)
             note["why"] = str(error) if known else f"{type(error).__name__}: {error}"

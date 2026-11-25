@@ -169,6 +169,36 @@ def strategy(regret: np.ndarray, prior: np.ndarray, visits: np.ndarray, total: i
     return _normal(regret + c * prior * np.sqrt(total + 1.0) / (1.0 + visits))
 
 
+def pivot_follow(worlds: list[World], pick: int) -> dict | None:
+    """The switch-in the trees chose after our `pick` made us switch out in the same turn with our active still
+    standing (a pivot move), summed over the worlds by visits; None when no tree got there. `faint_visits` counts
+    the same-turn replacements after a faint instead, which a live replace request cannot tell apart."""
+    total, pivots, faints = np.zeros(L.OWN_ACTIONS), 0, 0
+    for w in worlds:
+        root = w.root
+        if root is None or root.pending or pick not in root.us:
+            continue
+        x, me = root.us.index(pick), int(np.asarray(root.game.readout().active).reshape(-1)[0])
+        for (a, _), (_, _, made) in root.kids.items():
+            for child in made.values() if a == x else ():
+                if child.pending or child.terminal or child.turn != root.turn or child.us == [None]:
+                    continue
+                if int(child.game.kinds()[0]) != L.KIND_REPLACE:
+                    continue
+                if bool(np.asarray(child.game.readout().fainted)[0][me]):
+                    faints += max(child.N, 1)
+                    continue
+                pivots += max(child.N, 1)
+                weight = child.S_u if child.N > 0 else child.P_u
+                for y, b in enumerate(child.us):
+                    total[b] += weight[y]
+    if not total.any():
+        return None
+    target = int(total.argmax())
+    return {"target": target, "share": float(total[target] / total.sum()), "pivot_visits": int(pivots),
+            "faint_visits": int(faints)}  # fmt: skip
+
+
 @dataclass
 class Result:
     strategy: np.ndarray  # [11] our averaged root strategy

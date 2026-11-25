@@ -61,6 +61,7 @@ class SearchSettings(_Strict):
     settle_sims: int = Field(ge=0)  # stop early once the pick has led this long (0: never)
     settle_share: float = Field(ge=0, le=1)  # ... with at least this share of the strategy
     settle_gap: float = Field(ge=0)  # or once the best two values are this close, after twice settle_sims
+    follow_pivot: bool  # a pivot move picked: its switch-in is the one the search chose for after it
 
 
 class CGSearch(SearchSettings):

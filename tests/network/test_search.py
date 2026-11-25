@@ -15,8 +15,10 @@ torch = pytest.importorskip("torch")
 cg = pytest.importorskip("champions_gym")
 os.environ.setdefault("CUDA_VISIBLE_DEVICES", "-1")
 
+from pcsa.network import layout as L  # noqa: E402
 from pcsa.network import search, worlds  # noqa: E402
 from pcsa.network.policy import Policy  # noqa: E402
+from pcsa.network.searching import Follow, Searcher  # noqa: E402
 from tests import configs  # noqa: E402
 from tests.cg import neural  # noqa: E402
 from tests.cg.neural import CHECKPOINT  # noqa: E402
@@ -280,3 +282,116 @@ def test_a_settled_search_stops_before_its_simulations_run_out(position) -> None
     assert policy.info["search"]["settle_sims"] == 64
     full = make({"sims": 128}).decide(arrays, [0], [battle])["extras"][0]["search"]
     assert full["stopped"] == "sims" and full["sims"] == 128
+
+
+# Following a pivot move ------------------------------------------------------------------------------------
+
+
+class _Game:
+    def __init__(self, turn: int, kinds: tuple, fainted: list | None = None) -> None:
+        self.turn, self.ended, self._kinds = turn, False, kinds
+        self._ro = SimpleNamespace(active=np.array([0, 0]), fainted=np.array([fainted or [0, 0, 0], [0, 0, 0]]))
+
+    def kinds(self) -> tuple:
+        return self._kinds
+
+    def readout(self) -> SimpleNamespace:
+        return self._ro
+
+
+def _node(game: _Game, us: list, s_u: list | None = None, n: int = 0) -> search.Node:
+    node = search.Node(game)
+    node.pending, node.us, node.N = False, us, n
+    node.S_u = np.array(s_u or [0.0] * len(us))
+    node.P_u = np.full(len(us), 1.0 / len(us))
+    return node
+
+
+def _pivot_world(children: dict) -> SimpleNamespace:
+    """A root with our actions [0, 2] (2 the pivot move) and their one action; `children` per our action index."""
+    root = _node(_Game(5, (1, 1)), [0, 2], [1.0, 1.0], 2)
+    root.kids = {(x, 0): ([1.0] * len(kids), [None] * len(kids), dict(enumerate(kids))) for x, kids in children.items()}
+    return SimpleNamespace(root=root, sims=10)
+
+
+def test_the_followed_switch_in_is_the_one_the_trees_chose_after_the_pivot() -> None:
+    pivot = _node(_Game(5, (L.KIND_REPLACE, -1)), [9, 10], [2.0, 6.0], 8)
+    faint = _node(_Game(5, (L.KIND_REPLACE, -1), [1, 0, 0]), [9, 10], [7.0, 0.0], 7)  # our active fainted first
+    later = _node(_Game(6, (L.KIND_TURN, L.KIND_TURN)), [0, 9], [5.0, 5.0], 10)  # the next turn
+    other = _node(_Game(5, (L.KIND_REPLACE, -1)), [9, 10], [9.0, 0.0], 9)  # under our other action
+    worlds = [_pivot_world({1: [pivot, faint, later], 0: [other]}),
+              _pivot_world({1: [_node(_Game(5, (L.KIND_REPLACE, -1)), [9, 10], [1.0, 3.0], 4)]})]
+    follow = search.pivot_follow(worlds, 2)  # type: ignore[arg-type]
+    assert follow == {"target": 10, "share": pytest.approx(9 / 12), "pivot_visits": 12, "faint_visits": 7}
+    assert search.pivot_follow(worlds, 0) is not None  # any pick the trees saw switch us out
+    assert search.pivot_follow([_pivot_world({1: [later]})], 2) is None  # type: ignore[arg-type]
+    assert search.pivot_follow(worlds, 4) is None  # type: ignore[arg-type]
+
+
+def test_an_unvisited_switch_in_falls_back_to_the_network_prior() -> None:
+    fresh = _node(_Game(5, (L.KIND_REPLACE, -1)), [8, 10])
+    fresh.P_u = np.array([0.3, 0.7])
+    assert search.pivot_follow([_pivot_world({1: [fresh]})], 2)["target"] == 10  # type: ignore[arg-type,index]
+
+
+def _follower() -> SimpleNamespace:
+    return SimpleNamespace(follows={})
+
+
+def _replace(open_: list) -> tuple:
+    mask = torch.zeros(1, 11)
+    mask[0, open_] = 1
+    scores = torch.full((1, 71), -5.0)
+    scores[0, 8] = -0.1  # the network's own switch-in
+    return np.array([L.KIND_REPLACE]), {"mask": mask}, scores
+
+
+def test_the_replace_request_after_the_pivot_plays_the_followed_switch_in() -> None:
+    kinds, b, scores = _replace([8, 10])
+    p = _follower()
+    p.follows = {0: Follow(3, 5, 2, 10)}
+    note = Searcher.follow(p, [0], kinds, b, [SimpleNamespace(turn=5)], scores)[0]  # type: ignore[arg-type]
+    assert note == {"used": True, "why": None, "target": 10, "model_pick": 8, "changed": True}
+    assert int(scores[0, :11].argmax()) == 10 and not p.follows
+    assert torch.isinf(scores[0, :11]).sum() == 10
+
+
+def test_the_followed_switch_in_is_dropped_when_it_cannot_apply() -> None:
+    for open_, turn, why in (([8, 9], 5, "not open"), ([8, 10], 6, "the pivot move was on turn 5")):
+        kinds, b, scores = _replace(open_)
+        p = _follower()
+        p.follows = {0: Follow(3, 5, 2, 10)}
+        note = Searcher.follow(p, [0], kinds, b, [SimpleNamespace(turn=turn)], scores)[0]  # type: ignore[arg-type]
+        assert note["used"] is False and why in note["why"] and int(scores[0, :11].argmax()) == 8 and not p.follows
+
+
+def test_a_pivot_move_that_did_not_go_out_drops_its_switch_in() -> None:
+    p = _follower()
+    p.follows = {0: Follow(3, 5, 2, 10), 1: Follow(4, 5, 2, 9)}
+    Searcher.played(p, 3, 2)  # type: ignore[arg-type]
+    assert set(p.follows) == {0, 1}
+    Searcher.played(p, 4, 7)  # type: ignore[arg-type]
+    assert set(p.follows) == {0}
+
+
+@needs_games
+def test_the_policy_plays_the_kept_switch_in_at_a_replace_request() -> None:
+    env = cg.BatchEnv(None, 1, seed=5, threads=1)
+    for _ in range(400):
+        t = env.observe_tensors()
+        if int(t.kind[0]) == L.KIND_REPLACE and int(t.seat[0]) == 0 and int(np.asarray(t.mask)[0].sum()) >= 2:
+            break
+        env.act(env.builtin_actions("max_damage"))
+    else:
+        pytest.skip("no replace request with two switch-ins in this game")
+    battle = env.battle(0)
+    policy = make({"sims": 64})
+    plain = int(torch.as_tensor(policy.decide(t, [0], [battle])["scores"])[0, :11].argmax())
+    target = next(a for a in np.flatnonzero(np.asarray(t.mask)[0]) if a != plain)
+    policy.searcher.follows[0] = Follow(int(t.decision[0]) - 1, int(battle.turn), 2, int(target))  # type: ignore[union-attr]
+    out = policy.decide(t, [0], [battle])
+    assert int(out["scores"][0, :11].argmax()) == target
+    assert out["extras"][0]["follow"] == {"used": True, "why": None, "target": target, "model_pick": plain,
+                                          "changed": True}  # fmt: skip
+    policy.reset([0])
+    assert not policy.searcher.follows  # type: ignore[union-attr]

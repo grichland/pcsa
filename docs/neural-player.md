@@ -135,6 +135,9 @@ The action played is the one the averaged root strategy favours most, inside the
 
 The search stops at `ms` or the request's deadline, whichever is sooner, and earlier once the answer has settled
 (`settle_sims`, `settle_share`, `settle_gap`). Turns before `from_turn`, requests with a single open action, team
-preview and replacements are not searched. When the search cannot run or runs fewer than `min_sims`
-simulations, the network's own answer is played and the record says why. The search needs Champions Gym 0.5.0 or later,
-which builds engine games from a live battle; with an earlier version every turn records that it could not run.
+preview and replacements are not searched. With `follow_pivot`, when the pick is a move the trees saw switch us out
+in the same turn (U-turn, Volt Switch and the like), the switch-in the search chose there is kept and played at
+that turn's replace request when it is open; the request cannot tell a pivot from a faint, so it answers either.
+When the search cannot run or runs fewer than `min_sims` simulations, the network's own answer is played and the
+record says why. The search needs Champions Gym 0.5.0 or later, which builds engine games from a live battle; with
+an earlier version every turn records that it could not run.

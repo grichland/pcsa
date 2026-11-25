@@ -75,6 +75,7 @@ Champions Gym and the player it runs (pcsa.cg)
 | `cg.search.settle_sims` | `300` | stop before `ms` once the pick has led this many simulations (0: always use `ms`) |
 | `cg.search.settle_share` | `0.9` | ... and holds this share of the search's strategy |
 | `cg.search.settle_gap` | `0.01` | or once the best two actions are this close in win chance, after twice settle_sims |
+| `cg.search.follow_pivot` | `true` | a pivot move picked: its switch-in is the one the search chose for after it |
 | `cg.choice` |  | how the pick is made from the network's matrix at turn requests (pcsa.network.choosing) |
 | `cg.choice.rule` | `regret` | mean: expected score (with top_theirs 0: the network's own pick); min; mix; regret |
 | `cg.choice.top_theirs` | `8` | over their N likeliest replies by the network's prediction (0: all) |
