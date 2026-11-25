@@ -18,7 +18,9 @@ them, searching.py runs this for the policy). One tree per world:
   to the strategy sums.
 
 The answer is our normalised strategy sum at the root, averaged over the worlds by their simulations; the caller
-plays its largest entry among the actions allowed. Leaves are evaluated in batches of `batch`.
+plays its largest entry among the actions allowed. Leaves are evaluated in batches of up to `batch`: the first of
+PROBE simulations times them, and each later one is sized so that twice its expected time fits what is left (with
+`sims` set, batches stay full so a seed repeats).
 """
 
 from __future__ import annotations
@@ -41,6 +43,8 @@ FLOOR = 0.02  # prior of a legal action of theirs that no network column stands 
 KIND_ASKED = (L.KIND_TURN, L.KIND_REPLACE)
 MIN_BUDGET_MS = 40.0
 END_MARGIN_S = 0.015  # of the budget, for putting the answer together
+PROBE = 16  # simulations in the first batch, which times them
+SAFETY = 2.0  # a batch starts only if twice its expected time fits
 
 
 class Node:
@@ -302,8 +306,8 @@ class Search:
 
     def run(self, worlds: list[World], end: float) -> None:
         """Simulations round-robin over the worlds until `end` (precise_now), cfg.sims or a settled answer."""
-        cfg, sims, took = self.cfg, 0, 0.0
-        while precise_now() + 2.0 * took < end - END_MARGIN_S:
+        cfg, sims, per_sim = self.cfg, 0, 0.0
+        while (left := end - END_MARGIN_S - precise_now()) > 0:
             if cfg.sims > 0 and sims >= cfg.sims:
                 self.stopped = "sims"
                 break
@@ -311,8 +315,15 @@ class Search:
             if check and (why := self.settled(worlds, sims)):
                 self.stopped = why
                 break
+            if cfg.sims > 0:  # a fixed count: full batches, so a seed repeats
+                size = min(cfg.batch, cfg.sims - sims)
+                if per_sim and SAFETY * per_sim * size > left:
+                    break
+            else:
+                size = min(cfg.batch, int(left / (SAFETY * per_sim)) if per_sim else PROBE)
+                if size < 1:
+                    break
             start, waiting, done = precise_now(), {}, []
-            size = cfg.batch if cfg.sims <= 0 else min(cfg.batch, cfg.sims - sims)
             for k in range(size):
                 world = worlds[(sims + k) % len(worlds)]
                 path, node = self.descend(world)
@@ -325,7 +336,7 @@ class Search:
             for path, node in done:
                 self.backup(path, node.v)
             sims += size
-            took = precise_now() - start
+            per_sim = (precise_now() - start) / size
 
     def result(self, worlds: list[World], dropped: list[str]) -> Result:
         total = sum(w.sims for w in worlds)
