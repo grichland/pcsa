@@ -272,7 +272,7 @@ function mxCell(m, i, j, rank, rowOrder, what) {
   cell.tabIndex = -1;
   cell.setAttribute("role", "cell");
   if (!m.legal[i]) return cell;
-  cell.textContent = signed(v, 1);
+  cell.textContent = mxNum(v);
   const a = Math.min(1, Math.abs(v) / MX.reach);
   if (Math.abs(v) > 0.03) {
     cell.classList.add(v > 0 ? "pos" : "neg");

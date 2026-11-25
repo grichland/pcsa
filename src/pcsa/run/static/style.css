@@ -127,7 +127,7 @@ b { font-variant-numeric: tabular-nums; }
 .warn-list li[data-level="ERROR"] .k, .warn-list li[data-level="CRITICAL"] .k { color: var(--danger); }
 
 /* Board: the frame and the matrix on the left, win rate, teams and log on the right ---------------- */
-.board { display: grid; grid-template-columns: minmax(0, 58fr) minmax(0, 42fr); gap: 0.75rem; padding: 0.65rem 1rem 0.8rem; min-height: 0; }
+.board { display: grid; grid-template-columns: minmax(0, 66fr) minmax(0, 34fr); gap: 0.75rem; padding: 0.65rem 1rem 0.8rem; min-height: 0; }
 .col { display: flex; flex-direction: column; gap: 0.75rem; min-height: 0; min-width: 0; }
 .tile { position: relative; display: flex; flex-direction: column; min-height: 0; min-width: 0; padding: 0.75rem 1rem 0.85rem; overflow: hidden; background: var(--surface); border: 1.5px solid color-mix(in srgb, var(--ink) 11%, var(--surface)); border-radius: var(--radius); box-shadow: var(--shadow); }
 .tile-head { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.55rem; min-width: 0; flex: none; }
