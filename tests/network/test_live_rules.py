@@ -1,5 +1,5 @@
 """pcsa's own rules (pcsa.network.live_rules): no status moves when both actives are a listed species, and no
-team-preview pick that brings two Mega stone holders."""
+team-preview pick that brings two Mega stone holders, and Mega Evolution whenever it is open."""
 
 from __future__ import annotations
 
@@ -133,3 +133,31 @@ def test_the_policy_never_picks_two_stone_holders_and_lists_the_closed_picks() -
     assert int(scores.argmax()) not in TWO_STONE_PICKS
     assert sorted(extras["closed"]) == [L.PREVIEW_OFFSET + a for a in TWO_STONE_PICKS]
     assert all(scores[a] == float("-inf") for a in TWO_STONE_PICKS)
+
+
+def test_the_mega_rule_closes_plain_moves_whose_mega_copy_is_open() -> None:
+    rule = live_rules.MegaRule()
+    m = np.zeros((2, L.OWN_ACTIONS), np.uint8)
+    m[0, [0, 1, 4, 8]] = 1  # move 0 can Mega Evolve, move 1 has no Mega copy open
+    m[1, [0, 9]] = 1  # no Mega open
+    obs = {"kind": np.array([L.KIND_TURN, L.KIND_TURN])}
+    out = rule.mask(obs, m)
+    assert list(np.flatnonzero(out[0])) == [1, 4, 8] and list(np.flatnonzero(out[1])) == [0, 9]
+    assert rule.closed == 1
+    replace = {"kind": np.array([L.KIND_REPLACE, L.KIND_TURN])}
+    assert (rule.mask(replace, m)[0] == m[0]).all()
+
+
+def test_the_policy_mega_evolves_whenever_it_can() -> None:
+    if not CHECKPOINT.is_file():
+        pytest.skip(f"no test checkpoint at {CHECKPOINT}")
+    policy = neural.policy()  # the shipped rules, with always_mega on
+    assert policy.info["rule_masks"]["always_mega"] is True
+    arrays: Any = turn_request(cg.BatchEnv(None, 1, seed=3, threads=1))
+    mask = np.asarray(arrays.mask).copy()
+    mask[0, 4:8] = mask[0, :4]  # as if our active could Mega Evolve
+    policy.reset([0])
+    scores, extras = scores_of(policy, arrays._replace(mask=mask), 0)
+    plain = [int(a) for a in np.flatnonzero(mask[0, :4])]
+    assert plain and all(scores[a] == float("-inf") for a in plain) and set(plain) <= set(extras["closed"])
+    assert int(np.argmax(scores)) >= 4

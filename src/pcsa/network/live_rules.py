@@ -4,6 +4,9 @@ The mirror rule: when our active and theirs are the same species and that specie
 `cg.rules.status_free_mirrors`, our status moves (and their Mega copies) are closed at turn requests, only while
 another action stays open.
 
+The Mega rule (`cg.rules.always_mega`): at turn requests, a plain move is closed while its Mega copy is open, so
+we Mega Evolve whenever we can; switches stay open.
+
 The lineup rule (`cg.rules.one_mega_lineup`): at team preview, our picks that bring two or more Mega stone holders
 are closed (only one can Mega Evolve), only while another pick stays open.
 """
@@ -22,7 +25,7 @@ from . import layout as L
 from . import rules as masks
 from . import vocab
 
-LIVE_ONLY = ("status_free_mirrors", "one_mega_lineup")  # RuleSettings fields training's Rules does not take
+LIVE_ONLY = ("status_free_mirrors", "always_mega", "one_mega_lineup")  # not fields of training's Rules
 
 
 class MirrorRule:
@@ -62,6 +65,38 @@ class MirrorRule:
         return out
 
 
+class MegaRule:
+    """Closes our plain moves whose Mega copy is open."""
+
+    def __init__(self) -> None:
+        self.closed = 0  # decisions the rule closed something for
+
+    def mask(self, obs: dict, m: np.ndarray) -> np.ndarray:
+        """m [N, 11] with the rule applied to the turn rows."""
+        close = (m[:, :4] > 0) & (m[:, 4:8] > 0)
+        if "kind" in obs:
+            close &= (np.asarray(obs["kind"]).reshape(-1) == L.KIND_TURN)[:, None]
+        if not close.any():
+            return m
+        out = m.copy()
+        out[:, :4][close] = 0
+        self.closed += int(close.any(1).sum())
+        return out
+
+
+class TurnRules:
+    """pcsa's turn-request rules in order: the mirror rule, then the Mega rule (either may be None)."""
+
+    def __init__(self, mirror: MirrorRule | None, mega: MegaRule | None) -> None:
+        self.mirror, self.mega = mirror, mega
+
+    def mask(self, obs: dict, m: np.ndarray) -> np.ndarray:
+        for rule in (self.mirror, self.mega):
+            if rule is not None:
+                m = rule.mask(obs, m)
+        return m
+
+
 class LineupRule:
     """Closes our team-preview picks that bring two or more Mega stone holders."""
 
@@ -86,11 +121,11 @@ class LineupRule:
         return out
 
 
-Rules = tuple[masks.RuleConfig | None, MirrorRule | None, LineupRule | None]
+Rules = tuple[masks.RuleConfig | None, TurnRules | None, LineupRule | None]
 
 
 def build(rules: Mapping[str, Any] | None, layout: L.Layout) -> Rules:
-    """The policy's `rules` argument as (training's RuleConfig, the mirror rule, the lineup rule); all None when
+    """The policy's `rules` argument as (training's RuleConfig, pcsa's turn rules, the lineup rule); all None when
     off, and each of pcsa's rules None when not set."""
     if rules is None:
         return None, None, None
@@ -98,11 +133,13 @@ def build(rules: Mapping[str, Any] | None, layout: L.Layout) -> Rules:
     cfg = masks.RuleConfig(**limits.model_dump(exclude={"enabled", *LIVE_ONLY}))
     mirrors = limits.status_free_mirrors
     mirror = MirrorRule(layout, mirrors) if mirrors else None
-    return cfg, mirror, (LineupRule(layout) if limits.one_mega_lineup else None)
+    mega = MegaRule() if limits.always_mega else None
+    turn = TurnRules(mirror, mega) if mirror or mega else None
+    return cfg, turn, (LineupRule(layout) if limits.one_mega_lineup else None)
 
 
-def apply(mirror: MirrorRule | None, obs: dict, m: np.ndarray) -> np.ndarray:
-    return m if mirror is None else mirror.mask(obs, m)
+def apply(turn: TurnRules | None, obs: dict, m: np.ndarray) -> np.ndarray:
+    return m if turn is None else turn.mask(obs, m)
 
 
 def close_preview(lineup: LineupRule | None, arrays: Any, b: dict, closed: list[list[int]]) -> None:
@@ -119,9 +156,10 @@ def close_preview(lineup: LineupRule | None, arrays: Any, b: dict, closed: list[
     b["preview_mask"] = b["preview_mask"].new_tensor(new)
 
 
-def info(cfg: masks.RuleConfig | None, mirror: MirrorRule | None, lineup: LineupRule | None) -> dict | None:
+def info(cfg: masks.RuleConfig | None, turn: TurnRules | None, lineup: LineupRule | None) -> dict | None:
     """The rule settings as the policy reports them."""
     if cfg is None:
         return None
+    mirror, mega = (None, None) if turn is None else (turn.mirror, turn.mega)
     return {**dataclasses.asdict(cfg), "status_free_mirrors": [] if mirror is None else mirror.species,
-            "one_mega_lineup": lineup is not None}  # fmt: skip
+            "always_mega": mega is not None, "one_mega_lineup": lineup is not None}  # fmt: skip

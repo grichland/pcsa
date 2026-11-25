@@ -236,10 +236,10 @@ def open_env(teams: list[list[dict]], n: int, seed: int, threads: int) -> Any:
 
 
 def live_masks(policy: Any, rules: masks.Rules, obs: dict) -> np.ndarray:
-    """Training's rule masks, then pcsa's mirror rule, as the policy applies them live."""
+    """Training's rule masks, then pcsa's turn rules, as the policy applies them live."""
     m = rules.mask(obs)
-    mirror = getattr(policy, "mirror", None)
-    return m if mirror is None else mirror.mask(obs, m)
+    turn = getattr(policy, "turn_rules", None)
+    return m if turn is None else turn.mask(obs, m)
 
 
 def apply(previewer: Previewer | None, kinds: np.ndarray, b: dict, out: dict, scores: torch.Tensor,

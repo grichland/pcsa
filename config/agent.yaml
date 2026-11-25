@@ -37,6 +37,7 @@ cg:                       # Champions Gym and the player it runs (pcsa.cg)
     no_double_protect: true   # close the Protect family two turns in a row
     no_wasted_self: true   # close recovery at full HP, setup at +6, Substitute when it would fail
     status_free_mirrors: [primarina]   # not training's: close status moves when both actives are one of these
+    always_mega: true   # not training's: close plain moves while their Mega copy is open, so we always Mega Evolve
     one_mega_lineup: true   # not training's: close team-preview picks that bring two or more Mega stone holders
   search:                 # decision-time search at turn requests (pcsa.network.search)
     enabled: false        # needs Champions Gym 0.5.0 or later (0.7.1 is pinned)

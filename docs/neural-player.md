@@ -74,10 +74,12 @@ store them. They close actions at turn requests only, and only while another act
 - `no_redundant_field`, `no_double_protect`, `no_wasted_self`: hazards at their maximum or weather and terrain
   already up, Protect twice in a row, recovery at full HP, setup at +6, a Substitute that would fail.
 
-Two rules are pcsa's own, not training's (`src/pcsa/network/live_rules.py`, applied after the others):
+Three rules are pcsa's own, not training's (`src/pcsa/network/live_rules.py`, applied after the others):
 - `status_free_mirrors` lists species (CG ids, shipped `[primarina]`); when our active and theirs are the same
   listed species, our status moves and their Mega copies are closed, while another action stays open. An empty
   list turns it off.
+- `always_mega` (shipped `true`): at turn requests, a plain move is closed while the same move with Mega Evolution
+  is open, so we Mega Evolve the first time we can; switches stay open. It runs after the mirror rule.
 - `one_mega_lineup` (shipped `true`): at team preview, every pick of three that brings two or more Mega stone
   holders is closed, since only one can Mega Evolve, while another pick stays open. The stones are the items a
   species' Mega form needs in CG's species table (`mega_stones` in `assets/game/cg/vocab.json`). Preview search
