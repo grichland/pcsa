@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from pathlib import Path
 from typing import Any
 
 from pcsa.cg.view import view
@@ -147,6 +148,7 @@ class Server:
         self.session.capture_builtin = self.proxy is None
         self.failures = 0
         self.last_failure: str | None = None
+        self.log_dir = log_dir
         self.policy: Any = getattr(player, "policy", None) if self.proxy is not None else None
         if hasattr(self.policy, "game_of") and callable(getattr(self.session, "game", None)):
             # the search's Games come from the Session (Champions Gym 0.5.0)
@@ -174,6 +176,28 @@ class Server:
         if isinstance(message, dict) and message.get("type") == "battle_start":
             previewer.own_team = message.get("own_team")
 
+    def _evidence(self, message: Any) -> None:
+        """battle_start, events and battle_end to the searcher's build evidence (worlds_mode builds); at battle_end
+        the rank of the build that fits what was shown goes to <log_dir>/builds-<battle>.json."""
+        searcher = getattr(self.policy, "searcher", None)
+        if searcher is None or not hasattr(searcher, "events"):
+            return
+        if isinstance(message, str):
+            if not any(f'"{t}"' in message for t in ("events", "battle_start", "battle_end")):
+                return
+            message = json.loads(message)
+        kind = message.get("type") if isinstance(message, dict) else None
+        if kind == "battle_start":
+            searcher.start_battle(message.get("own_team"))
+        elif kind == "events":
+            searcher.events(message.get("events"))
+        elif kind == "battle_end":
+            summary = searcher.end_battle()
+            if self.log_dir and summary:
+                path = Path(self.log_dir) / f"builds-{message.get('battle') or 'battle'}.json"
+                text = json.dumps({"battle": message.get("battle"), "pokemon": summary}, indent=1)
+                path.write_text(text + "\n", encoding="utf-8")
+
     def _failed(self, what: str, error: BaseException) -> None:
         self.failures += 1
         self.last_failure = f"{what}: {type(error).__name__}: {error}"
@@ -190,6 +214,7 @@ class Server:
                 self.proxy.battle = None
             self._deadline(message)
             self._own_team(message)
+            self._evidence(message)
         except Exception as error:
             self._failed("before the request", error)
             before = None

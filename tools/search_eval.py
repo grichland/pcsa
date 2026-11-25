@@ -3,8 +3,9 @@
     uv run python tools/search_eval.py --checkpoint assets/models/<file>.pt --opponent tower --games 512
 
 Each game is played twice from the same seed (same teams): once by the model alone, once with search. Both use the
-policy settings of config/agent.yaml (`--set cg.search.ms=2500` and the like change them). Writes one JSON line per
-finished game to --out and prints the totals; --minutes stops it early and reports what finished.
+policy settings of config/agent.yaml (`--set cg.search.ms=2500` and the like change them). With --worlds both play
+with search, one guessing their sets part by part (worlds_mode legacy), one by whole builds (builds). Writes one
+JSON line per finished game to --out and prints the totals; --minutes stops it early and reports what finished.
 """
 
 from __future__ import annotations
@@ -72,13 +73,18 @@ def main() -> int:
     ap.add_argument("--minutes", type=float, default=10.0)
     ap.add_argument("--out", default=None)
     ap.add_argument("--set", action="append", default=[], metavar="SECTION.KEY=VALUE", help="config override")
+    ap.add_argument("--worlds", action="store_true", help="search with legacy worlds against search with builds")
     a = ap.parse_args()
     cfg = load_config(paths.config_dir() / "agent.yaml", ["cg.search.enabled=true", *a.set]).agent.cg
     kwargs = startup.policy_kwargs(cfg)
-    players = {
-        "model": Policy(a.checkpoint, **{**kwargs, "search": None}),
-        "search": Policy(a.checkpoint, **kwargs),
-    }
+    if a.worlds:
+        mode = lambda m: {**kwargs, "search": {**kwargs["search"], "worlds_mode": m}}  # noqa: E731
+        players = {"model": Policy(a.checkpoint, **mode("legacy")), "search": Policy(a.checkpoint, **mode("builds"))}
+    else:
+        players = {
+            "model": Policy(a.checkpoint, **{**kwargs, "search": None}),
+            "search": Policy(a.checkpoint, **kwargs),
+        }
     weights = None
     if a.own_last:
         n = cg.check_teams(a.teams)[0]
@@ -107,6 +113,7 @@ def main() -> int:
         "search_wins": wins["search"], "turn_decisions": decisions, "searched": searched, "changed": changed,
         "search_ms_median": float(np.median(ms)) if ms else None, "search_ms_max": float(max(ms)) if ms else None,
         "settings": players["search"].info["search"], "checkpoint": Path(a.checkpoint).name,
+        "players": ["legacy worlds", "builds worlds"] if a.worlds else ["model", "search"],
     }  # fmt: skip
     print(json.dumps(total))
     if out:

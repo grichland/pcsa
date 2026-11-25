@@ -64,6 +64,7 @@ class SearchSettings(_Strict):
     settle_share: float = Field(ge=0, le=1)  # ... with at least this share of the strategy
     settle_gap: float = Field(ge=0)  # or once the best two values are this close, after twice settle_sims
     follow_pivot: bool  # a pivot move picked: its switch-in is the one the search chose for after it
+    worlds_mode: Literal["builds", "legacy"]  # their sets: whole known builds weighted by evidence, or part by part
 
 
 class CGSearch(SearchSettings):
@@ -101,6 +102,7 @@ class PreviewSearch(_Strict):
     device: str  # the playouts' torch device
     threads: int = Field(gt=0)  # Champions Gym threads
     seed: int
+    worlds_mode: Literal["builds", "legacy"]  # their sets: whole known builds, or part by part
 
     def args(self) -> dict | None:
         """The policy's `preview_search` argument; None when off."""

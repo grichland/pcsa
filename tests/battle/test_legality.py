@@ -13,6 +13,7 @@ from pcsa.battle import battle_text, game, log_patterns, names
 from pcsa.battle.ids import to_id
 from pcsa.common import paths
 from pcsa.live import action_check
+from pcsa.network import evidence
 from pcsa.phone import team_sheet
 from pcsa.run import battle_state
 
@@ -85,6 +86,9 @@ CONSTANTS: dict[str, tuple[str, list[str]]] = {
         "any",
         [row[1] for row in battle_text.CHAMPIONS_TEXT if row[1] not in TEXT_SECTIONS],
     ),
+    "network.evidence.ORDER_ITEMS": ("items", sorted(evidence.ORDER_ITEMS)),
+    "network.evidence.SPEED_ITEMS": ("items", sorted(evidence.SPEED_ITEMS)),
+    "network.evidence.ORDER_ABILITIES": ("abilities", sorted(evidence.ORDER_ABILITIES)),
     "rules.json items": ("items", _rules("items")),
     "rules.json abilities": ("abilities", _rules("abilities")),
     "team_sheet.NATURES": ("natures", [*team_sheet.NATURES.values(), team_sheet.NEUTRAL_NATURE]),

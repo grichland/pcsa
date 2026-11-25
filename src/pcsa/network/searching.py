@@ -23,8 +23,8 @@ import torch
 from pcsa.common.clock import precise_now
 from pcsa.common.paths import assets_dir
 
+from . import builds, evidence, model, search, worlds
 from . import layout as L
-from . import model, search, worlds
 
 RESERVE_MS = 250.0  # of the request's deadline, kept for the reply
 SEED_BITS = (1 << 63) - 1
@@ -95,8 +95,53 @@ class Searcher:
         self.policy, self.cfg = policy, cfg
         self.leads: dict[int, str] = {}  # per slot: the species they led with
         self.follows: dict[int, Follow] = {}  # per slot: the switch-in after a searched pivot move
+        self._guesser: builds.Guesser | None = None
+        self.tracker: evidence.Tracker | None = None  # this battle's evidence (pcsa.cg.serve feeds it)
+        self.last_weights: dict[str, tuple] = {}  # species -> (candidates, weights, facts) at the last decision
         self._tables: worlds.Tables | None = None
         self._scratch: model.Memory | None = None
+
+    def guesser(self) -> builds.Guesser:
+        if self._guesser is None:
+            self._guesser = builds.Guesser(self.tables())
+        return self._guesser
+
+    def start_battle(self, own_team: Any) -> None:
+        """A new battle: its evidence starts empty, with our six sets for our speeds."""
+        self.tracker = evidence.Tracker(self.guesser().dex, own=list(own_team or []))
+        self.last_weights = {}
+
+    def events(self, events: Any) -> None:
+        if self.tracker is None:
+            self.start_battle(None)
+        self.tracker.feed(events or [])  # type: ignore[union-attr]
+
+    def end_battle(self) -> list[dict]:
+        """Per opposing Pokémon weighed this battle: the rank (1 first) and weight of the likeliest build that fits
+        what was shown, by the last weights (rank None: only "other" fits)."""
+        out = []
+        for species, (cands, w, facts) in self.last_weights.items():
+            order = np.argsort(-w)
+            legal = self.guesser().dex.abilities.get(species)
+            fit = [r for r, i in enumerate(order) if cands[i] is not None and builds.fits(cands[i], facts, legal)]
+            hit = fit[0] if fit else None
+            out.append({"species": species, "candidates": len(cands) - 1, "rank": None if hit is None else hit + 1,
+                        "weight": None if hit is None else round(float(w[order[hit]]), 4),
+                        "other": round(float(w[-1]), 4)})  # fmt: skip
+        self.tracker, self.last_weights = None, {}
+        return out
+
+    def draw(self, battle: Any, order: list[int], belief: worlds.Belief, rng: np.random.Generator) -> tuple:
+        """Their three (preview slots, lead first) as whole builds (worlds_mode builds)."""
+        g, team, preview = self.guesser(), list(battle.opponent_team), [str(s) for s in battle.opponent_preview]
+        had = self.tracker.had_item if self.tracker else {}
+        facts = {i: builds.facts_of(team[i], had.get(builds.to_id(team[i].species))) for i in order}
+        shown = [f.item for f in facts.values() if f.item]
+        sets, notes = g.guess_team([(i, team[i], preview[i]) for i in order], belief, self.tracker, rng, shown)
+        for i in order:
+            cands, w, _ = g.weigh(team[i], preview[i], belief, self.tracker)
+            self.last_weights[preview[i]] = (cands, w, facts[i])
+        return sets, notes
 
     def forget(self, slot: int) -> None:
         self.leads.pop(slot, None)
@@ -190,8 +235,18 @@ class Searcher:
         p, tables = self.policy, self.tables()
         belief = self.belief(r, b["row_ids"][r].long().cpu(), out)
         make = p.game_of or game_from_battle
-        built, dropped = worlds.build_worlds(battle, belief, tables, make, self.cfg.worlds, rng, self.leads.get(slot))
+        draw = None
+        if self.cfg.worlds_mode == "builds":
+            draw = lambda battle, order, rng: self.draw(battle, order, belief, rng)  # noqa: E731
+        built, dropped = worlds.build_worlds(battle, belief, tables, make, self.cfg.worlds, rng, self.leads.get(slot),
+                                             draw)  # fmt: skip
         note["worlds"], note["dropped"], note["dropped_why"] = len(built), len(dropped), dropped[:3]
+        note["repaired"] = sum(w.repaired for w in built)
+        if draw is not None:
+            seen = {n["species"]: n for w in built for n in w.notes}
+            note["builds"] = {"pokemon": [{k: v for k, v in n.items() if k != "drawn"} for n in seen.values()],
+                              "drawn": [[n["drawn"] for n in w.notes] for w in built],
+                              "orders": len(self.tracker.orders) if self.tracker else 0}  # fmt: skip
         if not built:
             raise worlds.NoSearch("no guess of their team gave a Game" + (f": {dropped[0]}" if dropped else ""))
         leaf = self.leaves({k: out[k][r : r + 1] for k in OUTPUTS if k in out}, b["row_ids"][r : r + 1])[0]

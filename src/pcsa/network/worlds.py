@@ -143,10 +143,8 @@ def guess_set(p: Any, slot: int, species: str, belief: Belief, tables: Tables, r
     return out
 
 
-def guess_team(
-    battle: Any, belief: Belief, tables: Tables, rng: np.random.Generator, lead: str | None
-) -> tuple[list[dict], list[str]]:
-    """A guess at their three, lead first: (the sets for Session.game, each one's species)."""
+def pick_three(battle: Any, belief: Belief, rng: np.random.Generator, lead: str | None) -> list[int]:
+    """Their three by preview slot, lead first: the ones seen, the rest drawn by the belief's `brought`."""
     preview = [str(s) for s in battle.opponent_preview]
     team = list(battle.opponent_team)
     seen = [i for i, p in enumerate(team) if p.revealed][: L.OWN_PICKS]
@@ -166,7 +164,16 @@ def guess_team(
         led = lead is not None and lead in (p.species, p.form, preview[i])
         return (not led, not p.active, not p.revealed)
 
-    order = sorted(seen, key=first)
+    return sorted(seen, key=first)
+
+
+def guess_team(
+    battle: Any, belief: Belief, tables: Tables, rng: np.random.Generator, lead: str | None
+) -> tuple[list[dict], list[str]]:
+    """A guess at their three, lead first: (the sets for Session.game, each one's species), each set drawn part
+    by part (worlds_mode legacy)."""
+    preview, team = [str(s) for s in battle.opponent_preview], list(battle.opponent_team)
+    order = pick_three(battle, belief, rng, lead)
     return [guess_set(team[i], i, preview[i], belief, tables, rng) for i in order], [preview[i] for i in order]
 
 
@@ -193,25 +200,37 @@ class World:
     game: Any
     root: Any = None
     sims: int = 0
+    notes: list[dict] = field(default_factory=list)  # per Pokémon, with worlds_mode builds
+    repaired: bool = False
 
     def moves(self, slot: int) -> list[str]:
         return self.guess[slot]["moves"] if 0 <= slot < len(self.guess) else []
 
 
-def build_worlds(battle: Any, belief: Belief, tables: Tables, make: Callable, count: int,
-                 rng: np.random.Generator, lead: str | None) -> tuple[list[World], list[str]]:  # fmt: skip
+def build_worlds(battle: Any, belief: Belief, tables: Tables, make: Callable, count: int,  # noqa: PLR0913
+                 rng: np.random.Generator, lead: str | None, draw: Callable | None = None,
+                 ) -> tuple[list[World], list[str]]:  # fmt: skip
     """Up to `count` different guesses as Games. A guess the Game changes (a set part refused) is repaired and
-    tried once more, and dropped if the Game still changes it."""
+    tried once more, and dropped if the Game still changes it. `draw(battle, order, rng) -> (sets, notes)` draws
+    the sets of their three (preview slots, lead first) in place of guess_set (worlds_mode builds)."""
     worlds, dropped, seen = [], [], set()
     for _ in range(count):
-        guess, species = guess_team(battle, belief, tables, rng, lead)
+        notes: list[dict] = []
+        if draw is None:
+            guess, species = guess_team(battle, belief, tables, rng, lead)
+        else:
+            order = pick_three(battle, belief, rng, lead)
+            guess, notes = draw(battle, order, rng)
+            species = [str(battle.opponent_preview[i]) for i in order]
         key = json.dumps(guess, sort_keys=True)
         if key in seen:
             continue
         seen.add(key)
+        repaired = False
         try:
             game, rejected = make(battle, guess, int(rng.integers(1 << 62)))
             if any(r[1] != BROUGHT for r in rejected):  # once more without the parts the Game refused
+                repaired = True
                 team = list(battle.opponent_team)
                 shown = {g["slot"]: {str(m) for m, _ in team[g["slot"]].moves or ()} for g in guess}
                 repair(guess, species, rejected, shown)
@@ -228,5 +247,7 @@ def build_worlds(battle: Any, belief: Belief, tables: Tables, make: Callable, co
             if at:
                 guess.insert(0, guess.pop(at[0]))
                 species.insert(0, species.pop(at[0]))
-        worlds.append(World(guess, species, game))
+                if len(notes) == len(species):
+                    notes.insert(0, notes.pop(at[0]))
+        worlds.append(World(guess, species, game, notes=notes, repaired=repaired))
     return worlds, dropped

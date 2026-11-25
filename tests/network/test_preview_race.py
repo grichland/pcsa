@@ -152,7 +152,7 @@ def test_the_same_cuts_and_choice_as_the_reference(reference, monkeypatch) -> No
     monkeypatch.setattr(previewing, "model", SimpleNamespace(Memory=lambda *a: SimpleNamespace(reset=lambda s: None),
                                                              INPUTS=previewing.model.INPUTS))  # fmt: skip
     cfg = PreviewSearch(enabled=True, budget_s=budget, guesses=3, race=[20, 6, 2], prior_games=2.0, choose="mean",
-                        keep_head_margin=margin, device="cpu", threads=1, seed=0)  # fmt: skip
+                        keep_head_margin=margin, device="cpu", threads=1, seed=0, worlds_mode="legacy")  # fmt: skip
     p = previewing.Previewer.__new__(previewing.Previewer)
     p.policy, p.cfg = SimpleNamespace(rule_cfg=None, layout=None), cfg
     p.net = SimpleNamespace(act=lambda b, kind, **k: fake_out(N))

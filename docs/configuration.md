@@ -78,6 +78,7 @@ Champions Gym and the player it runs (pcsa.cg)
 | `cg.search.settle_share` | `0.9` | ... and holds this share of the search's strategy |
 | `cg.search.settle_gap` | `0.01` | or once the best two actions are this close in win chance, after twice settle_sims |
 | `cg.search.follow_pivot` | `true` | a pivot move picked: its switch-in is the one the search chose for after it |
+| `cg.search.worlds_mode` | `builds` | their sets: whole known builds weighted by what the battle showed (legacy: part by part) |
 | `cg.choice` |  | how the pick is made from the network's matrix at turn requests (pcsa.network.choosing) |
 | `cg.choice.rule` | `regret` | mean: expected score (with top_theirs 0: the network's own pick); min; mix; regret |
 | `cg.choice.top_theirs` | `8` | over their N likeliest replies by the network's prediction (0: all) |
@@ -98,6 +99,7 @@ Champions Gym and the player it runs (pcsa.cg)
 | `cg.preview_search.device` | `cuda` | the playouts run on the GPU; the live player stays on the CPU |
 | `cg.preview_search.threads` | `8` | Champions Gym threads |
 | `cg.preview_search.seed` | `0` |  |
+| `cg.preview_search.worlds_mode` | `builds` | their sets: whole known builds (legacy: part by part) |
 
 ## `device`
 

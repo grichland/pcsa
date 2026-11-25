@@ -136,6 +136,18 @@ tree keeps only each side's `top_*_moves` likeliest moves (a move and its Mega c
 `top_*_switches` likeliest switches (0: all); the shipped config keeps their 3 moves and 2 switches and all of
 ours.
 
+With `worlds_mode: builds` (also `cg.preview_search.worlds_mode`) each hidden Pokémon's set is one whole build from
+assets/sets/seen_builds.json and top_builds.json, plus an "other" candidate drawn part by part from the belief
+head. Candidates that contradict what the battle showed (moves, an item even after it was used or knocked off, the
+ability, a Mega Evolution) or have an ability the species cannot have are left out. The rest are weighted by
+sightings x the belief head's probabilities of the build's item, ability and hidden moves x this battle's turn
+orders (pcsa.network.evidence: a build whose speed contradicts an order keeps 5%), and a team is drawn build by
+build under Item Clause. pcsa.cg.serve feeds the controller's events to the evidence and writes, at each battle's
+end, the rank of the build that fits what was shown to `cg/builds-<battle>.json`; each searched turn's note has
+`builds` (candidates per Pokémon, the top three with weights, the build drawn per world). Damage is not used yet:
+Champions Gym has no damage calculation in its Python API. `legacy` draws item, ability and moves separately with
+the species' commonest spread.
+
 The search stops at `ms` or the request's deadline, whichever is sooner, and earlier once the answer has settled
 (`settle_sims`, `settle_share`, `settle_gap`). Turns before `from_turn`, requests with a single open action, team
 preview and replacements are not searched. With `follow_pivot`, when the pick is a move the trees saw switch us out

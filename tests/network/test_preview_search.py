@@ -24,7 +24,7 @@ from tests.cg import neural  # noqa: E402
 from tests.cg.neural import CHECKPOINT  # noqa: E402
 
 SETTINGS = {"budget_s": 1.5, "guesses": 2, "race": [20, 6, 2], "prior_games": 2.0, "choose": "mean",
-            "keep_head_margin": 0.03, "device": "cpu", "threads": 2, "seed": 0}  # fmt: skip
+            "keep_head_margin": 0.03, "device": "cpu", "threads": 2, "seed": 0, "worlds_mode": "builds"}  # fmt: skip
 pytestmark = pytest.mark.skipif(not CHECKPOINT.is_file(), reason=f"no test checkpoint at {CHECKPOINT}")
 
 

@@ -30,7 +30,7 @@ from pcsa.common.clock import precise_now
 from pcsa.common.config_cg import PreviewSearch
 from pcsa.common.paths import assets_dir
 
-from . import cg_adapter, model, worlds
+from . import builds, cg_adapter, model, worlds
 from . import checkpoint as ckpt
 from . import layout as L
 from . import rules as masks
@@ -80,6 +80,7 @@ class Previewer:
         self.error: str | None = None
         self.own_team: list[dict] | None = None  # set by pcsa.cg.serve from each battle_start
         self._tables: worlds.Tables | None = None
+        self._guesser: builds.Guesser | None = None
         try:
             if cfg.device.startswith("cuda") and not torch.cuda.is_available():
                 raise RuntimeError("CUDA is not available to this process")
@@ -137,13 +138,18 @@ class Previewer:
         brought = out["belief_brought"][r].sigmoid().cpu().numpy()
         belief = worlds.Belief(species, brought, soft("belief_moves"), soft("belief_item"), soft("belief_ability"))
         tables, teams, refused = self.tables(), [], []
+        shown = [SimpleNamespace(form=None, species=sid, moves=(), item=None, ability=None) for sid in species]
         for _ in range(self.cfg.guesses):
             for _ in range(GUESS_TRIES):
-                team = []
-                for slot, sid in enumerate(species):
-                    shown = SimpleNamespace(form=None, species=sid, moves=(), item=None, ability=None)
-                    drawn = worlds.guess_set(shown, slot, str(sid), belief, tables, rng)
-                    team.append(cg_set({"species": sid, **drawn}))
+                if self.cfg.worlds_mode == "builds":
+                    if self._guesser is None:
+                        self._guesser = builds.Guesser(tables)
+                    drawn_sets, _ = self._guesser.guess_team(
+                        [(slot, shown[slot], str(sid)) for slot, sid in enumerate(species)], belief, None, rng)
+                else:
+                    drawn_sets = [worlds.guess_set(shown[slot], slot, str(sid), belief, tables, rng)
+                                  for slot, sid in enumerate(species)]  # fmt: skip
+                team = [cg_set({"species": sid, **d}) for sid, d in zip(species, drawn_sets, strict=True)]
                 problems = checked([own, team])
                 if not problems:
                     teams.append(team)
