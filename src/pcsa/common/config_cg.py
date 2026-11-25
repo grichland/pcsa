@@ -65,6 +65,7 @@ class SearchSettings(_Strict):
     settle_gap: float = Field(ge=0)  # or once the best two values are this close, after twice settle_sims
     follow_pivot: bool  # a pivot move picked: its switch-in is the one the search chose for after it
     worlds_mode: Literal["builds", "legacy"]  # their sets: whole known builds weighted by evidence, or part by part
+    preview_rates: str | None  # their unseen members drawn by these live bring rates (a JSON file); None: the head
 
 
 class CGSearch(SearchSettings):

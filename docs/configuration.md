@@ -79,6 +79,7 @@ Champions Gym and the player it runs (pcsa.cg)
 | `cg.search.settle_gap` | `0.01` | or once the best two actions are this close in win chance, after twice settle_sims |
 | `cg.search.follow_pivot` | `true` | a pivot move picked: its switch-in is the one the search chose for after it |
 | `cg.search.worlds_mode` | `builds` | their sets: whole known builds weighted by what the battle showed (legacy: part by part) |
+| `cg.search.preview_rates` | `assets/sets/opponent_preview_rates.json` | their unseen members by live bring rates (null: the head) |
 | `cg.choice` |  | how the pick is made from the network's matrix at turn requests (pcsa.network.choosing) |
 | `cg.choice.rule` | `regret` | mean: expected score (with top_theirs 0: the network's own pick); min; mix; regret |
 | `cg.choice.top_theirs` | `8` | over their N likeliest replies by the network's prediction (0: all) |

@@ -9,9 +9,12 @@ from __future__ import annotations
 import json
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 import numpy as np
+
+from pcsa.common.paths import assets_dir
 
 from . import layout as L
 from . import vocab
@@ -43,6 +46,27 @@ def common_sets(builds: dict | None) -> dict[str, dict]:
                 "points": dict(s.get("points") or {}),
             }
     return out
+
+
+@dataclass
+class Rates:
+    """Their bring and lead rates per species from recorded live previews (assets/sets/opponent_preview_rates.json):
+    a species is looked up by its form, then its base species, else the table's default."""
+
+    species: dict[str, dict]
+    default: dict
+    base: dict[str, str]
+
+    @classmethod
+    def load(cls, path: str) -> Rates:
+        table = json.loads(Path(path).read_text(encoding="utf-8"))
+        dex = json.loads((assets_dir() / "game" / "cg" / "species.json").read_text(encoding="utf-8"))["species"]
+        base = {sid: to_id(s.get("baseSpecies") or sid) for sid, s in dex.items()}
+        return cls(table.get("species") or {}, table.get("default") or {"brought_rate": 0.5}, base)
+
+    def brought(self, species: str | None) -> float:
+        found = self.species.get(species or "") or self.species.get(self.base.get(species or "", ""))
+        return float((found or self.default).get("brought_rate", 0.5))
 
 
 @dataclass

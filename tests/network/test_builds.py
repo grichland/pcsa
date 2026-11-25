@@ -141,3 +141,26 @@ def test_serve_feeds_the_evidence_and_writes_the_battle_end_ranks(tmp_path) -> N
     serve.Server._evidence(server, {"type": "battle_end", "battle": "b1"})  # type: ignore[arg-type]
     assert calls == [("start", [1]), ("events", 1)]
     assert '"rank": 1' in (tmp_path / "builds-b1.json").read_text(encoding="utf-8")
+
+
+def test_live_bring_rates_pick_their_unseen_members(tmp_path) -> None:
+    import json
+
+    table = {"default": {"brought_rate": 0.5}, "species": {"garchomp": {"brought_rate": 0.9},
+                                                         "rotom": {"brought_rate": 0.02}}}  # fmt: skip
+    (tmp_path / "rates.json").write_text(json.dumps(table), encoding="utf-8")
+    rates = worlds.Rates.load(str(tmp_path / "rates.json"))
+    assert rates.brought("garchomp") == 0.9 and rates.brought("rotomwash") == 0.02  # the base species' rate
+    assert rates.brought("snorlax") == 0.5
+    preview = ["garchomp", "rotomwash", "snorlax", "gholdengo", "kingambit", "primarina"]
+    team = [SimpleNamespace(species=s, form=s, revealed=s == "primarina", active=s == "primarina") for s in preview]
+    battle = SimpleNamespace(opponent_preview=preview, opponent_team=team)
+    belief = worlds.Belief(preview, np.array([rates.brought(s) for s in preview]), np.zeros((6, 1)),
+                           np.zeros((6, 1)), np.zeros((6, 1)))  # fmt: skip
+    rng, picks = np.random.default_rng(0), []
+    for _ in range(400):
+        three = worlds.pick_three(battle, belief, rng, "primarina")
+        assert three[0] == 5 and len(set(three)) == 3  # the revealed lead is always in, first
+        picks.append(three)
+    share = lambda i: sum(i in t for t in picks) / len(picks)  # noqa: E731
+    assert share(0) > 0.6 and share(1) < 0.05

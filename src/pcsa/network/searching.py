@@ -21,7 +21,7 @@ import numpy as np
 import torch
 
 from pcsa.common.clock import precise_now
-from pcsa.common.paths import assets_dir
+from pcsa.common.paths import assets_dir, repo_root
 
 from . import builds, evidence, model, search, worlds
 from . import layout as L
@@ -96,6 +96,7 @@ class Searcher:
         self.leads: dict[int, str] = {}  # per slot: the species they led with
         self.follows: dict[int, Follow] = {}  # per slot: the switch-in after a searched pivot move
         self._guesser: builds.Guesser | None = None
+        self._rates: worlds.Rates | None = None
         self.tracker: evidence.Tracker | None = None  # this battle's evidence (pcsa.cg.serve feeds it)
         self.last_weights: dict[str, tuple] = {}  # species -> (candidates, weights, facts) at the last decision
         self._tables: worlds.Tables | None = None
@@ -221,10 +222,17 @@ class Searcher:
         return budget
 
     def belief(self, r: int, ids: torch.Tensor, out: dict) -> worlds.Belief:
+        """The belief heads of row r; with `preview_rates`, `brought` is the live bring rate of each species."""
         rows = range(L.ROWS - L.OPP_ROWS.start)
+        species = [self.policy._species(ids, L.OPP_ROWS.start + j) for j in rows]
+        brought = out["belief_brought"][r].sigmoid().cpu().numpy()
+        if self.cfg.preview_rates:
+            if self._rates is None:
+                self._rates = worlds.Rates.load(str(repo_root() / self.cfg.preview_rates))
+            brought = np.array([self._rates.brought(s) for s in species])
         return worlds.Belief(
-            [self.policy._species(ids, L.OPP_ROWS.start + j) for j in rows],
-            out["belief_brought"][r].sigmoid().cpu().numpy(),
+            species,
+            brought,
             out["belief_moves"][r].softmax(-1).cpu().numpy(),
             out["belief_item"][r].softmax(-1).cpu().numpy(),
             out["belief_ability"][r].softmax(-1).cpu().numpy(),

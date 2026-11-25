@@ -143,6 +143,27 @@ def common_build(common: dict | None, item: str) -> builds.Build | None:
                         tuple(common.get("moves") or ()), 1.0, "common")  # fmt: skip
 
 
+def three_check(start: dict, beliefs: dict, final: Battle, rates: worlds.Rates, stats: dict,
+                rng: np.random.Generator) -> None:  # fmt: skip
+    """At the first turn (their lead shown): how often the drawn three are the three they brought, by the belief
+    head's `brought` (old) and by the live bring rates (new)."""
+    preview = [builds.to_id(s) for s in start.get("opp_preview") or []]
+    brought = set(final.entered)
+    if len(preview) != 6 or len(brought) != 3 or 1 not in beliefs or not final.entered:  # noqa: PLR2004
+        return
+    lead = final.entered[0]
+    team = [SimpleNamespace(species=s, form=s, revealed=s == lead, active=s == lead) for s in preview]
+    battle = SimpleNamespace(opponent_preview=preview, opponent_team=team)
+    head = {b.get("species"): float(b.get("brought") or 0.5) for b in beliefs[1]}
+    for mode, w in (("head", [head.get(s, 0.5) for s in preview]), ("rates", [rates.brought(s) for s in preview])):
+        belief = worlds.Belief(preview, np.array(w), np.zeros((6, 1)), np.zeros((6, 1)), np.zeros((6, 1)))
+        for _ in range(50):
+            three = {preview[i] for i in worlds.pick_three(battle, belief, rng, lead)}
+            stats["three"][mode]["draws"] += 1
+            stats["three"][mode]["all_right"] += three == brought
+            stats["three"][mode]["members_right"] += len(three & brought) - 1  # of the two unseen
+
+
 def replay(path: Path, g: builds.Guesser, common: dict, stats: dict, rng: np.random.Generator) -> None:
     messages = read_jsonl(path)
     start = next((m for m in messages if m.get("type") == "battle_start"), None)
@@ -159,6 +180,8 @@ def replay(path: Path, g: builds.Guesser, common: dict, stats: dict, rng: np.ran
                     turns.append(len(end_tracker.orders))
             end_tracker.feed(m["events"])
     end_tracker.feed([{"k": "turn"}])
+    if "rates" in stats:
+        three_check(start, beliefs, final, stats["rates"], stats, rng)
     own = [cg_set({**s, "species": s["species"]}) for s in start.get("own_team") or []]
     now, tracker, turn = Battle(), evidence.Tracker(g.dex, own=start.get("own_team") or []), 0
     for m in messages:
@@ -240,6 +263,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("--runs", type=Path, default=ROOT / "output" / "runs")
     parser.add_argument("--max", type=int, default=400)
+    parser.add_argument("--since", default="", help="only battles from this tag on (e.g. 20261123T2120)")
     parser.add_argument("--out", type=Path, default=ROOT / "output" / "builds-replay.json")
     args = parser.parse_args(argv)
     skip = benchmark_battles()
@@ -248,9 +272,11 @@ def main(argv: list[str] | None = None) -> int:
     common = worlds.common_sets(top)
     keys = ("item_n", "item_top1", "item_top3", "move_n", "move_top1", "move_top3", "order_n", "order_right",
             "teams", "refused", "ms")  # fmt: skip
-    stats = {m: dict.fromkeys(keys, 0.0) for m in ("builds", "legacy")}
+    stats: dict = {m: dict.fromkeys(keys, 0.0) for m in ("builds", "legacy")}
+    stats["rates"] = worlds.Rates.load(str(ROOT / "assets" / "sets" / "opponent_preview_rates.json"))
+    stats["three"] = {m: {"draws": 0, "all_right": 0, "members_right": 0} for m in ("head", "rates")}
     files = sorted(f for f in args.runs.glob("*/cg/*.jsonl") if not f.name.endswith(".neural.jsonl")
-                   and f.stem not in skip)[: args.max]  # fmt: skip
+                   and f.stem not in skip and f.stem >= args.since)[: args.max]  # fmt: skip
     rng = np.random.default_rng(0)
     for k, f in enumerate(files):
         try:
@@ -261,7 +287,8 @@ def main(argv: list[str] | None = None) -> int:
             sys.stdout.write(f"{k + 1}/{len(files)} battles\n")
             sys.stdout.flush()
     out = {"battles": len(files), "left_out_benchmark": len(skip)}
-    for mode, s in stats.items():
+    for mode in ("builds", "legacy"):
+        s = stats[mode]
         out[mode] = {
             "item_top1": round(s["item_top1"] / max(s["item_n"], 1), 3), "item_top3": round(s["item_top3"] / max(s["item_n"], 1), 3),
             "items": int(s["item_n"]),
@@ -270,6 +297,10 @@ def main(argv: list[str] | None = None) -> int:
             "order_right": round(s["order_right"] / max(s["order_n"], 1), 3), "orders": int(s["order_n"]),
             "refused": round(s["refused"] / max(s["teams"], 1), 3), "teams": int(s["teams"]),
         }  # fmt: skip
+    out["their_three_at_turn_1"] = {
+        m: {"all_three_right": round(t["all_right"] / max(t["draws"], 1), 3),
+            "unseen_member_right": round(t["members_right"] / max(2 * t["draws"], 1), 3), "draws": t["draws"]}
+        for m, t in stats["three"].items()}  # fmt: skip
     out["builds"]["weights_ms_per_request"] = round(stats["builds"]["ms"] / max(stats["builds"]["teams"], 1), 2)
     args.out.write_text(json.dumps(out, indent=1) + "\n", encoding="utf-8")
     sys.stdout.write(json.dumps(out, indent=1) + "\n")
