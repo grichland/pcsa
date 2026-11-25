@@ -55,8 +55,10 @@ class SearchSettings(_Strict):
     min_sims: int = Field(ge=0)  # fewer simulations in total: the network's own answer is played
     sims: int = Field(ge=0)  # stop after this many simulations (0: by time only)
     seed: int
-    top_ours: int = Field(ge=0)  # our N likeliest actions at each node (0: all)
-    top_theirs: int = Field(ge=0)  # their N likeliest actions at each node (0: all)
+    top_ours_moves: int = Field(ge=0)  # our N likeliest moves at each node, a move with its Mega copy (0: all)
+    top_ours_switches: int = Field(ge=0)  # our N likeliest switches at each node (0: all)
+    top_theirs_moves: int = Field(ge=0)  # their N likeliest moves at each node, a move with its Mega copy (0: all)
+    top_theirs_switches: int = Field(ge=0)  # their N likeliest switches at each node (0: all)
     from_turn: int = Field(ge=1)  # earlier turns are not searched
     settle_sims: int = Field(ge=0)  # stop early once the pick has led this long (0: never)
     settle_share: float = Field(ge=0, le=1)  # ... with at least this share of the strategy

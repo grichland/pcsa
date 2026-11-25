@@ -5,7 +5,7 @@ belief outputs (search.py is the tree, worlds.py the guesses of their team).
 `min_sims` simulations, the model's own scores stand and the note's `why` says so.
 
 With `follow_pivot`, a searched pick that the trees saw switch us out in the same turn with our active standing (a
-pivot move) keeps the switch-in they chose there (search.pivot_follow); the replace request of that turn plays it
+pivot move) keeps the switch-in they chose there (pivot_follow); the replace request of that turn plays it
 when it is open, with the `follow` note. A live replace request cannot tell a pivot from a faint, so it answers
 either. The kept switch-in is dropped when another action went out (`played`) or at the slot's next request.
 """
@@ -40,6 +40,36 @@ def game_from_battle(battle: Any, guess: list, seed: int) -> tuple:
     if make is None:
         raise worlds.NoSearch(f"search needs Champions Gym 0.5.0 (this is {champions_gym.__version__})")
     return make(battle, guess, seed=seed)
+
+
+def pivot_follow(found: list[worlds.World], pick: int) -> dict | None:
+    """The switch-in the trees chose after our `pick` made us switch out in the same turn with our active still
+    standing (a pivot move), summed over the worlds by visits; None when no tree got there. `faint_visits` counts
+    the same-turn replacements after a faint instead, which a live replace request cannot tell apart."""
+    total, pivots, faints = np.zeros(L.OWN_ACTIONS), 0, 0
+    for w in found:
+        root = w.root
+        if root is None or root.pending or pick not in root.us:
+            continue
+        x, me = root.us.index(pick), int(np.asarray(root.game.readout().active).reshape(-1)[0])
+        for (a, _), (_, _, made) in root.kids.items():
+            for child in made.values() if a == x else ():
+                if child.pending or child.terminal or child.turn != root.turn or child.us == [None]:
+                    continue
+                if int(child.game.kinds()[0]) != L.KIND_REPLACE:
+                    continue
+                if bool(np.asarray(child.game.readout().fainted)[0][me]):
+                    faints += max(child.N, 1)
+                    continue
+                pivots += max(child.N, 1)
+                weight = child.S_u if child.N > 0 else child.P_u
+                for y, b in enumerate(child.us):
+                    total[b] += weight[y]
+    if not total.any():
+        return None
+    target = int(total.argmax())
+    return {"target": target, "share": float(total[target] / total.sum()), "pivot_visits": int(pivots),
+            "faint_visits": int(faints)}  # fmt: skip
 
 
 def follow(searcher: Searcher | None, slots: Sequence[int], kinds: np.ndarray, b: dict, battles: Any,
@@ -213,7 +243,7 @@ class Searcher:
             tree.run(built, start + budget / 1000.0)
             allowed = (b["mask"][r] > 0).cpu().numpy()
             row = self.answer(tree.result(built, note["dropped_why"]), allowed, note)
-            if self.cfg.follow_pivot and (follow := search.pivot_follow(built, note["pick"])):
+            if self.cfg.follow_pivot and (follow := pivot_follow(built, note["pick"])):
                 note["follow"] = follow
                 self.follows[slot] = Follow(decision, int(battle.turn), int(note["pick"]), int(follow["target"]))
             return row, note

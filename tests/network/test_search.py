@@ -16,7 +16,11 @@ cg = pytest.importorskip("champions_gym")
 os.environ.setdefault("CUDA_VISIBLE_DEVICES", "-1")
 
 from pcsa.network import layout as L  # noqa: E402
-from pcsa.network import search, worlds  # noqa: E402
+from pcsa.network import (  # noqa: E402
+    search,
+    searching,  # noqa: E402
+    worlds,
+)
 from pcsa.network.policy import Policy  # noqa: E402
 from pcsa.network.searching import Follow, Searcher  # noqa: E402
 from tests import configs  # noqa: E402
@@ -237,17 +241,30 @@ def test_the_likeliest_actions_are_kept_in_their_own_order() -> None:
 
 
 @needs_games
-def test_top_ours_and_top_theirs_bound_what_the_search_looks_at(position) -> None:
+def test_the_move_and_switch_limits_bound_what_the_search_looks_at(position) -> None:
     arrays, battle, _ = position
     wide = make({"sims": 128}).decide(arrays, [0], [battle])["extras"][0]
-    out = make({"sims": 128, "top_ours": 2, "top_theirs": 2}).decide(arrays, [0], [battle])["extras"][0]
+    out = make({"sims": 128, "top_ours_moves": 1, "top_ours_switches": 1, "top_theirs_moves": 1,
+                "top_theirs_switches": 1}).decide(arrays, [0], [battle])["extras"][0]  # fmt: skip
     note = out["search"]
-    assert note["used"] and sum(x > 0 for x in note["strategy"]) <= 2 and sum(x > 0 for x in note["visits"]) <= 2
-    top2 = sorted(range(11), key=lambda a: -out["pi"][a])[:2]
-    assert all(note["strategy"][a] == 0 for a in range(11) if a not in top2)
-    assert sum(x > 0 for x in note["p_them"]) <= 2 * 6  # two of their actions per guess of their team
+    pi = out["pi"]
+    kept_slot = max(range(4), key=lambda s: pi[s] + pi[s + 4])
+    kept_switch = max(range(8, 11), key=lambda a: pi[a])
+    tried = {a for a in range(11) if note["visits"][a] > 0}
+    assert note["used"] and tried <= {kept_slot, kept_slot + 4, kept_switch}
+    assert sum(x > 0 for x in note["p_them"]) <= 2 * 2 * 6  # a move (with its Mega copy) and a switch per guess
     assert sum(x > 0 for x in wide["search"]["p_them"]) >= sum(x > 0 for x in note["p_them"])
-    assert make({"top_theirs": 3}).info["search"]["top_theirs"] == 3
+    assert make({"top_theirs_moves": 3}).info["search"]["top_theirs_moves"] == 3
+
+
+def test_moves_count_with_their_mega_copy_and_switches_apart() -> None:
+    actions = [0, 1, 2, 4, 5, 8, 9, 10]
+    weight = [0.10, 0.20, 0.22, 0.20, 0.05, 0.12, 0.08, 0.05]  # with the Mega copy: slot 0 0.30, slot 1 0.25
+    assert search._split(actions, weight, 2, 1) == [0, 1, 4, 5, 8]  # move 2 (0.22, no Mega copy) is left out
+    assert search._split(actions, weight, 1, 2) == [0, 4, 8, 9]
+    assert search._split(actions, weight, 0, 0) == actions and search._split([], [], 3, 2) == []
+    assert search._cut(actions, 3, 3) is False and search._cut(actions, 2, 0) is True
+    assert search._cut(actions, 0, 2) is True and search._cut([8], 1, 1) is False
 
 
 class _Root:
@@ -321,17 +338,17 @@ def test_the_followed_switch_in_is_the_one_the_trees_chose_after_the_pivot() -> 
     other = _node(_Game(5, (L.KIND_REPLACE, -1)), [9, 10], [9.0, 0.0], 9)  # under our other action
     worlds = [_pivot_world({1: [pivot, faint, later], 0: [other]}),
               _pivot_world({1: [_node(_Game(5, (L.KIND_REPLACE, -1)), [9, 10], [1.0, 3.0], 4)]})]
-    follow = search.pivot_follow(worlds, 2)  # type: ignore[arg-type]
+    follow = searching.pivot_follow(worlds, 2)  # type: ignore[arg-type]
     assert follow == {"target": 10, "share": pytest.approx(9 / 12), "pivot_visits": 12, "faint_visits": 7}
-    assert search.pivot_follow(worlds, 0) is not None  # any pick the trees saw switch us out
-    assert search.pivot_follow([_pivot_world({1: [later]})], 2) is None  # type: ignore[arg-type]
-    assert search.pivot_follow(worlds, 4) is None  # type: ignore[arg-type]
+    assert searching.pivot_follow(worlds, 0) is not None  # any pick the trees saw switch us out
+    assert searching.pivot_follow([_pivot_world({1: [later]})], 2) is None  # type: ignore[arg-type]
+    assert searching.pivot_follow(worlds, 4) is None  # type: ignore[arg-type]
 
 
 def test_an_unvisited_switch_in_falls_back_to_the_network_prior() -> None:
     fresh = _node(_Game(5, (L.KIND_REPLACE, -1)), [8, 10])
     fresh.P_u = np.array([0.3, 0.7])
-    assert search.pivot_follow([_pivot_world({1: [fresh]})], 2)["target"] == 10  # type: ignore[arg-type,index]
+    assert searching.pivot_follow([_pivot_world({1: [fresh]})], 2)["target"] == 10  # type: ignore[arg-type,index]
 
 
 def _follower() -> SimpleNamespace:

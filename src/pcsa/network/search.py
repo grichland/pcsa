@@ -43,6 +43,7 @@ FLOOR = 0.02  # prior of a legal action of theirs that no network column stands 
 KIND_ASKED = (L.KIND_TURN, L.KIND_REPLACE)
 MIN_BUDGET_MS = 40.0
 END_MARGIN_S = 0.015  # of the budget, for putting the answer together
+SWITCH = 8  # a seat's actions: 0-3 move, 4-7 the same with Mega, 8-10 switch
 PROBE = 16  # simulations in the first batch, which times them
 SAFETY = 2.0  # a batch starts only if twice its expected time fits
 
@@ -122,12 +123,32 @@ def _likeliest(actions: list, weight: Sequence[float], top: int) -> list:
     return [actions[k] for k in sorted(keep)]
 
 
+def _cut(actions: list, moves: int, switches: int) -> bool:
+    """Whether `_split` would drop any of `actions`."""
+    slots = {a % 4 for a in actions if a < SWITCH}
+    return (0 < moves < len(slots)) or (0 < switches < sum(a >= SWITCH for a in actions))
+
+
+def _split(actions: list, weight: Sequence[float], moves: int, switches: int) -> list:
+    """The `moves` likeliest moves (a move and its Mega copy together, by their summed weight) and the `switches`
+    likeliest switches, in their own order (0: all of that kind)."""
+    w = {a: float(np.nan_to_num(x)) for a, x in zip(actions, weight, strict=True)}
+    slot_w: dict[int, float] = {}
+    for a in actions:
+        if a < SWITCH:
+            slot_w[a % 4] = slot_w.get(a % 4, 0.0) + w[a]
+    slots = _likeliest(sorted(slot_w), [slot_w[s] for s in sorted(slot_w)], moves)
+    swaps = _likeliest([a for a in actions if a >= SWITCH], [w[a] for a in actions if a >= SWITCH],
+                       switches)  # fmt: skip
+    return [a for a in actions if (a % 4 in slots if a < SWITCH else a in swaps)]
+
+
 def expand(
     node: Node, leaf: Leaf, world: World, tables: Tables, cfg: SearchSettings, allowed: np.ndarray | None = None
 ) -> None:
     """The node's actions, priors, value and Q's start from the network row. `allowed` (the root): our actions
-    the request and the rule masks leave open. cfg.top_ours and cfg.top_theirs keep only each side's likeliest
-    actions."""
+    the request and the rule masks leave open. cfg.top_*_moves and cfg.top_*_switches keep only each side's
+    likeliest moves and switches."""
     n0 = cfg.n0
     game = node.game
     kinds, masks = game.kinds(), np.asarray(game.masks()).reshape(2, L.OWN_ACTIONS)
@@ -136,15 +157,15 @@ def expand(
         us = [a for a in us if allowed[a]]
         if not us:
             raise NoSearch("the Game offers none of the request's legal actions")
-    us = _likeliest(us, [leaf.pi[a] for a in us], cfg.top_ours)
+    us = _split(us, [leaf.pi[a] for a in us], cfg.top_ours_moves, cfg.top_ours_switches)
     with_pi = [a for a in us if leaf.pi[a] > 0]
     node.us = us or [None]
     them = [int(a) for a in np.flatnonzero(masks[1])] if kinds[1] in KIND_ASKED else []
     active = int(np.asarray(game.readout().active).reshape(-1)[1])
-    if cfg.top_theirs > 0 and len(them) > cfg.top_theirs:
+    if _cut(them, cfg.top_theirs_moves, cfg.top_theirs_switches):
         cols, share = their_columns(leaf, world, active, them, tables)
         weight = [leaf.p_opp[c] * s if c >= 0 else FLOOR for c, s in zip(cols, share, strict=True)]
-        them = _likeliest(them, weight, cfg.top_theirs)
+        them = _split(them, weight, cfg.top_theirs_moves, cfg.top_theirs_switches)
     node.them = them or [None]
     v = float(np.clip(leaf.value, -1.0, 1.0)) if np.isfinite(leaf.value) else 0.0
     node.v = v
@@ -171,36 +192,6 @@ def expand(
 
 def strategy(regret: np.ndarray, prior: np.ndarray, visits: np.ndarray, total: int, c: float) -> np.ndarray:
     return _normal(regret + c * prior * np.sqrt(total + 1.0) / (1.0 + visits))
-
-
-def pivot_follow(worlds: list[World], pick: int) -> dict | None:
-    """The switch-in the trees chose after our `pick` made us switch out in the same turn with our active still
-    standing (a pivot move), summed over the worlds by visits; None when no tree got there. `faint_visits` counts
-    the same-turn replacements after a faint instead, which a live replace request cannot tell apart."""
-    total, pivots, faints = np.zeros(L.OWN_ACTIONS), 0, 0
-    for w in worlds:
-        root = w.root
-        if root is None or root.pending or pick not in root.us:
-            continue
-        x, me = root.us.index(pick), int(np.asarray(root.game.readout().active).reshape(-1)[0])
-        for (a, _), (_, _, made) in root.kids.items():
-            for child in made.values() if a == x else ():
-                if child.pending or child.terminal or child.turn != root.turn or child.us == [None]:
-                    continue
-                if int(child.game.kinds()[0]) != L.KIND_REPLACE:
-                    continue
-                if bool(np.asarray(child.game.readout().fainted)[0][me]):
-                    faints += max(child.N, 1)
-                    continue
-                pivots += max(child.N, 1)
-                weight = child.S_u if child.N > 0 else child.P_u
-                for y, b in enumerate(child.us):
-                    total[b] += weight[y]
-    if not total.any():
-        return None
-    target = int(total.argmax())
-    return {"target": target, "share": float(total[target] / total.sum()), "pivot_visits": int(pivots),
-            "faint_visits": int(faints)}  # fmt: skip
 
 
 @dataclass

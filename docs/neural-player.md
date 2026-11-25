@@ -129,9 +129,12 @@ the per-cell sums, every cut, the head's pick and the chosen one (`cg.net.previe
 
 With `cg.search.enabled: true` every turn request is also searched before it is answered. The player samples
 `worlds` completions of the opponent's hidden team from the belief heads, builds an engine game for each from the
-live battle, and grows one tree per completion: both sides choose at once at every node by regret matching
-started from the network's policy, its prediction and its matrix, and new positions are valued by the network.
-The action played is the one the averaged root strategy favours most, inside the legal and rule masks.
+live battle, and grows one tree per completion: both sides choose at once at every node by regret matching started
+from the network's policy, its prediction and its matrix, and new positions are valued by the network. The action
+played is the one the averaged root strategy favours most, inside the legal and rule masks. At every position the
+tree keeps only each side's `top_*_moves` likeliest moves (a move and its Mega copy count as one) and
+`top_*_switches` likeliest switches (0: all); the shipped config keeps their 3 moves and 2 switches and all of
+ours.
 
 The search stops at `ms` or the request's deadline, whichever is sooner, and earlier once the answer has settled
 (`settle_sims`, `settle_share`, `settle_gap`). Turns before `from_turn`, requests with a single open action, team

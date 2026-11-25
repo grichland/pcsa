@@ -69,8 +69,10 @@ Champions Gym and the player it runs (pcsa.cg)
 | `cg.search.min_sims` | `64` | fewer simulations than this in total: the network's own answer is played |
 | `cg.search.sims` | `0` | stop after this many simulations (0: by time only) |
 | `cg.search.seed` | `0` | the search's random seed |
-| `cg.search.top_ours` | `0` | at every position only our N likeliest actions by the network's policy (0: all) |
-| `cg.search.top_theirs` | `3` | at every position only their N likeliest actions by the network's prediction (0: all) |
+| `cg.search.top_ours_moves` | `0` | at every position only our N likeliest moves by the network's policy, Mega copy included (0: all) |
+| `cg.search.top_ours_switches` | `0` | ... and our N likeliest switches (0: all) |
+| `cg.search.top_theirs_moves` | `3` | at every position only their N likeliest moves by the network's prediction, Mega copy included (0: all) |
+| `cg.search.top_theirs_switches` | `2` | ... and their N likeliest switches (0: all) |
 | `cg.search.from_turn` | `1` | earlier turns of the battle are not searched |
 | `cg.search.settle_sims` | `300` | stop before `ms` once the pick has led this many simulations (0: always use `ms`) |
 | `cg.search.settle_share` | `0.9` | ... and holds this share of the search's strategy |
