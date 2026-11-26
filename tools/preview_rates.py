@@ -7,7 +7,7 @@ rate = (times + prior * weight) / (seen + weight), with the priors 0.5 (brought)
 - Champions Gym battles are read from <run>/cg/<battle>.jsonl: the preview and the order their Pokémon entered.
 - Older battles are read from <run>/battle-N/showdown.log.
 A battle's lead and the Pokémon that entered count as brought. With three seen, the other three count as left
-behind; with fewer, they are not counted. The benchmark's clean battles are left out, as in tools/seen_builds.py.
+behind; with fewer, they are not counted. The benchmark's battles are left out, as in tools/seen_builds.py.
 """
 
 from __future__ import annotations

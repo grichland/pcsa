@@ -2,7 +2,7 @@
  "what": "opposing species' bring and lead rates at team preview, from recorded live battles",
  "rule": "rate = (times + prior * weight) / (seen + weight); priors brought 0.5, lead 1/6; species = CG ids",
  "weight": 2.0,
- "battles": 803,
+ "battles": 656,
  "first": "20261108T170448-57d88fb0",
  "last": "20261125T233553-f43cb81d",
  "default": {
@@ -29,31 +29,31 @@
    "lead_rate": 0.1111
   },
   "aegislash": {
-   "previews": 38,
-   "brought_seen": 28,
-   "brought": 13,
-   "lead_seen": 38,
-   "lead": 5,
-   "brought_rate": 0.4667,
-   "lead_rate": 0.1333
+   "previews": 37,
+   "brought_seen": 27,
+   "brought": 12,
+   "lead_seen": 37,
+   "lead": 4,
+   "brought_rate": 0.4483,
+   "lead_rate": 0.1111
   },
   "aerodactyl": {
-   "previews": 3,
-   "brought_seen": 3,
+   "previews": 2,
+   "brought_seen": 2,
    "brought": 0,
-   "lead_seen": 3,
+   "lead_seen": 2,
    "lead": 0,
-   "brought_rate": 0.2,
-   "lead_rate": 0.0667
+   "brought_rate": 0.25,
+   "lead_rate": 0.0833
   },
   "aggron": {
-   "previews": 7,
-   "brought_seen": 5,
+   "previews": 4,
+   "brought_seen": 4,
    "brought": 0,
-   "lead_seen": 7,
+   "lead_seen": 4,
    "lead": 0,
-   "brought_rate": 0.1429,
-   "lead_rate": 0.037
+   "brought_rate": 0.1667,
+   "lead_rate": 0.0556
   },
   "alakazam": {
    "previews": 3,
@@ -65,31 +65,31 @@
    "lead_rate": 0.0667
   },
   "altaria": {
-   "previews": 3,
-   "brought_seen": 3,
+   "previews": 2,
+   "brought_seen": 2,
    "brought": 2,
-   "lead_seen": 3,
+   "lead_seen": 2,
    "lead": 1,
-   "brought_rate": 0.6,
-   "lead_rate": 0.2667
+   "brought_rate": 0.75,
+   "lead_rate": 0.3333
   },
   "annihilape": {
-   "previews": 14,
-   "brought_seen": 12,
-   "brought": 8,
-   "lead_seen": 14,
-   "lead": 2,
-   "brought_rate": 0.6429,
-   "lead_rate": 0.1458
+   "previews": 11,
+   "brought_seen": 9,
+   "brought": 5,
+   "lead_seen": 11,
+   "lead": 1,
+   "brought_rate": 0.5455,
+   "lead_rate": 0.1026
   },
   "araquanid": {
-   "previews": 8,
-   "brought_seen": 7,
-   "brought": 5,
-   "lead_seen": 8,
-   "lead": 4,
-   "brought_rate": 0.6667,
-   "lead_rate": 0.4333
+   "previews": 7,
+   "brought_seen": 6,
+   "brought": 4,
+   "lead_seen": 7,
+   "lead": 3,
+   "brought_rate": 0.625,
+   "lead_rate": 0.3704
   },
   "arboliva": {
    "previews": 3,
@@ -101,13 +101,13 @@
    "lead_rate": 0.2667
   },
   "arcanine": {
-   "previews": 2,
-   "brought_seen": 2,
+   "previews": 1,
+   "brought_seen": 1,
    "brought": 1,
-   "lead_seen": 2,
+   "lead_seen": 1,
    "lead": 0,
-   "brought_rate": 0.5,
-   "lead_rate": 0.0833
+   "brought_rate": 0.6667,
+   "lead_rate": 0.1111
   },
   "arcaninehisui": {
    "previews": 7,
@@ -119,13 +119,13 @@
    "lead_rate": 0.1667
   },
   "archaludon": {
-   "previews": 170,
-   "brought_seen": 152,
-   "brought": 75,
-   "lead_seen": 169,
-   "lead": 35,
-   "brought_rate": 0.4935,
-   "lead_rate": 0.2066
+   "previews": 138,
+   "brought_seen": 125,
+   "brought": 61,
+   "lead_seen": 138,
+   "lead": 30,
+   "brought_rate": 0.4882,
+   "lead_rate": 0.2167
   },
   "armarouge": {
    "previews": 5,
@@ -164,22 +164,22 @@
    "lead_rate": 0.2333
   },
   "banette": {
-   "previews": 15,
-   "brought_seen": 14,
-   "brought": 6,
-   "lead_seen": 15,
-   "lead": 6,
-   "brought_rate": 0.4375,
-   "lead_rate": 0.3725
+   "previews": 12,
+   "brought_seen": 11,
+   "brought": 4,
+   "lead_seen": 12,
+   "lead": 4,
+   "brought_rate": 0.3846,
+   "lead_rate": 0.3095
   },
   "basculegion": {
-   "previews": 105,
-   "brought_seen": 89,
-   "brought": 63,
-   "lead_seen": 105,
-   "lead": 9,
-   "brought_rate": 0.7033,
-   "lead_rate": 0.0872
+   "previews": 88,
+   "brought_seen": 74,
+   "brought": 50,
+   "lead_seen": 88,
+   "lead": 8,
+   "brought_rate": 0.6711,
+   "lead_rate": 0.0926
   },
   "basculegionf": {
    "previews": 3,
@@ -191,13 +191,13 @@
    "lead_rate": 0.4667
   },
   "baxcalibur": {
-   "previews": 88,
-   "brought_seen": 72,
-   "brought": 23,
-   "lead_seen": 87,
-   "lead": 5,
-   "brought_rate": 0.3243,
-   "lead_rate": 0.0599
+   "previews": 65,
+   "brought_seen": 54,
+   "brought": 18,
+   "lead_seen": 65,
+   "lead": 4,
+   "brought_rate": 0.3393,
+   "lead_rate": 0.0647
   },
   "baxcaliburmega": {
    "previews": 1,
@@ -218,85 +218,76 @@
    "lead_rate": 0.4667
   },
   "bellibolt": {
-   "previews": 21,
-   "brought_seen": 19,
-   "brought": 10,
-   "lead_seen": 21,
+   "previews": 16,
+   "brought_seen": 14,
+   "brought": 8,
+   "lead_seen": 16,
    "lead": 2,
-   "brought_rate": 0.5238,
-   "lead_rate": 0.1014
+   "brought_rate": 0.5625,
+   "lead_rate": 0.1296
   },
   "blastoise": {
-   "previews": 32,
-   "brought_seen": 29,
-   "brought": 12,
-   "lead_seen": 32,
-   "lead": 1,
-   "brought_rate": 0.4194,
-   "lead_rate": 0.0392
+   "previews": 22,
+   "brought_seen": 19,
+   "brought": 7,
+   "lead_seen": 22,
+   "lead": 0,
+   "brought_rate": 0.381,
+   "lead_rate": 0.0139
   },
   "blaziken": {
-   "previews": 55,
-   "brought_seen": 52,
+   "previews": 53,
+   "brought_seen": 50,
    "brought": 39,
-   "lead_seen": 55,
+   "lead_seen": 53,
    "lead": 6,
-   "brought_rate": 0.7407,
-   "lead_rate": 0.1111
+   "brought_rate": 0.7692,
+   "lead_rate": 0.1152
   },
   "ceruledge": {
-   "previews": 51,
-   "brought_seen": 46,
-   "brought": 22,
-   "lead_seen": 49,
-   "lead": 7,
-   "brought_rate": 0.4792,
-   "lead_rate": 0.1438
-  },
-  "chandelure": {
-   "previews": 2,
-   "brought_seen": 2,
-   "brought": 1,
-   "lead_seen": 2,
-   "lead": 0,
-   "brought_rate": 0.5,
-   "lead_rate": 0.0833
+   "previews": 34,
+   "brought_seen": 32,
+   "brought": 15,
+   "lead_seen": 34,
+   "lead": 4,
+   "brought_rate": 0.4706,
+   "lead_rate": 0.1204
   },
   "charizard": {
-   "previews": 156,
-   "brought_seen": 137,
-   "brought": 98,
-   "lead_seen": 156,
-   "lead": 23,
-   "brought_rate": 0.7122,
-   "lead_rate": 0.1477
+   "previews": 123,
+   "brought_seen": 108,
+   "brought": 80,
+   "lead_seen": 123,
+   "lead": 20,
+   "brought_rate": 0.7364,
+   "lead_rate": 0.1627
   },
   "chesnaught": {
-   "previews": 5,
-   "brought_seen": 5,
+   "previews": 4,
+   "brought_seen": 4,
    "brought": 0,
-   "lead_seen": 5,
+   "lead_seen": 4,
    "lead": 0,
-   "brought_rate": 0.1429,
-   "lead_rate": 0.0476
+   "brought_rate": 0.1667,
+   "lead_rate": 0.0556
   },
   "cinderace": {
-   "previews": 60,
-   "brought_seen": 50,
-   "brought": 37,
-   "lead_seen": 59,
-   "lead": 13,
-   "brought_rate": 0.7308,
-   "lead_rate": 0.2186
+   "previews": 49,
+   "brought_seen": 41,
+   "brought": 29,
+   "lead_seen": 49,
+   "lead": 10,
+   "brought_rate": 0.6977,
+   "lead_rate": 0.2026
   },
   "clefable": {
-   "previews": 38,
-   "brought_seen": 35,
-   "brought": 16,
-   "lead_seen": 38,
+   "previews": 35,
+   "brought_seen": 32,
+   "brought": 15,
+   "lead_seen": 35,
    "lead": 5,
-   "brought_rate": 0.4595,
-   "lead_rate": 0.1333
+   "brought_rate": 0.4706,
+   "lead_rate": 0.1441
   },
   "conkeldurr": {
    "previews": 3,
@@ -308,22 +299,13 @@
    "lead_rate": 0.2667
   },
   "corviknight": {
-   "previews": 113,
-   "brought_seen": 91,
-   "brought": 47,
-   "lead_seen": 113,
-   "lead": 3,
-   "brought_rate": 0.5161,
-   "lead_rate": 0.029
-  },
-  "crabominable": {
-   "previews": 1,
-   "brought_seen": 1,
-   "brought": 1,
-   "lead_seen": 1,
-   "lead": 1,
-   "brought_rate": 0.6667,
-   "lead_rate": 0.4444
+   "previews": 96,
+   "brought_seen": 79,
+   "brought": 41,
+   "lead_seen": 96,
+   "lead": 2,
+   "brought_rate": 0.5185,
+   "lead_rate": 0.0238
   },
   "decidueye": {
    "previews": 2,
@@ -344,13 +326,13 @@
    "lead_rate": 0.0833
   },
   "delphox": {
-   "previews": 30,
-   "brought_seen": 25,
-   "brought": 20,
-   "lead_seen": 30,
-   "lead": 8,
-   "brought_rate": 0.7778,
-   "lead_rate": 0.2604
+   "previews": 26,
+   "brought_seen": 21,
+   "brought": 18,
+   "lead_seen": 26,
+   "lead": 6,
+   "brought_rate": 0.8261,
+   "lead_rate": 0.2262
   },
   "diggersby": {
    "previews": 4,
@@ -380,22 +362,22 @@
    "lead_rate": 0.4762
   },
   "dragapult": {
-   "previews": 19,
-   "brought_seen": 15,
-   "brought": 9,
-   "lead_seen": 19,
-   "lead": 3,
-   "brought_rate": 0.5882,
-   "lead_rate": 0.1587
+   "previews": 18,
+   "brought_seen": 14,
+   "brought": 8,
+   "lead_seen": 18,
+   "lead": 2,
+   "brought_rate": 0.5625,
+   "lead_rate": 0.1167
   },
   "dragonite": {
-   "previews": 95,
-   "brought_seen": 88,
-   "brought": 49,
-   "lead_seen": 95,
-   "lead": 11,
-   "brought_rate": 0.5556,
-   "lead_rate": 0.1168
+   "previews": 80,
+   "brought_seen": 75,
+   "brought": 40,
+   "lead_seen": 80,
+   "lead": 9,
+   "brought_rate": 0.5325,
+   "lead_rate": 0.1138
   },
   "drampa": {
    "previews": 1,
@@ -416,13 +398,13 @@
    "lead_rate": 0.1905
   },
   "emboar": {
-   "previews": 4,
-   "brought_seen": 4,
-   "brought": 3,
-   "lead_seen": 4,
+   "previews": 3,
+   "brought_seen": 3,
+   "brought": 2,
+   "lead_seen": 3,
    "lead": 2,
-   "brought_rate": 0.6667,
-   "lead_rate": 0.3889
+   "brought_rate": 0.6,
+   "lead_rate": 0.4667
   },
   "emolga": {
    "previews": 1,
@@ -434,40 +416,40 @@
    "lead_rate": 0.1111
   },
   "empoleon": {
-   "previews": 13,
-   "brought_seen": 12,
-   "brought": 8,
-   "lead_seen": 13,
-   "lead": 4,
-   "brought_rate": 0.6429,
-   "lead_rate": 0.2889
-  },
-  "espathra": {
    "previews": 12,
-   "brought_seen": 12,
+   "brought_seen": 11,
    "brought": 8,
    "lead_seen": 12,
+   "lead": 4,
+   "brought_rate": 0.6923,
+   "lead_rate": 0.3095
+  },
+  "espathra": {
+   "previews": 9,
+   "brought_seen": 9,
+   "brought": 8,
+   "lead_seen": 9,
    "lead": 6,
-   "brought_rate": 0.6429,
-   "lead_rate": 0.4524
+   "brought_rate": 0.8182,
+   "lead_rate": 0.5758
   },
   "espeon": {
-   "previews": 7,
+   "previews": 6,
    "brought_seen": 6,
    "brought": 0,
-   "lead_seen": 7,
+   "lead_seen": 6,
    "lead": 0,
    "brought_rate": 0.125,
-   "lead_rate": 0.037
+   "lead_rate": 0.0417
   },
   "excadrill": {
-   "previews": 16,
-   "brought_seen": 13,
-   "brought": 6,
-   "lead_seen": 16,
+   "previews": 13,
+   "brought_seen": 11,
+   "brought": 5,
+   "lead_seen": 13,
    "lead": 2,
-   "brought_rate": 0.4667,
-   "lead_rate": 0.1296
+   "brought_rate": 0.4615,
+   "lead_rate": 0.1556
   },
   "falinks": {
    "previews": 1,
@@ -523,15 +505,6 @@
    "brought_rate": 0.8,
    "lead_rate": 0.2667
   },
-  "florges": {
-   "previews": 1,
-   "brought_seen": 1,
-   "brought": 0,
-   "lead_seen": 1,
-   "lead": 0,
-   "brought_rate": 0.3333,
-   "lead_rate": 0.1111
-  },
   "forretress": {
    "previews": 2,
    "brought_seen": 1,
@@ -542,13 +515,13 @@
    "lead_rate": 0.3333
   },
   "froslass": {
-   "previews": 6,
-   "brought_seen": 5,
-   "brought": 1,
-   "lead_seen": 6,
-   "lead": 1,
-   "brought_rate": 0.2857,
-   "lead_rate": 0.1667
+   "previews": 4,
+   "brought_seen": 4,
+   "brought": 0,
+   "lead_seen": 4,
+   "lead": 0,
+   "brought_rate": 0.1667,
+   "lead_rate": 0.0556
   },
   "furfroudandy": {
    "previews": 1,
@@ -569,22 +542,22 @@
    "lead_rate": 0.1795
   },
   "garchomp": {
-   "previews": 388,
-   "brought_seen": 332,
-   "brought": 180,
-   "lead_seen": 385,
-   "lead": 57,
-   "brought_rate": 0.5419,
-   "lead_rate": 0.1481
+   "previews": 320,
+   "brought_seen": 275,
+   "brought": 147,
+   "lead_seen": 319,
+   "lead": 47,
+   "brought_rate": 0.5343,
+   "lead_rate": 0.1475
   },
   "gardevoir": {
-   "previews": 18,
-   "brought_seen": 15,
-   "brought": 9,
-   "lead_seen": 17,
-   "lead": 8,
-   "brought_rate": 0.5882,
-   "lead_rate": 0.4386
+   "previews": 17,
+   "brought_seen": 14,
+   "brought": 8,
+   "lead_seen": 16,
+   "lead": 7,
+   "brought_rate": 0.5625,
+   "lead_rate": 0.4074
   },
   "garganacl": {
    "previews": 2,
@@ -596,24 +569,42 @@
    "lead_rate": 0.0833
   },
   "gengar": {
-   "previews": 48,
-   "brought_seen": 44,
-   "brought": 20,
-   "lead_seen": 48,
-   "lead": 9,
-   "brought_rate": 0.4565,
-   "lead_rate": 0.1867
+   "previews": 37,
+   "brought_seen": 34,
+   "brought": 13,
+   "lead_seen": 37,
+   "lead": 7,
+   "brought_rate": 0.3889,
+   "lead_rate": 0.188
   },
   "gholdengo": {
-   "previews": 127,
-   "brought_seen": 106,
-   "brought": 36,
-   "lead_seen": 127,
+   "previews": 95,
+   "brought_seen": 81,
+   "brought": 29,
+   "lead_seen": 95,
    "lead": 4,
-   "brought_rate": 0.3426,
-   "lead_rate": 0.0336
+   "brought_rate": 0.3614,
+   "lead_rate": 0.0447
   },
-  "glaceon": {
+  "glalie": {
+   "previews": 3,
+   "brought_seen": 2,
+   "brought": 0,
+   "lead_seen": 3,
+   "lead": 0,
+   "brought_rate": 0.25,
+   "lead_rate": 0.0667
+  },
+  "glimmora": {
+   "previews": 71,
+   "brought_seen": 59,
+   "brought": 30,
+   "lead_seen": 71,
+   "lead": 22,
+   "brought_rate": 0.5082,
+   "lead_rate": 0.3059
+  },
+  "gliscor": {
    "previews": 1,
    "brought_seen": 0,
    "brought": 0,
@@ -622,41 +613,14 @@
    "brought_rate": 0.5,
    "lead_rate": 0.1111
   },
-  "glalie": {
-   "previews": 5,
-   "brought_seen": 4,
-   "brought": 2,
-   "lead_seen": 5,
-   "lead": 2,
-   "brought_rate": 0.5,
-   "lead_rate": 0.3333
-  },
-  "glimmora": {
-   "previews": 83,
-   "brought_seen": 70,
-   "brought": 37,
-   "lead_seen": 83,
-   "lead": 28,
-   "brought_rate": 0.5278,
-   "lead_rate": 0.3333
-  },
-  "gliscor": {
-   "previews": 2,
-   "brought_seen": 1,
-   "brought": 1,
-   "lead_seen": 2,
-   "lead": 0,
-   "brought_rate": 0.6667,
-   "lead_rate": 0.0833
-  },
   "golisopod": {
-   "previews": 155,
-   "brought_seen": 130,
-   "brought": 66,
-   "lead_seen": 154,
-   "lead": 23,
-   "brought_rate": 0.5076,
-   "lead_rate": 0.1496
+   "previews": 121,
+   "brought_seen": 103,
+   "brought": 52,
+   "lead_seen": 121,
+   "lead": 17,
+   "brought_rate": 0.5048,
+   "lead_rate": 0.1409
   },
   "golurk": {
    "previews": 1,
@@ -668,13 +632,13 @@
    "lead_rate": 0.4444
   },
   "goodra": {
-   "previews": 7,
-   "brought_seen": 6,
-   "brought": 5,
-   "lead_seen": 7,
+   "previews": 3,
+   "brought_seen": 2,
+   "brought": 2,
+   "lead_seen": 3,
    "lead": 0,
    "brought_rate": 0.75,
-   "lead_rate": 0.037
+   "lead_rate": 0.0667
   },
   "goodrahisui": {
    "previews": 27,
@@ -704,42 +668,42 @@
    "lead_rate": 0.5833
   },
   "greninja": {
-   "previews": 60,
-   "brought_seen": 52,
-   "brought": 29,
-   "lead_seen": 59,
-   "lead": 20,
-   "brought_rate": 0.5556,
-   "lead_rate": 0.3333
+   "previews": 52,
+   "brought_seen": 45,
+   "brought": 25,
+   "lead_seen": 52,
+   "lead": 17,
+   "brought_rate": 0.5532,
+   "lead_rate": 0.321
   },
   "grimmsnarl": {
-   "previews": 25,
-   "brought_seen": 23,
-   "brought": 16,
-   "lead_seen": 25,
-   "lead": 14,
-   "brought_rate": 0.68,
-   "lead_rate": 0.5309
+   "previews": 21,
+   "brought_seen": 19,
+   "brought": 12,
+   "lead_seen": 21,
+   "lead": 10,
+   "brought_rate": 0.619,
+   "lead_rate": 0.4493
   },
   "gyarados": {
-   "previews": 60,
-   "brought_seen": 57,
-   "brought": 38,
-   "lead_seen": 60,
-   "lead": 13,
-   "brought_rate": 0.661,
-   "lead_rate": 0.2151
+   "previews": 45,
+   "brought_seen": 42,
+   "brought": 26,
+   "lead_seen": 45,
+   "lead": 9,
+   "brought_rate": 0.6136,
+   "lead_rate": 0.1986
   },
   "hatterene": {
-   "previews": 18,
-   "brought_seen": 15,
-   "brought": 8,
-   "lead_seen": 18,
+   "previews": 15,
+   "brought_seen": 12,
+   "brought": 7,
+   "lead_seen": 15,
    "lead": 3,
-   "brought_rate": 0.5294,
-   "lead_rate": 0.1667
+   "brought_rate": 0.5714,
+   "lead_rate": 0.1961
   },
-  "hawlucha": {
+  "heliolisk": {
    "previews": 2,
    "brought_seen": 2,
    "brought": 1,
@@ -747,15 +711,6 @@
    "lead": 0,
    "brought_rate": 0.5,
    "lead_rate": 0.0833
-  },
-  "heliolisk": {
-   "previews": 3,
-   "brought_seen": 3,
-   "brought": 1,
-   "lead_seen": 3,
-   "lead": 0,
-   "brought_rate": 0.4,
-   "lead_rate": 0.0667
   },
   "heracross": {
    "previews": 7,
@@ -767,40 +722,31 @@
    "lead_rate": 0.1481
   },
   "hippowdon": {
-   "previews": 166,
-   "brought_seen": 137,
-   "brought": 58,
-   "lead_seen": 166,
-   "lead": 22,
-   "brought_rate": 0.4245,
-   "lead_rate": 0.1329
-  },
-  "houndoom": {
-   "previews": 1,
-   "brought_seen": 1,
-   "brought": 1,
-   "lead_seen": 1,
-   "lead": 0,
-   "brought_rate": 0.6667,
-   "lead_rate": 0.1111
+   "previews": 135,
+   "brought_seen": 113,
+   "brought": 49,
+   "lead_seen": 135,
+   "lead": 21,
+   "brought_rate": 0.4348,
+   "lead_rate": 0.1557
   },
   "houndstone": {
-   "previews": 4,
+   "previews": 2,
    "brought_seen": 1,
    "brought": 0,
-   "lead_seen": 4,
+   "lead_seen": 2,
    "lead": 0,
    "brought_rate": 0.3333,
-   "lead_rate": 0.0556
+   "lead_rate": 0.0833
   },
   "hydreigon": {
-   "previews": 47,
-   "brought_seen": 42,
-   "brought": 27,
-   "lead_seen": 46,
-   "lead": 6,
-   "brought_rate": 0.6364,
-   "lead_rate": 0.1319
+   "previews": 31,
+   "brought_seen": 30,
+   "brought": 22,
+   "lead_seen": 31,
+   "lead": 5,
+   "brought_rate": 0.7188,
+   "lead_rate": 0.1616
   },
   "incineroar": {
    "previews": 4,
@@ -812,13 +758,13 @@
    "lead_rate": 0.3889
   },
   "indeedee": {
-   "previews": 82,
-   "brought_seen": 75,
-   "brought": 53,
-   "lead_seen": 82,
-   "lead": 17,
-   "brought_rate": 0.7013,
-   "lead_rate": 0.2063
+   "previews": 66,
+   "brought_seen": 61,
+   "brought": 42,
+   "lead_seen": 66,
+   "lead": 14,
+   "brought_rate": 0.6825,
+   "lead_rate": 0.2108
   },
   "indeedeef": {
    "previews": 2,
@@ -848,13 +794,13 @@
    "lead_rate": 0.0833
   },
   "jolteon": {
-   "previews": 3,
-   "brought_seen": 2,
-   "brought": 1,
-   "lead_seen": 3,
+   "previews": 2,
+   "brought_seen": 1,
+   "brought": 0,
+   "lead_seen": 2,
    "lead": 0,
-   "brought_rate": 0.5,
-   "lead_rate": 0.0667
+   "brought_rate": 0.3333,
+   "lead_rate": 0.0833
   },
   "kangaskhan": {
    "previews": 5,
@@ -866,31 +812,22 @@
    "lead_rate": 0.1905
   },
   "kingambit": {
-   "previews": 57,
-   "brought_seen": 46,
-   "brought": 19,
-   "lead_seen": 57,
+   "previews": 41,
+   "brought_seen": 35,
+   "brought": 14,
+   "lead_seen": 41,
    "lead": 0,
-   "brought_rate": 0.4167,
-   "lead_rate": 0.0056
+   "brought_rate": 0.4054,
+   "lead_rate": 0.0078
   },
   "kleavor": {
-   "previews": 13,
-   "brought_seen": 11,
+   "previews": 12,
+   "brought_seen": 10,
    "brought": 6,
-   "lead_seen": 13,
+   "lead_seen": 12,
    "lead": 5,
-   "brought_rate": 0.5385,
-   "lead_rate": 0.3556
-  },
-  "kommoo": {
-   "previews": 1,
-   "brought_seen": 1,
-   "brought": 1,
-   "lead_seen": 1,
-   "lead": 0,
-   "brought_rate": 0.6667,
-   "lead_rate": 0.1111
+   "brought_rate": 0.5833,
+   "lead_rate": 0.381
   },
   "krookodile": {
    "previews": 3,
@@ -902,22 +839,22 @@
    "lead_rate": 0.0667
   },
   "lopunny": {
-   "previews": 21,
-   "brought_seen": 17,
-   "brought": 12,
-   "lead_seen": 21,
-   "lead": 11,
-   "brought_rate": 0.6842,
-   "lead_rate": 0.4928
+   "previews": 20,
+   "brought_seen": 16,
+   "brought": 11,
+   "lead_seen": 20,
+   "lead": 10,
+   "brought_rate": 0.6667,
+   "lead_rate": 0.4697
   },
   "lucario": {
-   "previews": 144,
-   "brought_seen": 125,
-   "brought": 37,
-   "lead_seen": 144,
-   "lead": 6,
-   "brought_rate": 0.2992,
-   "lead_rate": 0.0434
+   "previews": 113,
+   "brought_seen": 98,
+   "brought": 29,
+   "lead_seen": 113,
+   "lead": 4,
+   "brought_rate": 0.3,
+   "lead_rate": 0.0377
   },
   "lucariomegaz": {
    "previews": 1,
@@ -927,15 +864,6 @@
    "lead": 1,
    "brought_rate": 0.6667,
    "lead_rate": 0.4444
-  },
-  "lycanroc": {
-   "previews": 2,
-   "brought_seen": 2,
-   "brought": 2,
-   "lead_seen": 2,
-   "lead": 2,
-   "brought_rate": 0.75,
-   "lead_rate": 0.5833
   },
   "lycanrocmidnight": {
    "previews": 1,
@@ -956,22 +884,22 @@
    "lead_rate": 0.1111
   },
   "malamar": {
-   "previews": 3,
-   "brought_seen": 2,
+   "previews": 2,
+   "brought_seen": 1,
    "brought": 1,
-   "lead_seen": 3,
+   "lead_seen": 2,
    "lead": 0,
-   "brought_rate": 0.5,
-   "lead_rate": 0.0667
+   "brought_rate": 0.6667,
+   "lead_rate": 0.0833
   },
   "mamoswine": {
-   "previews": 12,
-   "brought_seen": 11,
+   "previews": 10,
+   "brought_seen": 9,
    "brought": 5,
-   "lead_seen": 12,
+   "lead_seen": 10,
    "lead": 3,
-   "brought_rate": 0.4615,
-   "lead_rate": 0.2381
+   "brought_rate": 0.5455,
+   "lead_rate": 0.2778
   },
   "maushold": {
    "previews": 2,
@@ -992,13 +920,13 @@
    "lead_rate": 0.4444
   },
   "mawile": {
-   "previews": 15,
-   "brought_seen": 14,
-   "brought": 7,
-   "lead_seen": 15,
-   "lead": 2,
-   "brought_rate": 0.5,
-   "lead_rate": 0.1373
+   "previews": 14,
+   "brought_seen": 13,
+   "brought": 6,
+   "lead_seen": 14,
+   "lead": 1,
+   "brought_rate": 0.4667,
+   "lead_rate": 0.0833
   },
   "medichammega": {
    "previews": 2,
@@ -1010,49 +938,49 @@
    "lead_rate": 0.5833
   },
   "meganium": {
-   "previews": 16,
-   "brought_seen": 15,
-   "brought": 10,
-   "lead_seen": 16,
-   "lead": 4,
-   "brought_rate": 0.6471,
-   "lead_rate": 0.2407
+   "previews": 12,
+   "brought_seen": 11,
+   "brought": 8,
+   "lead_seen": 12,
+   "lead": 2,
+   "brought_rate": 0.6923,
+   "lead_rate": 0.1667
   },
   "meowscarada": {
-   "previews": 107,
-   "brought_seen": 85,
-   "brought": 38,
-   "lead_seen": 107,
-   "lead": 17,
-   "brought_rate": 0.4483,
-   "lead_rate": 0.159
+   "previews": 86,
+   "brought_seen": 68,
+   "brought": 34,
+   "lead_seen": 86,
+   "lead": 14,
+   "brought_rate": 0.5,
+   "lead_rate": 0.1629
   },
   "metagross": {
-   "previews": 91,
-   "brought_seen": 70,
-   "brought": 26,
-   "lead_seen": 91,
-   "lead": 9,
-   "brought_rate": 0.375,
-   "lead_rate": 0.1004
+   "previews": 70,
+   "brought_seen": 53,
+   "brought": 19,
+   "lead_seen": 70,
+   "lead": 7,
+   "brought_rate": 0.3636,
+   "lead_rate": 0.1019
   },
   "milotic": {
-   "previews": 16,
-   "brought_seen": 14,
-   "brought": 10,
-   "lead_seen": 16,
+   "previews": 15,
+   "brought_seen": 13,
+   "brought": 9,
+   "lead_seen": 15,
    "lead": 3,
-   "brought_rate": 0.6875,
-   "lead_rate": 0.1852
+   "brought_rate": 0.6667,
+   "lead_rate": 0.1961
   },
   "mimikyu": {
-   "previews": 140,
-   "brought_seen": 120,
-   "brought": 52,
-   "lead_seen": 139,
-   "lead": 9,
-   "brought_rate": 0.4344,
-   "lead_rate": 0.0662
+   "previews": 117,
+   "brought_seen": 100,
+   "brought": 40,
+   "lead_seen": 117,
+   "lead": 6,
+   "brought_rate": 0.402,
+   "lead_rate": 0.0532
   },
   "mrrime": {
    "previews": 1,
@@ -1082,13 +1010,13 @@
    "lead_rate": 0.1111
   },
   "ninetales": {
-   "previews": 12,
-   "brought_seen": 11,
-   "brought": 6,
-   "lead_seen": 12,
-   "lead": 4,
-   "brought_rate": 0.5385,
-   "lead_rate": 0.3095
+   "previews": 2,
+   "brought_seen": 2,
+   "brought": 1,
+   "lead_seen": 2,
+   "lead": 0,
+   "brought_rate": 0.5,
+   "lead_rate": 0.0833
   },
   "ninetalesalola": {
    "previews": 33,
@@ -1109,31 +1037,31 @@
    "lead_rate": 0.1111
   },
   "orthworm": {
-   "previews": 4,
-   "brought_seen": 3,
-   "brought": 2,
-   "lead_seen": 4,
-   "lead": 1,
-   "brought_rate": 0.6,
-   "lead_rate": 0.2222
+   "previews": 3,
+   "brought_seen": 2,
+   "brought": 1,
+   "lead_seen": 3,
+   "lead": 0,
+   "brought_rate": 0.5,
+   "lead_rate": 0.0667
   },
   "overqwil": {
-   "previews": 5,
-   "brought_seen": 4,
-   "brought": 4,
-   "lead_seen": 5,
+   "previews": 4,
+   "brought_seen": 3,
+   "brought": 3,
+   "lead_seen": 4,
    "lead": 1,
-   "brought_rate": 0.8333,
-   "lead_rate": 0.1905
+   "brought_rate": 0.8,
+   "lead_rate": 0.2222
   },
   "palafin": {
-   "previews": 3,
-   "brought_seen": 3,
-   "brought": 2,
-   "lead_seen": 3,
+   "previews": 2,
+   "brought_seen": 2,
+   "brought": 1,
+   "lead_seen": 2,
    "lead": 1,
-   "brought_rate": 0.6,
-   "lead_rate": 0.2667
+   "brought_rate": 0.5,
+   "lead_rate": 0.3333
   },
   "passimian": {
    "previews": 1,
@@ -1145,31 +1073,22 @@
    "lead_rate": 0.4444
   },
   "pawmot": {
-   "previews": 40,
-   "brought_seen": 36,
-   "brought": 27,
-   "lead_seen": 40,
-   "lead": 2,
-   "brought_rate": 0.7368,
-   "lead_rate": 0.0556
+   "previews": 31,
+   "brought_seen": 28,
+   "brought": 20,
+   "lead_seen": 31,
+   "lead": 1,
+   "brought_rate": 0.7,
+   "lead_rate": 0.0404
   },
   "pelipper": {
-   "previews": 32,
-   "brought_seen": 30,
-   "brought": 23,
-   "lead_seen": 32,
-   "lead": 15,
-   "brought_rate": 0.75,
-   "lead_rate": 0.451
-  },
-  "persian": {
-   "previews": 3,
-   "brought_seen": 3,
-   "brought": 2,
-   "lead_seen": 3,
-   "lead": 1,
-   "brought_rate": 0.6,
-   "lead_rate": 0.2667
+   "previews": 26,
+   "brought_seen": 24,
+   "brought": 19,
+   "lead_seen": 26,
+   "lead": 11,
+   "brought_rate": 0.7692,
+   "lead_rate": 0.4048
   },
   "persianalola": {
    "previews": 2,
@@ -1217,40 +1136,40 @@
    "lead_rate": 0.1111
   },
   "politoed": {
-   "previews": 11,
-   "brought_seen": 11,
-   "brought": 8,
-   "lead_seen": 11,
-   "lead": 6,
-   "brought_rate": 0.6923,
-   "lead_rate": 0.4872
+   "previews": 10,
+   "brought_seen": 10,
+   "brought": 7,
+   "lead_seen": 10,
+   "lead": 5,
+   "brought_rate": 0.6667,
+   "lead_rate": 0.4444
   },
   "polteageist": {
-   "previews": 9,
-   "brought_seen": 8,
-   "brought": 8,
-   "lead_seen": 9,
+   "previews": 7,
+   "brought_seen": 7,
+   "brought": 7,
+   "lead_seen": 7,
    "lead": 1,
-   "brought_rate": 0.9,
-   "lead_rate": 0.1212
+   "brought_rate": 0.8889,
+   "lead_rate": 0.1481
   },
   "primarina": {
-   "previews": 220,
-   "brought_seen": 190,
-   "brought": 90,
-   "lead_seen": 219,
-   "lead": 46,
+   "previews": 173,
+   "brought_seen": 152,
+   "brought": 72,
+   "lead_seen": 173,
+   "lead": 39,
    "brought_rate": 0.474,
-   "lead_rate": 0.2097
+   "lead_rate": 0.2248
   },
   "pyroar": {
-   "previews": 7,
-   "brought_seen": 5,
-   "brought": 4,
-   "lead_seen": 7,
+   "previews": 6,
+   "brought_seen": 4,
+   "brought": 3,
+   "lead_seen": 6,
    "lead": 2,
-   "brought_rate": 0.7143,
-   "lead_rate": 0.2593
+   "brought_rate": 0.6667,
+   "lead_rate": 0.2917
   },
   "quaquaval": {
    "previews": 3,
@@ -1262,13 +1181,13 @@
    "lead_rate": 0.0667
   },
   "raichu": {
-   "previews": 49,
-   "brought_seen": 39,
-   "brought": 15,
-   "lead_seen": 49,
-   "lead": 9,
-   "brought_rate": 0.3902,
-   "lead_rate": 0.183
+   "previews": 43,
+   "brought_seen": 34,
+   "brought": 13,
+   "lead_seen": 43,
+   "lead": 8,
+   "brought_rate": 0.3889,
+   "lead_rate": 0.1852
   },
   "reuniclus": {
    "previews": 4,
@@ -1280,13 +1199,13 @@
    "lead_rate": 0.2222
   },
   "rillaboom": {
-   "previews": 95,
-   "brought_seen": 85,
-   "brought": 36,
-   "lead_seen": 95,
-   "lead": 9,
-   "brought_rate": 0.4253,
-   "lead_rate": 0.0962
+   "previews": 81,
+   "brought_seen": 71,
+   "brought": 31,
+   "lead_seen": 81,
+   "lead": 8,
+   "brought_rate": 0.4384,
+   "lead_rate": 0.1004
   },
   "roserade": {
    "previews": 1,
@@ -1298,13 +1217,13 @@
    "lead_rate": 0.1111
   },
   "rotom": {
-   "previews": 24,
-   "brought_seen": 23,
-   "brought": 16,
-   "lead_seen": 24,
-   "lead": 11,
-   "brought_rate": 0.68,
-   "lead_rate": 0.4359
+   "previews": 3,
+   "brought_seen": 2,
+   "brought": 0,
+   "lead_seen": 3,
+   "lead": 0,
+   "brought_rate": 0.25,
+   "lead_rate": 0.0667
   },
   "rotomfan": {
    "previews": 1,
@@ -1334,31 +1253,31 @@
    "lead_rate": 0.4444
   },
   "runerigus": {
-   "previews": 2,
-   "brought_seen": 1,
+   "previews": 1,
+   "brought_seen": 0,
    "brought": 0,
-   "lead_seen": 2,
+   "lead_seen": 1,
    "lead": 0,
-   "brought_rate": 0.3333,
-   "lead_rate": 0.0833
+   "brought_rate": 0.5,
+   "lead_rate": 0.1111
   },
   "sableye": {
-   "previews": 11,
-   "brought_seen": 11,
-   "brought": 9,
-   "lead_seen": 11,
-   "lead": 5,
-   "brought_rate": 0.7692,
-   "lead_rate": 0.4103
+   "previews": 8,
+   "brought_seen": 8,
+   "brought": 8,
+   "lead_seen": 8,
+   "lead": 4,
+   "brought_rate": 0.9,
+   "lead_rate": 0.4333
   },
   "salamence": {
-   "previews": 115,
-   "brought_seen": 99,
-   "brought": 56,
-   "lead_seen": 115,
-   "lead": 8,
-   "brought_rate": 0.5644,
-   "lead_rate": 0.0712
+   "previews": 96,
+   "brought_seen": 86,
+   "brought": 47,
+   "lead_seen": 96,
+   "lead": 6,
+   "brought_rate": 0.5455,
+   "lead_rate": 0.0646
   },
   "salazzle": {
    "previews": 3,
@@ -1370,13 +1289,13 @@
    "lead_rate": 0.2667
   },
   "samurott": {
-   "previews": 9,
-   "brought_seen": 7,
-   "brought": 4,
-   "lead_seen": 9,
-   "lead": 3,
-   "brought_rate": 0.5556,
-   "lead_rate": 0.303
+   "previews": 4,
+   "brought_seen": 3,
+   "brought": 2,
+   "lead_seen": 4,
+   "lead": 1,
+   "brought_rate": 0.6,
+   "lead_rate": 0.2222
   },
   "samurotthisui": {
    "previews": 28,
@@ -1388,22 +1307,22 @@
    "lead_rate": 0.2874
   },
   "sceptile": {
-   "previews": 6,
-   "brought_seen": 4,
+   "previews": 5,
+   "brought_seen": 3,
    "brought": 1,
-   "lead_seen": 6,
+   "lead_seen": 5,
    "lead": 1,
-   "brought_rate": 0.3333,
-   "lead_rate": 0.1667
+   "brought_rate": 0.4,
+   "lead_rate": 0.1905
   },
   "scizor": {
-   "previews": 28,
-   "brought_seen": 24,
-   "brought": 8,
-   "lead_seen": 27,
+   "previews": 26,
+   "brought_seen": 22,
+   "brought": 7,
+   "lead_seen": 25,
    "lead": 2,
-   "brought_rate": 0.3462,
-   "lead_rate": 0.0805
+   "brought_rate": 0.3333,
+   "lead_rate": 0.0864
   },
   "scolipede": {
    "previews": 7,
@@ -1415,31 +1334,22 @@
    "lead_rate": 0.5926
   },
   "scovillain": {
-   "previews": 22,
-   "brought_seen": 18,
-   "brought": 12,
-   "lead_seen": 22,
-   "lead": 8,
-   "brought_rate": 0.65,
-   "lead_rate": 0.3472
-  },
-  "scrafty": {
-   "previews": 1,
-   "brought_seen": 1,
-   "brought": 1,
-   "lead_seen": 1,
-   "lead": 0,
-   "brought_rate": 0.6667,
-   "lead_rate": 0.1111
+   "previews": 13,
+   "brought_seen": 12,
+   "brought": 10,
+   "lead_seen": 13,
+   "lead": 6,
+   "brought_rate": 0.7857,
+   "lead_rate": 0.4222
   },
   "serperior": {
-   "previews": 4,
-   "brought_seen": 4,
+   "previews": 3,
+   "brought_seen": 3,
    "brought": 0,
-   "lead_seen": 4,
+   "lead_seen": 3,
    "lead": 0,
-   "brought_rate": 0.1667,
-   "lead_rate": 0.0556
+   "brought_rate": 0.2,
+   "lead_rate": 0.0667
   },
   "sharpedo": {
    "previews": 1,
@@ -1460,13 +1370,13 @@
    "lead_rate": 0.1111
   },
   "sinistcha": {
-   "previews": 3,
-   "brought_seen": 3,
+   "previews": 2,
+   "brought_seen": 2,
    "brought": 0,
-   "lead_seen": 3,
+   "lead_seen": 2,
    "lead": 0,
-   "brought_rate": 0.2,
-   "lead_rate": 0.0667
+   "brought_rate": 0.25,
+   "lead_rate": 0.0833
   },
   "sirfetchd": {
    "previews": 1,
@@ -1478,31 +1388,31 @@
    "lead_rate": 0.1111
   },
   "skarmory": {
-   "previews": 15,
-   "brought_seen": 14,
-   "brought": 11,
-   "lead_seen": 15,
+   "previews": 11,
+   "brought_seen": 10,
+   "brought": 7,
+   "lead_seen": 11,
    "lead": 4,
-   "brought_rate": 0.75,
-   "lead_rate": 0.2549
+   "brought_rate": 0.6667,
+   "lead_rate": 0.3333
   },
   "skeledirge": {
-   "previews": 26,
-   "brought_seen": 22,
-   "brought": 16,
-   "lead_seen": 26,
-   "lead": 2,
-   "brought_rate": 0.7083,
-   "lead_rate": 0.0833
+   "previews": 19,
+   "brought_seen": 15,
+   "brought": 12,
+   "lead_seen": 19,
+   "lead": 0,
+   "brought_rate": 0.7647,
+   "lead_rate": 0.0159
   },
   "slowbro": {
-   "previews": 10,
-   "brought_seen": 8,
-   "brought": 5,
-   "lead_seen": 10,
-   "lead": 1,
-   "brought_rate": 0.6,
-   "lead_rate": 0.1111
+   "previews": 9,
+   "brought_seen": 7,
+   "brought": 4,
+   "lead_seen": 9,
+   "lead": 0,
+   "brought_rate": 0.5556,
+   "lead_rate": 0.0303
   },
   "slowbrogalar": {
    "previews": 5,
@@ -1514,13 +1424,13 @@
    "lead_rate": 0.0476
   },
   "slowking": {
-   "previews": 10,
-   "brought_seen": 9,
-   "brought": 5,
-   "lead_seen": 10,
+   "previews": 4,
+   "brought_seen": 3,
+   "brought": 3,
+   "lead_seen": 4,
    "lead": 1,
-   "brought_rate": 0.5455,
-   "lead_rate": 0.1111
+   "brought_rate": 0.8,
+   "lead_rate": 0.2222
   },
   "slowkinggalar": {
    "previews": 27,
@@ -1532,49 +1442,49 @@
    "lead_rate": 0.1149
   },
   "slurpuff": {
-   "previews": 5,
-   "brought_seen": 4,
+   "previews": 3,
+   "brought_seen": 2,
    "brought": 1,
-   "lead_seen": 5,
+   "lead_seen": 3,
    "lead": 1,
-   "brought_rate": 0.3333,
-   "lead_rate": 0.1905
+   "brought_rate": 0.5,
+   "lead_rate": 0.2667
   },
   "sneasler": {
-   "previews": 35,
-   "brought_seen": 30,
-   "brought": 14,
-   "lead_seen": 35,
-   "lead": 8,
-   "brought_rate": 0.4688,
-   "lead_rate": 0.2252
+   "previews": 28,
+   "brought_seen": 24,
+   "brought": 10,
+   "lead_seen": 28,
+   "lead": 5,
+   "brought_rate": 0.4231,
+   "lead_rate": 0.1778
   },
   "snorlax": {
-   "previews": 22,
-   "brought_seen": 17,
-   "brought": 6,
-   "lead_seen": 22,
+   "previews": 19,
+   "brought_seen": 14,
+   "brought": 5,
+   "lead_seen": 19,
    "lead": 1,
-   "brought_rate": 0.3684,
-   "lead_rate": 0.0556
+   "brought_rate": 0.375,
+   "lead_rate": 0.0635
   },
   "staraptor": {
-   "previews": 42,
-   "brought_seen": 38,
-   "brought": 24,
-   "lead_seen": 42,
-   "lead": 13,
-   "brought_rate": 0.625,
-   "lead_rate": 0.303
+   "previews": 39,
+   "brought_seen": 36,
+   "brought": 22,
+   "lead_seen": 39,
+   "lead": 11,
+   "brought_rate": 0.6053,
+   "lead_rate": 0.2764
   },
   "starmie": {
-   "previews": 40,
-   "brought_seen": 37,
-   "brought": 31,
-   "lead_seen": 40,
-   "lead": 20,
-   "brought_rate": 0.8205,
-   "lead_rate": 0.4841
+   "previews": 35,
+   "brought_seen": 32,
+   "brought": 26,
+   "lead_seen": 35,
+   "lead": 18,
+   "brought_rate": 0.7941,
+   "lead_rate": 0.4955
   },
   "stunfiskgalar": {
    "previews": 1,
@@ -1586,33 +1496,24 @@
    "lead_rate": 0.1111
   },
   "swampert": {
-   "previews": 45,
-   "brought_seen": 41,
-   "brought": 30,
-   "lead_seen": 45,
-   "lead": 6,
-   "brought_rate": 0.7209,
-   "lead_rate": 0.1348
+   "previews": 37,
+   "brought_seen": 35,
+   "brought": 26,
+   "lead_seen": 37,
+   "lead": 5,
+   "brought_rate": 0.7297,
+   "lead_rate": 0.1368
   },
   "sylveon": {
-   "previews": 21,
-   "brought_seen": 18,
-   "brought": 9,
-   "lead_seen": 21,
+   "previews": 17,
+   "brought_seen": 15,
+   "brought": 8,
+   "lead_seen": 17,
    "lead": 2,
-   "brought_rate": 0.5,
-   "lead_rate": 0.1014
+   "brought_rate": 0.5294,
+   "lead_rate": 0.1228
   },
   "talonflame": {
-   "previews": 1,
-   "brought_seen": 1,
-   "brought": 1,
-   "lead_seen": 1,
-   "lead": 0,
-   "brought_rate": 0.6667,
-   "lead_rate": 0.1111
-  },
-  "tauros": {
    "previews": 1,
    "brought_seen": 1,
    "brought": 1,
@@ -1649,49 +1550,40 @@
    "lead_rate": 0.1667
   },
   "torkoal": {
-   "previews": 4,
-   "brought_seen": 4,
-   "brought": 4,
-   "lead_seen": 4,
-   "lead": 3,
-   "brought_rate": 0.8333,
-   "lead_rate": 0.5556
-  },
-  "torterra": {
-   "previews": 1,
-   "brought_seen": 1,
-   "brought": 0,
-   "lead_seen": 1,
-   "lead": 0,
-   "brought_rate": 0.3333,
-   "lead_rate": 0.1111
+   "previews": 3,
+   "brought_seen": 3,
+   "brought": 3,
+   "lead_seen": 3,
+   "lead": 2,
+   "brought_rate": 0.8,
+   "lead_rate": 0.4667
   },
   "toucannon": {
-   "previews": 6,
-   "brought_seen": 5,
+   "previews": 4,
+   "brought_seen": 4,
    "brought": 1,
-   "lead_seen": 6,
+   "lead_seen": 4,
    "lead": 1,
-   "brought_rate": 0.2857,
-   "lead_rate": 0.1667
+   "brought_rate": 0.3333,
+   "lead_rate": 0.2222
   },
   "toxapex": {
-   "previews": 44,
-   "brought_seen": 41,
-   "brought": 20,
-   "lead_seen": 44,
+   "previews": 36,
+   "brought_seen": 33,
+   "brought": 19,
+   "lead_seen": 36,
    "lead": 5,
-   "brought_rate": 0.4884,
-   "lead_rate": 0.1159
+   "brought_rate": 0.5714,
+   "lead_rate": 0.1404
   },
   "toxtricity": {
-   "previews": 3,
-   "brought_seen": 2,
+   "previews": 1,
+   "brought_seen": 1,
    "brought": 1,
-   "lead_seen": 3,
+   "lead_seen": 1,
    "lead": 0,
-   "brought_rate": 0.5,
-   "lead_rate": 0.0667
+   "brought_rate": 0.6667,
+   "lead_rate": 0.1111
   },
   "toxtricitylowkey": {
    "previews": 2,
@@ -1730,49 +1622,49 @@
    "lead_rate": 0.0833
   },
   "tyranitar": {
-   "previews": 48,
-   "brought_seen": 41,
-   "brought": 10,
-   "lead_seen": 48,
-   "lead": 4,
-   "brought_rate": 0.2558,
-   "lead_rate": 0.0867
+   "previews": 38,
+   "brought_seen": 33,
+   "brought": 8,
+   "lead_seen": 38,
+   "lead": 3,
+   "brought_rate": 0.2571,
+   "lead_rate": 0.0833
   },
   "umbreon": {
-   "previews": 59,
-   "brought_seen": 47,
-   "brought": 18,
-   "lead_seen": 59,
+   "previews": 50,
+   "brought_seen": 39,
+   "brought": 12,
+   "lead_seen": 50,
    "lead": 1,
-   "brought_rate": 0.3878,
-   "lead_rate": 0.0219
+   "brought_rate": 0.3171,
+   "lead_rate": 0.0256
   },
   "vanilluxe": {
-   "previews": 23,
-   "brought_seen": 20,
-   "brought": 7,
-   "lead_seen": 23,
-   "lead": 5,
-   "brought_rate": 0.3636,
-   "lead_rate": 0.2133
+   "previews": 19,
+   "brought_seen": 18,
+   "brought": 6,
+   "lead_seen": 19,
+   "lead": 4,
+   "brought_rate": 0.35,
+   "lead_rate": 0.2063
   },
   "vaporeon": {
-   "previews": 7,
-   "brought_seen": 6,
-   "brought": 5,
-   "lead_seen": 7,
-   "lead": 2,
-   "brought_rate": 0.75,
-   "lead_rate": 0.2593
+   "previews": 5,
+   "brought_seen": 5,
+   "brought": 4,
+   "lead_seen": 5,
+   "lead": 1,
+   "brought_rate": 0.7143,
+   "lead_rate": 0.1905
   },
   "venusaur": {
-   "previews": 25,
-   "brought_seen": 23,
-   "brought": 13,
-   "lead_seen": 25,
-   "lead": 7,
-   "brought_rate": 0.56,
-   "lead_rate": 0.2716
+   "previews": 20,
+   "brought_seen": 18,
+   "brought": 10,
+   "lead_seen": 20,
+   "lead": 6,
+   "brought_rate": 0.55,
+   "lead_rate": 0.2879
   },
   "victreebel": {
    "previews": 9,
@@ -1793,13 +1685,13 @@
    "lead_rate": 0.1111
   },
   "vivillon": {
-   "previews": 3,
-   "brought_seen": 3,
+   "previews": 2,
+   "brought_seen": 2,
    "brought": 2,
-   "lead_seen": 3,
+   "lead_seen": 2,
    "lead": 0,
-   "brought_rate": 0.6,
-   "lead_rate": 0.0667
+   "brought_rate": 0.75,
+   "lead_rate": 0.0833
   },
   "vivillonhighplains": {
    "previews": 3,
@@ -1811,31 +1703,31 @@
    "lead_rate": 0.0667
   },
   "volcarona": {
-   "previews": 55,
-   "brought_seen": 47,
-   "brought": 30,
-   "lead_seen": 55,
-   "lead": 7,
-   "brought_rate": 0.6327,
-   "lead_rate": 0.1287
+   "previews": 50,
+   "brought_seen": 42,
+   "brought": 26,
+   "lead_seen": 50,
+   "lead": 6,
+   "brought_rate": 0.6136,
+   "lead_rate": 0.1218
   },
   "whimsicott": {
-   "previews": 8,
-   "brought_seen": 7,
+   "previews": 7,
+   "brought_seen": 6,
    "brought": 5,
-   "lead_seen": 8,
+   "lead_seen": 7,
    "lead": 3,
-   "brought_rate": 0.6667,
-   "lead_rate": 0.3333
+   "brought_rate": 0.75,
+   "lead_rate": 0.3704
   },
   "zoroark": {
-   "previews": 4,
-   "brought_seen": 3,
+   "previews": 2,
+   "brought_seen": 2,
    "brought": 1,
-   "lead_seen": 4,
+   "lead_seen": 2,
    "lead": 1,
-   "brought_rate": 0.4,
-   "lead_rate": 0.2222
+   "brought_rate": 0.5,
+   "lead_rate": 0.3333
   },
   "zoroarkhisui": {
    "previews": 12,

@@ -157,8 +157,8 @@ the species' commonest spread.
 
 Both tables are rebuilt from the recorded runs after a session: `tools/seen_builds.py` learns the sets new battles
 revealed into seen_builds.json, and `tools/preview_rates.py` counts the bring and lead rates per species into
-assets/sets/opponent_preview_rates.json (read when `preview_rates` names it). Both leave out the benchmark's clean
-battles.
+assets/sets/opponent_preview_rates.json (read when `preview_rates` names it). Both leave out every battle
+pcsa-benchmark uses.
 
 With `calibrate` the network's value, matrix cells and row scores go through `value_calibration` before the search
 uses them, so they sit on the scale of a finished game (+1 a win, -1 a loss) like the tree's terminal positions.

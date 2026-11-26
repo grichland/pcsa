@@ -8,7 +8,8 @@ ability (not the Mega's own) are matched as the old pcsa.battle.seen_builds did:
 1. a seen build that covers it is seen again; 2. else a top build that covers it is added as "catalog";
 3. else an added build it is consistent with learns the new parts; 4. else a new "added" build: the revealed
 parts, the rest from the closest top build of the species.
-The benchmark's clean battles (../archive/pcsa-benchmark/*/clean_battles.txt) are left out, as the team pool does.
+Every battle pcsa-benchmark uses (../archive/pcsa-benchmark/*/clean_battles.txt and battles.json) is left out, as
+in the team pool.
 """
 
 from __future__ import annotations
@@ -250,9 +251,15 @@ def species_key(mon: str, preview: list[str], names: Names) -> str:
 
 
 def benchmark_battles() -> set[str]:
+    """Every battle pcsa-benchmark uses: its clean battles and the battles its items come from."""
+    clean, lists = sorted(BENCH.glob("*/clean_battles.txt")), sorted(BENCH.glob("*/battles.json"))
+    if not clean or not lists:
+        raise SystemExit(f"pcsa-benchmark's battle lists are missing under {BENCH}")
     out: set[str] = set()
-    for f in BENCH.glob("*/clean_battles.txt"):
+    for f in clean:
         out |= {x.split()[0] for x in f.read_text(encoding="utf-8").splitlines() if x.strip() and not x.startswith("#")}
+    for f in lists:
+        out |= set(json.loads(f.read_text(encoding="utf-8")))
     return out
 
 
