@@ -85,6 +85,12 @@ Three rules are pcsa's own, not training's (`src/pcsa/network/live_rules.py`, ap
   species' Mega form needs in CG's species table (`mega_stones` in `assets/game/cg/vocab.json`). Preview search
   races only the picks left open; the decision's extras list the closed picks under `closed` (11 + pick).
 
+The masks hold wherever we choose: at the request itself; in the search tree at every one of our turn nodes (each
+node's counters are its parent's with our action there recorded, and the mask closes actions both for the network
+and for the tree); in preview search's playouts of our seat; and on the action that goes out, a fallback player's
+too (`live_rules.guard`, called by pcsa.cg.serve: a closed action becomes the same move with Mega, another move,
+another switch, else any open action, and the log says so).
+
 The shipped checkpoint, like every from-scratch checkpoint (`scratch-20261122-*`, `gold-20261123-*`), was
 trained with every rule: `max_same_move` 3, `max_switches` 2, `max_boosts` 3, `max_heals` 3 and all six `no_*`
 rules on. The earlier league checkpoints (`league-*`) were trained with the first two only, at 4 and 3.
@@ -106,13 +112,14 @@ has not been re-tuned for these checkpoints, so it stays off.
 At team preview the pick comes from playouts, not from the preview head
 (`src/pcsa/network/preview_search.py`, ported from pcsa-former's `tools/preview_search_test.py`):
 
-1. Three guesses of their team: all six species, each set drawn by `worlds.guess_set` from the belief heads of the
-   live preview, with nature and stat points from `top_builds.json`; Champions Gym checks each guess and a refused
-   one is drawn again.
+1. Three guesses of their team: all six species, each set a whole known build (`worlds_mode: builds`) or drawn
+   part by part from the belief heads (`legacy`); Champions Gym checks each guess and a refused one is drawn again.
 2. A BatchEnv of 3,600 games on the GPU, one per cell (our pick x their pick, numbered as
-   `layout.preview_combos`). Both preview picks are forced; after that the network plays both seats greedily, our
-   seat under the live rule masks. Our six sets come from `battle_start`.
-3. Each cell scores `(wins + 2 * A) / (games + 2)`, A being the network's own estimate at our first turn.
+   `layout.preview_combos`). Both preview picks are forced; after that our seat plays as live play does without
+   search (the live rule masks, then the `choice` rule over the matrix) and theirs plays the network's greedy
+   policy. Our six sets come from `battle_start`.
+3. Each cell scores `(wins + 2 * A) / (games + 2)`, A being the win chance at our first turn: (calibrated value +
+   1) / 2.
 4. A race over our picks: at 1/4, 1/2 and 3/4 of the budget the best 20, 6 and 2 rows by mean stay in (the head's
    pick always stays); finished games move to the next cell of the rows still in.
 5. The best row is played when its mean beats the head's pick by `keep_head_margin` (0.03); otherwise, on any
@@ -148,11 +155,14 @@ end, the rank of the build that fits what was shown to `cg/builds-<battle>.json`
 Champions Gym has no damage calculation in its Python API. `legacy` draws item, ability and moves separately with
 the species' commonest spread.
 
+With `calibrate` the network's value, matrix cells and row scores go through `value_calibration` before the search
+uses them, so they sit on the scale of a finished game (+1 a win, -1 a loss) like the tree's terminal positions.
 The search stops at `ms` or the request's deadline, whichever is sooner, and earlier once the answer has settled
 (`settle_sims`, `settle_share`, `settle_gap`). Turns before `from_turn`, requests with a single open action, team
 preview and replacements are not searched. With `follow_pivot`, when the pick is a move the trees saw switch us out
-in the same turn (U-turn, Volt Switch and the like), the switch-in the search chose there is kept and played at
-that turn's replace request when it is open; the request cannot tell a pivot from a faint, so it answers either.
-When the search cannot run or runs fewer than `min_sims` simulations, the network's own answer is played and the
-record says why. The search needs Champions Gym 0.5.0 or later, which builds engine games from a live battle; with
-an earlier version every turn records that it could not run.
+in the same turn (U-turn, Volt Switch and the like), two switch-ins are kept: the one the search chose after the
+pivot and the one it chose if our Pokémon fainted first. That turn's replace request plays the one its events name
+(our `withdraw` with `pivot`, or our `faint`; the pivot's when the rows are not read yet) when it is open. When the
+search cannot run or runs fewer than `min_sims` simulations, the network's own answer is played and the record says
+why. The search needs Champions Gym 0.5.0 or later, which builds engine games from a live battle; with an earlier
+version every turn records that it could not run.

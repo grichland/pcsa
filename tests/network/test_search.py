@@ -16,11 +16,8 @@ cg = pytest.importorskip("champions_gym")
 os.environ.setdefault("CUDA_VISIBLE_DEVICES", "-1")
 
 from pcsa.network import layout as L  # noqa: E402
-from pcsa.network import (  # noqa: E402
-    search,
-    searching,  # noqa: E402
-    worlds,
-)
+from pcsa.network import live_rules, search, searching, worlds  # noqa: E402
+from pcsa.network import rules as rules_mod  # noqa: E402
 from pcsa.network.policy import Policy  # noqa: E402
 from pcsa.network.searching import Follow, Searcher  # noqa: E402
 from tests import configs  # noqa: E402
@@ -339,7 +336,8 @@ def test_the_followed_switch_in_is_the_one_the_trees_chose_after_the_pivot() -> 
     worlds = [_pivot_world({1: [pivot, faint, later], 0: [other]}),
               _pivot_world({1: [_node(_Game(5, (L.KIND_REPLACE, -1)), [9, 10], [1.0, 3.0], 4)]})]
     follow = searching.pivot_follow(worlds, 2)  # type: ignore[arg-type]
-    assert follow == {"target": 10, "share": pytest.approx(9 / 12), "pivot_visits": 12, "faint_visits": 7}
+    assert follow == {"target": 10, "share": pytest.approx(9 / 12), "after_faint": 9, "pivot_visits": 12,
+                      "faint_visits": 7}  # fmt: skip
     assert searching.pivot_follow(worlds, 0) is not None  # any pick the trees saw switch us out
     assert searching.pivot_follow([_pivot_world({1: [later]})], 2) is None  # type: ignore[arg-type]
     assert searching.pivot_follow(worlds, 4) is None  # type: ignore[arg-type]
@@ -351,8 +349,8 @@ def test_an_unvisited_switch_in_falls_back_to_the_network_prior() -> None:
     assert searching.pivot_follow([_pivot_world({1: [fresh]})], 2)["target"] == 10  # type: ignore[arg-type,index]
 
 
-def _follower() -> SimpleNamespace:
-    return SimpleNamespace(follows={})
+def _follower(tracker=None) -> SimpleNamespace:  # noqa: ANN001
+    return SimpleNamespace(follows={}, tracker=tracker)
 
 
 def _replace(open_: list) -> tuple:
@@ -368,7 +366,7 @@ def test_the_replace_request_after_the_pivot_plays_the_followed_switch_in() -> N
     p = _follower()
     p.follows = {0: Follow(3, 5, 2, 10)}
     note = Searcher.follow(p, [0], kinds, b, [SimpleNamespace(turn=5)], scores)[0]  # type: ignore[arg-type]
-    assert note == {"used": True, "why": None, "target": 10, "model_pick": 8, "changed": True}
+    assert note == {"used": True, "why": None, "target": 10, "out": None, "model_pick": 8, "changed": True}
     assert int(scores[0, :11].argmax()) == 10 and not p.follows
     assert torch.isinf(scores[0, :11]).sum() == 10
 
@@ -408,7 +406,69 @@ def test_the_policy_plays_the_kept_switch_in_at_a_replace_request() -> None:
     policy.searcher.follows[0] = Follow(int(t.decision[0]) - 1, int(battle.turn), 2, int(target))  # type: ignore[union-attr]
     out = policy.decide(t, [0], [battle])
     assert int(out["scores"][0, :11].argmax()) == target
-    assert out["extras"][0]["follow"] == {"used": True, "why": None, "target": target, "model_pick": plain,
+    assert out["extras"][0]["follow"] == {"used": True, "why": None, "target": target, "out": None, "model_pick": plain,
                                           "changed": True}  # fmt: skip
     policy.reset([0])
     assert not policy.searcher.follows  # type: ignore[union-attr]
+
+
+@needs_games
+def test_the_rule_masks_hold_at_every_node_of_the_tree(position, monkeypatch) -> None:
+    arrays, battle, _ = position
+    kept: dict = {}
+    run = search.Search.run
+
+    def keep(self, worlds_, end):  # noqa: ANN001, ANN202
+        run(self, worlds_, end)
+        kept["worlds"] = worlds_
+
+    monkeypatch.setattr(search.Search, "run", keep)
+    policy = make({"sims": 256}, rules=configs.rules(max_same_move=1, always_mega=True))
+    assert policy.decide(arrays, [0], [battle])["extras"][0]["search"]["used"]
+    inner = 0
+    stack = [w.root for w in kept["worlds"]]
+    while stack:
+        node = stack.pop()
+        for _, _, made in node.kids.values():
+            stack.extend(made.values())
+        if node.pending or node.terminal or node.allowed is None or node.via is None:
+            continue
+        inner += 1
+        if node.allowed.any():
+            assert all(a is None or node.allowed[a] for a in node.us)
+        path, at = [], node  # replay the path from the root with fresh counters: the same mask as live play
+        while at.via is not None:
+            path.append(at.via)
+            at = at.via[0]
+        fresh = rules_mod.Rules(policy.rule_cfg, policy.layout, 1)
+        fresh.load(0, at.rules)
+        for parent, action in reversed(path):
+            if parent.obs is not None and action is not None:
+                fresh.record(parent.obs, np.array([action]))
+        want = live_rules.apply(policy.turn_rules, node.obs, fresh.mask(node.obs))[0] > 0
+        assert (node.allowed == want).all()
+    assert inner > 0
+
+
+def test_a_faint_before_the_pivot_plays_the_switch_in_kept_for_a_faint() -> None:
+    from pcsa.network import builds, evidence
+
+    tracker = evidence.Tracker(builds.Dex.load())
+    tracker.feed([{"k": "turn", "n": 5}, {"k": "move", "side": "opp", "mon": "garchomp", "move": "earthquake"},
+                  {"k": "faint", "side": "own", "mon": "cinderace"}])  # fmt: skip
+    assert tracker.own_out() == "faint"
+    kinds, b, scores = _replace([8, 9, 10])
+    p = _follower(tracker)
+    p.follows = {0: Follow(3, 5, 2, 10, after_faint=9)}
+    note = Searcher.follow(p, [0], kinds, b, [SimpleNamespace(turn=5)], scores)[0]  # type: ignore[arg-type]
+    assert note["used"] and note["target"] == 9 and note["out"] == "faint" and int(scores[0, :11].argmax()) == 9
+    tracker.feed([{"k": "turn", "n": 6}, {"k": "withdraw", "side": "own", "mon": "cinderace", "pivot": True}])
+    assert tracker.own_out() == "pivot"
+    p.follows = {0: Follow(3, 6, 2, 10, after_faint=9)}
+    kinds, b, scores = _replace([8, 9, 10])
+    note = Searcher.follow(p, [0], kinds, b, [SimpleNamespace(turn=6)], scores)[0]  # type: ignore[arg-type]
+    assert note["target"] == 10 and note["out"] == "pivot"
+    p.follows = {0: Follow(3, 6, 2, 10)}  # no switch-in kept for a faint
+    tracker.feed([{"k": "faint", "side": "own", "mon": "primarina"}])
+    note = Searcher.follow(p, [0], *_replace([8, 9, 10])[:2], [SimpleNamespace(turn=6)], scores)[0]  # type: ignore[arg-type]
+    assert note["used"] is False and "fainted" in note["why"]

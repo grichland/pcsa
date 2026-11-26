@@ -128,6 +128,18 @@ class Tracker:
         elif k == "field" and to_id(e.get("effect")) == "trickroom":
             self.trick_room = e.get("what") == "start"
 
+    def own_out(self) -> str | None:
+        """Why our Pokémon last left the field this turn, by the rows read so far: "pivot" (a pivot move's
+        withdraw), "faint", or None when the rows say neither."""
+        for e in reversed(self.turn):
+            if e.get("side") != "own":
+                continue
+            if e.get("k") == "faint":
+                return "faint"
+            if e.get("k") == "withdraw" and e.get("pivot"):
+                return "pivot"
+        return None
+
     def _close_turn(self) -> None:
         events, self.turn = self.turn, []
         first: dict[str, dict] = {}

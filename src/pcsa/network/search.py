@@ -49,8 +49,8 @@ SAFETY = 2.0  # a batch starts only if twice its expected time fits
 
 
 class Node:
-    __slots__ = ("N", "Nt", "Nu", "P_t", "P_u", "Q", "R_t", "R_u", "S_t", "S_u", "cols", "game", "kids", "mem",
-                 "n", "pending", "terminal", "them", "turn", "us", "v")  # fmt: skip
+    __slots__ = ("N", "Nt", "Nu", "P_t", "P_u", "Q", "R_t", "R_u", "S_t", "S_u", "allowed", "cols", "game", "kids",
+                 "mem", "n", "obs", "pending", "rules", "terminal", "them", "turn", "us", "v", "via")  # fmt: skip
 
     def __init__(self, game: Any) -> None:
         self.game = game
@@ -63,6 +63,10 @@ class Node:
             self.v = 0.0 if winner is None else (1.0 if int(winner) == 0 else -1.0)
         self.kids: dict = {}
         self.mem: tuple | None = None
+        self.via: tuple | None = None  # (parent, our action there), for the rule masks
+        self.rules: tuple | None = None  # our rule counters on arriving here
+        self.obs: dict | None = None  # our turn observation here, as the rules read it (None: not our turn)
+        self.allowed: np.ndarray | None = None  # our actions the rule masks leave open here
 
 
 @dataclass
@@ -144,19 +148,21 @@ def _split(actions: list, weight: Sequence[float], moves: int, switches: int) ->
 
 
 def expand(
-    node: Node, leaf: Leaf, world: World, tables: Tables, cfg: SearchSettings, allowed: np.ndarray | None = None
+    node: Node, leaf: Leaf, world: World, tables: Tables, cfg: SearchSettings, allowed: np.ndarray | None = None,
+    inner: bool = False,
 ) -> None:
-    """The node's actions, priors, value and Q's start from the network row. `allowed` (the root): our actions
-    the request and the rule masks leave open. cfg.top_*_moves and cfg.top_*_switches keep only each side's
-    likeliest moves and switches."""
+    """The node's actions, priors, value and Q's start from the network row. `allowed`: our actions the request
+    (at the root) and the rule masks leave open; below the root (`inner`) a mask that would leave nothing open is
+    not applied. cfg.top_*_moves and cfg.top_*_switches keep only each side's likeliest moves and switches."""
     n0 = cfg.n0
     game = node.game
     kinds, masks = game.kinds(), np.asarray(game.masks()).reshape(2, L.OWN_ACTIONS)
     us = [int(a) for a in np.flatnonzero(masks[0])] if kinds[0] in KIND_ASKED else []
     if allowed is not None:
-        us = [a for a in us if allowed[a]]
-        if not us:
+        kept = [a for a in us if allowed[a]]
+        if not kept and not inner:
             raise NoSearch("the Game offers none of the request's legal actions")
+        us = kept or us
     us = _split(us, [leaf.pi[a] for a in us], cfg.top_ours_moves, cfg.top_ours_switches)
     with_pi = [a for a in us if leaf.pi[a] > 0]
     node.us = us or [None]
@@ -247,6 +253,7 @@ class Search:
             child = made.get(k)
             if child is None:
                 child = made[k] = Node(games[k])
+                child.via = (node, node.us[a])
                 self.nodes += 1
             node = child
         self.depth = max(self.depth, len(path))
@@ -265,7 +272,7 @@ class Search:
         nodes = list(waiting.values())
         leaves, memories = self.forward([n for n, _, _ in nodes], [parent.mem for _, parent, _ in nodes])
         for (node, parent, world), leaf, mem in zip(nodes, leaves, memories, strict=True):
-            expand(node, leaf, world, self.tables, self.cfg)
+            expand(node, leaf, world, self.tables, self.cfg, node.allowed, inner=True)
             asked = node.game.kinds()[0] in KIND_ASKED
             deep = node.turn - world.root.turn >= self.cfg.depth
             node.mem = None if deep else (mem if asked else parent.mem)

@@ -1,11 +1,13 @@
 """Team-preview search: our pick from playouts of every (our pick, their pick) cell, in place of the preview head's.
 
-1. Guesses: `guesses` versions of their team, each Pokémon's set drawn by worlds.guess_set from the belief heads of
-   the live preview forward (nature and points from top_builds.json), each version checked by Champions Gym.
+1. Guesses: `guesses` versions of their team, each Pokémon's set a whole known build (worlds_mode builds) or drawn
+   part by part by worlds.guess_set from the belief heads (legacy), each version checked by Champions Gym.
 2. A BatchEnv of 3,600 slots on [ours, guess 1, ...]: slot i starts on cell i (ours = i // 60, theirs = i % 60).
-   Both preview picks are forced; after that the net plays both seats greedily, one memory slot per seat, with our
-   seat's rule masks as in live play.
-3. Stage A: at our first turn, sigmoid(best legal score). Cell value (wins + prior_games * A) / (games + prior_games).
+   Both preview picks are forced; after that one memory slot per seat. Our seat plays as live play does without
+   search: the rule masks, then the choice rule over the matrix (the greedy policy when no rule is set); theirs
+   plays the greedy policy without our masks.
+3. Stage A: at our first turn, the win chance (calibrated value + 1) / 2. Cell value (wins + prior_games * A) /
+   (games + prior_games).
 4. The race (preview_race.py) cuts our picks to `race` sizes; the head's pick always stays in.
 5. The best row is played when it beats the head's pick by `keep_head_margin`; otherwise, on an error, or with no
    finished game, the head's pick.
@@ -30,7 +32,7 @@ from pcsa.common.clock import precise_now
 from pcsa.common.config_cg import PreviewSearch
 from pcsa.common.paths import assets_dir
 
-from . import builds, cg_adapter, model, worlds
+from . import builds, cg_adapter, choosing, model, worlds
 from . import checkpoint as ckpt
 from . import layout as L
 from . import rules as masks
@@ -197,14 +199,21 @@ class Previewer:
         slots = torch.arange(len(kind), device=dev) * 2 + torch.from_numpy(seat).to(dev)
         out = self.net.act(b, torch.from_numpy(kind).to(dev), greedy=True, memory=mem, slots=slots)
         action = out["action"].cpu().numpy()
+        ours = np.flatnonzero((kind == L.KIND_TURN) & (seat == 0))
+        if self.policy.choice is not None and len(ours):  # our seat picks as live play does: the choice rule
+            rows = torch.from_numpy(ours).to(dev)
+            ruled = choosing.scores(out["matrix"][rows], out["p_opp"][rows], out["pi"][rows],
+                                    out["legal"][rows].bool(), self.policy.choice)  # fmt: skip
+            action[ours] = ruled.argmax(-1).cpu().numpy()
         cell = state["race"].cell
         pre = kind == L.KIND_PREVIEW
         action[pre & (seat == 0)] = L.PREVIEW_OFFSET + cell[pre & (seat == 0)] // P
         action[pre & (seat == 1)] = L.PREVIEW_OFFSET + cell[pre & (seat == 1)] % P
         first = np.flatnonzero((kind == L.KIND_TURN) & (seat == 0) & ~state["scored"])
-        if len(first):
-            s = out["score"][first].float().masked_fill(~out["legal"][first].bool(), -1e9)
-            np.add.at(state["a_sum"], cell[first], torch.sigmoid(s.max(-1).values).cpu().numpy())
+        if len(first):  # stage A: the win chance of our first turn, (calibrated value + 1) / 2
+            v, cal = out["value"][first].float().reshape(-1), self.policy.calibration
+            v = v if cal is None else 2.0 * torch.sigmoid(cal.a * v + cal.b) - 1.0
+            np.add.at(state["a_sum"], cell[first], ((v + 1.0) / 2.0).clamp(0.0, 1.0).cpu().numpy())
             np.add.at(state["a_cnt"], cell[first], 1)
             state["scored"][first] = True
         if rules is not None:

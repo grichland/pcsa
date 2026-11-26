@@ -122,7 +122,8 @@ def fake_out(n: int) -> dict:
     preview = torch.zeros(n, P)
     preview[:, HEAD] = 1.0
     return {"action": torch.zeros(n, dtype=torch.long), "score": torch.zeros(n, L.OWN_ACTIONS),
-            "legal": torch.ones(n, L.OWN_ACTIONS, dtype=torch.bool), "preview_pi": preview}  # fmt: skip
+            "legal": torch.ones(n, L.OWN_ACTIONS, dtype=torch.bool), "preview_pi": preview,
+            "value": torch.zeros(n)}  # fmt: skip  # stage A: (0 + 1) / 2 here, sigmoid(0) in the reference
 
 
 @pytest.fixture
@@ -154,7 +155,7 @@ def test_the_same_cuts_and_choice_as_the_reference(reference, monkeypatch) -> No
     cfg = PreviewSearch(enabled=True, budget_s=budget, guesses=3, race=[20, 6, 2], prior_games=2.0, choose="mean",
                         keep_head_margin=margin, device="cpu", threads=1, seed=0, worlds_mode="legacy")  # fmt: skip
     p = previewing.Previewer.__new__(previewing.Previewer)
-    p.policy, p.cfg = SimpleNamespace(rule_cfg=None, layout=None), cfg
+    p.policy, p.cfg = SimpleNamespace(rule_cfg=None, layout=None, choice=None, calibration=None), cfg
     p.net = SimpleNamespace(act=lambda b, kind, **k: fake_out(N))
     ours = p.play([[], [], [], []], HEAD, budget, 0)
 

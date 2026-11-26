@@ -4,6 +4,7 @@ team-preview pick that brings two Mega stone holders, and Mega Evolution wheneve
 from __future__ import annotations
 
 import os
+from types import SimpleNamespace
 from typing import Any
 
 import numpy as np
@@ -161,3 +162,23 @@ def test_the_policy_mega_evolves_whenever_it_can() -> None:
     plain = [int(a) for a in np.flatnonzero(mask[0, :4])]
     assert plain and all(scores[a] == float("-inf") for a in plain) and set(plain) <= set(extras["closed"])
     assert int(np.argmax(scores)) >= 4
+
+
+def _guarded(open_: list[int], action):  # noqa: ANN001, ANN202
+
+
+    m = np.zeros((1, 11), np.float32)
+    m[0, open_] = 1.0
+    rules = SimpleNamespace(save=lambda g: (), load=lambda g, saved: None, mask=lambda obs: m)
+    seat = SimpleNamespace(decision=7, obs={"mask": m}, before=(), rules=rules)
+    policy = SimpleNamespace(rule_cfg=object(), turn_rules=None, seats={0: seat})
+    return live_rules.guard(policy, 7, action)
+
+
+def test_the_guard_keeps_the_action_that_goes_out_inside_the_masks() -> None:
+    assert _guarded([4, 5, 8], 0) == 4  # a plain move with its Mega copy open: the Mega copy
+    assert _guarded([2, 9], 1) == 2  # a closed move: another move
+    assert _guarded([1, 10], 8) == 10  # a closed switch: another switch
+    assert _guarded([1], 9) == 1  # no switch open: a move
+    assert _guarded([0, 8], 8) == 8 and _guarded([0], 12) == 12 and _guarded([0], None) is None
+    assert live_rules.guard(SimpleNamespace(rule_cfg=None), 7, 3) == 3  # no masks: unchanged

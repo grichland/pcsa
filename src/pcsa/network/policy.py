@@ -1,33 +1,29 @@
 """A pcsa-former checkpoint as a `champions_gym.neural` policy, with the network's outputs in each decision's extras.
 
-    player: "champions_gym.neural:load"
-    player_args: {policy: "pcsa.network.policy:Policy", checkpoint: ..., device: "cpu", policy_args: {threads: 4}}
+    player: "champions_gym.neural:load", player_args: {policy: "pcsa.network.policy:Policy", checkpoint: ...}
 
 One step of the network per request with that game's memory, returning log(pi) and log(preview_pi), so the shell's
 argmax is the greedy action of decide.choose. A request answered without asking (a restart's replay) comes to
-`observe`: the same forward step, so the memory after a restart is the memory the model had. One lock per policy
-object around every call.
+`observe`: the same forward step, so the memory after a restart is the memory the model had. One lock per call.
 
 Here the belief heads run too (they change no other output) and every decision's extras carry, as plain JSON with
 CG string ids (the record contract's `notes.cg.net`):
 - turn and replace: tau, pi, score, p_opp, matrix [11][13], rows (our action names), cols (theirs), belief;
   closed (our actions the rule masks closed); with a belief_slots checkpoint also opp_seen [4]: which of their
   move columns were shown (the others are named by the belief head)
-- turn, with a `choice` rule set (choosing.py): choice, the rule's pick and scores beside the network's pick
-- preview: belief (with `lead`) and picks_top, the five likeliest (lead, second, third) picks
+- turn, with a `choice` rule set (choosing.py): choice, the rule's pick and scores beside the network's pick;
+  preview: belief (with `lead`) and picks_top, the five likeliest (lead, second, third) picks
 
 The rule masks of training (rules.py) are applied to the mask the network reads, with the settings the checkpoint
 was trained with (runs of one move, of switches, of setup or recovery; moves that cannot work), then pcsa's
 turn rules (live_rules.py: no status moves in a mirror of a listed species; Mega Evolve whenever we can); at team
-preview, pcsa's lineup rule (no pick that brings two Mega stone holders) on the preview picks. What was played
-is recorded once per decision: the network's own choice when it answers, corrected by `played` (called by
-pcsa.cg.serve with the action that went out, so a fallback's answer or the second answer after a refusal replaces
-the first).
+preview, pcsa's lineup rule (no pick that brings two Mega stone holders). `guard` keeps the action that goes out
+inside the masks (a fallback's too); `played` records it (both called by pcsa.cg.serve).
 
-With `search` on (searching.py; needs Champions Gym 0.5.0 or later), a turn request is also searched: the scores
-returned are the log of the search's root strategy, so the shell's argmax is the search's pick, and the extras carry
-`search` (simulations, worlds, time, depth, the root strategy and Q table, the model's pick and the search's). When
-the search cannot run or does too little, the model's answer stands and `search.why` says so.
+With `search` on (searching.py), a turn request is also searched: the scores returned are the log of the search's
+root strategy, so the shell's argmax is the search's pick, and the extras carry `search` (simulations, worlds,
+time, depth, the root strategy and Q table, the model's pick and the search's). When the search cannot run or
+does too little, the model's answer stands and `search.why` says so.
 """
 
 from __future__ import annotations
@@ -254,6 +250,10 @@ class Policy:
         seat.restore()
         if seat.obs is not None:
             seat.rules.record(seat.obs, np.array([int(action)]))
+
+    def guard(self, decision: int, action: Any) -> Any:
+        with self.lock:
+            return live_rules.guard(self, int(decision), action)
 
     def played(self, decision: int, action: Any) -> None:
         """The action that went out for `decision` (the shell's choice, a fallback's, or the second answer after a

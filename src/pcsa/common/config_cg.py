@@ -66,6 +66,7 @@ class SearchSettings(_Strict):
     follow_pivot: bool  # a pivot move picked: its switch-in is the one the search chose for after it
     worlds_mode: Literal["builds", "legacy"]  # their sets: whole known builds weighted by evidence, or part by part
     preview_rates: str | None  # their unseen members drawn by these live bring rates (a JSON file); None: the head
+    calibrate: bool  # the network's values, cells and scores through value_calibration, on the scale of a result
 
 
 class CGSearch(SearchSettings):

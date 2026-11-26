@@ -5,9 +5,10 @@ belief outputs (search.py is the tree, worlds.py the guesses of their team).
 `min_sims` simulations, the model's own scores stand and the note's `why` says so.
 
 With `follow_pivot`, a searched pick that the trees saw switch us out in the same turn with our active standing (a
-pivot move) keeps the switch-in they chose there (pivot_follow); the replace request of that turn plays it
-when it is open, with the `follow` note. A live replace request cannot tell a pivot from a faint, so it answers
-either. The kept switch-in is dropped when another action went out (`played`) or at the slot's next request.
+pivot move) keeps the switch-ins they chose (pivot_follow): one for after the pivot, one for after a faint first.
+The replace request of that turn plays the one the battle's events name (our `withdraw` with `pivot`, or our
+`faint`; the pivot's when the rows are not read yet) when it is open, with the `follow` note. The kept switch-ins
+are dropped when another action went out (`played`) or at the slot's next request.
 """
 
 from __future__ import annotations
@@ -23,8 +24,9 @@ import torch
 from pcsa.common.clock import precise_now
 from pcsa.common.paths import assets_dir, repo_root
 
-from . import builds, evidence, model, search, worlds
+from . import builds, evidence, live_rules, model, search, worlds
 from . import layout as L
+from . import rules as masks
 
 RESERVE_MS = 250.0  # of the request's deadline, kept for the reply
 SEED_BITS = (1 << 63) - 1
@@ -43,10 +45,11 @@ def game_from_battle(battle: Any, guess: list, seed: int) -> tuple:
 
 
 def pivot_follow(found: list[worlds.World], pick: int) -> dict | None:
-    """The switch-in the trees chose after our `pick` made us switch out in the same turn with our active still
-    standing (a pivot move), summed over the worlds by visits; None when no tree got there. `faint_visits` counts
-    the same-turn replacements after a faint instead, which a live replace request cannot tell apart."""
-    total, pivots, faints = np.zeros(L.OWN_ACTIONS), 0, 0
+    """After our `pick`, the switch-ins the trees chose in the same turn, summed over the worlds by visits:
+    `target` where our active was still standing (a pivot move), `after_faint` where it had fainted first; None
+    when no tree saw the pivot."""
+    totals = {"pivot": np.zeros(L.OWN_ACTIONS), "faint": np.zeros(L.OWN_ACTIONS)}
+    visits = {"pivot": 0, "faint": 0}
     for w in found:
         root = w.root
         if root is None or root.pending or pick not in root.us:
@@ -58,18 +61,18 @@ def pivot_follow(found: list[worlds.World], pick: int) -> dict | None:
                     continue
                 if int(child.game.kinds()[0]) != L.KIND_REPLACE:
                     continue
-                if bool(np.asarray(child.game.readout().fainted)[0][me]):
-                    faints += max(child.N, 1)
-                    continue
-                pivots += max(child.N, 1)
+                case = "faint" if bool(np.asarray(child.game.readout().fainted)[0][me]) else "pivot"
+                visits[case] += max(child.N, 1)
                 weight = child.S_u if child.N > 0 else child.P_u
                 for y, b in enumerate(child.us):
-                    total[b] += weight[y]
-    if not total.any():
+                    totals[case][b] += weight[y]
+    pivot, faint = totals["pivot"], totals["faint"]
+    if not pivot.any():
         return None
-    target = int(total.argmax())
-    return {"target": target, "share": float(total[target] / total.sum()), "pivot_visits": int(pivots),
-            "faint_visits": int(faints)}  # fmt: skip
+    target = int(pivot.argmax())
+    return {"target": target, "share": float(pivot[target] / pivot.sum()), "after_faint":
+            int(faint.argmax()) if faint.any() else None, "pivot_visits": visits["pivot"],
+            "faint_visits": visits["faint"]}  # fmt: skip
 
 
 def follow(searcher: Searcher | None, slots: Sequence[int], kinds: np.ndarray, b: dict, battles: Any,
@@ -85,7 +88,8 @@ class Follow:
     decision: int
     turn: int
     pick: int
-    target: int
+    target: int  # after the pivot
+    after_faint: int | None = None  # if our active fainted before it could pivot
 
 
 class Searcher:
@@ -97,6 +101,7 @@ class Searcher:
         self.follows: dict[int, Follow] = {}  # per slot: the switch-in after a searched pivot move
         self._guesser: builds.Guesser | None = None
         self._rates: worlds.Rates | None = None
+        self._rules: masks.Rules | None = None  # the tree's rule counters, one game, loaded per node
         self.tracker: evidence.Tracker | None = None  # this battle's evidence (pcsa.cg.serve feeds it)
         self.last_weights: dict[str, tuple] = {}  # species -> (candidates, weights, facts) at the last decision
         self._tables: worlds.Tables | None = None
@@ -163,18 +168,23 @@ class Searcher:
             if int(kinds[r]) != L.KIND_REPLACE or (f := self.follows.pop(slot, None)) is None:
                 continue
             model_pick = int(scores[r, : L.OWN_ACTIONS].argmax())
-            note: dict[str, Any] = {"used": False, "why": None, "target": f.target, "model_pick": model_pick}
+            out = self.tracker.own_out() if self.tracker is not None else None  # "pivot", "faint" or None
+            target = f.after_faint if out == "faint" else f.target
+            note: dict[str, Any] = {"used": False, "why": None, "target": target, "out": out,
+                                    "model_pick": model_pick}  # fmt: skip
             battle = battles[r] if battles is not None else None
             turn = None if battle is None else int(battle.turn)
             if turn != f.turn:
                 note["why"] = f"turn {turn}, the pivot move was on turn {f.turn}"
-            elif not bool(b["mask"][r, f.target] > 0):
+            elif target is None:
+                note["why"] = "our Pokémon fainted before the pivot and the search kept no switch-in for that"
+            elif not bool(b["mask"][r, target] > 0):
                 note["why"] = "the search's switch-in is not open"
             else:
                 row = torch.full((L.OWN_ACTIONS,), float("-inf"))
-                row[f.target] = 0.0
+                row[target] = 0.0
                 scores[r, : L.OWN_ACTIONS] = row
-                note.update(used=True, changed=f.target != model_pick)
+                note.update(used=True, changed=target != model_pick)
             notes[r] = note
         return notes
 
@@ -195,15 +205,25 @@ class Searcher:
         return self._tables
 
     def leaves(self, out: dict, ids: torch.Tensor) -> list[search.Leaf]:
+        """The network rows as Leaves; with `calibrate`, the value, the matrix cells and the row scores mapped by
+        the policy's value_calibration onto the scale of a finished game's +1 / -1."""
         p = self.policy
-        return search.leaves_of(out, ids.long(), p.cols["species"], p.cols["moves"], bool(p.net.cfg.belief_slots))
+        leaves = search.leaves_of(out, ids.long(), p.cols["species"], p.cols["moves"], bool(p.net.cfg.belief_slots))
+        cal = p.calibration if self.cfg.calibrate else None
+        if cal is not None:
+            f = lambda x: 2.0 / (1.0 + np.exp(-(cal.a * np.asarray(x, np.float64) + cal.b))) - 1.0  # noqa: E731
+            for leaf in leaves:
+                leaf.value, leaf.matrix, leaf.score = float(f(leaf.value)), f(leaf.matrix), f(leaf.score)
+        return leaves
 
     def forward(self, nodes: list, memories: list) -> tuple[list, list]:
         """The network on our view of each node's Game, each with the memory of its path."""
         from champions_gym import env
 
         p, n = self.policy, len(nodes)
-        b = p.batch(env.game_tensors([node.game for node in nodes], [0] * n))  # type: ignore[attr-defined]
+        arrays = env.game_tensors([node.game for node in nodes], [0] * n)  # type: ignore[attr-defined]
+        b = p.batch(arrays)
+        self.mask_nodes(nodes, arrays, b)
         if self._scratch is None or self._scratch.hist.shape[0] < n:
             self._scratch = model.Memory(p.net, max(n, self.cfg.batch), p.device)
         mem = self._scratch
@@ -211,6 +231,38 @@ class Searcher:
             mem.hist[i], mem.pos[i], mem.count[i] = hist, pos, count
         out = p.net.forward(b, memory=mem, slots=torch.arange(n, device=p.device), beliefs=False)
         return self.leaves(out, b["row_ids"]), [search.memory_of(mem, i) for i in range(n)]
+
+    def mask_nodes(self, nodes: list, arrays: Any, b: dict) -> None:
+        """Our rule masks at every new node, as at a live request: each node's rule counters are its parent's with
+        our action there recorded; at our turn nodes the masks close actions in b["mask"] (the network's input)
+        and in node.allowed (the tree's)."""
+        p = self.policy
+        if p.rule_cfg is None:
+            return
+        if self._rules is None:
+            self._rules = masks.Rules(p.rule_cfg, p.layout, 1)
+        rules, mask = self._rules, b["mask"].clone()
+        for i, node in enumerate(nodes):
+            parent, action = node.via if node.via is not None else (None, None)
+            node.rules = None if parent is None else parent.rules
+            if parent is not None and parent.obs is not None and parent.rules is not None and action is not None:
+                rules.load(0, parent.rules)
+                rules.record(parent.obs, np.array([int(action)]))
+                node.rules = rules.save(0)
+            node.obs = p._turn_obs(arrays, i)
+            if node.obs is None or node.rules is None:
+                continue
+            rules.load(0, node.rules)
+            m = live_rules.apply(p.turn_rules, node.obs, rules.mask(node.obs))[0]
+            node.allowed = m > 0
+            mask[i] = torch.from_numpy(m).to(mask)
+        b["mask"] = mask
+
+    def root_rules(self, root: search.Node, slot: int) -> None:
+        """The root's rule counters and observation: the slot's, before this request's action is recorded."""
+        seat = self.policy.seats.get(slot)
+        if seat is not None and seat.obs is not None:
+            root.rules, root.obs = seat.rules.save(0), seat.obs
 
     def budget(self) -> float:
         """Milliseconds for this request: the setting, or what the request's deadline leaves."""
@@ -263,6 +315,7 @@ class Searcher:
             w.root = search.Node(w.game)
             search.expand(w.root, leaf, w, tables, self.cfg, allowed)
             w.root.mem = memory
+            self.root_rules(w.root, slot)
         return built
 
     def answer(self, found: search.Result, allowed: np.ndarray, note: dict) -> torch.Tensor:
@@ -308,7 +361,8 @@ class Searcher:
             row = self.answer(tree.result(built, note["dropped_why"]), allowed, note)
             if self.cfg.follow_pivot and (follow := pivot_follow(built, note["pick"])):
                 note["follow"] = follow
-                self.follows[slot] = Follow(decision, int(battle.turn), int(note["pick"]), int(follow["target"]))
+                self.follows[slot] = Follow(decision, int(battle.turn), int(note["pick"]), int(follow["target"]),
+                                            follow["after_faint"])  # fmt: skip
             return row, note
         except Exception as error:
             known = isinstance(error, worlds.NoSearch)

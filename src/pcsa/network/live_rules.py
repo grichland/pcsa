@@ -26,6 +26,7 @@ from . import rules as masks
 from . import vocab
 
 LIVE_ONLY = ("status_free_mirrors", "always_mega", "one_mega_lineup")  # not fields of training's Rules
+MEGA, MOVES, SWITCHES = 4, 8, 3  # our turn actions: 0-3 move, 4-7 the same with Mega, 8-10 switch
 
 
 class MirrorRule:
@@ -163,3 +164,34 @@ def info(cfg: masks.RuleConfig | None, turn: TurnRules | None, lineup: LineupRul
     mirror, mega = (None, None) if turn is None else (turn.mirror, turn.mega)
     return {**dataclasses.asdict(cfg), "status_free_mirrors": [] if mirror is None else mirror.species,
             "always_mega": mega is not None, "one_mega_lineup": lineup is not None}  # fmt: skip
+
+
+def open_actions(policy: Any, decision: int) -> np.ndarray | None:
+    """Our actions the rule masks leave open at the turn request `decision` (the policy's seat state from before
+    that request), or None when the policy has no rule masks or no such request."""
+    if getattr(policy, "rule_cfg", None) is None:
+        return None
+    seat = next((x for x in getattr(policy, "seats", {}).values() if x.decision == decision), None)
+    if seat is None or seat.obs is None or seat.before is None:
+        return None
+    now = seat.rules.save(0)
+    try:
+        seat.rules.load(0, tuple(x.copy() for x in seat.before))
+        m = seat.rules.mask(seat.obs)
+    finally:
+        seat.rules.load(0, now)
+    return apply(policy.turn_rules, seat.obs, m)[0] > 0
+
+
+def guard(policy: Any, decision: int, action: Any) -> Any:
+    """The action that goes out at a turn request, inside the rule masks: an action the masks close (a fallback
+    player's, which never saw them) becomes the nearest open one: the same move with Mega, another move, another
+    switch, else any open action."""
+    if isinstance(action, bool) or not isinstance(action, int) or not 0 <= action < MOVES + SWITCHES:
+        return action
+    ok = open_actions(policy, decision)
+    if ok is None or ok[action] or not ok.any():
+        return action
+    order = ([action + MEGA] if action < MEGA else []) + (list(range(MOVES)) if action < MOVES else [])
+    order += list(range(MOVES, MOVES + SWITCHES)) + list(range(MOVES))
+    return next(a for a in order if ok[a])

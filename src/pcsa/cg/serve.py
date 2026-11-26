@@ -73,9 +73,23 @@ class Proxy:
     def choose_move(self, battle: Any) -> Any:
         self.battle = battle
         choose = getattr(self.player, "choose_move", None) or self.player.choose
-        action = choose(battle)
+        action = self._guarded(battle, choose(battle))
         self._played(battle, action)
         return action
+
+    def _guarded(self, battle: Any, action: Any) -> Any:
+        """The rule masks on the action that goes out, a fallback's too (pcsa.network.live_rules.guard)."""
+        guard = getattr(getattr(self.player, "policy", None), "guard", None)
+        if not callable(guard):
+            return action
+        try:
+            out = guard(int(battle.decision), action)
+        except Exception as error:  # the order stands
+            _say(f"rule guard: {type(error).__name__}: {error}")
+            return action
+        if out != action:
+            _say(f"rule guard: action {action} is closed by the rule masks, sent {out}")
+        return out
 
     def _played(self, battle: Any, action: Any) -> None:
         played = getattr(getattr(self.player, "policy", None), "played", None)
