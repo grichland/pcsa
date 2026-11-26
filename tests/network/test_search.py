@@ -32,6 +32,8 @@ def make(search: dict | None = None, **settings) -> Policy:
     """The test policy; `search` replaces some of the shipped search settings and turns the search on."""
     if not CHECKPOINT.is_file():
         pytest.skip(f"no test checkpoint at {CHECKPOINT}")
+    if search is not None and search.get("sims") and "ms" not in search:
+        search = {**search, "ms": 60000.0}  # a fixed count: the time limit must not cut it on a slow machine
     return neural.policy(search=None if search is None else configs.search(**search), **settings)
 
 

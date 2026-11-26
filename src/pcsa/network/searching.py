@@ -81,6 +81,11 @@ def follow(searcher: Searcher | None, slots: Sequence[int], kinds: np.ndarray, b
     return [None] * len(slots) if searcher is None else searcher.follow(slots, kinds, b, battles, scores)
 
 
+def _stack(obs: list[dict]) -> dict:
+    """One-game rule observations as one batch."""
+    return {k: np.concatenate([o[k] for o in obs]) for k in obs[0]}
+
+
 @dataclass
 class Follow:
     """A searched turn's pivot move and the switch-in the search chose for after it."""
@@ -235,28 +240,45 @@ class Searcher:
     def mask_nodes(self, nodes: list, arrays: Any, b: dict) -> None:
         """Our rule masks at every new node, as at a live request: each node's rule counters are its parent's with
         our action there recorded; at our turn nodes the masks close actions in b["mask"] (the network's input)
-        and in node.allowed (the tree's)."""
+        and in node.allowed (the tree's). One batched Rules call for the records and one for the masks."""
         p = self.policy
         if p.rule_cfg is None:
             return
-        if self._rules is None:
-            self._rules = masks.Rules(p.rule_cfg, p.layout, 1)
-        rules, mask = self._rules, b["mask"].clone()
+        if self._rules is None or self._rules.key.shape[0] < len(nodes):
+            self._rules = masks.Rules(p.rule_cfg, p.layout, max(len(nodes), self.cfg.batch))
+        rules = self._rules
+        self._record_paths(nodes, rules)
+        turn = []
         for i, node in enumerate(nodes):
-            parent, action = node.via if node.via is not None else (None, None)
-            node.rules = None if parent is None else parent.rules
-            if parent is not None and parent.obs is not None and parent.rules is not None and action is not None:
-                rules.load(0, parent.rules)
-                rules.record(parent.obs, np.array([int(action)]))
-                node.rules = rules.save(0)
             node.obs = p._turn_obs(arrays, i)
-            if node.obs is None or node.rules is None:
-                continue
-            rules.load(0, node.rules)
-            m = live_rules.apply(p.turn_rules, node.obs, rules.mask(node.obs))[0]
-            node.allowed = m > 0
-            mask[i] = torch.from_numpy(m).to(mask)
+            if node.obs is not None and node.rules is not None:
+                turn.append(i)
+        if not turn:
+            return
+        for k, i in enumerate(turn):
+            rules.load(k, nodes[i].rules)
+        obs = _stack([nodes[i].obs for i in turn])
+        m = live_rules.apply(p.turn_rules, obs, rules.mask(obs))
+        mask = b["mask"].clone()
+        for k, i in enumerate(turn):
+            nodes[i].allowed = m[k] > 0
+            mask[i] = torch.from_numpy(m[k]).to(mask)
         b["mask"] = mask
+
+    @staticmethod
+    def _record_paths(nodes: list, rules: masks.Rules) -> None:
+        """Each node's rule counters: its parent's, with our action there recorded when it was our turn."""
+        moved = [n for n in nodes if n.via is not None and n.via[0].obs is not None and n.via[0].rules is not None
+                 and n.via[1] is not None]  # fmt: skip
+        for node in nodes:
+            node.rules = None if node.via is None else node.via[0].rules
+        if not moved:
+            return
+        for k, node in enumerate(moved):
+            rules.load(k, node.via[0].rules)
+        rules.record(_stack([n.via[0].obs for n in moved]), np.array([int(n.via[1]) for n in moved]))
+        for k, node in enumerate(moved):
+            node.rules = rules.save(k)
 
     def root_rules(self, root: search.Node, slot: int) -> None:
         """The root's rule counters and observation: the slot's, before this request's action is recorded."""
