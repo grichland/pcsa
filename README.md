@@ -17,7 +17,7 @@ phone exactly as it does in training, the network sees the same inputs live as i
 
 *The dashboard (`pcsa watch`) during a ranked session at Master Ball rank 2. The image links to a 1:50 video.*
 
-![Single Battle result after a ranked game: Master Ball tier, rank 2, placement No. 2,489, rating 1,966.634](docs/images/master-ball-rank2.jpg)
+![Single Battle result after a ranked game: Master Ball tier, rank 2, placement No. 2,489, rating 1,966.634](docs/images/master-ball-2489.jpg)
 
 *The game's result screen after a ranked win: Master Ball tier, rank 2, placement 2,489, rating 1,967.*
 
