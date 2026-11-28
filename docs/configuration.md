@@ -31,7 +31,7 @@ Champions Gym and the player it runs (pcsa.cg)
 | `cg.player` | `champions_gym.neural:load` | the Session's player; a built-in such as tower needs no player_args |
 | `cg.player_args` |  | passed to the player as given; never set allow_mismatch or allow_contract |
 | `cg.player_args.policy` | `pcsa.network.policy:Policy` |  |
-| `cg.player_args.checkpoint` | `assets/models/finetune-20261124-g75-iter-00010.pt` | relative: the repo root |
+| `cg.player_args.checkpoint` | `assets/models/finetune-20261127-pool3-iter-00050.pt` | relative: the repo root |
 | `cg.player_args.device` | `cpu` |  |
 | `cg.player_args.policy_args` | `{threads: 4}` | plus rules, search and choice below |
 | `cg.player_args.fallback` | `tower` | the shell's player when the network fails or is too slow |
@@ -88,8 +88,8 @@ Champions Gym and the player it runs (pcsa.cg)
 | `cg.choice.blend` | `0.5` | mix only: the weight of the mean against the worst case |
 | `cg.value_calibration` |  | the value reported as 2 * sigmoid(a * v + b) - 1, fitted per checkpoint |
 | `cg.value_calibration.enabled` | `true` | by tools/value_calibration.py; off: the raw value |
-| `cg.value_calibration.a` | `1.43017` | finetune-20261124-g75-iter-00010 on 251 recorded battles |
-| `cg.value_calibration.b` | `-0.48124` |  |
+| `cg.value_calibration.a` | `1.83673` | finetune-20261127-pool3-iter-00050 on 310 recorded battles |
+| `cg.value_calibration.b` | `-0.59840` |  |
 | `cg.preview_search` |  | replaces the preview head's pick (pcsa.network.preview_search) |
 | `cg.preview_search.enabled` | `true` | off: the head's pick, exactly |
 | `cg.preview_search.budget_s` | `30` | search time; never past the preview deadline less the tap reserve |
