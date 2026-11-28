@@ -13,9 +13,9 @@ phone exactly as it does in training, the network sees the same inputs live as i
 
 ## Demo
 
-[![The dashboard after a ranked win: the phone mirror at Master Ball rank 2, the decision matrix, the win rate and rating, both teams and the battle log](docs/images/demo-poster.jpg)](https://www.youtube.com/watch?v=o6kFk4MY2VQ "Watch the demo on YouTube")
+[![The dashboard after a ranked win: the phone mirror at Master Ball rank 2, the decision matrix, the win rate and rating, both teams and the battle log](docs/images/demo-poster.jpg)](https://youtu.be/HRtaAFm2W8o "Watch the demo on YouTube")
 
-*The dashboard (`pcsa watch`) during a ranked session at Master Ball rank 2. The image links to a 1:50 video.*
+*The dashboard (`pcsa watch`) during a ranked session at Master Ball rank 2. The image links to the demo video.*
 
 ![Single Battle result after a ranked game: Master Ball tier, rank 2, placement No. 2,489, rating 1,966.634](docs/images/master-ball-2489.jpg)
 
