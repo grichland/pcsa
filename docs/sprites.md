@@ -61,12 +61,18 @@ per battle, the opponent's sent-out species and which file they came from.
   `events.json` is used when a battle has both. A battle with neither (an unfinished battle) gives log
   crops but no preview labels.
 
+  A card is labelled only when the recorded read named a species that was sent out, so a species the
+  matcher had no view of (Floette) would never be learned. Elimination fills that gap: when exactly one
+  sent-out species has no card and exactly one unlabelled card was read below 0.6, that card is that
+  species (`sprite_data.by_elimination`).
+
 ### What a run of the trainer does
 
 Every batch mixes heavily augmented reference views with lightly augmented real crops. The augmentations
 include palette swaps for shiny Pokémon (hue rotation, inverted lightness, colour faded to grey), so
 colour helps a match but never outweighs the shape. After training, each reference view is embedded, plus
-the centre of the real crops for every form the runs have shown.
+the centre of the real crops for every form the runs have shown (a form named by any source; a preview card
+never shows a Mega form, so Mega forms are dropped from a preview card's label first).
 
 The newest two runs (`--test-runs`) are held out and never trained on. Both matchers run through the
 same matching code on them; the log thresholds are calibrated on a validation slice of the training runs,
@@ -78,9 +84,12 @@ There is no separate measuring command: the measurement is part of a training ru
 
 ## Measured on the two held-out runs
 
-Carried over from the previous version of this page: these figures come from the training run that
-produced the shipped network, on runs recorded before the Champions Gym port. They have not been
-measured again since.
+The shipped network was retrained on 27 Nov 2026 (output/sprite_net/20261127-floette-c) with Floette's
+preview cards. On the two newest runs (7 battles), log rows: 247 of 247 right; opponent species sent out
+that team preview had read: 19 of 19 (the old network: 17, missing both Floette cards). On the validation
+battles (181): 510 of 512, as before.
+
+The table below is from the first training of the network, on runs recorded before the Champions Gym port.
 
 | Held-out runs (77 battles) | Network | Old thumbnail matcher |
 |---|---|---|

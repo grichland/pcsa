@@ -27,12 +27,16 @@ def in_memory_net(
     weights, sources, data: sd.Dataset | None = None, rows: np.ndarray | None = None
 ) -> sprite_net.SpriteNet:
     refs = {}
+    known: dict[str, tuple[str, str]] = {}  # every source's forms, so a form with views in one domain only
+    for source in sources.values():  # still gets a centre from its real crops in the other
+        for name, base in zip(source.names, source.base_names, strict=True):
+            known.setdefault(sd.form_id(name), (name, base))
     for domain, source in sources.items():
         vectors = sprite_net.forward(weights, *sprite_net.encode(source.masks, source.labs, source.aspects))
         names, bases = list(source.names), list(source.base_names)
         if data is not None and rows is not None:
             extra_names, extra_bases, extra_vectors = real_centres(
-                weights, source, data, rows, sd.DOMAIN_CODE[domain]
+                weights, source, data, rows, sd.DOMAIN_CODE[domain], known
             )
             names, bases = names + extra_names, bases + extra_bases
             vectors = np.concatenate([vectors, extra_vectors]) if extra_names else vectors
@@ -40,15 +44,23 @@ def in_memory_net(
     return sprite_net.SpriteNet(weights, refs, 0.0, 0.0)
 
 
-def real_centres(weights, source: sb.SourceIndex, data: sd.Dataset, rows: np.ndarray, domain: int):
-    """One extra view per form with enough form-labelled real crops: the mean of their vectors."""
+def real_centres(weights, source: sb.SourceIndex, data: sd.Dataset, rows: np.ndarray, domain: int,  # noqa: PLR0913
+                 known: dict[str, tuple[str, str]] | None = None):  # fmt: skip
+    """One extra view per form with enough form-labelled real crops: the mean of their vectors. `known`: names of
+    forms from the other sources, for a form this source has no view of."""
     name_of: dict[str, tuple[str, str]] = {}
     for name, base in zip(source.names, source.base_names, strict=True):
         name_of.setdefault(sd.form_id(name), (name, base))
+    for form, pair in (known or {}).items():
+        name_of.setdefault(form, pair)
     groups: dict[str, list[tuple[int, int]]] = {}
+    preview = domain == sd.DOMAIN_CODE["preview"]
     for i in rows:
-        if data.domain[i] == domain and data.species[i] and len(data.allowed[i]) == 1:
-            form = data.allowed[i][0]
+        if data.domain[i] != domain or not data.species[i]:
+            continue
+        forms = [f for f in data.allowed[i] if not (preview and "-Mega" in name_of.get(f, ("",))[0])]
+        if len(forms) == 1:  # a team-preview card never shows a Mega form
+            form = forms[0]
             if form in name_of:
                 groups.setdefault(form, []).extend((int(i), v) for v in (0, 1) if data.variant[i, v] == 0)
     names, bases, vectors = [], [], []

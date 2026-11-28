@@ -2,70 +2,61 @@
  "schema": "pcsa-sprite-net/1",
  "weights": {
   "file": "sprite_net.npz",
-  "sha256": "ca6db1317fbe6d937ad98c8cce55a9652726e0952e11c6ec6c625a70cafa4a84"
+  "sha256": "90277dd6a6803c0123da22ae17be836ee9ed2f809e1ec96f1889a7ea6c894e12"
  },
  "references": {
   "preview": {
    "file": "preview_refs.npz",
-   "sha256": "eb2f623b42900e637252546cbc822b654e9b457f7146b0af0d9b4daff2037fe3"
+   "sha256": "d40512cca7b18b38fecf720df91b15018f61d43957ce304dadff00a1d0ed5407"
   },
   "log": {
    "file": "log_refs.npz",
-   "sha256": "a2786fec693e25982ebfd4511dfbdecf36e2a116df8a09286143b1e4620c87cd"
+   "sha256": "5ad91e8c69954dab28bd257063717d3f48ea810662d902859626023a846d3009"
   }
  },
  "log_thresholds": {
-  "min_score": 0.64,
-  "min_margin": 0.26
+  "min_score": 0.76,
+  "min_margin": 0.02
  },
  "trained": {
-  "at": "2026-11-05T15:19:53",
+  "at": "2026-11-28T00:12:51",
   "steps": 8000,
   "seed": 0,
   "classes": 394,
   "test_runs": [
-   "20261104-015856-run",
-   "20261104-151903-run"
+   "20261127-201836-run",
+   "20261127-203056-run"
   ],
   "test": {
    "log": {
     "network": {
-     "rows": 2339,
-     "matched_correct": 2336,
+     "rows": 247,
+     "matched_correct": 247,
      "matched_wrong": 0,
-     "unknown": 3,
+     "unknown": 0,
      "none": 0,
-     "top1_species_accuracy": 0.9996,
+     "top1_species_accuracy": 1.0,
      "form_agreement": 1.0
     },
     "retired": {
-     "rows": 2339,
-     "matched_correct": 2316,
+     "rows": 247,
+     "matched_correct": 232,
      "matched_wrong": 0,
-     "unknown": 23,
+     "unknown": 15,
      "none": 0,
-     "top1_species_accuracy": 0.9914,
+     "top1_species_accuracy": 0.9467,
      "form_agreement": 1.0
     }
    },
    "preview": {
-    "network": {
-     "battles": 76,
-     "sent_out_species": 204,
-     "sent_out_found_in_top1": 197,
-     "sent_out_recall": 0.9657,
-     "confirmed_cards": 194,
-     "confirmed_cards_right": 193
-    },
-    "retired": {
-     "battles": 76,
-     "sent_out_species": 204,
-     "sent_out_found_in_top1": 191,
-     "sent_out_recall": 0.9363,
-     "confirmed_cards": 194,
-     "confirmed_cards_right": 191
-    }
+    "battles": 7,
+    "sent_out_species": 19,
+    "sent_out_found_in_top1": 19,
+    "sent_out_recall": 1.0,
+    "confirmed_cards": 19,
+    "confirmed_cards_right": 19
    }
-  }
+  },
+  "references_rebuilt": true
  }
 }

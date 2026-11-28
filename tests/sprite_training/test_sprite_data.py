@@ -132,3 +132,27 @@ def test_save_and_load_keep_the_sent_out_species(tmp_path) -> None:
     data = sd.load(tmp_path / "data.npz")
     assert data.species == ["tauros"] and data.allowed == [["tauros"]] and list(data.variant[0]) == [0, 1]
     assert data.battles == {"run/battle-1": {"tauros": {"tauros", "taurospaldeablaze"}}}
+
+
+def _cards(species: list[str], scores: list[float], sent: dict[str, set[str]]) -> sd.Dataset:
+    n = len(species)
+    return sd.Dataset(
+        np.zeros(n, np.int8), np.zeros((n, 1)), np.zeros((n, 1)), np.zeros((n, 1)), np.zeros((n, 1)),
+        np.arange(n, dtype=np.int8), ["b"] * n, list(species), [[s] if s else [] for s in species],
+        [{"top": [["X", s]]} for s in scores], {"b": sent},
+    )  # fmt: skip
+
+
+def test_the_one_unsure_card_takes_the_one_sent_out_species_no_card_claims() -> None:
+    sent = {"garchomp": {"garchomp"}, "milotic": {"milotic"}, "floette": {"floetteeternal"}}
+    data = _cards(["", "garchomp", "milotic", "", "", ""], [0.34, 0.99, 0.96, 0.99, 0.94, 0.98], sent)
+    assert sd.by_elimination(data) == 1
+    assert data.species[0] == "floette" and data.allowed[0] == ["floetteeternal"]
+
+
+def test_two_unsure_cards_or_no_free_species_label_nothing() -> None:
+    sent = {"garchomp": {"garchomp"}, "milotic": {"milotic"}, "floette": {"floetteeternal"}}
+    data = _cards(["", "garchomp", "milotic", "", "", ""], [0.34, 0.99, 0.96, 0.45, 0.94, 0.98], sent)
+    assert sd.by_elimination(data) == 0
+    data = _cards(["floette", "garchomp", "milotic", "", "", ""], [0.9, 0.99, 0.96, 0.4, 0.94, 0.98], sent)
+    assert sd.by_elimination(data) == 0

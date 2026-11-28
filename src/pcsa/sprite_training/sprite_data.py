@@ -22,6 +22,7 @@ from pcsa.sprite_training.sprite_baseline import SourceIndex
 
 DOMAIN_CODE = {"preview": 0, "log": 1}
 NO_FEATURE = {"none": 1, "clipped": 2}  # variant codes; 0 is a feature
+UNSURE_SCORE = 0.6  # a preview card read below this may be a species the matcher has no view of
 
 
 def form_id(name: str) -> str:
@@ -275,7 +276,34 @@ def load(path: Path) -> Dataset:
     with np.load(path, allow_pickle=False) as a:
         arrays = {k: a[k] for k in a.files}
     battles = {b["key"]: {k: set(v) for k, v in b["opponent_sent"].items()} for b in meta["battles"]}
-    return Dataset(
+    data = Dataset(
         arrays["domain"], arrays["masks"], arrays["labs"], arrays["aspects"], arrays["variant"], arrays["slot"],
         meta["battle"], meta["species"], meta["allowed"], meta["recorded"], battles,
     )  # fmt: skip
+    by_elimination(data)
+    return data
+
+
+def by_elimination(data: Dataset) -> int:
+    """Label a preview card the recorded read got wrong: in a battle with exactly one sent-out species no card
+    claims and exactly one unlabelled card read below UNSURE_SCORE, that card is that species (a species with no
+    view, such as Floette, is otherwise never labelled). Returns the cards labelled."""
+    cards: dict[str, list[int]] = {}
+    for i, key in enumerate(data.battle):
+        if data.slot[i] >= 0:
+            cards.setdefault(key, []).append(i)
+    done = 0
+    for key, rows in cards.items():
+        sent = data.battles.get(key) or {}
+        claimed = {data.species[i] for i in rows if data.species[i]}
+        free = [s for s in sent if s not in claimed]
+        unsure = [i for i in rows if not data.species[i] and _top_score(data.recorded[i]) < UNSURE_SCORE]
+        if len(free) == 1 and len(unsure) == 1:
+            data.species[unsure[0]], data.allowed[unsure[0]] = free[0], sorted(sent[free[0]])
+            done += 1
+    return done
+
+
+def _top_score(recorded: dict) -> float:
+    top = recorded.get("top") or []
+    return float(top[0][1]) if top else 0.0
